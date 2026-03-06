@@ -8,10 +8,14 @@ import { Camera, X, Star, ChevronRight, ChevronLeft, Check, HelpCircle } from 'l
 const ETAPAS = ['Fotos', 'Básico', 'Aparência', 'Identidade', 'Estilo de vida', 'Valores', 'O que busco']
 
 const tooltips: Record<string, string> = {
-  'Cisgênero (cis)': 'Pessoa cuja identidade de gênero corresponde ao sexo atribuído ao nascer. Ex: nasceu mulher e se identifica como mulher.',
-  'Transgênero (trans)': 'Pessoa cuja identidade de gênero não corresponde ao sexo atribuído ao nascer. Ex: nasceu homem mas se identifica como mulher.',
-  'Não-binário': 'Pessoa que não se identifica exclusivamente como homem ou mulher. Pode se sentir entre os dois ou fora dessa divisão.',
-  'Gênero fluido': 'Pessoa cuja identidade de gênero pode variar ao longo do tempo entre masculino, feminino ou outros.',
+  // GÊNERO — cada um com exemplo do próprio gênero
+  'Homem': 'Você nasceu com corpo masculino e se identifica como homem. É o caso da maioria dos homens.',
+  'Mulher': 'Você nasceu com corpo feminino e se identifica como mulher. É o caso da maioria das mulheres.',
+  'Homem trans': 'Você nasceu com corpo feminino mas se identifica e vive como homem.',
+  'Mulher trans': 'Você nasceu com corpo masculino mas se identifica e vive como mulher.',
+  'Não-binário(a)': 'Você não se identifica nem como homem nem como mulher, ou se identifica como os dois.',
+  'Gênero fluido': 'Sua identidade pode variar — às vezes mais masculina, às vezes mais feminina.',
+  // ORIENTAÇÃO
   'Heterossexual': 'Atração afetiva e sexual por pessoas do gênero oposto. Ex: homem atraído por mulher.',
   'Homossexual': 'Atração afetiva e sexual por pessoas do mesmo gênero. Ex: mulher atraída por mulher (lésbica) ou homem por homem (gay).',
   'Bissexual': 'Atração afetiva e sexual por pessoas de dois ou mais gêneros.',
@@ -19,10 +23,12 @@ const tooltips: Record<string, string> = {
   'Assexual': 'Pouca ou nenhuma atração sexual por outras pessoas. Pode ter atração romântica.',
   'Demissexual': 'Sente atração sexual apenas após criar um vínculo emocional profundo com a pessoa.',
   'Queer': 'Termo amplo para orientações e identidades que fogem do padrão heterossexual e cisgênero.',
+  // CAMAROTE
   'Poliamor': 'Relacionamentos múltiplos simultâneos com o conhecimento e consentimento de todos os envolvidos.',
   'BDSM / fetiches': 'Práticas consensuais entre adultos envolvendo dominação, submissão, bondage ou outros fetiches.',
   'Busco trisal': 'Relacionamento amoroso e/ou sexual envolvendo três pessoas simultaneamente.',
   'Swing / relacionamento aberto': 'Casais que trocam de parceiros ou têm encontros com outras pessoas com consentimento mútuo.',
+  // PRONOMES
   'Ela/Dela': 'Pronomes femininos. Ex: ela foi ao mercado, o livro é dela.',
   'Ele/Dele': 'Pronomes masculinos. Ex: ele foi ao mercado, o livro é dele.',
   'Elu/Delu': 'Pronomes neutros usados por pessoas não-binárias. Ex: elu foi ao mercado, o livro é delu.',
@@ -99,7 +105,6 @@ export default function Perfil() {
       setBairro(data.bairro || '')
       setRua(data.logradouro || '')
       setCepStatus('ok')
-      // Busca lat/lng via Nominatim
       const q = encodeURIComponent(`${data.logradouro}, ${data.localidade}, ${data.uf}, Brasil`)
       const geo = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`, { headers: { 'Accept-Language': 'pt-BR' } })
       const geoData = await geo.json()
@@ -130,10 +135,6 @@ export default function Perfil() {
     setSugestoesRua([])
     setBuscaRua(item.display_name.split(',')[0])
     setCepStatus('ok')
-    // Tenta buscar CEP reverso
-    try {
-      const cepRes = await fetch(`https://viacep.com.br/ws/${addr.state_code || 'SP'}/${addr.city || addr.town || ''}/json/`)
-    } catch {}
   }
 
   // ETAPA 2 - Aparência
@@ -197,9 +198,12 @@ export default function Perfil() {
     setLista(lista.includes(valor) ? lista.filter(i => i !== valor) : [...lista, valor])
   }
 
+  // FIX 1: Bloqueia foto duplicada por nome + tamanho
   const handleFoto = (index: number, file: File | null) => {
     if (!file) return
     if (file.size > 5 * 1024 * 1024) { setErro('Foto muito grande. Máximo 5MB.'); return }
+    const duplicada = fotos.some((f, i) => f && i !== index && f.name === file.name && f.size === file.size)
+    if (duplicada) { setErro('Esta foto já foi adicionada. Use fotos diferentes em cada posição.'); return }
     const novasFotos = [...fotos]; novasFotos[index] = file; setFotos(novasFotos)
     const url = URL.createObjectURL(file)
     const novosPreiews = [...previews]; novosPreiews[index] = url; setPreviews(novosPreiews)
@@ -228,7 +232,8 @@ export default function Perfil() {
         if (idade > 100) return 'Data de nascimento inválida.'
       }
       if (!bio) return 'Escreva algo sobre você na bio.'
-      if (bio.length < 50) return `A bio precisa ter pelo menos 50 caracteres. Você escreveu ${bio.length}.`
+      // FIX 2: Mínimo 30 caracteres
+      if (bio.length < 30) return `A bio precisa ter pelo menos 30 caracteres. Você escreveu ${bio.length}.`
       if (!cidade) return 'Informe sua cidade. Use o CEP ou busque pelo nome da rua.'
       if (!estado) return 'Estado não identificado. Use o CEP ou busque pelo nome da rua.'
       if (!rua) return 'Informe sua rua para ativar o filtro por distância.'
@@ -322,7 +327,6 @@ export default function Perfil() {
         const d = (v: string) => deficiencias.includes(v)
         await supabase.from('filters').upsert({
           user_id: userId,
-          // Olhos
           eye_black: corOlhos === 'Olhos pretos',
           eye_brown: corOlhos === 'Olhos castanhos',
           eye_green: corOlhos === 'Olhos verdes',
@@ -330,7 +334,6 @@ export default function Perfil() {
           eye_honey: corOlhos === 'Olhos mel',
           eye_gray: corOlhos === 'Olhos acinzentados',
           eye_heterochromia: corOlhos === 'Heterocromia',
-          // Cabelo cor
           hair_black: corCabelo === 'Cabelo preto',
           hair_brown: corCabelo === 'Cabelo castanho',
           hair_blonde: corCabelo === 'Cabelo loiro',
@@ -338,16 +341,13 @@ export default function Perfil() {
           hair_colored: corCabelo === 'Cabelo colorido',
           hair_gray: corCabelo === 'Cabelo grisalho',
           hair_bald: corCabelo === 'Não possuo cabelo (careca)',
-          // Cabelo comprimento
           hair_short: comprimentoCabelo === 'Cabelo curto',
           hair_medium: comprimentoCabelo === 'Cabelo médio',
           hair_long: comprimentoCabelo === 'Cabelo longo',
-          // Cabelo tipo
           hair_straight: tipoCabelo === 'Cabelo liso',
           hair_wavy: tipoCabelo === 'Cabelo ondulado',
           hair_curly: tipoCabelo === 'Cabelo cacheado',
           hair_coily: tipoCabelo === 'Cabelo crespo',
-          // Pele
           skin_white: corPele === 'Branca',
           skin_mixed: corPele === 'Parda',
           skin_black: corPele === 'Negra',
@@ -357,16 +357,13 @@ export default function Perfil() {
           skin_latin: corPele === 'Latina',
           skin_mediterranean: corPele === 'Mediterrânea',
           skin_vitiligo: corPele === 'Possuo vitiligo',
-          // Medidas
           height_cm: parseInt(altura),
           weight_kg: parseInt(peso),
-          // Tipo corporal
           body_underweight: corporal === 'Abaixo do peso',
           body_healthy: corporal === 'Peso saudável',
           body_overweight: corporal === 'Acima do peso',
           body_obese_mild: corporal === 'Obesidade leve',
           body_obese_severe: corporal === 'Obesidade severa',
-          // Características
           feat_freckles: c('Possuo sardas'),
           feat_tattoo: c('Possuo tatuagem'),
           feat_piercing: c('Possuo piercing'),
@@ -374,7 +371,6 @@ export default function Perfil() {
           feat_glasses: c('Uso óculos'),
           feat_braces: c('Uso aparelho dentário'),
           feat_beard: c('Possuo barba'),
-          // PCD
           is_pcd: pcd === 'Sim, sou PCD',
           pcd_visual: d('Deficiência visual'),
           pcd_hearing: d('Deficiência auditiva'),
@@ -392,18 +388,16 @@ export default function Perfil() {
         await supabase.from('profiles').upsert({ id: userId, gender: genero, pronouns: pronomes })
         await supabase.from('filters').upsert({
           user_id: userId,
-          // Gênero
-          gender_cis_woman: genero === 'Mulher cisgênero (cis)',
-          gender_cis_man: genero === 'Homem cisgênero (cis)',
-          gender_trans_woman: genero === 'Mulher transgênero (trans)',
-          gender_trans_man: genero === 'Homem transgênero (trans)',
+          // FIX 3: Mapeamento atualizado para os novos labels simplificados
+          gender_cis_man: genero === 'Homem',
+          gender_cis_woman: genero === 'Mulher',
+          gender_trans_man: genero === 'Homem trans',
+          gender_trans_woman: genero === 'Mulher trans',
           gender_nonbinary: genero === 'Não-binário(a)',
           gender_fluid: genero === 'Gênero fluido',
-          // Pronomes
           pronoun_she: pronomes === 'Ela/Dela',
           pronoun_he: pronomes === 'Ele/Dele',
           pronoun_they: pronomes === 'Elu/Delu',
-          // Orientação
           sex_hetero: orientacao === 'Heterossexual',
           sex_homo: orientacao === 'Homossexual',
           sex_bi: orientacao === 'Bissexual',
@@ -411,7 +405,6 @@ export default function Perfil() {
           sex_asex: orientacao === 'Assexual',
           sex_demi: orientacao === 'Demissexual',
           sex_queer: orientacao === 'Queer',
-          // Status civil
           civil_single: statusCivil === 'Solteiro(a)',
           civil_complicated: statusCivil === 'Enrolado(a)',
           civil_married: statusCivil === 'Casado(a)',
@@ -432,7 +425,6 @@ export default function Perfil() {
         const i = (v: string) => instrumento.includes(v)
         await supabase.from('filters').upsert({
           user_id: userId,
-          // Vícios
           smoke_yes: vicios === 'Fumo',
           smoke_occasionally: vicios === 'Fumo ocasionalmente',
           smoke_no: vicios === 'Não fumo',
@@ -441,7 +433,6 @@ export default function Perfil() {
           drink_no: vicios === 'Não consumo bebida alcoólica',
           drug_cannabis: vicios === 'Consumo cannabis',
           no_addictions: vicios === 'Não possuo vícios',
-          // Rotina
           routine_gym: r('Pratico academia'),
           routine_sports: r('Pratico esporte regularmente'),
           routine_sedentary: r('Sou sedentário(a)'),
@@ -452,7 +443,6 @@ export default function Perfil() {
           routine_morning: r('Sou matutino(a)'),
           routine_workaholic: r('Sou workaholic'),
           routine_balanced: r('Tenho vida equilibrada'),
-          // Personalidade
           pers_extrovert: p('Sou extrovertido(a)'),
           pers_introvert: p('Sou introvertido(a)'),
           pers_ambivert: p('Sou ambiverte'),
@@ -463,7 +453,6 @@ export default function Perfil() {
           pers_agitated: p('Sou agitado(a)'),
           pers_calm: p('Sou calmo(a)'),
           pers_intense: p('Sou intenso(a)'),
-          // Hobbies
           hob_gamer: h('Sou gamer'),
           hob_reader: h('Adoro ler'),
           hob_movies: h('Viciado(a) em filmes'),
@@ -481,7 +470,6 @@ export default function Perfil() {
           hob_kpop: h('Curto k-pop'),
           hob_emo_punk: h('Sou emo / punk'),
           hob_egirl: h('Sou e-girl / e-boy'),
-          // Esportes
           sport_football_yes: esportes === 'Gosto de futebol',
           sport_football_no: esportes === 'Não gosto de futebol',
           sport_running: esportes === 'Pratico corrida',
@@ -490,7 +478,6 @@ export default function Perfil() {
           sport_martial_arts: esportes === 'Pratico artes marciais',
           sport_bbq: esportes === 'Gosto de churrasco',
           sport_none: esportes === 'Não pratico esportes',
-          // Alimentação
           diet_vegan: a('Sou vegano(a)'),
           diet_vegetarian: a('Sou vegetariano(a)'),
           diet_carnivore: a('Sou carnívoro(a)'),
@@ -502,7 +489,6 @@ export default function Perfil() {
           food_fastfood: a('Curto fast food'),
           food_lactose_intolerant: a('Tenho intolerância à lactose'),
           food_gluten_intolerant: a('Tenho intolerância ao glúten'),
-          // Estilo
           style_formal: e('Social'),
           style_casual: e('Casual'),
           style_sporty: e('Esportivo'),
@@ -512,7 +498,6 @@ export default function Perfil() {
           style_punk: e('Punk'),
           style_egirl: e('E-girl / E-boy'),
           style_kpop: e('K-pop'),
-          // Música
           music_funk: m('Funk'),
           music_sertanejo: m('Sertanejo'),
           music_pagode: m('Pagode'),
@@ -527,7 +512,6 @@ export default function Perfil() {
           music_classical: m('Clássica'),
           music_eclectic: m('Eclético — curto de tudo'),
           music_none: m('Não gosto de música'),
-          // Instrumento
           plays_guitar: i('Toco guitarra / violão'),
           plays_piano: i('Toco piano / teclado'),
           plays_drums: i('Toco bateria'),
@@ -544,7 +528,6 @@ export default function Perfil() {
         const id = (v: string) => idiomas.includes(v)
         await supabase.from('filters').upsert({
           user_id: userId,
-          // Religião
           rel_evangelical: religiao === 'Evangélico(a)',
           rel_catholic: religiao === 'Católico(a)',
           rel_spiritist: religiao === 'Espírita',
@@ -557,14 +540,12 @@ export default function Perfil() {
           rel_agnostic: religiao === 'Agnóstico(a)',
           rel_atheist: religiao === 'Ateu / Ateia',
           rel_spiritual: religiao === 'Espiritualizado(a) sem religião',
-          // Filhos
           kids_has: f('Tenho filhos'),
           kids_no: f('Não tenho filhos'),
           kids_wants: f('Quero ter filhos'),
           kids_no_want: f('Não quero ter filhos'),
           kids_adoption: f('Aberto(a) à adoção'),
           kids_undecided: f('Ainda não decidi'),
-          // Pets
           pet_dog: pt('Tenho cachorro'),
           pet_cat: pt('Tenho gato'),
           pet_other: pt('Tenho outros pets'),
@@ -572,7 +553,6 @@ export default function Perfil() {
           pet_none: pt('Não tenho pets'),
           pet_allergy: pt('Tenho alergia a animais'),
           pet_dislikes: pt('Não gosto de animais'),
-          // Escolaridade
           edu_elementary: escolaridade === 'Ensino fundamental',
           edu_highschool: escolaridade === 'Ensino médio completo',
           edu_college_incomplete: escolaridade === 'Ensino superior incompleto',
@@ -582,7 +562,6 @@ export default function Perfil() {
           edu_phd: escolaridade === 'Doutorado',
           edu_civil_servant: escolaridade === 'Concursado(a)',
           edu_student: escolaridade === 'Sou estudante',
-          // Trabalho
           work_clt: trabalho === 'CLT',
           work_entrepreneur: trabalho === 'Empreendedor(a)',
           work_freelancer: trabalho === 'Freelancer',
@@ -591,7 +570,6 @@ export default function Perfil() {
           work_autonomous: trabalho === 'Autônomo(a)',
           work_remote: trabalho === 'Trabalho remoto',
           work_unemployed: trabalho === 'Estou desempregado(a)',
-          // Nacionalidade
           nat_brazilian: nacionalidade === 'Brasileiro(a)',
           nat_northeastern: nacionalidade === 'Nordestino(a)',
           nat_gaucho: nacionalidade === 'Gaúcho(a)',
@@ -602,7 +580,6 @@ export default function Perfil() {
           nat_latin: nacionalidade === 'Latino(a)',
           nat_european: nacionalidade === 'Europeu(a)',
           nat_asian: nacionalidade === 'Asiático(a)',
-          // Idiomas
           lang_portuguese: id('Falo somente português'),
           lang_english: id('Falo inglês'),
           lang_spanish: id('Falo espanhol'),
@@ -812,7 +789,7 @@ export default function Perfil() {
                   if (idade < 18) return (
                     <div style={{ backgroundColor: '#fff0f0', border: '1px solid #ffb3b3', borderRadius: '10px', padding: '10px 14px', marginTop: '8px' }}>
                       <p style={{ fontSize: '13px', color: '#cc0000', fontWeight: '700' }}>🚫 Acesso proibido</p>
-                      <p style={{ fontSize: '12px', color: '#cc0000', marginTop: '2px' }}>O MeAndYou é destinado exclusivamente a maiores de 18 anos. O uso por menores de idade é estritamente proibido e vedado.</p>
+                      <p style={{ fontSize: '12px', color: '#cc0000', marginTop: '2px' }}>O MeAndYou é destinado exclusivamente a maiores de 18 anos.</p>
                     </div>
                   )
                   return <p style={{ fontSize: '12px', color: 'var(--accent)', marginTop: '6px', fontWeight: '600' }}>✅ {idade} anos — acesso permitido</p>
@@ -836,7 +813,6 @@ export default function Perfil() {
                 {cepStatus === 'error' && <p style={{ fontSize: '12px', color: 'var(--red)', marginTop: '4px' }}>CEP não encontrado. Tente buscar pelo nome da rua abaixo.</p>}
               </div>
 
-              {/* BUSCA POR RUA */}
               <div>
                 <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Não sabe o CEP? Busque pela rua</p>
                 <p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '8px' }}>Digite o nome da rua e selecione o estado</p>
@@ -864,7 +840,6 @@ export default function Perfil() {
                 )}
               </div>
 
-              {/* CAMPOS PREENCHIDOS AUTOMATICAMENTE */}
               {cepStatus === 'ok' && (
                 <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid rgba(46,196,160,0.3)', borderRadius: '16px', padding: '16px' }}>
                   <p style={{ fontSize: '12px', fontWeight: '700', color: 'var(--accent-dark)', marginBottom: '12px' }}>✅ Endereço confirmado</p>
@@ -893,10 +868,10 @@ export default function Perfil() {
               )}
               <div>
                 <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Conte sobre você *</p>
-                <textarea placeholder="Fale um pouco sobre você, sua personalidade, o que você curte... (mínimo 50 caracteres)" value={bio} onChange={e => setBio(e.target.value)} maxLength={300} style={{ backgroundColor: 'var(--white)', border: `1px solid ${bio.length >= 50 ? 'var(--accent)' : bio.length > 0 ? '#ffb347' : 'var(--border)'}`, borderRadius: '12px', padding: '14px 18px', color: 'var(--text)', fontFamily: 'var(--font-jakarta)', fontSize: '15px', width: '100%', outline: 'none', resize: 'none', minHeight: '100px' }} />
+                <textarea placeholder="Fale um pouco sobre você, sua personalidade, o que você curte... (mínimo 30 caracteres)" value={bio} onChange={e => setBio(e.target.value)} maxLength={300} style={{ backgroundColor: 'var(--white)', border: `1px solid ${bio.length >= 30 ? 'var(--accent)' : bio.length > 0 ? '#ffb347' : 'var(--border)'}`, borderRadius: '12px', padding: '14px 18px', color: 'var(--text)', fontFamily: 'var(--font-jakarta)', fontSize: '15px', width: '100%', outline: 'none', resize: 'none', minHeight: '100px' }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
-                  <span style={{ fontSize: '12px', color: bio.length >= 50 ? 'var(--accent)' : bio.length > 0 ? '#e67e00' : 'var(--muted)', fontWeight: bio.length > 0 ? '600' : '400' }}>
-                    {bio.length < 50 ? `Mínimo 50 caracteres — faltam ${50 - bio.length}` : '✅ Bio completa'}
+                  <span style={{ fontSize: '12px', color: bio.length >= 30 ? 'var(--accent)' : bio.length > 0 ? '#e67e00' : 'var(--muted)', fontWeight: bio.length > 0 ? '600' : '400' }}>
+                    {bio.length < 30 ? `Mínimo 30 caracteres — faltam ${30 - bio.length}` : '✅ Bio completa'}
                   </span>
                   <span style={{ fontSize: '12px', color: 'var(--muted)' }}>{bio.length}/300</span>
                 </div>
@@ -906,7 +881,7 @@ export default function Perfil() {
             <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid rgba(46,196,160,0.3)', borderRadius: '16px', padding: '16px', marginTop: '24px' }}>
               <p style={{ fontSize: '13px', color: 'var(--accent-dark)', fontWeight: '700', marginBottom: '4px' }}>A seguir: suas características</p>
               <p style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: '1.6' }}>
-                Nas próximas etapas você irá informar suas próprias características — aparência, identidade, hábitos e valores. <strong style={{ color: 'var(--text)' }}>Responda sobre você mesmo(a), não sobre o que procura em outra pessoa.</strong> Isso garante que o nosso sistema encontre perfis compatíveis com você.
+                Nas próximas etapas você irá informar suas próprias características. <strong style={{ color: 'var(--text)' }}>Responda sobre você mesmo(a), não sobre o que procura em outra pessoa.</strong>
               </p>
             </div>
           </div>
@@ -994,17 +969,11 @@ export default function Perfil() {
           <div>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '24px' }}>Identidade</h2>
 
+            {/* FIX 3: Gênero simplificado com tooltips corretos por gênero */}
             <div style={{ marginBottom: '20px' }}>
               <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Gênero *</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {[
-                  { label: 'Mulher cisgênero (cis)', tk: 'Cisgênero (cis)' },
-                  { label: 'Homem cisgênero (cis)', tk: 'Cisgênero (cis)' },
-                  { label: 'Mulher transgênero (trans)', tk: 'Transgênero (trans)' },
-                  { label: 'Homem transgênero (trans)', tk: 'Transgênero (trans)' },
-                  { label: 'Não-binário(a)', tk: 'Não-binário' },
-                  { label: 'Gênero fluido', tk: 'Gênero fluido' },
-                ].map(({ label, tk }) => (
+                {['Homem', 'Mulher', 'Homem trans', 'Mulher trans', 'Não-binário(a)', 'Gênero fluido'].map(label => (
                   <button key={label} onClick={() => setGenero(genero === label ? '' : label)} style={{
                     padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600',
                     border: `1.5px solid ${genero === label ? 'var(--accent)' : 'var(--border)'}`,
@@ -1018,9 +987,9 @@ export default function Perfil() {
                       onMouseLeave={() => setTooltip('')}
                       onClick={e => { e.stopPropagation(); setTooltip(tooltip === label ? '' : label) }}>
                       <HelpCircle size={13} color="var(--muted)" />
-                      {tooltip === label && (
+                      {tooltip === label && tooltips[label] && (
                         <span style={{ position: 'absolute', bottom: '120%', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--text)', color: '#fff', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', lineHeight: '1.4', width: '200px', zIndex: 100, whiteSpace: 'normal' }}>
-                          {tooltips[tk]}
+                          {tooltips[label]}
                         </span>
                       )}
                     </span>
@@ -1164,9 +1133,7 @@ export default function Perfil() {
             </Secao>
 
             <Select label="Escolaridade" obrigatorio value={escolaridade} onChange={setEscolaridade} options={['Ensino fundamental','Ensino médio completo','Ensino superior incompleto','Ensino superior completo','Pós-graduado(a)','Mestrado','Doutorado','Concursado(a)','Sou estudante']} />
-
             <Select label="Situação profissional" obrigatorio value={trabalho} onChange={setTrabalho} options={['CLT','Empreendedor(a)','Freelancer','Profissional liberal','Servidor(a) público(a)','Autônomo(a)','Trabalho remoto','Estou desempregado(a)']} />
-
             <Select label="Nacionalidade" obrigatorio value={nacionalidade} onChange={setNacionalidade} options={['Brasileiro(a)','Nordestino(a)','Gaúcho(a)','Paulistano(a)','Carioca','Mineiro(a)','Estrangeiro(a)','Latino(a)','Europeu(a)','Asiático(a)']} />
 
             <Secao titulo="Idiomas que falo" obrigatorio>
@@ -1201,7 +1168,7 @@ export default function Perfil() {
               <div style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)', borderRadius: '12px', padding: '12px', marginBottom: '16px' }}>
                 <p style={{ fontSize: '12px', color: '#c9a84c', fontWeight: '700', marginBottom: '4px' }}>💛 Quer interagir com um Sugar?</p>
                 <p style={{ fontSize: '11px', color: '#aaa', lineHeight: '1.6' }}>
-                  Se você não possui o plano Camarote, pode enviar um <strong style={{ color: '#f5d485' }}>pedido de acesso</strong>. Um assinante Camarote interessado pode realizar o pagamento para interagir com você. Neste caso, você recebe <strong style={{ color: '#f5d485' }}>acesso momentâneo</strong> apenas para conversar com quem efetuou o pagamento — sem os demais benefícios do plano.
+                  Se você não possui o plano Camarote, pode enviar um <strong style={{ color: '#f5d485' }}>pedido de acesso</strong>. Um assinante Camarote interessado pode realizar o pagamento para interagir com você.
                 </p>
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
