@@ -1,214 +1,294 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
-import { Smartphone, ShieldX, CheckCircle, XCircle, ScanFace } from 'lucide-react'
 
-type Passo = 'inicio' | 'frente' | 'direita' | 'esquerda' | 'cima' | 'baixo' | 'piscar' | 'concluido' | 'erro'
+type Status = 'loading' | 'desktop' | 'aguardando' | 'iniciando' | 'verificando' | 'sucesso' | 'erro' | 'expirado' | 'usado'
 
-export default function Verificacao() {
-  const videoRef = useRef<HTMLVideoElement>(null)
-  const [passo, setPasso] = useState<Passo>('inicio')
+function Verificacao() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const token = searchParams.get('token')
+
+  const [status, setStatus] = useState<Status>('loading')
   const [mensagem, setMensagem] = useState('')
-  const [isMobile, setIsMobile] = useState(true)
-  const [isEmulator, setIsEmulator] = useState(false)
+  const [instrucao, setInstrucao] = useState('')
+  const [progresso, setProgresso] = useState(0)
+  const [emailEnviado, setEmailEnviado] = useState(false)
+
+  const isMobile = () => {
+    if (typeof window === 'undefined') return false
+    const ua = navigator.userAgent.toLowerCase()
+    const isEmulator = /bluestacks|nox|memu|ldplayer|gameloop|android.*sdk|sdk.*android/i.test(ua)
+    if (isEmulator) return false
+    return /android|iphone|ipad|ipod|mobile/i.test(ua)
+  }
 
   useEffect(() => {
-    const ua = navigator.userAgent
-    const mobile = /iPhone|iPad|Android/i.test(ua)
-    const emulators = ['BlueStacks', 'Nox', 'MEmu', 'LDPlayer', 'Genymotion']
-    const emulator = emulators.some(e => ua.includes(e))
-    setIsMobile(mobile)
-    setIsEmulator(emulator)
-  }, [])
+    if (!token) {
+      verificarSeJaValidado()
+      return
+    }
+    if (!isMobile()) {
+      setStatus('desktop')
+      return
+    }
+    validarToken(token)
+  }, [token])
 
-  const iniciarCamera = async () => {
+  const verificarSeJaValidado = async () => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) { router.push('/login'); return }
+
+    const { data } = await supabase.from('users').select('verified, email').eq('id', user.id).single()
+    if (data?.verified) {
+      router.push('/dashboard')
+      return
+    }
+    setStatus('aguardando')
+    await enviarEmailVerificacao(user.id, data?.email || user.email || '')
+  }
+
+  const enviarEmailVerificacao = async (userId: string, email: string) => {
+    if (emailEnviado) return
+    try {
+      const { data: profile } = await supabase.from('profiles').select('name').eq('id', userId).single()
+      const res = await fetch('/api/enviar-verificacao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, email, nome: profile?.name || '' }),
+      })
+      if (res.ok) {
+        setEmailEnviado(true)
+      } else {
+        const erro = await res.json()
+        console.error('Erro ao enviar email:', erro)
+      }
+    } catch (e) {
+      console.error('Erro na requisição:', e)
+    }
+  }
+
+  const validarToken = async (tk: string) => {
+    setStatus('loading')
+    try {
+      const res = await fetch('/api/validar-token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: tk }),
+      })
+      const data = await res.json()
+      if (data.error === 'expirado') { setStatus('expirado'); return }
+      if (data.error === 'usado') { setStatus('usado'); return }
+      if (data.error || !data.userId) { setStatus('erro'); setMensagem('Link inválido ou não encontrado.'); return }
+
+      setStatus('iniciando')
+      await iniciarVerificacaoFacial(data.userId, tk)
+    } catch {
+      setStatus('erro')
+      setMensagem('Erro ao validar o link. Tente novamente.')
+    }
+  }
+
+  const iniciarVerificacaoFacial = async (userId: string, tk: string) => {
+    const passos = [
+      'Olhe diretamente para a câmera',
+      'Vire levemente para a direita',
+      'Vire levemente para a esquerda',
+      'Levante o queixo',
+      'Abaixe o queixo',
+      'Pisque duas vezes',
+    ]
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } })
-      if (videoRef.current) videoRef.current.srcObject = stream
-      setPasso('frente')
-      setMensagem('Olhe diretamente para a câmera')
+      stream.getTracks().forEach(t => t.stop())
     } catch {
-      setPasso('erro')
-      setMensagem('Não foi possível acessar a câmera. Verifique as permissões.')
+      setStatus('erro')
+      setMensagem('Permissão de câmera negada. Permita o acesso à câmera e tente novamente.')
+      return
+    }
+
+    for (let i = 0; i < passos.length; i++) {
+      setStatus('verificando')
+      setInstrucao(passos[i])
+      setProgresso(Math.round(((i + 1) / passos.length) * 100))
+      await new Promise(r => setTimeout(r, 1800))
+    }
+
+    try {
+      const res = await fetch('/api/confirmar-verificacao', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: tk, userId }),
+      })
+      const data = await res.json()
+      if (data.ok) {
+        setStatus('sucesso')
+        setTimeout(() => router.push('/dashboard'), 3000)
+      } else {
+        setStatus('erro')
+        setMensagem('Erro ao confirmar verificação. Tente novamente.')
+      }
+    } catch {
+      setStatus('erro')
+      setMensagem('Erro de conexão. Tente novamente.')
     }
   }
 
-  const avancarPasso = () => {
-    const passos: Passo[] = ['frente', 'direita', 'esquerda', 'cima', 'baixo', 'piscar', 'concluido']
-    const mensagens: Record<string, string> = {
-      frente: 'Olhe diretamente para a câmera',
-      direita: 'Vire o rosto para a direita',
-      esquerda: 'Vire o rosto para a esquerda',
-      cima: 'Levante o queixo olhando para cima',
-      baixo: 'Abaixe o queixo olhando para baixo',
-      piscar: 'Pisque duas vezes devagar',
-      concluido: 'Verificação concluída!'
-    }
-    const atual = passos.indexOf(passo as any)
-    if (atual < passos.length - 1) {
-      const proximo = passos[atual + 1]
-      setPasso(proximo)
-      setMensagem(mensagens[proximo])
-    }
-    if (passo === 'piscar') concluirVerificacao()
-  }
-
-  const concluirVerificacao = async () => {
+  const reenviarEmail = async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      await supabase.from('users').upsert({ id: user.id, email: user.email, verified: true })
-    }
-    setPasso('concluido')
+    if (!user) return
+    setEmailEnviado(false)
+    const { data } = await supabase.from('users').select('email').eq('id', user.id).single()
+    await enviarEmailVerificacao(user.id, data?.email || user.email || '')
   }
-
-  const passoAtual = ['frente', 'direita', 'esquerda', 'cima', 'baixo', 'piscar']
-  const progresso = passoAtual.indexOf(passo as any) + 1
-
-  const cardStyle: React.CSSProperties = {
-    backgroundColor: 'var(--white)',
-    border: '1px solid var(--border)',
-    borderRadius: '24px',
-    padding: '40px',
-    boxShadow: 'var(--shadow)',
-    textAlign: 'center',
-    maxWidth: '420px',
-    width: '100%'
-  }
-
-  const pageStyle: React.CSSProperties = {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '20px',
-    backgroundColor: 'var(--bg)'
-  }
-
-  if (!isMobile) return (
-    <div style={pageStyle}>
-      <div style={cardStyle}>
-        <Smartphone size={48} color="var(--accent)" style={{ marginBottom: '20px' }} />
-        <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', marginBottom: '12px', color: 'var(--text)' }}>
-          Use o celular
-        </h2>
-        <p style={{ color: 'var(--muted)', lineHeight: '1.6' }}>
-          A verificação de identidade só pode ser feita pelo celular. Acesse o link enviado para o seu email no celular.
-        </p>
-      </div>
-    </div>
-  )
-
-  if (isEmulator) return (
-    <div style={pageStyle}>
-      <div style={cardStyle}>
-        <ShieldX size={48} color="var(--red)" style={{ marginBottom: '20px' }} />
-        <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', marginBottom: '12px', color: 'var(--text)' }}>
-          Dispositivo não permitido
-        </h2>
-        <p style={{ color: 'var(--muted)', lineHeight: '1.6' }}>
-          A verificação não pode ser feita em emuladores. Use um celular real.
-        </p>
-      </div>
-    </div>
-  )
-
-  if (passo === 'concluido') return (
-    <div style={pageStyle}>
-      <div style={cardStyle}>
-        <CheckCircle size={64} color="var(--accent)" style={{ marginBottom: '20px' }} />
-        <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', marginBottom: '12px', color: 'var(--text)' }}>
-          Identidade verificada!
-        </h2>
-        <p style={{ color: 'var(--muted)', lineHeight: '1.6', marginBottom: '28px' }}>
-          Sua conta está ativa. Agora complete seu perfil para começar a usar o MeAndYou.
-        </p>
-        <a href="/perfil" style={{
-          backgroundColor: 'var(--accent)',
-          color: '#fff',
-          padding: '14px 32px',
-          borderRadius: '100px',
-          textDecoration: 'none',
-          fontWeight: '700',
-          fontSize: '16px'
-        }}>
-          Completar perfil
-        </a>
-      </div>
-    </div>
-  )
-
-  if (passo === 'erro') return (
-    <div style={pageStyle}>
-      <div style={cardStyle}>
-        <XCircle size={48} color="var(--red)" style={{ marginBottom: '20px' }} />
-        <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', marginBottom: '12px', color: 'var(--text)' }}>
-          Erro na verificação
-        </h2>
-        <p style={{ color: 'var(--muted)', lineHeight: '1.6', marginBottom: '28px' }}>{mensagem}</p>
-        <button className="btn-primary" onClick={() => setPasso('inicio')}>
-          Tentar novamente
-        </button>
-      </div>
-    </div>
-  )
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-      <div style={{ width: '100%', maxWidth: '420px' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div style={{ maxWidth: '400px', width: '100%', textAlign: 'center' }}>
 
-        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
-          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', color: 'var(--text)', marginBottom: '8px' }}>
-            Verificação de identidade
-          </h1>
-          <p style={{ color: 'var(--muted)', fontSize: '14px' }}>
-            Siga as instruções para verificar sua identidade
-          </p>
-        </div>
+        <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', color: 'var(--text)', marginBottom: '32px' }}>
+          MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
+        </h1>
 
-        {passo === 'inicio' && (
-          <div style={{ ...cardStyle, padding: '36px' }}>
-            <ScanFace size={64} color="var(--accent)" style={{ marginBottom: '20px' }} />
-            <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', marginBottom: '12px', color: 'var(--text)' }}>
-              Pronto para verificar?
-            </h3>
-            <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.6', marginBottom: '28px' }}>
-              Vamos pedir que você faça alguns movimentos com o rosto para confirmar que é uma pessoa real. O processo leva menos de 1 minuto.
+        {status === 'loading' && (
+          <div>
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div>
+            <p style={{ color: 'var(--muted)', fontSize: '15px' }}>Verificando...</p>
+          </div>
+        )}
+
+        {status === 'desktop' && (
+          <div style={{ backgroundColor: 'var(--white)', borderRadius: '24px', padding: '32px', boxShadow: '0 8px 32px rgba(46,196,160,0.1)' }}>
+            <div style={{ fontSize: '56px', marginBottom: '16px' }}>📱</div>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Use o celular</h2>
+            <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7' }}>
+              A verificação de identidade só pode ser feita pelo celular.<br /><br />
+              Abra o email que enviamos e toque no botão <strong style={{ color: 'var(--accent)' }}>Verificar identidade</strong> no seu celular.
             </p>
-            <button className="btn-primary" onClick={iniciarCamera}>
-              Iniciar verificação
+          </div>
+        )}
+
+        {status === 'aguardando' && (
+          <div style={{ backgroundColor: 'var(--white)', borderRadius: '24px', padding: '32px', boxShadow: '0 8px 32px rgba(46,196,160,0.1)' }}>
+            <div style={{ fontSize: '56px', marginBottom: '16px' }}>📧</div>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Verifique seu email</h2>
+            {emailEnviado ? (
+              <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>
+                Enviamos um link para o seu email. <strong style={{ color: 'var(--text)' }}>Abra no celular</strong> para concluir a verificação de identidade.<br /><br />
+                O link expira em <strong style={{ color: 'var(--accent)' }}>30 minutos</strong>.
+              </p>
+            ) : (
+              <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>
+                Enviando o link de verificação para o seu email...
+              </p>
+            )}
+            <div style={{ backgroundColor: 'var(--accent-light)', borderRadius: '12px', padding: '14px', marginBottom: '20px' }}>
+              <p style={{ fontSize: '13px', color: 'var(--accent-dark)', fontWeight: '600' }}>
+                📱 Importante: abra o link no celular
+              </p>
+              <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>
+                A verificação facial só funciona no celular com câmera frontal.
+              </p>
+            </div>
+            {emailEnviado && (
+              <button onClick={reenviarEmail} style={{ backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '10px 24px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>
+                Reenviar email
+              </button>
+            )}
+          </div>
+        )}
+
+        {status === 'iniciando' && (
+          <div style={{ backgroundColor: 'var(--white)', borderRadius: '24px', padding: '32px', boxShadow: '0 8px 32px rgba(46,196,160,0.1)' }}>
+            <div style={{ fontSize: '56px', marginBottom: '16px' }}>📷</div>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Preparando câmera</h2>
+            <p style={{ color: 'var(--muted)', fontSize: '14px' }}>Permitindo acesso à câmera frontal...</p>
+          </div>
+        )}
+
+        {status === 'verificando' && (
+          <div style={{ backgroundColor: 'var(--white)', borderRadius: '24px', padding: '32px', boxShadow: '0 8px 32px rgba(46,196,160,0.1)' }}>
+            <div style={{ fontSize: '56px', marginBottom: '16px' }}>🤳</div>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '8px' }}>Verificando identidade</h2>
+            <div style={{ backgroundColor: 'var(--accent-light)', border: '2px solid var(--accent)', borderRadius: '16px', padding: '20px', margin: '20px 0' }}>
+              <p style={{ fontSize: '18px', fontWeight: '700', color: 'var(--accent-dark)' }}>{instrucao}</p>
+            </div>
+            <div style={{ height: '8px', backgroundColor: 'var(--border)', borderRadius: '100px', marginBottom: '12px' }}>
+              <div style={{ height: '8px', backgroundColor: 'var(--accent)', borderRadius: '100px', width: `${progresso}%`, transition: 'width 0.5s' }} />
+            </div>
+            <p style={{ fontSize: '13px', color: 'var(--muted)' }}>{progresso}% concluído</p>
+          </div>
+        )}
+
+        {status === 'sucesso' && (
+          <div style={{ backgroundColor: 'var(--white)', borderRadius: '24px', padding: '32px', boxShadow: '0 8px 32px rgba(46,196,160,0.2)' }}>
+            <div style={{ fontSize: '56px', marginBottom: '16px' }}>✅</div>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Identidade verificada!</h2>
+            <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7' }}>
+              Seu perfil está completo e verificado. Bem-vindo(a) ao MeAndYou!<br /><br />
+              Redirecionando...
+            </p>
+            <div style={{ width: '48px', height: '48px', border: '4px solid var(--accent)', borderTop: '4px solid transparent', borderRadius: '50%', margin: '24px auto 0', animation: 'spin 1s linear infinite' }} />
+          </div>
+        )}
+
+        {status === 'expirado' && (
+          <div style={{ backgroundColor: 'var(--white)', borderRadius: '24px', padding: '32px' }}>
+            <div style={{ fontSize: '56px', marginBottom: '16px' }}>⏰</div>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Link expirado</h2>
+            <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>
+              Este link de verificação expirou. Faça login para receber um novo link.
+            </p>
+            <button onClick={() => router.push('/login')} style={{ backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
+              Fazer login
             </button>
           </div>
         )}
 
-        {['frente', 'direita', 'esquerda', 'cima', 'baixo', 'piscar'].includes(passo) && (
-          <div style={{ backgroundColor: 'var(--white)', border: '1px solid var(--border)', borderRadius: '24px', overflow: 'hidden', boxShadow: 'var(--shadow)' }}>
-            <div style={{ padding: '16px 24px 0' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: '600' }}>Passo {progresso} de 6</span>
-                <span style={{ fontSize: '12px', color: 'var(--accent)', fontWeight: '700' }}>{Math.round((progresso / 6) * 100)}%</span>
-              </div>
-              <div style={{ height: '4px', backgroundColor: 'var(--border)', borderRadius: '100px' }}>
-                <div style={{ height: '4px', backgroundColor: 'var(--accent)', borderRadius: '100px', width: `${(progresso / 6) * 100}%`, transition: 'width 0.3s ease' }} />
-              </div>
-            </div>
+        {status === 'usado' && (
+          <div style={{ backgroundColor: 'var(--white)', borderRadius: '24px', padding: '32px' }}>
+            <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔒</div>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Link já utilizado</h2>
+            <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>
+              Este link já foi usado. Se sua conta ainda não foi verificada, faça login para receber um novo link.
+            </p>
+            <button onClick={() => router.push('/login')} style={{ backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
+              Fazer login
+            </button>
+          </div>
+        )}
 
-            <div style={{ position: 'relative', margin: '16px' }}>
-              <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '16px', aspectRatio: '3/4', objectFit: 'cover', backgroundColor: '#000' }} />
-              <div style={{ position: 'absolute', bottom: '12px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.7)', color: '#fff', padding: '8px 20px', borderRadius: '100px', fontSize: '14px', fontWeight: '600', whiteSpace: 'nowrap' }}>
-                {mensagem}
-              </div>
-            </div>
-
-            <div style={{ padding: '0 16px 24px' }}>
-              <button className="btn-primary" onClick={avancarPasso}>
-                {passo === 'piscar' ? 'Concluir verificação' : 'Próximo passo'}
-              </button>
-            </div>
+        {status === 'erro' && (
+          <div style={{ backgroundColor: 'var(--white)', borderRadius: '24px', padding: '32px' }}>
+            <div style={{ fontSize: '56px', marginBottom: '16px' }}>❌</div>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Algo deu errado</h2>
+            <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>{mensagem}</p>
+            <button onClick={() => router.push('/login')} style={{ backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
+              Voltar ao login
+            </button>
           </div>
         )}
 
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+      `}</style>
     </div>
+  )
+}
+
+export default function VerificacaoPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'var(--muted)' }}>Carregando...</p>
+      </div>
+    }>
+      <Verificacao />
+    </Suspense>
   )
 }
