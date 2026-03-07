@@ -8,14 +8,12 @@ import { Camera, X, Star, ChevronRight, ChevronLeft, Check, HelpCircle } from 'l
 const ETAPAS = ['Fotos', 'Básico', 'Aparência', 'Identidade', 'Estilo de vida', 'Valores', 'O que busco']
 
 const tooltips: Record<string, string> = {
-  // GÊNERO — cada um com exemplo do próprio gênero
   'Homem': 'Você nasceu com corpo masculino e se identifica como homem. É o caso da maioria dos homens.',
   'Mulher': 'Você nasceu com corpo feminino e se identifica como mulher. É o caso da maioria das mulheres.',
   'Homem trans': 'Você nasceu com corpo feminino mas se identifica e vive como homem.',
   'Mulher trans': 'Você nasceu com corpo masculino mas se identifica e vive como mulher.',
   'Não-binário(a)': 'Você não se identifica nem como homem nem como mulher, ou se identifica como os dois.',
   'Gênero fluido': 'Sua identidade pode variar — às vezes mais masculina, às vezes mais feminina.',
-  // ORIENTAÇÃO
   'Heterossexual': 'Atração afetiva e sexual por pessoas do gênero oposto. Ex: homem atraído por mulher.',
   'Homossexual': 'Atração afetiva e sexual por pessoas do mesmo gênero. Ex: mulher atraída por mulher (lésbica) ou homem por homem (gay).',
   'Bissexual': 'Atração afetiva e sexual por pessoas de dois ou mais gêneros.',
@@ -23,12 +21,10 @@ const tooltips: Record<string, string> = {
   'Assexual': 'Pouca ou nenhuma atração sexual por outras pessoas. Pode ter atração romântica.',
   'Demissexual': 'Sente atração sexual apenas após criar um vínculo emocional profundo com a pessoa.',
   'Queer': 'Termo amplo para orientações e identidades que fogem do padrão heterossexual e cisgênero.',
-  // CAMAROTE
   'Poliamor': 'Relacionamentos múltiplos simultâneos com o conhecimento e consentimento de todos os envolvidos.',
   'BDSM / fetiches': 'Práticas consensuais entre adultos envolvendo dominação, submissão, bondage ou outros fetiches.',
   'Busco trisal': 'Relacionamento amoroso e/ou sexual envolvendo três pessoas simultaneamente.',
   'Swing / relacionamento aberto': 'Casais que trocam de parceiros ou têm encontros com outras pessoas com consentimento mútuo.',
-  // PRONOMES
   'Ela/Dela': 'Pronomes femininos. Ex: ela foi ao mercado, o livro é dela.',
   'Ele/Dele': 'Pronomes masculinos. Ex: ele foi ao mercado, o livro é dele.',
   'Elu/Delu': 'Pronomes neutros usados por pessoas não-binárias. Ex: elu foi ao mercado, o livro é delu.',
@@ -71,6 +67,7 @@ export default function Perfil() {
   const [fotos, setFotos] = useState<(File | null)[]>(Array(10).fill(null))
   const [previews, setPreviews] = useState<string[]>(Array(10).fill(''))
   const [fotoPrincipal, setFotoPrincipal] = useState(0)
+  const [verificandoFoto, setVerificandoFoto] = useState<number | null>(null)
 
   // ETAPA 1 - Básico
   const [nome, setNome] = useState('')
@@ -187,27 +184,47 @@ export default function Perfil() {
     })
   }, [])
 
-  useEffect(() => {
-    if (peso && altura) {
-      const sugerido = calcularIMC(peso, altura)
-      if (sugerido) setCorporal(sugerido)
-    }
-  }, [peso, altura])
-
   const toggleTag = (lista: string[], setLista: (v: string[]) => void, valor: string) => {
     setLista(lista.includes(valor) ? lista.filter(i => i !== valor) : [...lista, valor])
   }
 
-  // FIX 1: Bloqueia foto duplicada por nome + tamanho
-  const handleFoto = (index: number, file: File | null) => {
+  // ✅ handleFoto com moderação Sightengine
+  const handleFoto = async (index: number, file: File | null) => {
     if (!file) return
     if (file.size > 5 * 1024 * 1024) { setErro('Foto muito grande. Máximo 5MB.'); return }
     const duplicada = fotos.some((f, i) => f && i !== index && f.name === file.name && f.size === file.size)
     if (duplicada) { setErro('Esta foto já foi adicionada. Use fotos diferentes em cada posição.'); return }
-    const novasFotos = [...fotos]; novasFotos[index] = file; setFotos(novasFotos)
+
+    // Mostra preview imediatamente
     const url = URL.createObjectURL(file)
-    const novosPreiews = [...previews]; novosPreiews[index] = url; setPreviews(novosPreiews)
+    const novosPreviewsTemp = [...previews]; novosPreviewsTemp[index] = url; setPreviews(novosPreviewsTemp)
+    setVerificandoFoto(index)
     setErro('')
+
+    try {
+      const formData = new FormData()
+      formData.append('foto', file)
+      const res = await fetch('/api/moderar-foto', { method: 'POST', body: formData })
+      const data = await res.json()
+
+      if (!data.aprovado) {
+        // Remove preview se reprovada
+        const novosPreviewsRej = [...previews]; novosPreviewsRej[index] = ''; setPreviews(novosPreviewsRej)
+        setErro(data.motivo || 'Foto recusada. Use fotos com roupas.')
+        setVerificandoFoto(null)
+        return
+      }
+
+      // Foto aprovada
+      const novasFotos = [...fotos]; novasFotos[index] = file; setFotos(novasFotos)
+      setErro('')
+    } catch {
+      // Se a API do Sightengine cair, não bloqueia o usuário
+      const novasFotos = [...fotos]; novasFotos[index] = file; setFotos(novasFotos)
+      setErro('')
+    }
+
+    setVerificandoFoto(null)
   }
 
   const removerFoto = (index: number) => {
@@ -232,7 +249,6 @@ export default function Perfil() {
         if (idade > 100) return 'Data de nascimento inválida.'
       }
       if (!bio) return 'Escreva algo sobre você na bio.'
-      // FIX 2: Mínimo 30 caracteres
       if (bio.length < 30) return `A bio precisa ter pelo menos 30 caracteres. Você escreveu ${bio.length}.`
       if (!cidade) return 'Informe sua cidade. Use o CEP ou busque pelo nome da rua.'
       if (!estado) return 'Estado não identificado. Use o CEP ou busque pelo nome da rua.'
@@ -388,7 +404,6 @@ export default function Perfil() {
         await supabase.from('profiles').upsert({ id: userId, gender: genero, pronouns: pronomes })
         await supabase.from('filters').upsert({
           user_id: userId,
-          // FIX 3: Mapeamento atualizado para os novos labels simplificados
           gender_cis_man: genero === 'Homem',
           gender_cis_woman: genero === 'Mulher',
           gender_trans_man: genero === 'Homem trans',
@@ -620,7 +635,6 @@ export default function Perfil() {
     setSalvando(false)
   }
 
-  // COMPONENTES
   const Tooltip = ({ label }: { label: string }) => {
     const texto = tooltips[label]
     if (!texto) return null
@@ -739,23 +753,41 @@ export default function Perfil() {
               </p>
             </div>
 
+            {/* Indicador global de verificação */}
+            {verificandoFoto !== null && (
+              <div style={{ backgroundColor: '#f0f9ff', border: '1px solid #bae0fd', borderRadius: '12px', padding: '12px 16px', marginBottom: '16px' }}>
+                <p style={{ fontSize: '13px', color: '#0369a1', fontWeight: '600' }}>
+                  🔍 Verificando foto {verificandoFoto + 1}... aguarde
+                </p>
+              </div>
+            )}
+
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '24px' }}>
               {Array(10).fill(null).map((_, i) => (
                 <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: '16px', overflow: 'hidden', border: `2px dashed ${previews[i] ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: previews[i] ? 'transparent' : 'var(--white)', cursor: 'pointer' }}>
                   {previews[i] ? (
                     <>
-                      <img src={previews[i]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <button onClick={() => removerFoto(i)} style={{ position: 'absolute', top: '4px', right: '4px', backgroundColor: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                        <X size={12} color="#fff" />
-                      </button>
-                      <button onClick={() => setFotoPrincipal(i)} style={{ position: 'absolute', bottom: '4px', right: '4px', backgroundColor: fotoPrincipal === i ? 'var(--accent)' : 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                        <Star size={12} color="#fff" />
-                      </button>
-                      {fotoPrincipal === i && <div style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: 'var(--accent)', borderRadius: '100px', padding: '2px 8px', fontSize: '9px', fontWeight: '700', color: '#fff' }}>Principal</div>}
+                      <img src={previews[i]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: verificandoFoto === i ? 0.5 : 1 }} />
+                      {verificandoFoto === i && (
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.6)' }}>
+                          <span style={{ fontSize: '20px' }}>🔍</span>
+                        </div>
+                      )}
+                      {verificandoFoto !== i && (
+                        <>
+                          <button onClick={() => removerFoto(i)} style={{ position: 'absolute', top: '4px', right: '4px', backgroundColor: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                            <X size={12} color="#fff" />
+                          </button>
+                          <button onClick={() => setFotoPrincipal(i)} style={{ position: 'absolute', bottom: '4px', right: '4px', backgroundColor: fotoPrincipal === i ? 'var(--accent)' : 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                            <Star size={12} color="#fff" />
+                          </button>
+                          {fotoPrincipal === i && <div style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: 'var(--accent)', borderRadius: '100px', padding: '2px 8px', fontSize: '9px', fontWeight: '700', color: '#fff' }}>Principal</div>}
+                        </>
+                      )}
                     </>
                   ) : (
-                    <label style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', gap: '4px', padding: '8px' }}>
-                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleFoto(i, e.target.files?.[0] || null)} />
+                    <label style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: verificandoFoto !== null ? 'not-allowed' : 'pointer', gap: '4px', padding: '8px' }}>
+                      <input type="file" accept="image/*" style={{ display: 'none' }} disabled={verificandoFoto !== null} onChange={e => handleFoto(i, e.target.files?.[0] || null)} />
                       <Camera size={20} color="var(--muted)" />
                       <span style={{ fontSize: '9px', color: i < 5 ? 'var(--accent)' : 'var(--muted)', fontWeight: '700', textAlign: 'center', lineHeight: '1.3' }}>
                         {i < 5 ? fotoLabels[i] : 'Foto livre'}
@@ -921,22 +953,41 @@ export default function Perfil() {
               </div>
             </div>
 
-            {altura && peso && (
-              <div style={{ backgroundColor: 'var(--accent-light)', borderRadius: '12px', padding: '12px 16px', marginBottom: '20px' }}>
-                <p style={{ fontSize: '13px', color: 'var(--accent-dark)', fontWeight: '600' }}>
-                  IMC calculado: <strong>{calcularIMC(peso, altura)}</strong>
+            {altura && peso && parseInt(altura) >= 100 && parseInt(altura) <= 250 && parseInt(peso) >= 30 && parseInt(peso) <= 300 && (
+              <div style={{ marginBottom: '20px' }}>
+                <button
+                  onClick={() => { const imc = calcularIMC(peso, altura); if (imc) setCorporal(imc) }}
+                  style={{ width: '100%', padding: '13px 16px', borderRadius: '12px', border: '1.5px dashed var(--accent)', backgroundColor: 'var(--accent-light)', color: 'var(--accent-dark)', fontFamily: 'var(--font-jakarta)', fontSize: '13px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
+                >
+                  🧮 Calcular IMC e sugerir tipo corporal
+                  <span style={{ fontWeight: '400', color: 'var(--muted)', fontSize: '12px' }}>(opcional)</span>
+                </button>
+                <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '6px', lineHeight: '1.5', textAlign: 'center' }}>
+                  O cálculo é uma sugestão baseada na tabela da OMS. Pessoas com alta massa muscular podem ter IMC elevado sem excesso de gordura — a escolha final é sempre sua.
                 </p>
               </div>
             )}
 
+            <div style={{ backgroundColor: '#f0f9ff', border: '1px solid #bae0fd', borderRadius: '16px', padding: '16px 18px', marginBottom: '20px', lineHeight: '1.65' }}>
+              <p style={{ fontSize: '13px', fontWeight: '700', color: '#0369a1', marginBottom: '6px' }}>💙 Nossa plataforma é feita para inclusão</p>
+              <p style={{ fontSize: '13px', color: '#374151' }}>
+                Aqui você pode ser exatamente quem você é — sem máscaras. Informações verdadeiras tornam a experiência melhor para você <em>e</em> para quem você vai conhecer. Ninguém quer se surpreender negativamente em um encontro, assim como você também não quer.
+                <br /><br />
+                Temos almas gêmeas para todos os tipos. Queremos que você encontre o que busca sendo você mesmo(a), e fazemos o máximo para que sua experiência seja mágica. É justamente isso que nos diferencia — e contamos com você para tornar tudo isso real. 🌟
+              </p>
+            </div>
+
             <div style={{ marginBottom: '20px' }}>
-              <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Tipo corporal *</p>
+              <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Tipo corporal *</p>
+              <p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '10px' }}>Selecione como você se identifica. Opções em cinza não são compatíveis com o peso e altura informados.</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {['Abaixo do peso','Peso saudável','Acima do peso','Obesidade leve','Obesidade severa'].map(op => {
+                {['Abaixo do peso', 'Peso saudável', 'Acima do peso', 'Obesidade leve', 'Obesidade severa'].map(op => {
                   const possiveis = corpoPossiveis(peso, altura)
                   const bloqueado = possiveis.length > 0 && !possiveis.includes(op)
                   return (
-                    <TagUnica key={op} label={op} valor={op} current={bloqueado ? '' : corporal} onChange={bloqueado ? () => {} : setCorporal} />
+                    <button key={op} onClick={() => { if (!bloqueado) setCorporal(corporal === op ? '' : op) }} disabled={bloqueado} style={{ padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', border: `1.5px solid ${bloqueado ? '#e5e7eb' : corporal === op ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: bloqueado ? '#f3f4f6' : corporal === op ? 'var(--accent-light)' : 'var(--white)', color: bloqueado ? '#9ca3af' : corporal === op ? 'var(--accent-dark)' : 'var(--muted)', cursor: bloqueado ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }}>
+                      {op}
+                    </button>
                   )
                 })}
               </div>
@@ -968,79 +1019,44 @@ export default function Perfil() {
         {etapa === 3 && (
           <div>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '24px' }}>Identidade</h2>
-
-            {/* FIX 3: Gênero simplificado com tooltips corretos por gênero */}
             <div style={{ marginBottom: '20px' }}>
               <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Gênero *</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {['Homem', 'Mulher', 'Homem trans', 'Mulher trans', 'Não-binário(a)', 'Gênero fluido'].map(label => (
-                  <button key={label} onClick={() => setGenero(genero === label ? '' : label)} style={{
-                    padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600',
-                    border: `1.5px solid ${genero === label ? 'var(--accent)' : 'var(--border)'}`,
-                    backgroundColor: genero === label ? 'var(--accent-light)' : 'var(--white)',
-                    color: genero === label ? 'var(--accent-dark)' : 'var(--muted)',
-                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px'
-                  }}>
+                  <button key={label} onClick={() => setGenero(genero === label ? '' : label)} style={{ padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', border: `1.5px solid ${genero === label ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: genero === label ? 'var(--accent-light)' : 'var(--white)', color: genero === label ? 'var(--accent-dark)' : 'var(--muted)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     {label}
-                    <span style={{ position: 'relative', display: 'inline-flex' }}
-                      onMouseEnter={() => setTooltip(label)}
-                      onMouseLeave={() => setTooltip('')}
-                      onClick={e => { e.stopPropagation(); setTooltip(tooltip === label ? '' : label) }}>
+                    <span style={{ position: 'relative', display: 'inline-flex' }} onMouseEnter={() => setTooltip(label)} onMouseLeave={() => setTooltip('')} onClick={e => { e.stopPropagation(); setTooltip(tooltip === label ? '' : label) }}>
                       <HelpCircle size={13} color="var(--muted)" />
-                      {tooltip === label && tooltips[label] && (
-                        <span style={{ position: 'absolute', bottom: '120%', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--text)', color: '#fff', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', lineHeight: '1.4', width: '200px', zIndex: 100, whiteSpace: 'normal' }}>
-                          {tooltips[label]}
-                        </span>
-                      )}
+                      {tooltip === label && tooltips[label] && <span style={{ position: 'absolute', bottom: '120%', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--text)', color: '#fff', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', lineHeight: '1.4', width: '200px', zIndex: 100, whiteSpace: 'normal' }}>{tooltips[label]}</span>}
                     </span>
                   </button>
                 ))}
               </div>
             </div>
-
             <div style={{ marginBottom: '20px' }}>
               <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Pronomes *</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {['Ela/Dela','Ele/Dele','Elu/Delu'].map(op => (
-                  <TagUnica key={op} label={op} valor={op} current={pronomes} onChange={setPronomes} />
-                ))}
+                {['Ela/Dela','Ele/Dele','Elu/Delu'].map(op => <TagUnica key={op} label={op} valor={op} current={pronomes} onChange={setPronomes} />)}
               </div>
             </div>
-
             <div style={{ marginBottom: '20px' }}>
               <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Orientação sexual *</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {['Heterossexual','Homossexual','Bissexual','Pansexual','Assexual','Demissexual','Queer'].map(op => (
-                  <button key={op} onClick={() => setOrientacao(orientacao === op ? '' : op)} style={{
-                    padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600',
-                    border: `1.5px solid ${orientacao === op ? 'var(--accent)' : 'var(--border)'}`,
-                    backgroundColor: orientacao === op ? 'var(--accent-light)' : 'var(--white)',
-                    color: orientacao === op ? 'var(--accent-dark)' : 'var(--muted)',
-                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px'
-                  }}>
+                  <button key={op} onClick={() => setOrientacao(orientacao === op ? '' : op)} style={{ padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', border: `1.5px solid ${orientacao === op ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: orientacao === op ? 'var(--accent-light)' : 'var(--white)', color: orientacao === op ? 'var(--accent-dark)' : 'var(--muted)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                     {op}
-                    <span style={{ position: 'relative', display: 'inline-flex' }}
-                      onMouseEnter={() => setTooltip(op)}
-                      onMouseLeave={() => setTooltip('')}
-                      onClick={e => { e.stopPropagation(); setTooltip(tooltip === op ? '' : op) }}>
+                    <span style={{ position: 'relative', display: 'inline-flex' }} onMouseEnter={() => setTooltip(op)} onMouseLeave={() => setTooltip('')} onClick={e => { e.stopPropagation(); setTooltip(tooltip === op ? '' : op) }}>
                       <HelpCircle size={13} color="var(--muted)" />
-                      {tooltip === op && tooltips[op] && (
-                        <span style={{ position: 'absolute', bottom: '120%', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--text)', color: '#fff', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', lineHeight: '1.4', width: '200px', zIndex: 100, whiteSpace: 'normal' }}>
-                          {tooltips[op]}
-                        </span>
-                      )}
+                      {tooltip === op && tooltips[op] && <span style={{ position: 'absolute', bottom: '120%', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--text)', color: '#fff', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', lineHeight: '1.4', width: '200px', zIndex: 100, whiteSpace: 'normal' }}>{tooltips[op]}</span>}
                     </span>
                   </button>
                 ))}
               </div>
             </div>
-
             <div style={{ marginBottom: '20px' }}>
               <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Status civil *</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {['Solteiro(a)','Enrolado(a)','Casado(a)','Divorciando','Divorciado(a)','Viúvo(a)','Relacionamento aberto'].map(op => (
-                  <TagUnica key={op} label={op} valor={op} current={statusCivil} onChange={setStatusCivil} />
-                ))}
+                {['Solteiro(a)','Enrolado(a)','Casado(a)','Divorciando','Divorciado(a)','Viúvo(a)','Relacionamento aberto'].map(op => <TagUnica key={op} label={op} valor={op} current={statusCivil} onChange={setStatusCivil} />)}
               </div>
             </div>
           </div>
@@ -1050,65 +1066,38 @@ export default function Perfil() {
         {etapa === 4 && (
           <div>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '24px' }}>Estilo de vida</h2>
-
             <div style={{ marginBottom: '28px' }}>
               <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Vícios e substâncias *</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {['Fumo','Fumo ocasionalmente','Não fumo','Consumo bebida alcoólica','Bebo socialmente','Não consumo bebida alcoólica','Consumo cannabis','Não possuo vícios'].map(op => (
-                  <TagUnica key={op} label={op} valor={op} current={vicios} onChange={setVicios} />
-                ))}
+                {['Fumo','Fumo ocasionalmente','Não fumo','Consumo bebida alcoólica','Bebo socialmente','Não consumo bebida alcoólica','Consumo cannabis','Não possuo vícios'].map(op => <TagUnica key={op} label={op} valor={op} current={vicios} onChange={setVicios} />)}
               </div>
             </div>
-
             <Secao titulo="Rotina e estilo de vida" obrigatorio>
-              {['Pratico academia','Pratico esporte regularmente','Sou sedentário(a)','Sou caseiro(a)','Gosto de sair','Gosto de balada','Sou noturno(a)','Sou matutino(a)','Sou workaholic','Tenho vida equilibrada'].map(tag => (
-                <Tag key={tag} label={tag} ativo={rotina.includes(tag)} onClick={() => toggleTag(rotina, setRotina, tag)} />
-              ))}
+              {['Pratico academia','Pratico esporte regularmente','Sou sedentário(a)','Sou caseiro(a)','Gosto de sair','Gosto de balada','Sou noturno(a)','Sou matutino(a)','Sou workaholic','Tenho vida equilibrada'].map(tag => <Tag key={tag} label={tag} ativo={rotina.includes(tag)} onClick={() => toggleTag(rotina, setRotina, tag)} />)}
             </Secao>
-
             <Secao titulo="Personalidade" obrigatorio>
-              {['Sou extrovertido(a)','Sou introvertido(a)','Sou ambiverte','Sou tímido(a)','Sou comunicativo(a)','Sou antissocial','Sou reservado(a)','Sou agitado(a)','Sou calmo(a)','Sou intenso(a)'].map(tag => (
-                <Tag key={tag} label={tag} ativo={personalidade.includes(tag)} onClick={() => toggleTag(personalidade, setPersonalidade, tag)} />
-              ))}
+              {['Sou extrovertido(a)','Sou introvertido(a)','Sou ambiverte','Sou tímido(a)','Sou comunicativo(a)','Sou antissocial','Sou reservado(a)','Sou agitado(a)','Sou calmo(a)','Sou intenso(a)'].map(tag => <Tag key={tag} label={tag} ativo={personalidade.includes(tag)} onClick={() => toggleTag(personalidade, setPersonalidade, tag)} />)}
             </Secao>
-
             <Secao titulo="Hobbies e interesses" obrigatorio>
-              {['Sou gamer','Adoro ler','Viciado(a) em filmes','Viciado(a) em séries','Curto anime / mangá','Curto música ao vivo','Faço fotografia','Arte e desenho','Danço','Faço teatro','Meditação / Yoga','Adoro viajar','Curto trilha e natureza','Sou otaku','Curto k-pop','Sou emo / punk','Sou e-girl / e-boy'].map(tag => (
-                <Tag key={tag} label={tag} ativo={hobbies.includes(tag)} onClick={() => toggleTag(hobbies, setHobbies, tag)} />
-              ))}
+              {['Sou gamer','Adoro ler','Viciado(a) em filmes','Viciado(a) em séries','Curto anime / mangá','Curto música ao vivo','Faço fotografia','Arte e desenho','Danço','Faço teatro','Meditação / Yoga','Adoro viajar','Curto trilha e natureza','Sou otaku','Curto k-pop','Sou emo / punk','Sou e-girl / e-boy'].map(tag => <Tag key={tag} label={tag} ativo={hobbies.includes(tag)} onClick={() => toggleTag(hobbies, setHobbies, tag)} />)}
             </Secao>
-
             <div style={{ marginBottom: '28px' }}>
               <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Esportes *</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {['Gosto de futebol','Não gosto de futebol','Pratico corrida','Pratico natação','Ando de bicicleta','Pratico artes marciais','Gosto de churrasco','Não pratico esportes'].map(op => (
-                  <TagUnica key={op} label={op} valor={op} current={esportes} onChange={setEsportes} />
-                ))}
+                {['Gosto de futebol','Não gosto de futebol','Pratico corrida','Pratico natação','Ando de bicicleta','Pratico artes marciais','Gosto de churrasco','Não pratico esportes'].map(op => <TagUnica key={op} label={op} valor={op} current={esportes} onChange={setEsportes} />)}
               </div>
             </div>
-
             <Secao titulo="Alimentação" obrigatorio>
-              {['Sou vegano(a)','Sou vegetariano(a)','Sou carnívoro(a)','Como de tudo','Cozinho bem','Não cozinho','Prefiro alimentação saudável','Curto comida japonesa','Curto fast food','Tenho intolerância à lactose','Tenho intolerância ao glúten'].map(tag => (
-                <Tag key={tag} label={tag} ativo={alimentacao.includes(tag)} onClick={() => toggleTag(alimentacao, setAlimentacao, tag)} />
-              ))}
+              {['Sou vegano(a)','Sou vegetariano(a)','Sou carnívoro(a)','Como de tudo','Cozinho bem','Não cozinho','Prefiro alimentação saudável','Curto comida japonesa','Curto fast food','Tenho intolerância à lactose','Tenho intolerância ao glúten'].map(tag => <Tag key={tag} label={tag} ativo={alimentacao.includes(tag)} onClick={() => toggleTag(alimentacao, setAlimentacao, tag)} />)}
             </Secao>
-
             <Secao titulo="Estilo de se vestir" obrigatorio>
-              {['Social','Casual','Esportivo','Alternativo','Eclético','Gótico','Punk','E-girl / E-boy','K-pop'].map(tag => (
-                <Tag key={tag} label={tag} ativo={estiloVestir.includes(tag)} onClick={() => toggleTag(estiloVestir, setEstiloVestir, tag)} />
-              ))}
+              {['Social','Casual','Esportivo','Alternativo','Eclético','Gótico','Punk','E-girl / E-boy','K-pop'].map(tag => <Tag key={tag} label={tag} ativo={estiloVestir.includes(tag)} onClick={() => toggleTag(estiloVestir, setEstiloVestir, tag)} />)}
             </Secao>
-
             <Secao titulo="Gosto musical" obrigatorio>
-              {['Funk','Sertanejo','Pagode','Rock','Metal','Pop','Eletrônica','Hip-hop / Rap','MPB / Bossa Nova','Gospel','K-pop','Clássica','Eclético — curto de tudo','Não gosto de música'].map(tag => (
-                <Tag key={tag} label={tag} ativo={musica.includes(tag)} onClick={() => toggleTag(musica, setMusica, tag)} />
-              ))}
+              {['Funk','Sertanejo','Pagode','Rock','Metal','Pop','Eletrônica','Hip-hop / Rap','MPB / Bossa Nova','Gospel','K-pop','Clássica','Eclético — curto de tudo','Não gosto de música'].map(tag => <Tag key={tag} label={tag} ativo={musica.includes(tag)} onClick={() => toggleTag(musica, setMusica, tag)} />)}
             </Secao>
-
             <Secao titulo="Toco instrumento ou canto?">
-              {['Toco guitarra / violão','Toco piano / teclado','Toco bateria','Toco baixo','Toco outro instrumento','Canto / sou cantor(a)','Não toco instrumento'].map(tag => (
-                <Tag key={tag} label={tag} ativo={instrumento.includes(tag)} onClick={() => toggleTag(instrumento, setInstrumento, tag)} />
-              ))}
+              {['Toco guitarra / violão','Toco piano / teclado','Toco bateria','Toco baixo','Toco outro instrumento','Canto / sou cantor(a)','Não toco instrumento'].map(tag => <Tag key={tag} label={tag} ativo={instrumento.includes(tag)} onClick={() => toggleTag(instrumento, setInstrumento, tag)} />)}
             </Secao>
           </div>
         )}
@@ -1117,29 +1106,18 @@ export default function Perfil() {
         {etapa === 5 && (
           <div>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '24px' }}>Valores e vida</h2>
-
             <Select label="Religião / espiritualidade" obrigatorio value={religiao} onChange={setReligiao} options={['Evangélico(a)','Católico(a)','Espírita','Umbandista','Candomblé','Budista','Judaico(a)','Islâmico(a)','Hindu','Agnóstico(a)','Ateu / Ateia','Espiritualizado(a) sem religião']} />
-
             <Secao titulo="Filhos e família" obrigatorio>
-              {['Tenho filhos','Não tenho filhos','Quero ter filhos','Não quero ter filhos','Aberto(a) à adoção','Ainda não decidi'].map(tag => (
-                <Tag key={tag} label={tag} ativo={filhos.includes(tag)} onClick={() => toggleTag(filhos, setFilhos, tag)} />
-              ))}
+              {['Tenho filhos','Não tenho filhos','Quero ter filhos','Não quero ter filhos','Aberto(a) à adoção','Ainda não decidi'].map(tag => <Tag key={tag} label={tag} ativo={filhos.includes(tag)} onClick={() => toggleTag(filhos, setFilhos, tag)} />)}
             </Secao>
-
             <Secao titulo="Animais de estimação" obrigatorio>
-              {['Tenho cachorro','Tenho gato','Tenho outros pets','Adoro animais','Não tenho pets','Tenho alergia a animais','Não gosto de animais'].map(tag => (
-                <Tag key={tag} label={tag} ativo={pets.includes(tag)} onClick={() => toggleTag(pets, setPets, tag)} />
-              ))}
+              {['Tenho cachorro','Tenho gato','Tenho outros pets','Adoro animais','Não tenho pets','Tenho alergia a animais','Não gosto de animais'].map(tag => <Tag key={tag} label={tag} ativo={pets.includes(tag)} onClick={() => toggleTag(pets, setPets, tag)} />)}
             </Secao>
-
             <Select label="Escolaridade" obrigatorio value={escolaridade} onChange={setEscolaridade} options={['Ensino fundamental','Ensino médio completo','Ensino superior incompleto','Ensino superior completo','Pós-graduado(a)','Mestrado','Doutorado','Concursado(a)','Sou estudante']} />
             <Select label="Situação profissional" obrigatorio value={trabalho} onChange={setTrabalho} options={['CLT','Empreendedor(a)','Freelancer','Profissional liberal','Servidor(a) público(a)','Autônomo(a)','Trabalho remoto','Estou desempregado(a)']} />
             <Select label="Nacionalidade" obrigatorio value={nacionalidade} onChange={setNacionalidade} options={['Brasileiro(a)','Nordestino(a)','Gaúcho(a)','Paulistano(a)','Carioca','Mineiro(a)','Estrangeiro(a)','Latino(a)','Europeu(a)','Asiático(a)']} />
-
             <Secao titulo="Idiomas que falo" obrigatorio>
-              {['Falo somente português','Falo inglês','Falo espanhol','Falo francês','Falo italiano','Falo alemão','Falo japonês / mandarim','Sou bilíngue','Sou trilíngue ou mais'].map(tag => (
-                <Tag key={tag} label={tag} ativo={idiomas.includes(tag)} onClick={() => toggleTag(idiomas, setIdiomas, tag)} />
-              ))}
+              {['Falo somente português','Falo inglês','Falo espanhol','Falo francês','Falo italiano','Falo alemão','Falo japonês / mandarim','Sou bilíngue','Sou trilíngue ou mais'].map(tag => <Tag key={tag} label={tag} ativo={idiomas.includes(tag)} onClick={() => toggleTag(idiomas, setIdiomas, tag)} />)}
             </Secao>
           </div>
         )}
@@ -1149,13 +1127,9 @@ export default function Perfil() {
           <div>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '8px' }}>O que busco?</h2>
             <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '24px' }}>Seja honesto(a). Isso ajuda a encontrar pessoas realmente compatíveis.</p>
-
             <Secao titulo="Busco na plataforma" obrigatorio>
-              {['Relacionamento sério','Relacionamento casual','Amizade','Companhia para eventos','Relação conjugal','Aberto(a) a experiências','Sugar Baby','Sugar Daddy / Mommy','Ainda estou definindo'].map(tag => (
-                <Tag key={tag} label={tag} ativo={objetivos.includes(tag)} onClick={() => toggleTag(objetivos, setObjetivos, tag)} />
-              ))}
+              {['Relacionamento sério','Relacionamento casual','Amizade','Companhia para eventos','Relação conjugal','Aberto(a) a experiências','Sugar Baby','Sugar Daddy / Mommy','Ainda estou definindo'].map(tag => <Tag key={tag} label={tag} ativo={objetivos.includes(tag)} onClick={() => toggleTag(objetivos, setObjetivos, tag)} />)}
             </Secao>
-
             <div style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)', border: '1px solid #c9a84c', borderRadius: '20px', padding: '20px', marginBottom: '24px', position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', background: 'linear-gradient(90deg, #c9a84c, #f5d485, #c9a84c)' }} />
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
@@ -1173,24 +1147,11 @@ export default function Perfil() {
               </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {['Busco trisal','Swing / relacionamento aberto','Poliamor','BDSM / fetiches'].map(tag => (
-                  <button key={tag} onClick={() => toggleTag(discreto, setDiscreto, tag)} style={{
-                    padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600',
-                    border: `1.5px solid ${discreto.includes(tag) ? '#f5d485' : 'rgba(201,168,76,0.4)'}`,
-                    backgroundColor: discreto.includes(tag) ? 'rgba(245,212,133,0.15)' : 'rgba(255,255,255,0.05)',
-                    color: discreto.includes(tag) ? '#f5d485' : '#888',
-                    cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', transition: 'all 0.15s'
-                  }}>
+                  <button key={tag} onClick={() => toggleTag(discreto, setDiscreto, tag)} style={{ padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', border: `1.5px solid ${discreto.includes(tag) ? '#f5d485' : 'rgba(201,168,76,0.4)'}`, backgroundColor: discreto.includes(tag) ? 'rgba(245,212,133,0.15)' : 'rgba(255,255,255,0.05)', color: discreto.includes(tag) ? '#f5d485' : '#888', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', transition: 'all 0.15s' }}>
                     {tag}
-                    <span style={{ position: 'relative', display: 'inline-flex' }}
-                      onMouseEnter={() => setTooltip(tag)}
-                      onMouseLeave={() => setTooltip('')}
-                      onClick={e => { e.stopPropagation(); setTooltip(tooltip === tag ? '' : tag) }}>
+                    <span style={{ position: 'relative', display: 'inline-flex' }} onMouseEnter={() => setTooltip(tag)} onMouseLeave={() => setTooltip('')} onClick={e => { e.stopPropagation(); setTooltip(tooltip === tag ? '' : tag) }}>
                       <HelpCircle size={13} color="#888" />
-                      {tooltip === tag && tooltips[tag] && (
-                        <span style={{ position: 'absolute', bottom: '120%', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#1a1a1a', border: '1px solid #c9a84c', color: '#f5d485', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', lineHeight: '1.4', width: '200px', zIndex: 100, whiteSpace: 'normal' }}>
-                          {tooltips[tag]}
-                        </span>
-                      )}
+                      {tooltip === tag && tooltips[tag] && <span style={{ position: 'absolute', bottom: '120%', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#1a1a1a', border: '1px solid #c9a84c', color: '#f5d485', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', lineHeight: '1.4', width: '200px', zIndex: 100, whiteSpace: 'normal' }}>{tooltips[tag]}</span>}
                     </span>
                   </button>
                 ))}
@@ -1213,8 +1174,8 @@ export default function Perfil() {
               <ChevronLeft size={18} /> Voltar
             </button>
           )}
-          <button onClick={salvarEtapa} disabled={salvando} style={{ flex: 2, padding: '14px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '15px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: salvando ? 0.6 : 1, boxShadow: '0 8px 24px rgba(46,196,160,0.3)' }}>
-            {salvando ? 'Salvando...' : etapa === 6 ? 'Concluir perfil' : 'Continuar'} {!salvando && <ChevronRight size={18} />}
+          <button onClick={salvarEtapa} disabled={salvando || verificandoFoto !== null} style={{ flex: 2, padding: '14px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '15px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: (salvando || verificandoFoto !== null) ? 0.6 : 1, boxShadow: '0 8px 24px rgba(46,196,160,0.3)' }}>
+            {salvando ? 'Salvando...' : verificandoFoto !== null ? 'Verificando foto...' : etapa === 6 ? 'Concluir perfil' : 'Continuar'} {!salvando && verificandoFoto === null && <ChevronRight size={18} />}
           </button>
         </div>
 

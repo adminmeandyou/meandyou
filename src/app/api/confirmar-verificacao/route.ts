@@ -11,7 +11,6 @@ export async function POST(req: NextRequest) {
     const { token, userId } = await req.json()
     if (!token || !userId) return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
 
-    // Valida o token novamente
     const { data: tokenData, error: tokenError } = await supabase
       .from('verification_tokens')
       .select('*')
@@ -24,10 +23,18 @@ export async function POST(req: NextRequest) {
     if (new Date(tokenData.expires_at) < new Date()) return NextResponse.json({ error: 'Token expirado' }, { status: 400 })
 
     // Marca token como usado
-    await supabase.from('verification_tokens').update({ used: true }).eq('token', token)
+    await supabase
+      .from('verification_tokens')
+      .update({ used: true })
+      .eq('token', token)
 
     // Marca usuário como verificado
-    await supabase.from('users').update({ verified: true }).eq('id', userId)
+    // Documentos e selfie já estão salvos no bucket 'documentos' do Supabase (privado)
+    // Os caminhos já foram salvos na tabela users pela página /verificacao antes de chamar esta API
+    await supabase
+      .from('users')
+      .update({ verified: true })
+      .eq('id', userId)
 
     return NextResponse.json({ ok: true })
   } catch {

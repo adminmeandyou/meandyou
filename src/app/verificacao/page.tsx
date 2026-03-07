@@ -7,6 +7,16 @@ import { supabase } from '../lib/supabase'
 type Status = 'loading' | 'desktop' | 'aguardando' | 'dados' | 'doc_frente' | 'doc_verso' | 'selfie' | 'enviando' | 'sucesso' | 'erro' | 'expirado' | 'usado'
 type ModoCaptura = 'escolha' | 'camera' | 'arquivo'
 
+// Sequência de movimentos do liveness
+const PASSOS_LIVENESS = [
+  { id: 'frente',   instrucao: 'Olhe para a câmera',      emoji: '😐' },
+  { id: 'direita',  instrucao: 'Vire o rosto para a direita', emoji: '➡️' },
+  { id: 'esquerda', instrucao: 'Vire o rosto para a esquerda', emoji: '⬅️' },
+  { id: 'cima',     instrucao: 'Levante o queixo',         emoji: '⬆️' },
+  { id: 'baixo',    instrucao: 'Abaixe o queixo',          emoji: '⬇️' },
+  { id: 'piscar',   instrucao: 'Pisque duas vezes',        emoji: '😉' },
+]
+
 function Verificacao() {
   const searchParams = useSearchParams()
   const router = useRouter()
@@ -30,6 +40,18 @@ function Verificacao() {
 
   const [modoFrente, setModoFrente] = useState<ModoCaptura>('escolha')
   const [modoVerso, setModoVerso] = useState<ModoCaptura>('escolha')
+
+  // Face-api liveness state
+  const [faceApiCarregado, setFaceApiCarregado] = useState(false)
+  const [livnessIniciado, setLivenessIniciado] = useState(false)
+  const [passoAtual, setPassoAtual] = useState(0)
+  const [passosConcluidos, setPassosConcluidos] = useState<boolean[]>(Array(PASSOS_LIVENESS.length).fill(false))
+  const [livenessOk, setLivenessOk] = useState(false)
+  const [feedbackLiveness, setFeedbackLiveness] = useState('')
+  const [deteccaoAtiva, setDeteccaoAtiva] = useState(false)
+  const piscarContRef = useRef(0)
+  const olhosAbertosRef = useRef(true)
+  const deteccaoLoopRef = useRef<NodeJS.Timeout | null>(null)
 
   const videoFrenteRef = useRef<HTMLVideoElement>(null)
   const canvasFrenteRef = useRef<HTMLCanvasElement>(null)
@@ -60,6 +82,29 @@ function Verificacao() {
     return `${nums.slice(0,3)}.${nums.slice(3,6)}.${nums.slice(6,9)}-${nums.slice(9)}`
   }
 
+  // Carrega face-api.js dinamicamente
+  const carregarFaceApi = async () => {
+    if ((window as any).faceapi) { setFaceApiCarregado(true); return }
+    return new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js'
+      script.onload = async () => {
+        const faceapi = (window as any).faceapi
+        try {
+          const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model'
+          await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+          ])
+          setFaceApiCarregado(true)
+          resolve()
+        } catch (e) { reject(e) }
+      }
+      script.onerror = reject
+      document.head.appendChild(script)
+    })
+  }
+
   useEffect(() => {
     if (!token) { verificarSeJaValidado(); return }
     if (!isMobile()) { setStatus('desktop'); return }
@@ -67,7 +112,10 @@ function Verificacao() {
   }, [token])
 
   useEffect(() => {
-    return () => { pararTodasCameras() }
+    return () => {
+      pararTodasCameras()
+      if (deteccaoLoopRef.current) clearInterval(deteccaoLoopRef.current)
+    }
   }, [])
 
   const pararTodasCameras = () => {
@@ -184,6 +232,200 @@ function Verificacao() {
     }, 'image/jpeg', 0.92)
   }
 
+  // ─── LIVENESS com face-api.js ───────────────────────────────────────────────
+
+  const iniciarLiveness = async () => {
+    setFeedbackLiveness('Carregando detector facial...')
+    try {
+      await carregarFaceApi()
+    } catch {
+      setFeedbackLiveness('Erro ao carregar detector. Verifique sua conexão e tente novamente.')
+      return
+    }
+    setPassoAtual(0)
+    setPassosConcluidos(Array(PASSOS_LIVENESS.length).fill(false))
+    setLivenessOk(false)
+    piscarContRef.current = 0
+    olhosAbertosRef.current = true
+    await iniciarCamera('selfie')
+    setLivenessIniciado(true)
+    setDeteccaoAtiva(true)
+    setFeedbackLiveness(PASSOS_LIVENESS[0].instrucao)
+  }
+
+  const reiniciarLiveness = async () => {
+    if (deteccaoLoopRef.current) clearInterval(deteccaoLoopRef.current)
+    setDeteccaoAtiva(false)
+    setLivenessIniciado(false)
+    setLivenessOk(false)
+    setPassoAtual(0)
+    setPassosConcluidos(Array(PASSOS_LIVENESS.length).fill(false))
+    setSelfieFile(null)
+    setSelfiePreview('')
+    piscarContRef.current = 0
+    olhosAbertosRef.current = true
+    pararCamera('selfie')
+  }
+
+  // Roda detecção a cada 300ms
+  useEffect(() => {
+    if (!deteccaoAtiva || !faceApiCarregado || livenessOk) return
+    deteccaoLoopRef.current = setInterval(() => detectarPasso(), 300)
+    return () => { if (deteccaoLoopRef.current) clearInterval(deteccaoLoopRef.current) }
+  }, [deteccaoAtiva, faceApiCarregado, passoAtual, livenessOk])
+
+  const detectarPasso = async () => {
+    const faceapi = (window as any).faceapi
+    const video = videoSelfieRef.current
+    if (!video || !faceapi || video.readyState < 2) return
+
+    const deteccao = await faceapi
+      .detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 224, scoreThreshold: 0.5 }))
+      .withFaceLandmarks()
+
+    if (!deteccao) {
+      setFeedbackLiveness('Rosto não detectado. Centralize o rosto na câmera.')
+      return
+    }
+
+    const landmarks = deteccao.landmarks
+    const passoId = PASSOS_LIVENESS[passoAtual]?.id
+
+    let passou = false
+
+    if (passoId === 'frente') {
+      // Detecta rosto centralizado
+      const nose = landmarks.getNose()
+      const jaw = landmarks.getJawOutline()
+      const noseTip = nose[3]
+      const jawLeft = jaw[0]
+      const jawRight = jaw[16]
+      const centro = (jawLeft.x + jawRight.x) / 2
+      const diff = Math.abs(noseTip.x - centro)
+      const largura = jawRight.x - jawLeft.x
+      if (diff < largura * 0.12) { passou = true; setFeedbackLiveness('✅ Ótimo!') }
+      else setFeedbackLiveness('Olhe diretamente para a câmera')
+    }
+
+    if (passoId === 'direita') {
+      const nose = landmarks.getNose()
+      const jaw = landmarks.getJawOutline()
+      const noseTip = nose[3]
+      const jawLeft = jaw[0]
+      const jawRight = jaw[16]
+      const centro = (jawLeft.x + jawRight.x) / 2
+      const largura = jawRight.x - jawLeft.x
+      if (noseTip.x > centro + largura * 0.18) { passou = true; setFeedbackLiveness('✅ Perfeito!') }
+      else setFeedbackLiveness('Vire mais para a direita')
+    }
+
+    if (passoId === 'esquerda') {
+      const nose = landmarks.getNose()
+      const jaw = landmarks.getJawOutline()
+      const noseTip = nose[3]
+      const jawLeft = jaw[0]
+      const jawRight = jaw[16]
+      const centro = (jawLeft.x + jawRight.x) / 2
+      const largura = jawRight.x - jawLeft.x
+      if (noseTip.x < centro - largura * 0.18) { passou = true; setFeedbackLiveness('✅ Perfeito!') }
+      else setFeedbackLiveness('Vire mais para a esquerda')
+    }
+
+    if (passoId === 'cima') {
+      const nose = landmarks.getNose()
+      const chin = landmarks.getJawOutline()[8]
+      const noseBridge = nose[0]
+      const diff = chin.y - noseBridge.y
+      // Queixo levantado: distância nariz-queixo diminui no eixo Y
+      if (diff < 65) { passou = true; setFeedbackLiveness('✅ Ótimo!') }
+      else setFeedbackLiveness('Levante mais o queixo')
+    }
+
+    if (passoId === 'baixo') {
+      const nose = landmarks.getNose()
+      const chin = landmarks.getJawOutline()[8]
+      const noseBridge = nose[0]
+      const diff = chin.y - noseBridge.y
+      if (diff > 110) { passou = true; setFeedbackLiveness('✅ Ótimo!') }
+      else setFeedbackLiveness('Abaixe mais o queixo')
+    }
+
+    if (passoId === 'piscar') {
+      // Calcula EAR (Eye Aspect Ratio) para detectar piscar
+      const leftEye = landmarks.getLeftEye()
+      const rightEye = landmarks.getRightEye()
+      const earEsq = calcularEAR(leftEye)
+      const earDir = calcularEAR(rightEye)
+      const ear = (earEsq + earDir) / 2
+
+      if (ear < 0.22 && olhosAbertosRef.current) {
+        olhosAbertosRef.current = false
+        piscarContRef.current += 1
+        setFeedbackLiveness(`Piscar detectado: ${piscarContRef.current}/2`)
+      } else if (ear > 0.28) {
+        olhosAbertosRef.current = true
+      }
+      if (piscarContRef.current >= 2) { passou = true; setFeedbackLiveness('✅ Perfeito!') }
+    }
+
+    if (passou) {
+      if (deteccaoLoopRef.current) clearInterval(deteccaoLoopRef.current)
+      setDeteccaoAtiva(false)
+
+      const novosConcluidos = [...passosConcluidos]
+      novosConcluidos[passoAtual] = true
+      setPassosConcluidos(novosConcluidos)
+
+      const proximoPasso = passoAtual + 1
+
+      if (proximoPasso >= PASSOS_LIVENESS.length) {
+        // Todos os passos concluídos — captura selfie automática
+        setTimeout(() => {
+          capturarSelfieFinal()
+        }, 600)
+      } else {
+        setTimeout(() => {
+          setPassoAtual(proximoPasso)
+          setFeedbackLiveness(PASSOS_LIVENESS[proximoPasso].instrucao)
+          setDeteccaoAtiva(true)
+        }, 800)
+      }
+    }
+  }
+
+  const calcularEAR = (pontos: { x: number; y: number }[]) => {
+    // Eye Aspect Ratio: distância vertical / distância horizontal
+    const A = dist(pontos[1], pontos[5])
+    const B = dist(pontos[2], pontos[4])
+    const C = dist(pontos[0], pontos[3])
+    return (A + B) / (2.0 * C)
+  }
+
+  const dist = (a: { x: number; y: number }, b: { x: number; y: number }) =>
+    Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2))
+
+  const capturarSelfieFinal = () => {
+    const video = videoSelfieRef.current
+    const canvas = canvasSelfieRef.current
+    if (!video || !canvas) return
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    canvas.getContext('2d')?.drawImage(video, 0, 0)
+    canvas.toBlob((blob) => {
+      if (!blob) return
+      const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' })
+      const url = URL.createObjectURL(blob)
+      pararCamera('selfie')
+      setSelfieFile(file)
+      setSelfiePreview(url)
+      setLivenessOk(true)
+      setDeteccaoAtiva(false)
+      setFeedbackLiveness('✅ Verificação concluída!')
+    }, 'image/jpeg', 0.92)
+  }
+
+  // ─── Upload e envio ──────────────────────────────────────────────────────────
+
   const uploadArquivo = async (file: File, caminho: string) => {
     const { error } = await supabase.storage.from('documentos').upload(caminho, file, { upsert: true })
     if (error) throw new Error('Erro ao fazer upload: ' + error.message)
@@ -196,7 +438,7 @@ function Verificacao() {
     if (cpfLimpo.length !== 11) { setErroForm('CPF inválido.'); return }
     if (!docFrente) { setErroForm('Anexe ou fotografe a frente do documento.'); return }
     if (tipoDoc !== 'cpf_doc' && !docVerso) { setErroForm('Anexe ou fotografe o verso do documento.'); return }
-    if (!selfieFile) { setErroForm('Tire a selfie antes de continuar.'); return }
+    if (!selfieFile) { setErroForm('Conclua a verificação de rosto antes de continuar.'); return }
     setStatus('enviando')
     try {
       await uploadArquivo(docFrente, `${userId}/frente.jpg`)
@@ -222,6 +464,8 @@ function Verificacao() {
       setMensagem(e.message || 'Erro inesperado. Tente novamente.')
     }
   }
+
+  // ─── Componentes visuais ─────────────────────────────────────────────────────
 
   const card = (children: React.ReactNode) => (
     <div style={{ backgroundColor: 'var(--white)', borderRadius: '24px', padding: '28px', boxShadow: '0 8px 32px rgba(46,196,160,0.1)' }}>{children}</div>
@@ -274,7 +518,6 @@ function Verificacao() {
         <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', backgroundColor: '#111', marginBottom: '12px' }}>
           <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '16px', display: cameraAtiva ? 'block' : 'none', maxHeight: '200px', objectFit: 'cover' }} />
           {!cameraAtiva && <div style={{ padding: '40px', textAlign: 'center' }}><div style={{ fontSize: '36px' }}>⏳</div><p style={{ color: '#aaa', fontSize: '13px', marginTop: '8px' }}>Abrindo câmera...</p></div>}
-          {/* Guia de enquadramento */}
           {cameraAtiva && (
             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%', height: '70%', border: '2px dashed rgba(255,255,255,0.6)', borderRadius: '8px', pointerEvents: 'none' }}>
               <div style={{ position: 'absolute', top: '-18px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: '8px', padding: '2px 8px' }}>
@@ -291,7 +534,6 @@ function Verificacao() {
       </div>
     )
 
-    // modo === 'arquivo' ou já tem preview
     return (
       <div>
         {preview ? (
@@ -384,13 +626,7 @@ function Verificacao() {
           {passos(2)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Frente do documento</h2>
           <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 2 de 4 — {tipoDoc === 'rg' ? 'RG' : tipoDoc === 'cnh' ? 'CNH' : 'CPF'} frente</p>
-          {dicas([
-            'Fundo liso, de preferência branco ou claro',
-            'Boa iluminação — evite sombras e reflexos',
-            'Documento inteiro visível, sem cortar bordas',
-            'Sem acessórios cobrindo o documento',
-            'Imagem nítida e sem borrão',
-          ])}
+          {dicas(['Fundo liso, de preferência branco ou claro', 'Boa iluminação — evite sombras e reflexos', 'Documento inteiro visível, sem cortar bordas', 'Sem acessórios cobrindo o documento', 'Imagem nítida e sem borrão'])}
           {botoesCaptura('frente', modoFrente, setModoFrente, docFrentePreview, docFrente, cameraFrenteAtiva, videoFrenteRef, canvasFrenteRef)}
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
           <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
@@ -405,12 +641,7 @@ function Verificacao() {
           {passos(3)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Verso do documento</h2>
           <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 3 de 4 — {tipoDoc === 'rg' ? 'RG' : 'CNH'} verso</p>
-          {dicas([
-            'Fundo liso, de preferência branco ou claro',
-            'Boa iluminação — evite sombras e reflexos',
-            'Documento inteiro visível, sem cortar bordas',
-            'Imagem nítida e sem borrão',
-          ])}
+          {dicas(['Fundo liso, de preferência branco ou claro', 'Boa iluminação — evite sombras e reflexos', 'Documento inteiro visível, sem cortar bordas', 'Imagem nítida e sem borrão'])}
           {botoesCaptura('verso', modoVerso, setModoVerso, docVersoPreview, docVerso, cameraVersoAtiva, videoVersoRef, canvasVersoRef)}
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
           <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
@@ -420,38 +651,108 @@ function Verificacao() {
           </div>
         </>)}
 
-        {/* PASSO 4 — Selfie */}
+        {/* PASSO 4 — Selfie com Liveness Detection */}
         {status === 'selfie' && card(<>
           {passos(4)}
-          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Selfie ao vivo</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 4 de 4 — Foto do seu rosto agora</p>
-          {!selfiePreview && dicas([
-            'Rosto inteiro visível, sem óculos ou boné',
-            'Boa iluminação — evite contra a luz',
-            'Fundo neutro e sem outras pessoas',
-            'Expressão neutra, olhando para a câmera',
-          ])}
-          {!selfiePreview ? <>
-            <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', marginBottom: '12px', backgroundColor: '#111', minHeight: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <video ref={videoSelfieRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '16px', display: cameraSelfieAtiva ? 'block' : 'none' }} />
-              {cameraSelfieAtiva && (
-                <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '60%', height: '80%', border: '2px dashed rgba(255,255,255,0.6)', borderRadius: '50%', pointerEvents: 'none' }} />
+          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Verificação facial</h2>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 4 de 4 — Confirmação de que você é uma pessoa real</p>
+
+          {/* Antes de iniciar */}
+          {!livnessIniciado && !livenessOk && (
+            <>
+              <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid rgba(46,196,160,0.3)', borderRadius: '16px', padding: '16px', marginBottom: '16px', textAlign: 'left' }}>
+                <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent-dark)', marginBottom: '10px' }}>🎯 O que vai acontecer:</p>
+                {PASSOS_LIVENESS.map((p, i) => (
+                  <p key={i} style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '4px' }}>
+                    {p.emoji} {p.instrucao}
+                  </p>
+                ))}
+              </div>
+              <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fcd34d', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', textAlign: 'left' }}>
+                <p style={{ fontSize: '12px', color: '#78350f' }}>💡 Boa iluminação, rosto descoberto, fundo neutro.</p>
+              </div>
+              {feedbackLiveness && (
+                <p style={{ fontSize: '13px', color: 'var(--red)', marginBottom: '12px' }}>{feedbackLiveness}</p>
               )}
-              {!cameraSelfieAtiva && <div style={{ textAlign: 'center', padding: '40px' }}><div style={{ fontSize: '48px' }}>🤳</div><p style={{ color: '#aaa', fontSize: '13px', marginTop: '8px' }}>Câmera desligada</p></div>}
-            </div>
-            <canvas ref={canvasSelfieRef} style={{ display: 'none' }} />
-            {!cameraSelfieAtiva
-              ? <button onClick={() => iniciarCamera('selfie')} style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>📷 Abrir câmera frontal</button>
-              : <button onClick={() => tirarFoto('selfie')} style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>📸 Tirar selfie</button>
-            }
-          </> : <>
-            <img src={selfiePreview} alt="selfie" style={{ width: '100%', borderRadius: '16px', marginBottom: '12px', maxHeight: '240px', objectFit: 'cover' }} />
-            <button onClick={() => { setSelfieFile(null); setSelfiePreview(''); setTimeout(() => iniciarCamera('selfie'), 100) }} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer', marginBottom: '8px' }}>🔄 Refazer selfie</button>
-          </>}
+              <button onClick={iniciarLiveness} style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
+                🎥 Iniciar verificação facial
+              </button>
+            </>
+          )}
+
+          {/* Durante o liveness */}
+          {livnessIniciado && !livenessOk && (
+            <>
+              {/* Barra de progresso dos passos */}
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', justifyContent: 'center' }}>
+                {PASSOS_LIVENESS.map((p, i) => (
+                  <div key={i} title={p.instrucao} style={{
+                    width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px',
+                    backgroundColor: passosConcluidos[i] ? 'var(--accent)' : i === passoAtual ? 'var(--accent-light)' : 'var(--border)',
+                    border: i === passoAtual ? '2px solid var(--accent)' : '2px solid transparent',
+                    transition: 'all 0.3s'
+                  }}>
+                    {passosConcluidos[i] ? '✓' : p.emoji}
+                  </div>
+                ))}
+              </div>
+
+              {/* Instrução atual */}
+              <div style={{ backgroundColor: 'var(--accent-light)', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
+                <p style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent-dark)' }}>
+                  {PASSOS_LIVENESS[passoAtual]?.emoji} {PASSOS_LIVENESS[passoAtual]?.instrucao}
+                </p>
+                {feedbackLiveness && (
+                  <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>{feedbackLiveness}</p>
+                )}
+              </div>
+
+              {/* Câmera */}
+              <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', backgroundColor: '#111', marginBottom: '12px' }}>
+                <video ref={videoSelfieRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '16px', display: cameraSelfieAtiva ? 'block' : 'none' }} />
+                {/* Guia oval do rosto */}
+                {cameraSelfieAtiva && (
+                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '55%', height: '78%', border: '2px dashed rgba(46,196,160,0.8)', borderRadius: '50%', pointerEvents: 'none' }} />
+                )}
+                {!cameraSelfieAtiva && (
+                  <div style={{ padding: '40px', textAlign: 'center' }}>
+                    <div style={{ fontSize: '36px' }}>⏳</div>
+                    <p style={{ color: '#aaa', fontSize: '13px', marginTop: '8px' }}>Abrindo câmera...</p>
+                  </div>
+                )}
+              </div>
+              <canvas ref={canvasSelfieRef} style={{ display: 'none' }} />
+
+              <button onClick={reiniciarLiveness} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>
+                🔄 Reiniciar verificação
+              </button>
+            </>
+          )}
+
+          {/* Liveness concluído — mostra selfie capturada */}
+          {livenessOk && selfiePreview && (
+            <>
+              <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid rgba(46,196,160,0.4)', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
+                <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent-dark)' }}>✅ Verificação facial concluída!</p>
+                <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>Todos os movimentos foram confirmados.</p>
+              </div>
+              <img src={selfiePreview} alt="selfie" style={{ width: '100%', borderRadius: '16px', marginBottom: '12px', maxHeight: '240px', objectFit: 'cover' }} />
+              <button onClick={reiniciarLiveness} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer', marginBottom: '8px' }}>
+                🔄 Refazer verificação
+              </button>
+            </>
+          )}
+
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '8px' }}>{erroForm}</p>}
+
           <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-            <button onClick={() => { pararCamera('selfie'); setStatus(tipoDoc === 'cpf_doc' ? 'doc_frente' : 'doc_verso') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
-            {selfieFile && <button onClick={enviarVerificacao} style={{ flex: 2, backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>Enviar ✓</button>}
+            <button onClick={() => { reiniciarLiveness(); setStatus(tipoDoc === 'cpf_doc' ? 'doc_frente' : 'doc_verso') }}
+              style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
+            {livenessOk && selfieFile && (
+              <button onClick={enviarVerificacao} style={{ flex: 2, backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>
+                Enviar ✓
+              </button>
+            )}
           </div>
         </>)}
 

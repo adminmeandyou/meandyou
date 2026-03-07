@@ -1,10 +1,39 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 
+async function linkReferral(newUserId: string, refCode: string) {
+  if (!refCode) return
+
+  const { data: referrer } = await supabase
+    .from('profiles')
+    .select('id')
+    .eq('referral_code', refCode)
+    .single()
+
+  if (!referrer || referrer.id === newUserId) return
+
+  await supabase
+    .from('profiles')
+    .update({ referred_by: referrer.id })
+    .eq('id', newUserId)
+
+  await supabase
+    .from('referrals')
+    .insert({
+      referrer_id: referrer.id,
+      referred_id: newUserId,
+      status: 'pending',
+    })
+}
+
 export default function Cadastro() {
+  const searchParams = useSearchParams()
+  const refCode = searchParams.get('ref') ?? ''
+
   const [nomeCompleto, setNomeCompleto] = useState('')
   const [nomeExibicao, setNomeExibicao] = useState('')
   const [telefone, setTelefone] = useState('')
@@ -68,12 +97,16 @@ export default function Cadastro() {
       return
     }
 
-    // Salva telefone e nome completo na tabela users
     if (data.user) {
       await supabase.from('users').update({
         phone: telefoneLimpo,
         nome_completo: nomeCompleto.trim(),
       }).eq('id', data.user.id)
+
+      // Vincula indicação se veio de um link de referral
+      if (refCode) {
+        await linkReferral(data.user.id, refCode)
+      }
     }
 
     setSucesso(true)
@@ -109,6 +142,13 @@ export default function Cadastro() {
             MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '15px' }}>Crie sua conta e encontre conexões reais</p>
+
+          {/* Badge de convite */}
+          {refCode && (
+            <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'var(--accent)', color: '#fff', fontSize: '13px', fontWeight: '600', padding: '6px 14px', borderRadius: '100px' }}>
+              🎁 Você foi convidado! Ganhe SuperLikes, Boost e mais ao assinar
+            </div>
+          )}
         </div>
 
         <div style={{ backgroundColor: 'var(--white)', border: '1px solid var(--border)', borderRadius: '24px', padding: '36px', boxShadow: 'var(--shadow)' }}>
