@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { supabase } from './lib/supabase'
+import { useState, useEffect } from 'react'
+import { createBrowserClient } from '@supabase/ssr'
 import { useRouter } from 'next/navigation'
 
 export default function Home() {
@@ -9,16 +9,19 @@ export default function Home() {
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
+    const supabase = createBrowserClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    )
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) {
         router.push('/dashboard')
       } else {
-        setChecking(false) // não logado → mostra a landing page
+        setChecking(false)
       }
     })
   }, [])
 
-  // Enquanto verifica a sessão, mostra tela de loading
   if (checking) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg)' }}>
@@ -214,7 +217,6 @@ export default function Home() {
           </ul>
         </nav>
 
-        {/* HERO */}
         <section>
           <div className="lp-hero">
             <div>
@@ -241,7 +243,7 @@ export default function Home() {
                 <div className="lp-phone">
                   <div className="lp-phone-header">
                     <div className="lp-phone-logo">MeAndYou</div>
-                    <div style={{fontSize:'10px',opacity:.8,marginTop:'2px'}}>Conexões reais</div>
+                    <div style={{fontSize:'10px',opacity:0.8,marginTop:'2px'}}>Conexões reais</div>
                   </div>
                   <div className="lp-phone-card">
                     <div className="lp-phone-img">👩<div className="lp-v-badge">✓ Verificada</div></div>
@@ -265,7 +267,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* PROBLEMA */}
         <section className="lp-problem">
           <div className="lp-problem-inner">
             <div>
@@ -289,7 +290,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* VERIFICAÇÃO */}
         <section className="lp-verification" id="verificacao">
           <div className="lp-verification-inner">
             <div>
@@ -313,7 +313,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* COMO FUNCIONA */}
         <section className="lp-how" id="como-funciona">
           <p className="lp-section-label">Como funciona</p>
           <h2 className="lp-section-title">Em minutos você já tem matches reais.</h2>
@@ -332,7 +331,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* PLANOS */}
         <section className="lp-pricing" id="precos">
           <div className="lp-pricing-inner">
             <p className="lp-section-label">Planos</p>
@@ -376,7 +374,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* FAQ */}
         <section className="lp-faq">
           <div className="lp-faq-inner">
             <p className="lp-section-label">Dúvidas</p>
@@ -400,7 +397,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* SEGURANÇA */}
         <section className="lp-safety" id="seguranca">
           <div className="lp-safety-inner">
             <p className="lp-section-label" style={{color:'var(--lp-accent)'}}>Segurança</p>
@@ -424,7 +420,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* CTA */}
         <section className="lp-cta">
           <h2>Sua pessoa real<br/>está esperando.</h2>
           <p>Verificação real. Filtros completos. Conexões de verdade.</p>
@@ -432,7 +427,6 @@ export default function Home() {
           <p className="lp-cta-note">Cancele quando quiser</p>
         </section>
 
-        {/* FOOTER */}
         <footer className="lp-footer">
           <div className="lp-footer-top">
             <div>
