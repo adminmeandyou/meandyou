@@ -1,11 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { supabase } from '@/app/lib/supabase'
 import { Gift, Copy, Check, Users, Share2 } from 'lucide-react'
 
 export default function IndicarPage() {
-  const supabase = createClientComponentClient()
   const [profile, setProfile] = useState<any>(null)
   const [referrals, setReferrals] = useState<any[]>([])
   const [copied, setCopied] = useState(false)
