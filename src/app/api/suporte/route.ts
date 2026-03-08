@@ -1,0 +1,122 @@
+import { createClient } from '@supabase/supabase-js'
+import { Resend } from 'resend'
+import { NextRequest, NextResponse } from 'next/server'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+const resend = new Resend(process.env.RESEND_API_KEY!)
+
+const ADMIN_EMAIL = 'adminmeandyou@proton.me'
+
+const CATEGORIA_LABELS: Record<string, string> = {
+  verificacao: 'Verificação de identidade',
+  pagamento:   'Pagamento / Assinatura',
+  bug:         'Bug / Problema técnico',
+  conta:       'Minha conta',
+  outro:       'Outro',
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    // Valida sessão pelo cookie
+    const accessToken = req.cookies.get('sb-access-token')?.value
+    if (!accessToken) {
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+    }
+
+    const { data: { user }, error: authErr } = await supabase.auth.getUser(accessToken)
+    if (authErr || !user) {
+      return NextResponse.json({ error: 'Sessão inválida' }, { status: 401 })
+    }
+
+    const body = await req.json()
+    const { nome, email, plano, prioridade, categoria, descricao } = body
+
+    if (!categoria || !descricao?.trim()) {
+      return NextResponse.json({ error: 'Campos obrigatórios ausentes' }, { status: 400 })
+    }
+
+    if (descricao.trim().length < 20) {
+      return NextResponse.json({ error: 'Descrição muito curta' }, { status: 400 })
+    }
+
+    const categoriaLabel = CATEGORIA_LABELS[categoria] ?? categoria
+    const agora = new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+
+    // Envia email para o admin com todas as informações
+    await resend.emails.send({
+      from: 'MeAndYou Suporte <noreply@meandyou.com.br>',
+      to: ADMIN_EMAIL,
+      subject: `[${prioridade}] ${categoriaLabel} — ${nome}`,
+      html: `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
+          <h2 style="color: #b8f542; margin-bottom: 4px;">📩 Novo chamado de suporte</h2>
+          <p style="color: #888; font-size: 13px; margin-top: 0;">${agora}</p>
+
+          <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+            <tr>
+              <td style="padding: 10px 0; color: #aaa; width: 140px; font-size: 13px;">Prioridade</td>
+              <td style="padding: 10px 0; font-weight: bold; color: #fff; font-size: 13px;">${prioridade}</td>
+            </tr>
+            <tr style="border-top: 1px solid #222;">
+              <td style="padding: 10px 0; color: #aaa; font-size: 13px;">Nome</td>
+              <td style="padding: 10px 0; color: #fff; font-size: 13px;">${nome}</td>
+            </tr>
+            <tr style="border-top: 1px solid #222;">
+              <td style="padding: 10px 0; color: #aaa; font-size: 13px;">Email</td>
+              <td style="padding: 10px 0; color: #fff; font-size: 13px;">${email}</td>
+            </tr>
+            <tr style="border-top: 1px solid #222;">
+              <td style="padding: 10px 0; color: #aaa; font-size: 13px;">Plano</td>
+              <td style="padding: 10px 0; color: #fff; font-size: 13px;">${plano}</td>
+            </tr>
+            <tr style="border-top: 1px solid #222;">
+              <td style="padding: 10px 0; color: #aaa; font-size: 13px;">Categoria</td>
+              <td style="padding: 10px 0; color: #fff; font-size: 13px;">${categoriaLabel}</td>
+            </tr>
+            <tr style="border-top: 1px solid #222;">
+              <td style="padding: 10px 0; color: #aaa; font-size: 13px;">User ID</td>
+              <td style="padding: 10px 0; color: #888; font-size: 11px;">${user.id}</td>
+            </tr>
+          </table>
+
+          <div style="background: #111; border: 1px solid #333; border-radius: 12px; padding: 16px; margin-top: 8px;">
+            <p style="color: #aaa; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">Descrição</p>
+            <p style="color: #fff; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${descricao.trim()}</p>
+          </div>
+
+          <p style="color: #555; font-size: 11px; margin-top: 24px; text-align: center;">
+            MeAndYou — Sistema de Suporte
+          </p>
+        </div>
+      `,
+    })
+
+    // Envia confirmação para o usuário
+    await resend.emails.send({
+      from: 'MeAndYou Suporte <noreply@meandyou.com.br>',
+      to: email,
+      subject: 'Recebemos sua mensagem — MeAndYou',
+      html: `
+        <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; background: #0e0b14; color: #fff;">
+          <h2 style="color: #b8f542;">Olá, ${nome}!</h2>
+          <p style="color: #aaa; line-height: 1.6;">
+            Recebemos sua mensagem na categoria <strong style="color: #fff;">${categoriaLabel}</strong>.
+            ${plano === 'Black'
+              ? 'Por ser assinante Black, seu chamado é <strong style="color: #f5c842;">prioritário</strong> e será respondido em até 24h.'
+              : 'Responderemos o mais breve possível pelo email cadastrado.'}
+          </p>
+          <p style="color: #555; font-size: 12px; margin-top: 32px;">MeAndYou — meandyou.com.br</p>
+        </div>
+      `,
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error('Suporte API error:', err)
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+  }
+}

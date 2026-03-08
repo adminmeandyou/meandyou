@@ -1,21 +1,22 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
+import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import {
-  Crown, Lock, MapPin, Heart, Loader2,
-  AlertCircle, CheckCircle, ChevronRight, X, ShieldAlert
+  Crown, Lock, MapPin, Heart, Loader2, ArrowLeft,
+  AlertCircle, CheckCircle, X, ShieldAlert
 } from 'lucide-react'
 
 const RESGATE_URL = 'https://pay.cakto.com.br/i73nbfm'
 
-// ─── Página principal ─────────────────────────────────────────────────────────
-
+// ─── Página principal ──────────────────────────────────────────────────────────
 export default function BackstagePage() {
   const { limits, loading: planLoading } = usePlan()
+  const router = useRouter()
 
   if (planLoading) {
     return (
@@ -25,32 +26,37 @@ export default function BackstagePage() {
     )
   }
 
-  // Não-Black vê área borrada
   if (!limits.isBlack) {
-    return <BackstageBlurred />
+    return <BackstageBlurred plan={limits.isPlus ? 'plus' : 'essencial'} onBack={() => router.back()} />
   }
 
-  return <BackstageContent />
+  return <BackstageContent onBack={() => router.back()} />
 }
 
-// ─── Área borrada para não-Black ──────────────────────────────────────────────
-
-function BackstageBlurred() {
+// ─── Área bloqueada para não-Black ────────────────────────────────────────────
+function BackstageBlurred({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack: () => void }) {
   const { user } = useAuth()
-  const supabase = createClient()
+
   const [requestSent, setRequestSent] = useState(false)
   const [loading, setLoading] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [accepted, setAccepted] = useState(false)
+  // O usuário escolhe se quer Sugar ou Fetiche
+  const [requestType, setRequestType] = useState<'sugar' | 'fetiche'>('sugar')
 
   async function handleRequest() {
-    if (!accepted) return
-    if (!user) return
+    if (!accepted || !user) return
     setLoading(true)
 
+    // Params corretos conforme skill:
+    // create_access_request(requester_id, target_id, type, tier)
+    // type: 'sugar' | 'fetiche'
+    // tier: 'basic' (essencial) | 'premium' (plus)
     const { data } = await supabase.rpc('create_access_request', {
-      p_user_id: user.id,
-      p_type: 'backstage',
+      p_requester_id: user.id,
+      p_target_id: null,          // pedido visível para qualquer Black
+      p_type: requestType,
+      p_tier: plan === 'plus' ? 'premium' : 'basic',
     })
 
     setLoading(false)
@@ -63,44 +69,45 @@ function BackstageBlurred() {
   return (
     <div className="min-h-screen bg-[#0e0b14] font-jakarta relative overflow-hidden">
 
+      {/* Header */}
+      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
+        <button onClick={onBack} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+          <ArrowLeft size={18} className="text-white/60" />
+        </button>
+        <Crown size={18} className="text-[#f5c842]" />
+        <h1 className="font-fraunces text-xl text-white">Backstage</h1>
+      </header>
+
       {/* Conteúdo borrado atrás */}
-      <div className="filter blur-sm pointer-events-none select-none opacity-40">
-        <div className="px-5 pt-6">
-          <div className="flex items-center gap-2 mb-6">
-            <Crown size={20} className="text-[#f5c842]" />
-            <h1 className="font-fraunces text-2xl text-white">Backstage</h1>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="rounded-2xl bg-white/5 aspect-[3/4]" />
-            ))}
-          </div>
+      <div className="filter blur-sm pointer-events-none select-none opacity-30 px-5 pt-6">
+        <div className="grid grid-cols-2 gap-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="rounded-2xl bg-white/5 aspect-[3/4]" />
+          ))}
         </div>
       </div>
 
-      {/* Overlay de bloqueio */}
+      {/* Overlay */}
       <div className="absolute inset-0 flex flex-col items-center justify-center px-6 bg-[#0e0b14]/80 backdrop-blur-sm">
         <div className="w-16 h-16 rounded-full bg-[#f5c842]/10 border border-[#f5c842]/30 flex items-center justify-center mb-5">
           <Lock size={28} className="text-[#f5c842]" />
         </div>
         <h2 className="font-fraunces text-2xl text-white text-center mb-2">
-          Área exclusiva
+          Área exclusiva Black
         </h2>
         <p className="text-white/40 text-sm text-center leading-relaxed mb-8 max-w-xs">
-          O Backstage é exclusivo para assinantes Black. Assine agora ou faça um pedido para ser resgatado por um Black.
+          Assinantes Black acessam o Backstage e podem resgatar perfis. Você pode fazer um pedido para ser visto por eles.
         </p>
 
         <div className="w-full max-w-xs flex flex-col gap-3">
-          {/* Botão assinar Black */}
           <a
             href="/planos"
             className="w-full py-3.5 rounded-2xl text-center font-bold text-sm transition"
             style={{ background: 'linear-gradient(135deg, #c9a84c, #f5d485)', color: '#1a1a1a' }}
           >
-            Assinar Camarote Black — R$ 100/mês
+            Assinar Black
           </a>
 
-          {/* Botão fazer pedido */}
           {requestSent ? (
             <div className="w-full py-3.5 rounded-2xl bg-[#b8f542]/10 border border-[#b8f542]/20 flex items-center justify-center gap-2">
               <CheckCircle size={16} className="text-[#b8f542]" />
@@ -117,31 +124,44 @@ function BackstageBlurred() {
         </div>
       </div>
 
-      {/* Modal de confirmação do pedido */}
+      {/* Modal de confirmação */}
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
           <div className="w-full max-w-sm bg-[#141020] rounded-t-3xl border-t border-white/10 p-6">
             <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-5" />
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-fraunces text-xl text-white">Pedido de acesso</h3>
-              <button onClick={() => setShowConfirm(false)}>
-                <X size={18} className="text-white/40" />
-              </button>
+              <h3 className="font-fraunces text-xl text-white">Tipo de pedido</h3>
+              <button onClick={() => setShowConfirm(false)}><X size={18} className="text-white/40" /></button>
             </div>
 
-            <p className="text-white/50 text-sm leading-relaxed mb-5">
-              Seu perfil ficará visível para assinantes Black interessados. Se um Black pagar R$ 15, vocês terão acesso ao chat por 30 dias.
+            {/* Escolha Sugar ou Fetiche */}
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              {(['sugar', 'fetiche'] as const).map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setRequestType(t)}
+                  className={`py-3 rounded-xl border text-sm font-semibold capitalize transition ${
+                    requestType === t
+                      ? 'bg-[#f5c842]/20 border-[#f5c842]/40 text-[#f5c842]'
+                      : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
+                  }`}
+                >
+                  {t === 'sugar' ? '🍬 Sugar' : '🔥 Fetiche'}
+                </button>
+              ))}
+            </div>
+
+            <p className="text-white/50 text-sm leading-relaxed mb-4">
+              Seu perfil ficará visível para assinantes Black. Se um Black pagar R$ 15, vocês terão acesso ao chat por 30 dias.
             </p>
 
-            {/* Aviso de não reembolso */}
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 mb-5 flex gap-2">
+            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 mb-4 flex gap-2">
               <ShieldAlert size={16} className="text-yellow-400 shrink-0 mt-0.5" />
               <p className="text-yellow-300 text-xs leading-relaxed">
-                <strong>Sem reembolso:</strong> O pagamento feito pelo assinante Black é imediato e não reembolsável. Ao aceitar, você concorda com estes termos.
+                <strong>Sem reembolso:</strong> O pagamento feito pelo Black é imediato e não reembolsável.
               </p>
             </div>
 
-            {/* Checkbox de aceite */}
             <label className="flex items-start gap-3 mb-5 cursor-pointer">
               <div
                 onClick={() => setAccepted(!accepted)}
@@ -152,7 +172,7 @@ function BackstageBlurred() {
                 {accepted && <CheckCircle size={12} className="text-black" />}
               </div>
               <span className="text-white/50 text-xs leading-relaxed">
-                Entendo que o pagamento feito pelo assinante Black não será reembolsado em nenhuma hipótese.
+                Entendo que o pagamento feito pelo assinante Black não será reembolsado.
               </span>
             </label>
 
@@ -170,16 +190,14 @@ function BackstageBlurred() {
   )
 }
 
-// ─── Conteúdo real do Backstage (só Black vê) ────────────────────────────────
-
-function BackstageContent() {
+// ─── Conteúdo real (só Black vê) ──────────────────────────────────────────────
+function BackstageContent({ onBack }: { onBack: () => void }) {
   const { user } = useAuth()
-  const supabase = createClient()
 
   const [requests, setRequests] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'essencial' | 'plus'>('all')
-  const [rescuing, setRescuing] = useState<string | null>(null)
+  // Filtro por tier: 'all' | 'basic' (essencial) | 'premium' (plus)
+  const [selectedFilter, setSelectedFilter] = useState<'all' | 'basic' | 'premium'>('all')
   const [confirmRequest, setConfirmRequest] = useState<any>(null)
 
   useEffect(() => {
@@ -188,54 +206,56 @@ function BackstageContent() {
 
   async function loadRequests() {
     setLoading(true)
+    // Param correto: p_user_id conforme skill
     const { data } = await supabase.rpc('get_available_requests', {
-      p_black_user_id: user!.id,
+      p_user_id: user!.id,
     })
     setRequests(data ?? [])
     setLoading(false)
   }
 
-  function handleRescue(request: any) {
-    setConfirmRequest(request)
-  }
-
   function handleCheckout() {
     if (!confirmRequest) return
-    // Redireciona para Cakto com o request_id nos metadados via query param
     const url = `${RESGATE_URL}?metadata[request_id]=${confirmRequest.request_id}`
     window.open(url, '_blank')
     setConfirmRequest(null)
   }
 
+  // Aplica filtro de tier
+  const filtered = selectedFilter === 'all'
+    ? requests
+    : requests.filter((r) => r.tier === selectedFilter)
+
   return (
     <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-24">
 
-      {/* Header Backstage */}
-      <div
-        className="px-5 pt-6 pb-5"
-        style={{ background: 'linear-gradient(180deg, rgba(201,168,76,0.08) 0%, transparent 100%)' }}
-      >
-        <div className="flex items-center gap-2 mb-1">
-          <Crown size={20} className="text-[#f5c842]" />
-          <h1 className="font-fraunces text-2xl text-white">Backstage</h1>
+      {/* Header */}
+      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
+        <button onClick={onBack} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+          <ArrowLeft size={18} className="text-white/60" />
+        </button>
+        <div
+          className="flex items-center gap-2 flex-1"
+        >
+          <Crown size={18} className="text-[#f5c842]" />
+          <h1 className="font-fraunces text-xl text-white">Backstage</h1>
           <span className="text-xs px-2 py-0.5 rounded-full border border-[#f5c842]/40 text-[#f5c842] ml-1">
-            Camarote
+            Black
           </span>
         </div>
-        <p className="text-white/30 text-sm">Pedidos de acesso disponíveis</p>
-      </div>
+      </header>
 
-      {/* Filtros */}
-      <div className="px-5 mb-5 flex gap-2">
+      {/* Filtros — mapeados para os valores reais da tabela (basic/premium) */}
+      <div className="px-5 pt-4 mb-4 flex gap-2">
         {[
-          { value: 'all', label: 'Todos' },
-          { value: 'essencial', label: 'Pista' },
-          { value: 'plus', label: 'VIP' },
+          { value: 'all',     label: 'Todos' },
+          { value: 'basic',   label: 'Pista (Essencial)' },
+          { value: 'premium', label: 'VIP (Plus)' },
         ].map((opt) => (
           <button
             key={opt.value}
             onClick={() => setSelectedFilter(opt.value as any)}
-            className={`px-4 py-1.5 rounded-full text-sm border transition ${
+            className={`px-3 py-1.5 rounded-full text-xs border transition ${
               selectedFilter === opt.value
                 ? 'bg-[#f5c842] text-black border-[#f5c842] font-semibold'
                 : 'bg-white/5 border-white/10 text-white/50 hover:border-white/20'
@@ -246,27 +266,27 @@ function BackstageContent() {
         ))}
       </div>
 
-      {/* Lista de pedidos */}
+      {/* Lista */}
       <div className="px-5">
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 size={24} className="animate-spin text-white/30" />
           </div>
-        ) : requests.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <div className="flex flex-col items-center py-16 gap-3 text-white/30">
             <Crown size={32} />
             <p className="text-sm text-center">Nenhum pedido disponível no momento.</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
-            {requests.map((req) => (
-              <RequestCard key={req.request_id} request={req} onRescue={handleRescue} />
+            {filtered.map((req) => (
+              <RequestCard key={req.request_id} request={req} onRescue={setConfirmRequest} />
             ))}
           </div>
         )}
       </div>
 
-      {/* Modal de confirmação de resgate */}
+      {/* Modal de confirmação */}
       {confirmRequest && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
           <div className="w-full max-w-sm bg-[#141020] rounded-t-3xl border-t border-[#f5c842]/20 p-6">
@@ -290,16 +310,18 @@ function BackstageContent() {
               <div>
                 <p className="text-white font-semibold text-sm">{confirmRequest.name}, {confirmRequest.age}</p>
                 <p className="text-white/40 text-xs flex items-center gap-1">
-                  <MapPin size={10} />
-                  {confirmRequest.city}
+                  <MapPin size={10} /> {confirmRequest.city}
                 </p>
+                <span className="text-xs px-1.5 py-0.5 rounded bg-[#f5c842]/10 text-[#f5c842] capitalize">
+                  {confirmRequest.type}
+                </span>
               </div>
             </div>
 
             <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 mb-5 flex gap-2">
               <ShieldAlert size={16} className="text-yellow-400 shrink-0 mt-0.5" />
               <p className="text-yellow-300 text-xs leading-relaxed">
-                <strong>Sem reembolso:</strong> Ao pagar R$ 15, o acesso ao chat é imediato e não reembolsável em nenhuma hipótese.
+                <strong>Sem reembolso:</strong> Ao pagar R$ 15, o acesso ao chat é imediato e não reembolsável.
               </p>
             </div>
 
@@ -327,7 +349,6 @@ function BackstageContent() {
 }
 
 // ─── Card de pedido ───────────────────────────────────────────────────────────
-
 function RequestCard({ request, onRescue }: { request: any; onRescue: (r: any) => void }) {
   return (
     <div className="relative rounded-2xl overflow-hidden bg-white/5 border border-[#f5c842]/10 aspect-[3/4]">
@@ -338,13 +359,17 @@ function RequestCard({ request, onRescue }: { request: any; onRescue: (r: any) =
       )}
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
 
+      {/* Badge tipo */}
+      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 border border-[#f5c842]/30">
+        <span className="text-[#f5c842] text-xs font-semibold capitalize">{request.type}</span>
+      </div>
+
       <div className="absolute bottom-0 left-0 right-0 p-3">
         <p className="font-fraunces text-sm text-white font-semibold leading-tight">
           {request.name}, {request.age}
         </p>
         <p className="text-white/40 text-xs flex items-center gap-1 mt-0.5 mb-3">
-          <MapPin size={9} />
-          {request.city}
+          <MapPin size={9} /> {request.city}
         </p>
         <button
           onClick={() => onRescue(request)}

@@ -1,12 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { Flame, MapPin, Zap, Lock, ArrowLeft, Loader2 } from 'lucide-react'
+import { Flame, MapPin, Zap, Lock, ArrowLeft, Loader2, Search } from 'lucide-react'
 
 type Period = 'day' | 'week' | 'month'
 
@@ -16,31 +16,24 @@ const PERIOD_LABELS: Record<Period, string> = {
   month: 'Mês',
 }
 
-// Limite de curtidas na aba destaques por plano
-const HIGHLIGHT_LIKES_LIMIT: Record<string, number> = {
-  plus: 10,
-  black: Infinity,
-}
-
 export default function DestaquesPage() {
   const { user } = useAuth()
   const { limits } = usePlan()
   const router = useRouter()
-  const supabase = createClient()
 
   const [period, setPeriod] = useState<Period>('week')
   const [profiles, setProfiles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
-  const [likesUsed, setLikesUsed] = useState(0)
+  const [lupas, setLupas] = useState(0)
+  const [revealing, setRevealing] = useState<string | null>(null)
+  const [revealedIds, setRevealedIds] = useState<Set<string>>(new Set())
 
   const canAccess = limits.isPlus || limits.isBlack
-  const likeLimit = HIGHLIGHT_LIKES_LIMIT[limits.plan ?? ''] ?? 0
-  const likesRemaining = likeLimit === Infinity ? Infinity : Math.max(0, likeLimit - likesUsed)
 
   useEffect(() => {
     if (!canAccess) return
     loadHighlights()
-    loadLikesUsed()
+    loadLupas()
   }, [period, canAccess])
 
   async function loadHighlights() {
@@ -53,27 +46,35 @@ export default function DestaquesPage() {
     setLoading(false)
   }
 
-  async function loadLikesUsed() {
-    const today = new Date().toISOString().split('T')[0]
-    const { count } = await supabase
-      .from('likes')
-      .select('*', { count: 'exact', head: true })
+  async function loadLupas() {
+    const { data } = await supabase
+      .from('user_lupas')
+      .select('amount')
       .eq('user_id', user!.id)
-      .gte('created_at', `${today}T00:00:00`)
-    setLikesUsed(count ?? 0)
+      .single()
+    setLupas(data?.amount ?? 0)
+  }
+
+  async function handleReveal(profileId: string) {
+    if (lupas <= 0) return
+    setRevealing(profileId)
+    // Debita 1 lupa
+    const { error } = await supabase.rpc('use_lupa', { p_user_id: user!.id, p_target_id: profileId })
+    if (!error) {
+      setRevealedIds((prev) => new Set([...prev, profileId]))
+      setLupas((l) => l - 1)
+    }
+    setRevealing(null)
   }
 
   async function handleLike(profileId: string) {
-    if (likesRemaining <= 0 && likeLimit !== Infinity) return
-
-    await supabase.rpc('process_like', {
-      p_user_id: user!.id,
-      p_target_id: profileId,
-      p_is_superlike: false,
+    // params corretos: p_from, p_to, p_type — igual ao useSwipe corrigido
+    await supabase.rpc('process_swipe', {
+      p_from: user!.id,
+      p_to: profileId,
+      p_type: 'like',
     })
-
     setProfiles((prev) => prev.filter((p) => p.profile_id !== profileId))
-    setLikesUsed((n) => n + 1)
   }
 
   return (
@@ -89,10 +90,11 @@ export default function DestaquesPage() {
             <Flame size={18} className="text-orange-400" />
             <h1 className="font-fraunces text-xl text-white">Destaques</h1>
           </div>
-          {canAccess && likesRemaining !== Infinity && (
-            <span className="text-xs text-white/30">
-              {likesRemaining} curtidas restantes
-            </span>
+          {canAccess && (
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
+              <Search size={12} className="text-blue-400" />
+              <span className="text-blue-400 text-xs font-semibold">{lupas} lupas</span>
+            </div>
           )}
         </div>
 
@@ -137,13 +139,6 @@ export default function DestaquesPage() {
         </div>
       ) : (
         <main className="px-5 pt-5">
-          {/* Aviso de limite */}
-          {!limits.isBlack && likesRemaining === 0 && (
-            <div className="mb-4 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-300 text-xs text-center">
-              Você usou todas as curtidas de Destaques de hoje. Volte amanhã ou faça upgrade para Black.
-            </div>
-          )}
-
           {loading ? (
             <div className="flex justify-center py-20">
               <Loader2 size={24} className="animate-spin text-white/30" />
@@ -154,17 +149,27 @@ export default function DestaquesPage() {
               <p className="text-sm text-center">Nenhum destaque nesse período ainda.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {profiles.map((profile) => (
-                <HighlightCard
-                  key={profile.profile_id}
-                  profile={profile}
-                  canLike={likesRemaining > 0 || likeLimit === Infinity}
-                  onLike={() => handleLike(profile.profile_id)}
-                  onView={() => router.push(`/perfil/${profile.profile_id}`)}
-                />
-              ))}
-            </div>
+            <>
+              {lupas === 0 && (
+                <div className="mb-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs text-center">
+                  Sem lupas para revelar perfis. Compre na <a href="/loja" className="underline font-semibold">Loja</a> ou ganhe jogando na roleta.
+                </div>
+              )}
+              <div className="grid grid-cols-2 gap-3">
+                {profiles.map((profile) => (
+                  <HighlightCard
+                    key={profile.profile_id}
+                    profile={profile}
+                    revealed={revealedIds.has(profile.profile_id)}
+                    hasLupas={lupas > 0}
+                    revealing={revealing === profile.profile_id}
+                    onReveal={() => handleReveal(profile.profile_id)}
+                    onLike={() => handleLike(profile.profile_id)}
+                    onView={() => router.push(`/perfil/${profile.profile_id}`)}
+                  />
+                ))}
+              </div>
+            </>
           )}
         </main>
       )}
@@ -172,16 +177,25 @@ export default function DestaquesPage() {
   )
 }
 
-function HighlightCard({ profile, canLike, onLike, onView }: {
+function HighlightCard({ profile, revealed, hasLupas, revealing, onReveal, onLike, onView }: {
   profile: any
-  canLike: boolean
+  revealed: boolean
+  hasLupas: boolean
+  revealing: boolean
+  onReveal: () => void
   onLike: () => void
   onView: () => void
 }) {
   return (
     <div className="relative rounded-2xl overflow-hidden aspect-[3/4] bg-white/5 border border-white/5">
       {profile.photo_best ? (
-        <Image src={profile.photo_best} alt={profile.name} fill className="object-cover" sizes="200px" />
+        <Image
+          src={profile.photo_best}
+          alt={revealed ? profile.name : 'Perfil borrado'}
+          fill
+          className={`object-cover transition-all duration-500 ${!revealed ? 'blur-xl scale-110' : ''}`}
+          sizes="200px"
+        />
       ) : (
         <div className="absolute inset-0 bg-white/5" />
       )}
@@ -195,35 +209,52 @@ function HighlightCard({ profile, canLike, onLike, onView }: {
         </div>
       )}
 
+      {/* Overlay de revelar (quando borrado) */}
+      {!revealed && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+          <button
+            onClick={onReveal}
+            disabled={!hasLupas || revealing}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500/80 text-white text-xs font-bold hover:bg-blue-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            {revealing ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+            Revelar com lupa
+          </button>
+        </div>
+      )}
+
       {/* Info */}
       <div className="absolute bottom-0 left-0 right-0 p-3">
         <p className="font-fraunces text-sm text-white font-semibold">
-          {profile.name}, {profile.age}
+          {revealed ? `${profile.name}, ${profile.age}` : '• • •'}
         </p>
-        <p className="text-white/40 text-xs flex items-center gap-1 mt-0.5">
-          <MapPin size={9} /> {profile.city}
-        </p>
+        {revealed && (
+          <p className="text-white/40 text-xs flex items-center gap-1 mt-0.5">
+            <MapPin size={9} /> {profile.city}
+          </p>
+        )}
         <div className="flex items-center gap-1 mt-0.5">
           <Flame size={9} className="text-orange-400" />
           <span className="text-orange-400 text-xs">{profile.like_count} curtidas</span>
         </div>
 
-        {/* Botões */}
-        <div className="flex gap-2 mt-2">
-          <button
-            onClick={onView}
-            className="flex-1 py-1.5 rounded-xl bg-white/10 text-white text-xs font-semibold hover:bg-white/20 transition"
-          >
-            Ver perfil
-          </button>
-          <button
-            onClick={onLike}
-            disabled={!canLike}
-            className="flex-1 py-1.5 rounded-xl bg-[#b8f542]/20 text-[#b8f542] text-xs font-semibold hover:bg-[#b8f542]/30 transition disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            Curtir
-          </button>
-        </div>
+        {/* Botões — só aparecem após revelar */}
+        {revealed && (
+          <div className="flex gap-2 mt-2">
+            <button
+              onClick={onView}
+              className="flex-1 py-1.5 rounded-xl bg-white/10 text-white text-xs font-semibold hover:bg-white/20 transition"
+            >
+              Ver perfil
+            </button>
+            <button
+              onClick={onLike}
+              className="flex-1 py-1.5 rounded-xl bg-[#b8f542]/20 text-[#b8f542] text-xs font-semibold hover:bg-[#b8f542]/30 transition"
+            >
+              Curtir
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

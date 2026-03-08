@@ -1,12 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { usePlan } from '@/hooks/usePlan'
 import { useRouter } from 'next/navigation'
-import { Star, Zap, ArrowLeft, CheckCircle, Loader2, ShoppingBag } from 'lucide-react'
+import { Star, Zap, ArrowLeft, CheckCircle, Loader2, ShoppingBag, Search, RotateCcw, Ticket } from 'lucide-react'
 
 const STORE_ITEMS = [
+  // SuperLikes
   {
     id: 'superlikes_5',
     type: 'superlike',
@@ -40,6 +42,7 @@ const STORE_ITEMS = [
     icon: '⭐',
     highlight: false,
   },
+  // Boosts
   {
     id: 'boost_1',
     type: 'boost',
@@ -62,15 +65,71 @@ const STORE_ITEMS = [
     icon: '⚡',
     highlight: true,
   },
+  // Lupas — slugs a definir no Cakto
+  {
+    id: 'lupa_5',
+    type: 'lupa',
+    label: '5 Lupas',
+    description: 'Veja quem curtiu seu perfil',
+    amount: 5,
+    price: 'R$ 7',
+    url: 'https://pay.cakto.com.br/lupa_5_slug',
+    icon: '🔍',
+    highlight: false,
+  },
+  {
+    id: 'lupa_15',
+    type: 'lupa',
+    label: '15 Lupas',
+    description: 'Melhor custo-benefício',
+    amount: 15,
+    price: 'R$ 17',
+    url: 'https://pay.cakto.com.br/lupa_15_slug',
+    icon: '🔍',
+    highlight: true,
+  },
+  {
+    id: 'lupa_30',
+    type: 'lupa',
+    label: '30 Lupas',
+    description: 'Para explorar bastante',
+    amount: 30,
+    price: 'R$ 29',
+    url: 'https://pay.cakto.com.br/lupa_30_slug',
+    icon: '🔍',
+    highlight: false,
+  },
+  // Rewinds — slug a definir no Cakto
+  {
+    id: 'rewind_5',
+    type: 'rewind',
+    label: '5 Desfazer Curtida',
+    description: 'Volte atrás em até 5 perfis',
+    amount: 5,
+    price: 'R$ 5',
+    url: 'https://pay.cakto.com.br/rewind_5_slug',
+    icon: '↩️',
+    highlight: false,
+  },
 ]
+
+const SECTION_LABELS: Record<string, { label: string; icon: React.ReactNode }> = {
+  superlike: { label: 'SuperLikes', icon: <Star size={12} className="text-yellow-400" /> },
+  boost:     { label: 'Boosts',     icon: <Zap size={12} className="text-[#b8f542]" /> },
+  lupa:      { label: 'Lupas',      icon: <Search size={12} className="text-blue-400" /> },
+  rewind:    { label: 'Desfazer Curtida', icon: <RotateCcw size={12} className="text-purple-400" /> },
+}
 
 export default function LojaPage() {
   const { user } = useAuth()
+  const { limits } = usePlan()
   const router = useRouter()
-  const supabase = createClient()
 
   const [superlikes, setSuperlikes] = useState(0)
   const [boosts, setBoosts] = useState(0)
+  const [lupas, setLupas] = useState(0)
+  const [rewinds, setRewinds] = useState(0)
+  const [tickets, setTickets] = useState(0)
   const [boostActiveUntil, setBoostActiveUntil] = useState<string | null>(null)
   const [activating, setActivating] = useState(false)
   const [activateMsg, setActivateMsg] = useState<string | null>(null)
@@ -82,17 +141,37 @@ export default function LojaPage() {
   }, [user])
 
   async function loadBalance() {
-    const [{ data: sl }, { data: bo }] = await Promise.all([
+    const [{ data: sl }, { data: bo }, { data: lp }, { data: rw }, { data: tk }] = await Promise.all([
       supabase.from('user_superlikes').select('amount').eq('user_id', user!.id).single(),
       supabase.from('user_boosts').select('amount, active_until').eq('user_id', user!.id).single(),
+      supabase.from('user_lupas').select('amount').eq('user_id', user!.id).single(),
+      supabase.from('user_rewinds').select('amount').eq('user_id', user!.id).single(),
+      supabase.from('user_tickets').select('amount').eq('user_id', user!.id).single(),
     ])
     setSuperlikes(sl?.amount ?? 0)
     setBoosts(bo?.amount ?? 0)
     setBoostActiveUntil(bo?.active_until ?? null)
+    setLupas(lp?.amount ?? 0)
+    setRewinds(rw?.amount ?? 0)
+    setTickets(tk?.amount ?? 0)
     setLoading(false)
   }
 
   async function handleActivateBoost() {
+    // Black: max 2 boosts simultâneos
+    if (limits.isBlack) {
+      const { data: activeBoosts } = await supabase
+        .from('user_boosts')
+        .select('active_until')
+        .eq('user_id', user!.id)
+        .gt('active_until', new Date().toISOString())
+      if ((activeBoosts?.length ?? 0) >= 2) {
+        setActivateMsg('Limite de 2 Boosts simultâneos atingido (plano Black).')
+        setTimeout(() => setActivateMsg(null), 4000)
+        return
+      }
+    }
+
     setActivating(true)
     setActivateMsg(null)
     const { data } = await supabase.rpc('activate_boost', { p_user_id: user!.id })
@@ -110,6 +189,7 @@ export default function LojaPage() {
   }
 
   const boostIsActive = boostActiveUntil && new Date(boostActiveUntil) > new Date()
+  const types = ['superlike', 'boost', 'lupa', 'rewind'] as const
 
   return (
     <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-24">
@@ -129,22 +209,12 @@ export default function LojaPage() {
 
         {/* Saldo atual */}
         {!loading && (
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white/5 border border-white/8 rounded-2xl p-4 flex items-center gap-3">
-              <span className="text-2xl">⭐</span>
-              <div>
-                <p className="text-white/30 text-xs">SuperLikes</p>
-                <p className="text-white font-bold text-xl">{superlikes}</p>
-              </div>
-            </div>
-            <div className={`rounded-2xl p-4 flex items-center gap-3 border ${boostIsActive ? 'bg-[#b8f542]/10 border-[#b8f542]/30' : 'bg-white/5 border-white/8'}`}>
-              <span className="text-2xl">⚡</span>
-              <div>
-                <p className="text-white/30 text-xs">Boosts</p>
-                <p className={`font-bold text-xl ${boostIsActive ? 'text-[#b8f542]' : 'text-white'}`}>{boosts}</p>
-                {boostIsActive && <p className="text-[#b8f542] text-xs">Ativo!</p>}
-              </div>
-            </div>
+          <div className="grid grid-cols-3 gap-2">
+            <BalanceCard emoji="⭐" label="SuperLikes" value={superlikes} />
+            <BalanceCard emoji="⚡" label="Boosts" value={boosts} active={!!boostIsActive} />
+            <BalanceCard emoji="🔍" label="Lupas" value={lupas} />
+            <BalanceCard emoji="↩️" label="Rewinds" value={rewinds} />
+            <BalanceCard emoji={<Ticket size={20} className="text-[#b8f542]" />} label="Tickets" value={tickets} />
           </div>
         )}
 
@@ -171,34 +241,44 @@ export default function LojaPage() {
           <p className="text-center text-sm text-white/50">{activateMsg}</p>
         )}
 
-        {/* SuperLikes */}
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-3 flex items-center gap-2">
-            <Star size={12} className="text-yellow-400" /> SuperLikes
-          </h2>
-          <div className="space-y-3">
-            {STORE_ITEMS.filter(i => i.type === 'superlike').map(item => (
-              <StoreItem key={item.id} item={item} />
-            ))}
-          </div>
-        </div>
+        {/* Seções por tipo */}
+        {types.map((type) => {
+          const items = STORE_ITEMS.filter((i) => i.type === type)
+          const section = SECTION_LABELS[type]
+          return (
+            <div key={type}>
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-3 flex items-center gap-2">
+                {section.icon} {section.label}
+              </h2>
+              <div className="space-y-3">
+                {items.map((item) => (
+                  <StoreItem key={item.id} item={item} />
+                ))}
+              </div>
+            </div>
+          )
+        })}
 
-        {/* Boosts */}
-        <div>
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-3 flex items-center gap-2">
-            <Zap size={12} className="text-[#b8f542]" /> Boosts
-          </h2>
-          <div className="space-y-3">
-            {STORE_ITEMS.filter(i => i.type === 'boost').map(item => (
-              <StoreItem key={item.id} item={item} />
-            ))}
-          </div>
-        </div>
-
-        {/* Aviso */}
         <p className="text-center text-white/20 text-xs pb-4">
           Compras são processadas pela Cakto. Pagamento único, sem reembolso.
         </p>
+      </div>
+    </div>
+  )
+}
+
+function BalanceCard({ emoji, label, value, active }: {
+  emoji: React.ReactNode
+  label: string
+  value: number
+  active?: boolean
+}) {
+  return (
+    <div className={`rounded-2xl p-3 flex items-center gap-2 border ${active ? 'bg-[#b8f542]/10 border-[#b8f542]/30' : 'bg-white/5 border-white/8'}`}>
+      <span className="text-xl">{emoji}</span>
+      <div>
+        <p className="text-white/30 text-xs">{label}</p>
+        <p className={`font-bold text-lg ${active ? 'text-[#b8f542]' : 'text-white'}`}>{value}</p>
       </div>
     </div>
   )
