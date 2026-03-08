@@ -15,11 +15,9 @@ export async function POST(req: NextRequest) {
     const { userId, email, nome } = await req.json()
     if (!userId || !email) return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
 
-    // Gera token único
     const token = crypto.randomBytes(32).toString('hex')
-    const expiresAt = new Date(Date.now() + 30 * 60 * 1000) // 30 minutos
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000)
 
-    // Salva token no Supabase
     const { error } = await supabase.from('verification_tokens').insert({
       user_id: userId,
       token,
@@ -29,9 +27,8 @@ export async function POST(req: NextRequest) {
 
     const link = `${process.env.NEXT_PUBLIC_APP_URL}/verificacao?token=${token}`
 
-    // Envia email via Resend
     await resend.emails.send({
-      from: 'MeAndYou <onboarding@resend.dev>',
+      from: 'MeAndYou <noreply@meandyou.com.br>',
       to: email,
       subject: '📱 Verifique sua identidade no MeAndYou',
       html: `
@@ -67,3 +64,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }
+```
+
+Só mudou uma linha:
+```
+from: 'MeAndYou <noreply@meandyou.com.br>'

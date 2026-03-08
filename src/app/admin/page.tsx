@@ -2,8 +2,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { Users, UserCheck, Ban, TrendingUp, Flag, Heart, Video, Gift } from 'lucide-react'
+import { createBrowserClient } from '@supabase/ssr'
+import { Users, UserCheck, Ban, TrendingUp, Flag, Heart, Gift } from 'lucide-react'
 
 interface Metrics {
   total_users: number
@@ -40,13 +40,16 @@ function Card({ label, value, sub, icon: Icon, color = '#e11d48' }: any) {
 }
 
 export default function AdminDashboard() {
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     loadMetrics()
-    const interval = setInterval(loadMetrics, 30000) // atualiza a cada 30s
+    const interval = setInterval(loadMetrics, 30000)
     return () => clearInterval(interval)
   }, [])
 
@@ -71,44 +74,41 @@ export default function AdminDashboard() {
         <p style={{ color: '#555', fontSize: '14px', marginTop: '4px' }}>Atualiza automaticamente a cada 30 segundos</p>
       </div>
 
-      {/* Tempo real */}
       <Section title="⚡ Agora">
         <div style={grid}>
-          <Card label="Online agora"         value={m.online_now}        icon={Users}    color="#22c55e" sub="últimos 5 minutos" />
-          <Card label="Ativos hoje"           value={m.active_today}      icon={UserCheck} color="#3b82f6" />
-          <Card label="Cadastros hoje"        value={m.new_today}         icon={TrendingUp} color="#a855f7" />
-          <Card label="Assinantes hoje"       value={m.new_subscribers_today} icon={Heart} color="#e11d48" />
+          <Card label="Online agora"          value={m.online_now}             icon={Users}     color="#22c55e" sub="últimos 5 minutos" />
+          <Card label="Ativos hoje"           value={m.active_today}           icon={UserCheck} color="#3b82f6" />
+          <Card label="Cadastros hoje"        value={m.new_today}              icon={TrendingUp} color="#a855f7" />
+          <Card label="Assinantes hoje"       value={m.new_subscribers_today}  icon={Heart}     color="#e11d48" />
         </div>
       </Section>
 
-      {/* Usuários */}
       <Section title="👥 Usuários">
         <div style={grid}>
-          <Card label="Total de usuários"    value={m.total_users}        icon={Users}    />
-          <Card label="Verificados"          value={m.total_verified}     icon={UserCheck} color="#22c55e" />
-          <Card label="Aguardando verificação" value={m.pending_verification} icon={UserCheck} color="#f59e0b" />
-          <Card label="Banidos"              value={m.total_banned}       icon={Ban}       color="#ef4444" />
-          <Card label="Excluíram a conta"    value={m.total_deleted}      icon={Ban}       color="#6b7280" />
+          <Card label="Total de usuários"       value={m.total_users}           icon={Users}     />
+          <Card label="Verificados"             value={m.total_verified}        icon={UserCheck} color="#22c55e" />
+          <Card label="Aguardando verificação"  value={m.pending_verification}  icon={UserCheck} color="#f59e0b" />
+          <Card label="Banidos"                 value={m.total_banned}          icon={Ban}       color="#ef4444" />
+          <Card label="Excluíram a conta"       value={m.total_deleted}         icon={Ban}       color="#6b7280" />
         </div>
       </Section>
 
-      {/* Planos */}
       <Section title="💳 Assinaturas ativas">
         <div style={grid}>
-          <Card label="Essencial — R$10/mês" value={m.plan_essencial}    icon={Heart}    color="#6b7280" sub={`≈ R$${(m.plan_essencial * 10).toLocaleString('pt-BR')}/mês`} />
-          <Card label="Plus — R$39/mês"       value={m.plan_plus}        icon={Heart}    color="#3b82f6" sub={`≈ R$${(m.plan_plus * 39).toLocaleString('pt-BR')}/mês`} />
-          <Card label="Black — R$100/mês"     value={m.plan_black}       icon={Heart}    color="#f59e0b" sub={`≈ R$${(m.plan_black * 100).toLocaleString('pt-BR')}/mês`} />
+          <Card label="Essencial — R$10/mês"  value={m.plan_essencial} icon={Heart} color="#6b7280" sub={`≈ R$${(m.plan_essencial * 10).toLocaleString('pt-BR')}/mês`} />
+          <Card label="Plus — R$39/mês"       value={m.plan_plus}      icon={Heart} color="#3b82f6" sub={`≈ R$${(m.plan_plus * 39).toLocaleString('pt-BR')}/mês`} />
+          <Card label="Black — R$100/mês"     value={m.plan_black}     icon={Heart} color="#f59e0b" sub={`≈ R$${(m.plan_black * 100).toLocaleString('pt-BR')}/mês`} />
           <Card label="Receita estimada/mês"  value={`R$${((m.plan_essencial*10)+(m.plan_plus*39)+(m.plan_black*100)).toLocaleString('pt-BR')}`} icon={TrendingUp} color="#22c55e" />
         </div>
       </Section>
 
-      {/* Moderação */}
       <Section title="🚨 Moderação">
         <div style={grid}>
-          <Card label="Denúncias pendentes"  value={m.reports_pending}   icon={Flag}     color="#ef4444" />
-          <Card label="Denúncias resolvidas" value={m.reports_resolved}  icon={Flag}     color="#22c55e" />
-          <Card label="Indicações totais"    value={m.referrals_total}   icon={Gift}     color="#a855f7" />
-          <Card label="Indicações convertidas" value={m.referrals_converted} icon={Gift} color="#22c55e" sub={m.referrals_total > 0 ? `${Math.round((m.referrals_converted/m.referrals_total)*100)}% de conversão` : undefined} />
+          <Card label="Denúncias pendentes"    value={m.reports_pending}    icon={Flag} color="#ef4444" />
+          <Card label="Denúncias resolvidas"   value={m.reports_resolved}   icon={Flag} color="#22c55e" />
+          <Card label="Indicações totais"      value={m.referrals_total}    icon={Gift} color="#a855f7" />
+          <Card label="Indicações convertidas" value={m.referrals_converted} icon={Gift} color="#22c55e"
+            sub={m.referrals_total > 0 ? `${Math.round((m.referrals_converted/m.referrals_total)*100)}% de conversão` : undefined} />
         </div>
       </Section>
     </div>

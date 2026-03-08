@@ -2,10 +2,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
 
 export default function AdminMarketing() {
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
@@ -31,23 +34,21 @@ export default function AdminMarketing() {
 
   const { metrics, signups, referrals, deleted } = data
 
-  // Funil
-  const total     = metrics?.total_users ?? 0
-  const verified  = metrics?.total_verified ?? 0
+  const total      = metrics?.total_users ?? 0
+  const verified   = metrics?.total_verified ?? 0
   const subscribed = (metrics?.plan_essencial ?? 0) + (metrics?.plan_plus ?? 0) + (metrics?.plan_black ?? 0)
-  const convRate  = total > 0 ? ((subscribed / total) * 100).toFixed(1) : '0'
+  const convRate   = total > 0 ? ((subscribed / total) * 100).toFixed(1) : '0'
 
   return (
     <div style={{ padding: '32px', maxWidth: '1000px' }}>
       <h1 style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'var(--font-fraunces)', marginBottom: '24px' }}>Marketing</h1>
 
-      {/* Funil */}
       <Section title="Funil de conversão">
         <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {[
-            { label: 'Cadastraram',   value: total,      color: '#3b82f6' },
-            { label: 'Verificaram',   value: verified,   color: '#a855f7' },
-            { label: 'Assinaram',     value: subscribed, color: '#22c55e' },
+            { label: 'Cadastraram', value: total,      color: '#3b82f6' },
+            { label: 'Verificaram', value: verified,   color: '#a855f7' },
+            { label: 'Assinaram',   value: subscribed, color: '#22c55e' },
           ].map((step, i) => {
             const pct = total > 0 ? Math.round((step.value / total) * 100) : 0
             return (
@@ -66,7 +67,6 @@ export default function AdminMarketing() {
         </div>
       </Section>
 
-      {/* Indicações */}
       <Section title={`Indicações (${referrals.length})`}>
         <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', overflow: 'hidden' }}>
           {referrals.length === 0 ? (
@@ -104,7 +104,6 @@ export default function AdminMarketing() {
         </div>
       </Section>
 
-      {/* Contas excluídas */}
       <Section title={`Excluíram a conta (${deleted.length})`}>
         <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', overflow: 'hidden' }}>
           {deleted.length === 0 ? (

@@ -2,11 +2,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
 import { CheckCircle, XCircle } from 'lucide-react'
 
 export default function AdminSeguranca() {
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
   const [pending, setPending] = useState<any[]>([])
   const [banned, setBanned] = useState<any[]>([])
   const [tab, setTab] = useState<'verificacoes' | 'banidos'>('verificacoes')
@@ -75,7 +78,6 @@ export default function AdminSeguranca() {
       </div>
 
       {loading ? <p style={{ color: '#555' }}>Carregando...</p> : (
-
         tab === 'verificacoes' ? (
           pending.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '60px', color: '#444' }}>

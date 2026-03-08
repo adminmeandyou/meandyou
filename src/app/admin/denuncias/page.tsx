@@ -2,11 +2,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
 import { CheckCircle, XCircle, Eye } from 'lucide-react'
 
 export default function AdminDenuncias() {
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
   const [reports, setReports] = useState<any[]>([])
   const [filter, setFilter] = useState<'pending' | 'resolved' | 'ignored'>('pending')
   const [loading, setLoading] = useState(true)
@@ -61,7 +64,6 @@ export default function AdminDenuncias() {
     <div style={{ padding: '32px', maxWidth: '900px' }}>
       <h1 style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'var(--font-fraunces)', marginBottom: '24px' }}>Denúncias</h1>
 
-      {/* Abas */}
       <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
         {(['pending', 'resolved', 'ignored'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{

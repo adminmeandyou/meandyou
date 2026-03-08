@@ -2,27 +2,26 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
-import {
-  LayoutDashboard, Users, DollarSign, Flag,
-  ShieldAlert, TrendingUp, LogOut
-} from 'lucide-react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useRouter } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
+import { LayoutDashboard, Users, DollarSign, Flag, ShieldAlert, TrendingUp, LogOut } from 'lucide-react'
+import { createBrowserClient } from '@supabase/ssr'
 
 const NAV = [
-  { href: '/admin',            label: 'Dashboard',    icon: LayoutDashboard },
-  { href: '/admin/usuarios',   label: 'Usuários',     icon: Users           },
-  { href: '/admin/financeiro', label: 'Financeiro',   icon: DollarSign      },
-  { href: '/admin/denuncias',  label: 'Denúncias',    icon: Flag            },
-  { href: '/admin/seguranca',  label: 'Segurança',    icon: ShieldAlert     },
-  { href: '/admin/marketing',  label: 'Marketing',    icon: TrendingUp      },
+  { href: '/admin',            label: 'Dashboard',  icon: LayoutDashboard },
+  { href: '/admin/usuarios',   label: 'Usuários',   icon: Users           },
+  { href: '/admin/financeiro', label: 'Financeiro', icon: DollarSign      },
+  { href: '/admin/denuncias',  label: 'Denúncias',  icon: Flag            },
+  { href: '/admin/seguranca',  label: 'Segurança',  icon: ShieldAlert     },
+  { href: '/admin/marketing',  label: 'Marketing',  icon: TrendingUp      },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
 
   async function handleLogout() {
     await supabase.auth.signOut()
@@ -31,8 +30,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#0a0a0a', color: '#fff' }}>
-
-      {/* Sidebar */}
       <aside style={{ width: '220px', backgroundColor: '#111', borderRight: '1px solid #222', display: 'flex', flexDirection: 'column', padding: '24px 0', flexShrink: 0 }}>
         <div style={{ padding: '0 20px 24px', borderBottom: '1px solid #222' }}>
           <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: '#fff' }}>
@@ -73,7 +70,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </div>
       </aside>
 
-      {/* Conteúdo */}
       <main style={{ flex: 1, overflow: 'auto' }}>
         {children}
       </main>

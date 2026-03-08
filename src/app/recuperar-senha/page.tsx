@@ -1,137 +1,74 @@
-'use client'
+import { createClient } from '@supabase/supabase-js'
+import { Resend } from 'resend'
+import { NextRequest, NextResponse } from 'next/server'
+import crypto from 'crypto'
 
-import { useState } from 'react'
-import { supabase } from '../lib/supabase'
-import Link from 'next/link'
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
-export default function RecuperarSenha() {
-  const [email, setEmail] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [erro, setErro] = useState('')
-  const [sucesso, setSucesso] = useState(false)
+const resend = new Resend(process.env.RESEND_API_KEY!)
 
-  const handleRecuperar = async () => {
-    setLoading(true)
-    setErro('')
+export async function POST(req: NextRequest) {
+  try {
+    const { email } = await req.json()
+    if (!email) return NextResponse.json({ error: 'Email obrigatório' }, { status: 400 })
 
-    if (!email) {
-      setErro('Digite seu email')
-      setLoading(false)
-      return
-    }
+    // Busca o usuário pelo email
+    const { data: userData } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single()
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/nova-senha`,
+    // Retorna ok mesmo se não encontrar (segurança — não revela se email existe)
+    if (!userData) return NextResponse.json({ ok: true })
+
+    const token = crypto.randomBytes(32).toString('hex')
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000) // 30 minutos
+
+    await supabase.from('password_reset_tokens').insert({
+      user_id: userData.id,
+      token,
+      expires_at: expiresAt.toISOString(),
     })
 
-    if (error) {
-      setErro('Erro ao enviar email. Tente novamente.')
-    } else {
-      setSucesso(true)
-    }
+    const link = `${process.env.NEXT_PUBLIC_APP_URL}/nova-senha?token=${token}`
 
-    setLoading(false)
-  }
-
-  if (sucesso) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px',
-        backgroundColor: 'var(--bg)'
-      }}>
-        <div style={{ textAlign: 'center', maxWidth: '400px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '20px' }}>📧</div>
-          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', marginBottom: '12px', color: 'var(--text)' }}>
-            Email enviado!
-          </h2>
-          <p style={{ color: 'var(--muted)', lineHeight: '1.6', marginBottom: '24px' }}>
-            Enviamos um link para <strong style={{ color: 'var(--text)' }}>{email}</strong>. 
-            Acesse sua caixa de entrada e siga as instruções.
-          </p>
-          <Link href="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: '600' }}>
-            Voltar para o login
-          </Link>
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '20px',
-      backgroundColor: 'var(--bg)'
-    }}>
-      <div style={{ width: '100%', maxWidth: '420px' }}>
-
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1 style={{
-            fontFamily: 'var(--font-fraunces)',
-            fontSize: '36px',
-            marginBottom: '8px',
-            color: 'var(--text)'
-          }}>
-            MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
+    await resend.emails.send({
+      from: 'MeAndYou <noreply@meandyou.com.br>',
+      to: email,
+      subject: '🔑 Redefina sua senha no MeAndYou',
+      html: `
+        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #f8faf9;">
+          <h1 style="font-size: 28px; color: #111a17; margin-bottom: 4px;">
+            MeAnd<span style="color: #2ec4a0;">You</span>
           </h1>
-          <p style={{ color: 'var(--muted)', fontSize: '15px' }}>
-            Recupere o acesso à sua conta
+          <p style="color: #7a9189; font-size: 13px; margin-bottom: 32px;">Redefinição de senha</p>
+
+          <p style="font-size: 15px; color: #444; line-height: 1.6;">
+            Recebemos uma solicitação para redefinir a senha da sua conta.
+            Clique no botão abaixo para criar uma nova senha.
+          </p>
+
+          <div style="background: #fff; border: 1px solid #e0ebe8; border-radius: 16px; padding: 20px; margin: 24px 0; text-align: center;">
+            <p style="font-size: 13px; color: #7a9189; margin-bottom: 16px;">⏱️ Link válido por <strong>30 minutos</strong></p>
+            <a href="${link}" style="display: inline-block; background: #2ec4a0; color: #fff; font-weight: 700; font-size: 16px; padding: 14px 32px; border-radius: 100px; text-decoration: none;">
+              🔑 Redefinir senha
+            </a>
+          </div>
+
+          <p style="font-size: 13px; color: #7a9189; line-height: 1.6;">
+            Se você não solicitou a redefinição, ignore este email. Sua senha permanece a mesma.
           </p>
         </div>
+      `,
+    })
 
-        <div style={{
-          backgroundColor: 'var(--white)',
-          border: '1px solid var(--border)',
-          borderRadius: '24px',
-          padding: '36px',
-          boxShadow: 'var(--shadow)'
-        }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-
-            <div>
-              <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>
-                Email da sua conta
-              </label>
-              <input
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-
-            {erro && (
-              <p style={{ color: 'var(--red)', fontSize: '14px', textAlign: 'center' }}>
-                {erro}
-              </p>
-            )}
-
-            <button
-              className="btn-primary"
-              onClick={handleRecuperar}
-              disabled={loading}
-              style={{ marginTop: '8px', opacity: loading ? 0.6 : 1 }}
-            >
-              {loading ? 'Enviando...' : 'Enviar link de recuperação'}
-            </button>
-
-            <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '14px' }}>
-              Lembrou a senha?{' '}
-              <Link href="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: '600' }}>
-                Voltar para login
-              </Link>
-            </p>
-
-          </div>
-        </div>
-
-      </div>
-    </div>
-  )
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error(err)
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+  }
 }

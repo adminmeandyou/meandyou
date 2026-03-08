@@ -1,33 +1,16 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 
 async function linkReferral(newUserId: string, refCode: string) {
   if (!refCode) return
-
-  const { data: referrer } = await supabase
-    .from('profiles')
-    .select('id')
-    .eq('referral_code', refCode)
-    .single()
-
-  if (!referrer || referrer.id === newUserId) return
-
-  await supabase
-    .from('profiles')
-    .update({ referred_by: referrer.id })
-    .eq('id', newUserId)
-
-  await supabase
-    .from('referrals')
-    .insert({
-      referrer_id: referrer.id,
-      referred_id: newUserId,
-      status: 'pending',
-    })
+  await fetch('/api/auth/link-referral', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ newUserId, refCode }),
+  })
 }
 
 export default function Cadastro() {
@@ -79,34 +62,25 @@ export default function Cadastro() {
       return
     }
 
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password: senha,
-      options: {
-        data: {
-          nome_completo: nomeCompleto.trim(),
-          nome_exibicao: nomeExibicao.trim(),
-          telefone: telefoneLimpo,
-        }
-      }
+    const res = await fetch('/api/auth/cadastro', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email,
+        senha,
+        nomeCompleto: nomeCompleto.trim(),
+        nomeExibicao: nomeExibicao.trim(),
+        telefone: telefoneLimpo,
+        refCode,
+      }),
     })
 
-    if (error) {
-      setErro(error.message === 'User already registered' ? 'Este email já está cadastrado.' : error.message)
+    const data = await res.json()
+
+    if (!res.ok) {
+      setErro(data.error || 'Erro ao criar conta')
       setLoading(false)
       return
-    }
-
-    if (data.user) {
-      await supabase.from('users').update({
-        phone: telefoneLimpo,
-        nome_completo: nomeCompleto.trim(),
-      }).eq('id', data.user.id)
-
-      // Vincula indicação se veio de um link de referral
-      if (refCode) {
-        await linkReferral(data.user.id, refCode)
-      }
     }
 
     setSucesso(true)
@@ -142,8 +116,6 @@ export default function Cadastro() {
             MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '15px' }}>Crie sua conta e encontre conexões reais</p>
-
-          {/* Badge de convite */}
           {refCode && (
             <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'var(--accent)', color: '#fff', fontSize: '13px', fontWeight: '600', padding: '6px 14px', borderRadius: '100px' }}>
               🎁 Você foi convidado! Ganhe SuperLikes, Boost e mais ao assinar
@@ -155,94 +127,45 @@ export default function Cadastro() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
             <div>
-              <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>
-                Nome completo
-              </label>
-              <input
-                type="text"
-                placeholder="Seu nome e sobrenome"
-                value={nomeCompleto}
-                onChange={(e) => setNomeCompleto(e.target.value)}
-              />
-              <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
-                Usado apenas para verificação de identidade. Não aparece no perfil.
-              </p>
+              <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>Nome completo</label>
+              <input type="text" placeholder="Seu nome e sobrenome" value={nomeCompleto} onChange={(e) => setNomeCompleto(e.target.value)} />
+              <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>Usado apenas para verificação de identidade. Não aparece no perfil.</p>
             </div>
 
             <div>
-              <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>
-                Nome na plataforma
-              </label>
-              <input
-                type="text"
-                placeholder="Como quer ser chamado(a)"
-                value={nomeExibicao}
-                onChange={(e) => setNomeExibicao(e.target.value)}
-              />
-              <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>
-                Este é o nome que outros usuários vão ver.
-              </p>
+              <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>Nome na plataforma</label>
+              <input type="text" placeholder="Como quer ser chamado(a)" value={nomeExibicao} onChange={(e) => setNomeExibicao(e.target.value)} />
+              <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '4px' }}>Este é o nome que outros usuários vão ver.</p>
             </div>
 
             <div>
-              <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>
-                Telefone (WhatsApp)
-              </label>
-              <input
-                type="tel"
-                placeholder="(00) 00000-0000"
-                value={telefone}
-                onChange={(e) => setTelefone(formatarTelefone(e.target.value))}
-              />
+              <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>Telefone (WhatsApp)</label>
+              <input type="tel" placeholder="(00) 00000-0000" value={telefone} onChange={(e) => setTelefone(formatarTelefone(e.target.value))} />
             </div>
 
             <div>
-              <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>
-                Email
-              </label>
-              <input
-                type="email"
-                placeholder="seu@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
+              <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>Email</label>
+              <input type="email" placeholder="seu@email.com" value={email} onChange={(e) => setEmail(e.target.value)} />
             </div>
 
             <div>
-              <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>
-                Senha
-              </label>
-              <input
-                type="password"
-                placeholder="Mínimo 6 caracteres"
-                value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-              />
+              <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>Senha</label>
+              <input type="password" placeholder="Mínimo 6 caracteres" value={senha} onChange={(e) => setSenha(e.target.value)} />
             </div>
 
-            {erro && (
-              <p style={{ color: 'var(--red)', fontSize: '14px', textAlign: 'center' }}>{erro}</p>
-            )}
+            {erro && <p style={{ color: 'var(--red)', fontSize: '14px', textAlign: 'center' }}>{erro}</p>}
 
-            <button
-              className="btn-primary"
-              onClick={handleCadastro}
-              disabled={loading}
-              style={{ marginTop: '8px', opacity: loading ? 0.6 : 1 }}
-            >
+            <button className="btn-primary" onClick={handleCadastro} disabled={loading} style={{ marginTop: '8px', opacity: loading ? 0.6 : 1 }}>
               {loading ? 'Criando conta...' : 'Criar conta'}
             </button>
 
             <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '14px' }}>
               Já tem conta?{' '}
-              <Link href="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: '600' }}>
-                Entrar
-              </Link>
+              <Link href="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: '600' }}>Entrar</Link>
             </p>
 
           </div>
         </div>
-
       </div>
     </div>
   )

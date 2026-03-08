@@ -2,10 +2,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
 
 export default function AdminFinanceiro() {
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
   const [revenue, setRevenue] = useState<any[]>([])
   const [signups, setSignups] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -34,7 +37,6 @@ export default function AdminFinanceiro() {
     <div style={{ padding: '32px', maxWidth: '1000px' }}>
       <h1 style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'var(--font-fraunces)', marginBottom: '24px' }}>Financeiro</h1>
 
-      {/* Cards totais */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '12px', marginBottom: '32px' }}>
         <div style={card}>
           <p style={cardLabel}>Receita estimada/mês</p>
@@ -50,7 +52,6 @@ export default function AdminFinanceiro() {
         </div>
       </div>
 
-      {/* Por plano */}
       <Section title="Assinaturas por plano">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {revenue.map(r => (
@@ -73,7 +74,6 @@ export default function AdminFinanceiro() {
         </div>
       </Section>
 
-      {/* Gráfico de cadastros */}
       <Section title="Cadastros por dia (últimos 30 dias)">
         <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: '120px' }}>
