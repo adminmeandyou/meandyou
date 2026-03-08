@@ -2,7 +2,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
+import { supabase } from '@/app/lib/supabase'
 import { Users, UserCheck, Ban, TrendingUp, Flag, Heart, Gift } from 'lucide-react'
 
 interface Metrics {
@@ -40,9 +40,9 @@ function Card({ label, value, sub, icon: Icon, color = '#e11d48' }: any) {
 }
 
 export default function AdminDashboard() {
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  
+    
+    
   )
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [loading, setLoading] = useState(true)

@@ -2,12 +2,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
+import { supabase } from '@/app/lib/supabase'
 
 export default function AdminFinanceiro() {
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  
+    
+    
   )
   const [revenue, setRevenue] = useState<any[]>([])
   const [signups, setSignups] = useState<any[]>([])

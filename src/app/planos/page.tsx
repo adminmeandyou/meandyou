@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { Check, Zap, Star, Crown } from 'lucide-react'
 
@@ -16,10 +16,12 @@ const PLANS = [
     color: '#ffffff',
     checkoutUrl: 'https://pay.cakto.com.br/cip6fy9_797209',
     features: [
-      'Até 3 fotos no perfil',
-      '1h de videochamada por dia',
-      'Sistema de matches',
+      'Até 10 fotos no perfil',
+      '5 curtidas por dia',
+      '1 Ticket por dia',
+      '1 Lupa por dia',
       'Chat com seus matches',
+      '1h de videochamada por dia',
     ],
   },
   {
@@ -31,11 +33,13 @@ const PLANS = [
     checkoutUrl: 'https://pay.cakto.com.br/3arwn9f',
     highlight: true,
     features: [
-      'Até 5 fotos no perfil',
-      '5h de videochamada por dia',
+      'Até 10 fotos no perfil',
+      '30 curtidas por dia',
+      '2 Tickets por dia',
+      '1 Lupa por dia',
       'SuperLikes',
-      'Chat com seus matches',
-      'Acesso prioritário na busca',
+      'Destaque na busca',
+      '5h de videochamada por dia',
     ],
   },
   {
@@ -46,12 +50,14 @@ const PLANS = [
     color: '#f5c842',
     checkoutUrl: 'https://pay.cakto.com.br/hftqkrj',
     features: [
-      'Até 8 fotos no perfil',
-      '10h de videochamada por dia',
-      'SuperLikes + Boosts',
-      'Chat com seus matches',
-      'Acesso prioritário na busca',
+      'Até 10 fotos no perfil',
+      'Curtidas ilimitadas',
+      '10 SuperLikes por dia',
+      '3 Tickets por dia',
+      '2 Lupas por dia',
+      'Boosts (máx. 2 simultâneos)',
       'Filtros Sugar e Fetiche',
+      '10h de videochamada por dia',
     ],
   },
 ]
@@ -60,7 +66,6 @@ const PLANS = [
 
 export default function PlanosPage() {
   const { user } = useAuth()
-  const supabase = createClient()
   const [currentPlan, setCurrentPlan] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -83,9 +88,7 @@ export default function PlanosPage() {
 
   function handleCheckout(plan: typeof PLANS[0]) {
     if (currentPlan === plan.id) return
-
-    // Redireciona para o checkout da Cakto
-    // A Cakto vai capturar o email do usuário no checkout
+    // Redireciona para o checkout da Cakto — email capturado lá
     window.open(plan.checkoutUrl, '_blank')
   }
 

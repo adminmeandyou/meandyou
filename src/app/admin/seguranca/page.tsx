@@ -2,13 +2,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
+import { supabase } from '@/app/lib/supabase'
 import { CheckCircle, XCircle } from 'lucide-react'
 
 export default function AdminSeguranca() {
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  
+    
+    
   )
   const [pending, setPending] = useState<any[]>([])
   const [banned, setBanned] = useState<any[]>([])
