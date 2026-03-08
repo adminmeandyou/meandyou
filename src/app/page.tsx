@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/app/lib/supabase'
 import { useRouter } from 'next/navigation'
 
 // ─── FAQ com estado React (sem manipulação direta de DOM) ────────────────────
@@ -68,14 +68,18 @@ export default function Home() {
   const [checking, setChecking] = useState(true)
 
   useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) {
-        router.push('/dashboard')
-      } else {
+    supabase.auth.getUser()
+      .then(({ data: { user } }) => {
+        if (user) {
+          router.push('/dashboard')
+        } else {
+          setChecking(false)
+        }
+      })
+      .catch(() => {
+        // Se falhar por qualquer motivo, mostra a landing normalmente
         setChecking(false)
-      }
-    })
+      })
   }, [router])
 
   if (checking) {
@@ -90,7 +94,7 @@ export default function Home() {
 
   const faqItems = [
     { q: 'Por que não tem plano gratuito?', a: 'Cobrar mesmo que R$10 afasta a maioria dos golpistas e perfis falsos. Quem está aqui pagou para estar — isso muda tudo a qualidade das interações.' },
-    { q: 'O que é o plano Camarote Black?', a: 'O plano premium com acesso a todos os perfis da plataforma, área exclusiva Backstage, curtidas ilimitadas, SuperLike ilimitado e suporte prioritário 24h.' },
+    { q: 'O que é o plano Camarote Black?', a: 'O plano premium com acesso a todos os perfis da plataforma, área exclusiva Backstage, curtidas ilimitadas, 10 SuperCurtidas por dia, 2 Lupas/dia para revelar perfis no Destaque e suporte prioritário 24h.' },
     { q: 'Como funciona o filtro de exclusão?', a: 'Nos planos Plus e Black, você pode marcar características que não quer ver nos resultados. Clique uma vez para incluir, de novo para excluir. Simples assim.' },
     { q: 'O que acontece com meus documentos na verificação?', a: 'Seus documentos são usados exclusivamente para verificar sua identidade e descartados em seguida. Guardamos apenas o resultado da verificação (aprovado/reprovado), nunca a imagem do documento.' },
     { q: 'Posso cancelar quando quiser?', a: 'Sim. Sem fidelidade, sem multa, sem burocracia. Cancele direto pelo app ou pela loja de aplicativos a qualquer momento.' },
@@ -473,8 +477,10 @@ export default function Home() {
                   <li>Todos os filtros acumulados</li>
                   <li>Filtro de exclusão</li>
                   <li>Ver quem curtiu você</li>
-                  <li>Desfazer curtida (ilimitado)</li>
+                  <li>Desfazer curtida (1/dia)</li>
                   <li>Boost semanal de perfil</li>
+                  <li>1 Lupa/dia no Destaque</li>
+                  <li>2 tickets de roleta/dia</li>
                   <li>Área exclusiva Camarote</li>
                 </ul>
                 <a href="/cadastro?plano=plus" className="lp-btn-price lp-btn-green">
@@ -493,10 +499,11 @@ export default function Home() {
                 <ul className="lp-feats">
                   <li className="gold-check">Tudo do Plus</li>
                   <li className="gold-check">Curtidas ilimitadas</li>
+                  <li className="gold-check">10 SuperCurtidas/dia</li>
                   <li className="gold-check">Área exclusiva Backstage</li>
-                  <li className="gold-check">Vê e interage com todos os planos</li>
+                  <li className="gold-check">2 Lupas/dia no Destaque</li>
+                  <li className="gold-check">3 tickets de roleta/dia</li>
                   <li className="gold-check">Destaque máximo no algoritmo</li>
-                  <li className="gold-check">SuperLike ilimitado</li>
                   <li className="gold-check">Suporte prioritário 24h</li>
                 </ul>
                 <a href="/cadastro?plano=black" className="lp-btn-price lp-btn-gold">
@@ -504,6 +511,36 @@ export default function Home() {
                 </a>
               </div>
 
+            </div>
+          </div>
+        </section>
+
+        {/* ── Gamificação / Extras ── */}
+        <section style={{ padding: '100px 56px', background: 'var(--lp-accent-light)' }}>
+          <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
+            <p className="lp-section-label">Muito mais do que curtidas</p>
+            <h2 className="lp-section-title">Recompensas por estar aqui</h2>
+            <p style={{ color: 'var(--lp-muted)', fontSize: '16px', maxWidth: '560px', margin: '0 auto 60px' }}>
+              Todo dia tem prêmio. Quanto mais você usa, mais você ganha.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+              {[
+                { icon: '🎰', t: 'Roleta diária', d: 'Gire todo dia e ganhe SuperCurtidas, Lupas, Boosts e até 1 dia de plano superior. Cada plano dá mais tickets por dia.' },
+                { icon: '🔥', t: 'Streak de acesso', d: 'Entre todos os dias e desbloqueie recompensas crescentes no calendário mensal. Sequência de 30 dias = prêmios raros.' },
+                { icon: '💌', t: 'Indique e ganhe', d: 'Cada amigo que entrar pelo seu link te rende 1 SuperCurtida. Indicou 3? Ganhe 1 Boost. Quem entrou ganha 3 tickets de boas-vindas.' },
+              ].map((item, i) => (
+                <div key={i} style={{
+                  background: 'var(--lp-white)',
+                  borderRadius: '24px',
+                  padding: '36px 28px',
+                  textAlign: 'left',
+                  border: '1px solid var(--lp-border)',
+                }}>
+                  <div style={{ fontSize: '40px', marginBottom: '16px' }}>{item.icon}</div>
+                  <h3 style={{ fontFamily: "'Fraunces', serif", fontSize: '20px', fontWeight: 700, marginBottom: '10px' }}>{item.t}</h3>
+                  <p style={{ fontSize: '13px', color: 'var(--lp-muted)', lineHeight: 1.7, margin: 0 }}>{item.d}</p>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -533,8 +570,8 @@ export default function Home() {
                 { t: 'Mantenha o celular carregado', d: 'Vá com bateria cheia e tenha um plano caso precise sair.' },
                 { t: 'Nunca transfira dinheiro', d: 'Se alguém pedir PIX antes do encontro: denuncie imediatamente.' },
                 { t: 'Não compartilhe dados pessoais', d: 'Endereço e dados bancários nunca antes de estabelecer confiança.' },
-                { t: 'Monitoramento de mensagens', d: 'Mensagens suspeitas são sinalizadas automaticamente.' },
-                { t: 'Sem VPN ou proxy', d: 'Não permitimos acesso por redes ocultas para sua segurança.' },
+                { t: 'Denúncia com 1 toque', d: 'Qualquer perfil pode ser denunciado diretamente pelo app. Moderação em até 24h.' },
+                { t: 'Banimento permanente por CPF', d: 'Quem é banido não volta. Bloqueio vinculado ao CPF, não ao email.' },
                 { t: 'Em caso de perigo', d: 'Use o botão de emergência no app ou ligue para o 190.' },
               ].map((item, i) => (
                 <div key={i} className="lp-safety-item">
