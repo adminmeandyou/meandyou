@@ -3,7 +3,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 // Rotas protegidas (requer autenticação)
-const PROTECTED_ROUTES = ['/busca', '/match', '/chat', '/perfil', '/planos', '/dashboard']
+const PROTECTED_ROUTES = [
+  '/busca', '/match', '/chat', '/perfil', '/planos', '/dashboard',
+  '/conversas', '/loja', '/destaque', '/indicar', '/backstage',
+  '/roleta', '/streak', '/onboarding', '/notificacoes', '/suporte',
+  '/ajuda', '/deletar-conta',
+]
 
 // Rotas públicas (redireciona para /busca se já logado)
 const PUBLIC_ONLY_ROUTES = ['/login', '/cadastro', '/recuperar-senha']
@@ -55,7 +60,7 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL('/busca', req.url))
   }
 
-  // Verificar se usuário está banido
+  // Verificar se usuário está banido ou não verificado
   if (user && isProtected) {
     const { data: userRow } = await supabase
       .from('users')
@@ -67,7 +72,6 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/banido', req.url))
     }
 
-    // Redirecionar para verificação se não verificou ainda
     if (!userRow?.verified && !pathname.startsWith('/verificacao')) {
       return NextResponse.redirect(new URL('/verificacao', req.url))
     }
@@ -78,6 +82,6 @@ export async function middleware(req: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|api/webhooks).*)',
+    '/((?!_next/static|_next/image|favicon.ico|api/webhooks|.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp)).*)',
   ],
 }

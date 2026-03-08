@@ -16,22 +16,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email e senha obrigatórios' }, { status: 400 })
     }
 
-    // 1. Verificar rate limiting
+    // 1. Rate limit
     const { data: limitData } = await supabaseAdmin.rpc('check_login_attempts', {
       p_email: email,
     })
 
     if (limitData?.blocked) {
-      const blockedUntil = new Date(limitData.blocked_until)
-      const minutesLeft = Math.ceil((blockedUntil.getTime() - Date.now()) / 60000)
-
+      const minutesLeft = Math.ceil(
+        (new Date(limitData.blocked_until).getTime() - Date.now()) / 60000
+      )
       return NextResponse.json({
         error: `Muitas tentativas. Tente novamente em ${minutesLeft} minuto(s).`,
         blocked: true,
       }, { status: 429 })
     }
 
-    // 2. Tentar login
+    // 2. Login
     const { data: authData, error: authError } = await supabaseAdmin.auth.signInWithPassword({
       email,
       password,
@@ -54,11 +54,13 @@ export async function POST(req: NextRequest) {
       }, { status: 401 })
     }
 
-    // 4. Verificar se está banido
+    const userId = authData.user.id
+
+    // 4. Verificar banimento
     const { data: userRow } = await supabaseAdmin
       .from('users')
-      .select('banned')
-      .eq('id', authData.user.id)
+      .select('banned, verified')
+      .eq('id', userId)
       .single()
 
     if (userRow?.banned) {
@@ -68,11 +70,41 @@ export async function POST(req: NextRequest) {
       }, { status: 403 })
     }
 
-    return NextResponse.json({
+    // 5. Atualizar streak e last_active_at (fire-and-forget — não bloqueia o login)
+    Promise.all([
+      supabaseAdmin.rpc('update_streak', { p_user_id: userId }),
+      supabaseAdmin.from('profiles')
+        .update({ last_active_at: new Date().toISOString() })
+        .eq('id', userId),
+    ]).catch(err => console.error('Erro ao atualizar streak/last_active:', err))
+
+    // 6. Setar cookies de sessão manualmente na resposta
+    // signInWithPassword em API Route NÃO seta cookie automaticamente
+    const response = NextResponse.json({
       success: true,
-      session: authData.session,
       user: authData.user,
+      verified: userRow?.verified ?? false,
     })
+
+    const { access_token, refresh_token, expires_at } = authData.session
+
+    response.cookies.set('sb-access-token', access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7, // 7 dias
+    })
+
+    response.cookies.set('sb-refresh-token', refresh_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 30, // 30 dias
+    })
+
+    return response
 
   } catch (err) {
     console.error('Erro no login:', err)

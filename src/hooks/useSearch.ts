@@ -2,6 +2,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 
 export interface SearchFilters {
@@ -18,37 +19,38 @@ export interface ProfileResult {
   bio: string
   city: string
   state: string
-  lat: number
-  lng: number
+  // lat e lng NUNCA expostos em selects públicos — removidos da interface
   gender: string
   pronouns: string
   photo_best: string | null
-  photo_verification: string | null
   distance_km: number
   age: number
+  profile_score?: number  // não exibir ao usuário — só para ordenação interna
+  last_active_at?: string | null
+  show_last_active?: boolean
 }
 
 const DEFAULT_FILTERS: SearchFilters = {
   maxDistanceKm: 50,
-  minAge: 18,
-  maxAge: 99,
-  gender: 'all',
+  minAge:        18,
+  maxAge:        99,
+  gender:        'all',
 }
 
 export function useSearch() {
-  const { user, supabase } = useAuth()
+  const { user } = useAuth()
 
-  const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS)
-  const [results, setResults] = useState<ProfileResult[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [filters, setFilters]             = useState<SearchFilters>(DEFAULT_FILTERS)
+  const [results, setResults]             = useState<ProfileResult[]>([])
+  const [loading, setLoading]             = useState(false)
+  const [error, setError]                 = useState<string | null>(null)
   const [locationGranted, setLocationGranted] = useState(false)
-  const [savedFilters, setSavedFilters] = useState<SearchFilters | null>(null)
+  const [savedFilters, setSavedFilters]   = useState<SearchFilters | null>(null)
 
   useEffect(() => {
     if (!user) return
     loadSavedFilters()
-  }, [user])
+  }, [user?.id])
 
   async function loadSavedFilters() {
     if (!user) return
@@ -58,12 +60,12 @@ export function useSearch() {
       .eq('user_id', user.id)
       .single()
 
-    if (data && data.search_saved) {
+    if (data?.search_saved) {
       const saved: SearchFilters = {
         maxDistanceKm: data.search_max_distance_km ?? 50,
-        minAge: data.search_min_age ?? 18,
-        maxAge: data.search_max_age ?? 99,
-        gender: data.search_gender ?? 'all',
+        minAge:        data.search_min_age         ?? 18,
+        maxAge:        data.search_max_age         ?? 99,
+        gender:        data.search_gender          ?? 'all',
       }
       setFilters(saved)
       setSavedFilters(saved)
@@ -76,7 +78,10 @@ export function useSearch() {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude: lat, longitude: lng } = pos.coords
-          await supabase.from('profiles').update({ lat, lng }).eq('id', user.id)
+          await supabase
+            .from('profiles')
+            .update({ lat, lng, last_active_at: new Date().toISOString() })
+            .eq('id', user.id)
           setLocationGranted(true)
           resolve(true)
         },
@@ -97,29 +102,25 @@ export function useSearch() {
     const activeFilters = customFilters ?? filters
 
     try {
+      // Parâmetros corretos da RPC search_profiles conforme skill
       const { data, error: rpcError } = await supabase.rpc('search_profiles', {
-        current_user_id: user.id,
-        max_distance_km: activeFilters.maxDistanceKm,
-        min_age: activeFilters.minAge,
-        max_age: activeFilters.maxAge,
+        p_user_id:       user.id,
+        p_max_distance:  activeFilters.maxDistanceKm,
+        p_min_age:       activeFilters.minAge,
+        p_max_age:       activeFilters.maxAge,
+        p_gender:        activeFilters.gender === 'all' ? null : activeFilters.gender,
       })
 
       if (rpcError) throw rpcError
 
-      let filtered = data as ProfileResult[]
-
-      if (activeFilters.gender !== 'all') {
-        filtered = filtered.filter((p) => p.gender === activeFilters.gender)
-      }
-
-      setResults(filtered)
+      setResults((data as ProfileResult[]) ?? [])
     } catch (err: any) {
       setError('Erro ao buscar perfis. Tente novamente.')
       console.error(err)
     } finally {
       setLoading(false)
     }
-  }, [user, filters])
+  }, [user?.id, filters])
 
   async function saveFilters() {
     if (!user) return
@@ -127,10 +128,10 @@ export function useSearch() {
       .from('filters')
       .update({
         search_max_distance_km: filters.maxDistanceKm,
-        search_min_age: filters.minAge,
-        search_max_age: filters.maxAge,
-        search_gender: filters.gender,
-        search_saved: true,
+        search_min_age:         filters.minAge,
+        search_max_age:         filters.maxAge,
+        search_gender:          filters.gender,
+        search_saved:           true,
       })
       .eq('user_id', user.id)
     setSavedFilters(filters)

@@ -1,23 +1,36 @@
+// src/app/api/auth/cadastro/route.ts
 import { createClient } from '@supabase/supabase-js'
-import { Resend } from 'resend'
 import { NextRequest, NextResponse } from 'next/server'
+import { sendWelcomeEmail } from '@/app/lib/email'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const resend = new Resend(process.env.RESEND_API_KEY!)
-
 export async function POST(req: NextRequest) {
   try {
-    const { email, senha, nomeCompleto, nomeExibicao, telefone, refCode } = await req.json()
+    const { email, senha, nomeCompleto, nomeExibicao, telefone, cpf, refCode } = await req.json()
 
-    if (!email || !senha || !nomeCompleto || !nomeExibicao || !telefone) {
+    if (!email || !senha || !nomeCompleto || !nomeExibicao || !telefone || !cpf) {
       return NextResponse.json({ error: 'Preencha todos os campos' }, { status: 400 })
     }
 
-    // Cria o usuário no Supabase Auth
+    // 1. Verificar CPF duplicado — 1 conta por CPF
+    const { data: cpfExistente } = await supabase
+      .from('users')
+      .select('id')
+      .eq('cpf', cpf)
+      .single()
+
+    if (cpfExistente) {
+      return NextResponse.json(
+        { error: 'Já existe uma conta cadastrada com este CPF.' },
+        { status: 400 }
+      )
+    }
+
+    // 2. Criar usuário no Supabase Auth
     const { data, error } = await supabase.auth.admin.createUser({
       email,
       password: senha,
@@ -38,13 +51,29 @@ export async function POST(req: NextRequest) {
 
     const userId = data.user.id
 
-    // Atualiza tabela users
+    // 3. Atualizar tabela users com CPF e telefone
     await supabase.from('users').update({
       phone: telefone,
       nome_completo: nomeCompleto,
+      cpf,
     }).eq('id', userId)
 
-    // Vincula indicação se veio de referral
+    // 4. Inicializar saldos zerados
+    await Promise.all([
+      supabase.from('user_tickets').insert({ user_id: userId, amount: 0 }),
+      supabase.from('user_lupas').insert({ user_id: userId, amount: 0 }),
+      supabase.from('user_superlikes').insert({ user_id: userId, amount: 0 }),
+      supabase.from('user_boosts').insert({ user_id: userId, amount: 0 }),
+      supabase.from('user_rewinds').insert({ user_id: userId, amount: 0 }),
+      supabase.from('daily_streaks').insert({
+        user_id: userId,
+        current_streak: 0,
+        longest_streak: 0,
+        last_login_date: null,
+      }),
+    ])
+
+    // 5. Vincular indicação se veio de referral
     if (refCode) {
       const { data: referrer } = await supabase
         .from('profiles')
@@ -53,45 +82,25 @@ export async function POST(req: NextRequest) {
         .single()
 
       if (referrer && referrer.id !== userId) {
-        await supabase.from('profiles').update({ referred_by: referrer.id }).eq('id', userId)
+        await supabase.from('profiles')
+          .update({ referred_by: referrer.id })
+          .eq('id', userId)
+
         await supabase.from('referrals').insert({
           referrer_id: referrer.id,
           referred_id: userId,
           status: 'pending',
         })
+
+        // Novo usuário indicado ganha 3 tickets de boas-vindas
+        await supabase.from('user_tickets')
+          .update({ amount: 3 })
+          .eq('user_id', userId)
       }
     }
 
-    // Envia email de boas-vindas via Resend
-    await resend.emails.send({
-      from: 'MeAndYou <noreply@meandyou.com.br>',
-      to: email,
-      subject: '💚 Bem-vindo(a) ao MeAndYou!',
-      html: `
-        <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #f8faf9;">
-          <h1 style="font-size: 28px; color: #111a17; margin-bottom: 4px;">
-            MeAnd<span style="color: #2ec4a0;">You</span>
-          </h1>
-          <p style="color: #7a9189; font-size: 13px; margin-bottom: 32px;">Conexões reais</p>
-
-          <p style="font-size: 16px; color: #111a17;">Olá, <strong>${nomeExibicao}</strong>! 👋</p>
-          <p style="font-size: 15px; color: #444; line-height: 1.6;">
-            Sua conta foi criada com sucesso! O próximo passo é completar seu perfil
-            e verificar sua identidade para começar a usar o app.
-          </p>
-
-          <div style="background: #fff; border: 1px solid #e0ebe8; border-radius: 16px; padding: 20px; margin: 24px 0; text-align: center;">
-            <a href="${process.env.NEXT_PUBLIC_APP_URL}/perfil" style="display: inline-block; background: #2ec4a0; color: #fff; font-weight: 700; font-size: 16px; padding: 14px 32px; border-radius: 100px; text-decoration: none;">
-              💚 Completar meu perfil
-            </a>
-          </div>
-
-          <p style="font-size: 13px; color: #7a9189; line-height: 1.6;">
-            Se você não criou uma conta no MeAndYou, ignore este email.
-          </p>
-        </div>
-      `,
-    })
+    // 6. Email de boas-vindas via lib/email.ts
+    await sendWelcomeEmail(email, nomeExibicao)
 
     return NextResponse.json({ ok: true })
   } catch (err) {

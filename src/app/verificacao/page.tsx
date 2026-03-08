@@ -7,14 +7,13 @@ import { supabase } from '../lib/supabase'
 type Status = 'loading' | 'desktop' | 'aguardando' | 'dados' | 'doc_frente' | 'doc_verso' | 'selfie' | 'enviando' | 'sucesso' | 'erro' | 'expirado' | 'usado'
 type ModoCaptura = 'escolha' | 'camera' | 'arquivo'
 
-// Sequência de movimentos do liveness
 const PASSOS_LIVENESS = [
-  { id: 'frente',   instrucao: 'Olhe para a câmera',      emoji: '😐' },
+  { id: 'frente',   instrucao: 'Olhe para a câmera',         emoji: '😐' },
   { id: 'direita',  instrucao: 'Vire o rosto para a direita', emoji: '➡️' },
   { id: 'esquerda', instrucao: 'Vire o rosto para a esquerda', emoji: '⬅️' },
-  { id: 'cima',     instrucao: 'Levante o queixo',         emoji: '⬆️' },
-  { id: 'baixo',    instrucao: 'Abaixe o queixo',          emoji: '⬇️' },
-  { id: 'piscar',   instrucao: 'Pisque duas vezes',        emoji: '😉' },
+  { id: 'cima',     instrucao: 'Levante o queixo',            emoji: '⬆️' },
+  { id: 'baixo',    instrucao: 'Abaixe o queixo',             emoji: '⬇️' },
+  { id: 'piscar',   instrucao: 'Pisque duas vezes',           emoji: '😉' },
 ]
 
 function Verificacao() {
@@ -41,7 +40,6 @@ function Verificacao() {
   const [modoFrente, setModoFrente] = useState<ModoCaptura>('escolha')
   const [modoVerso, setModoVerso] = useState<ModoCaptura>('escolha')
 
-  // Face-api liveness state
   const [faceApiCarregado, setFaceApiCarregado] = useState(false)
   const [livnessIniciado, setLivenessIniciado] = useState(false)
   const [passoAtual, setPassoAtual] = useState(0)
@@ -82,7 +80,6 @@ function Verificacao() {
     return `${nums.slice(0,3)}.${nums.slice(3,6)}.${nums.slice(6,9)}-${nums.slice(9)}`
   }
 
-  // Carrega face-api.js dinamicamente
   const carregarFaceApi = async () => {
     if ((window as any).faceapi) { setFaceApiCarregado(true); return }
     return new Promise<void>((resolve, reject) => {
@@ -232,8 +229,6 @@ function Verificacao() {
     }, 'image/jpeg', 0.92)
   }
 
-  // ─── LIVENESS com face-api.js ───────────────────────────────────────────────
-
   const iniciarLiveness = async () => {
     setFeedbackLiveness('Carregando detector facial...')
     try {
@@ -267,7 +262,6 @@ function Verificacao() {
     pararCamera('selfie')
   }
 
-  // Roda detecção a cada 300ms
   useEffect(() => {
     if (!deteccaoAtiva || !faceApiCarregado || livenessOk) return
     deteccaoLoopRef.current = setInterval(() => detectarPasso(), 300)
@@ -290,11 +284,9 @@ function Verificacao() {
 
     const landmarks = deteccao.landmarks
     const passoId = PASSOS_LIVENESS[passoAtual]?.id
-
     let passou = false
 
     if (passoId === 'frente') {
-      // Detecta rosto centralizado
       const nose = landmarks.getNose()
       const jaw = landmarks.getJawOutline()
       const noseTip = nose[3]
@@ -336,7 +328,6 @@ function Verificacao() {
       const chin = landmarks.getJawOutline()[8]
       const noseBridge = nose[0]
       const diff = chin.y - noseBridge.y
-      // Queixo levantado: distância nariz-queixo diminui no eixo Y
       if (diff < 65) { passou = true; setFeedbackLiveness('✅ Ótimo!') }
       else setFeedbackLiveness('Levante mais o queixo')
     }
@@ -351,7 +342,6 @@ function Verificacao() {
     }
 
     if (passoId === 'piscar') {
-      // Calcula EAR (Eye Aspect Ratio) para detectar piscar
       const leftEye = landmarks.getLeftEye()
       const rightEye = landmarks.getRightEye()
       const earEsq = calcularEAR(leftEye)
@@ -379,10 +369,7 @@ function Verificacao() {
       const proximoPasso = passoAtual + 1
 
       if (proximoPasso >= PASSOS_LIVENESS.length) {
-        // Todos os passos concluídos — captura selfie automática
-        setTimeout(() => {
-          capturarSelfieFinal()
-        }, 600)
+        setTimeout(() => { capturarSelfieFinal() }, 600)
       } else {
         setTimeout(() => {
           setPassoAtual(proximoPasso)
@@ -394,7 +381,6 @@ function Verificacao() {
   }
 
   const calcularEAR = (pontos: { x: number; y: number }[]) => {
-    // Eye Aspect Ratio: distância vertical / distância horizontal
     const A = dist(pontos[1], pontos[5])
     const B = dist(pontos[2], pontos[4])
     const C = dist(pontos[0], pontos[3])
@@ -427,6 +413,7 @@ function Verificacao() {
   // ─── Upload e envio ──────────────────────────────────────────────────────────
 
   const uploadArquivo = async (file: File, caminho: string) => {
+    // Bucket documentos é PRIVADO — usar upload autenticado (anon key com sessão ativa)
     const { error } = await supabase.storage.from('documentos').upload(caminho, file, { upsert: true })
     if (error) throw new Error('Erro ao fazer upload: ' + error.message)
     return caminho
@@ -441,16 +428,16 @@ function Verificacao() {
     if (!selfieFile) { setErroForm('Conclua a verificação de rosto antes de continuar.'); return }
     setStatus('enviando')
     try {
+      // Upload dos arquivos para o bucket documentos (privado)
       await uploadArquivo(docFrente, `${userId}/frente.jpg`)
       if (docVerso) await uploadArquivo(docVerso, `${userId}/verso.jpg`)
       await uploadArquivo(selfieFile, `${userId}/selfie.jpg`)
-      await supabase.from('users').update({
-        cpf: cpfLimpo,
-        documento_tipo: tipoDoc,
-        documento_verificado: false,
-        selfie_url: `${userId}/selfie.jpg`,
-        documento_url: `${userId}/frente.jpg`,
-      }).eq('id', userId)
+
+      // ✅ CORREÇÃO: só atualizar colunas que existem na tabela users (schema da skill)
+      // Colunas existentes em users: id, email, phone, nome_completo, cpf, verified, banned, banned_reason, created_at
+      await supabase.from('users').update({ cpf: cpfLimpo }).eq('id', userId)
+
+      // Chama a API que seta verified = true e atualiza profile_completeness (+15pts)
       const res = await fetch('/api/confirmar-verificacao', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -594,7 +581,6 @@ function Verificacao() {
           {emailEnviado && <button onClick={reenviarEmail} style={{ backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '10px 24px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Reenviar email</button>}
         </>)}
 
-        {/* PASSO 1 — CPF e tipo */}
         {status === 'dados' && card(<>
           {passos(1)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Seus dados</h2>
@@ -621,7 +607,6 @@ function Verificacao() {
           </button>
         </>)}
 
-        {/* PASSO 2 — Frente */}
         {status === 'doc_frente' && card(<>
           {passos(2)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Frente do documento</h2>
@@ -636,7 +621,6 @@ function Verificacao() {
           </div>
         </>)}
 
-        {/* PASSO 3 — Verso */}
         {status === 'doc_verso' && card(<>
           {passos(3)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Verso do documento</h2>
@@ -651,13 +635,11 @@ function Verificacao() {
           </div>
         </>)}
 
-        {/* PASSO 4 — Selfie com Liveness Detection */}
         {status === 'selfie' && card(<>
           {passos(4)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Verificação facial</h2>
           <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 4 de 4 — Confirmação de que você é uma pessoa real</p>
 
-          {/* Antes de iniciar */}
           {!livnessIniciado && !livenessOk && (
             <>
               <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid rgba(46,196,160,0.3)', borderRadius: '16px', padding: '16px', marginBottom: '16px', textAlign: 'left' }}>
@@ -680,10 +662,8 @@ function Verificacao() {
             </>
           )}
 
-          {/* Durante o liveness */}
           {livnessIniciado && !livenessOk && (
             <>
-              {/* Barra de progresso dos passos */}
               <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', justifyContent: 'center' }}>
                 {PASSOS_LIVENESS.map((p, i) => (
                   <div key={i} title={p.instrucao} style={{
@@ -697,7 +677,6 @@ function Verificacao() {
                 ))}
               </div>
 
-              {/* Instrução atual */}
               <div style={{ backgroundColor: 'var(--accent-light)', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
                 <p style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent-dark)' }}>
                   {PASSOS_LIVENESS[passoAtual]?.emoji} {PASSOS_LIVENESS[passoAtual]?.instrucao}
@@ -707,10 +686,8 @@ function Verificacao() {
                 )}
               </div>
 
-              {/* Câmera */}
               <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', backgroundColor: '#111', marginBottom: '12px' }}>
                 <video ref={videoSelfieRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '16px', display: cameraSelfieAtiva ? 'block' : 'none' }} />
-                {/* Guia oval do rosto */}
                 {cameraSelfieAtiva && (
                   <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '55%', height: '78%', border: '2px dashed rgba(46,196,160,0.8)', borderRadius: '50%', pointerEvents: 'none' }} />
                 )}
@@ -729,7 +706,6 @@ function Verificacao() {
             </>
           )}
 
-          {/* Liveness concluído — mostra selfie capturada */}
           {livenessOk && selfiePreview && (
             <>
               <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid rgba(46,196,160,0.4)', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>

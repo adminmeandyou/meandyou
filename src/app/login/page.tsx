@@ -1,39 +1,51 @@
 'use client'
 
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 
 export default function Login() {
-  const [email, setEmail] = useState('')
-  const [senha, setSenha] = useState('')
+  const [email, setEmail]   = useState('')
+  const [senha, setSenha]   = useState('')
   const [loading, setLoading] = useState(false)
-  const [erro, setErro] = useState('')
+  const [erro, setErro]     = useState('')
   const router = useRouter()
 
   const handleLogin = async () => {
-    setLoading(true)
-    setErro('')
-
     if (!email || !senha) {
       setErro('Preencha todos os campos')
-      setLoading(false)
       return
     }
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password: senha,
-    })
+    setLoading(true)
+    setErro('')
 
-    if (error) {
-      setErro('Email ou senha incorretos')
-    } else {
-      router.push('/dashboard')
+    try {
+      // SEMPRE via /api/auth/login — nunca supabase.auth.signInWithPassword direto na page
+      // A API seta os cookies de sessão corretamente na resposta
+      const res = await fetch('/api/auth/login', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email: email.trim().toLowerCase(), password: senha }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setErro(data.error || 'Email ou senha incorretos')
+        return
+      }
+
+      // Se não verificou identidade ainda, middleware redireciona para /verificacao
+      // Se verificou, vai para /busca
+      router.push('/busca')
+      router.refresh() // força o middleware a reler os cookies recém-setados
+
+    } catch {
+      setErro('Erro de conexão. Tente novamente.')
+    } finally {
+      setLoading(false)
     }
-
-    setLoading(false)
   }
 
   return (
@@ -43,7 +55,7 @@ export default function Login() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px',
-      backgroundColor: 'var(--bg)'
+      backgroundColor: 'var(--bg)',
     }}>
       <div style={{ width: '100%', maxWidth: '420px' }}>
 
@@ -52,13 +64,11 @@ export default function Login() {
             fontFamily: 'var(--font-fraunces)',
             fontSize: '36px',
             marginBottom: '8px',
-            color: 'var(--text)'
+            color: 'var(--text)',
           }}>
             MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
           </h1>
-          <p style={{ color: 'var(--muted)', fontSize: '15px' }}>
-            Entre na sua conta
-          </p>
+          <p style={{ color: 'var(--muted)', fontSize: '15px' }}>Entre na sua conta</p>
         </div>
 
         <div style={{
@@ -66,7 +76,7 @@ export default function Login() {
           border: '1px solid var(--border)',
           borderRadius: '24px',
           padding: '36px',
-          boxShadow: 'var(--shadow)'
+          boxShadow: 'var(--shadow)',
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
@@ -79,6 +89,9 @@ export default function Login() {
                 placeholder="seu@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                autoComplete="email"
+                autoFocus
               />
             </div>
 
@@ -91,6 +104,8 @@ export default function Login() {
                 placeholder="Sua senha"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+                autoComplete="current-password"
               />
             </div>
 

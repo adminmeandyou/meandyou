@@ -2,125 +2,180 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 
 export type PlanType = 'essencial' | 'plus' | 'black' | null
 
 export interface PlanLimits {
   plan: PlanType
+  // Curtidas
   likesPerDay: number
   likesUsedToday: number
   likesRemaining: number
-  canSuperlike: boolean
+  // SuperCurtidas
   superlikesPerDay: number
+  superlikesBalance: number  // saldo avulso em user_superlikes
+  // Funcionalidades
   canUndo: boolean
+  rewindsBalance: number
   canSeeWhoLiked: boolean
   canUseAllFilters: boolean
   canUseExclusionFilter: boolean
-  maxPhotos: number
-  hasWeeklyBoost: boolean
+  canAccessBackstage: boolean
+  canAccessFetiche: boolean
+  // Boost
+  boostsBalance: number
+  maxSimultaneousBoosts: number
+  // Lupa / Destaque
+  lupasBalance: number
+  lupasPerDay: number
+  // Tickets roleta
+  ticketsBalance: number
+  ticketsPerDay: number
+  // Limites fixos
+  maxPhotos: number           // todos os planos: 10
+  videoMinutesPerDay: number
   isBlack: boolean
   isPlus: boolean
-  canAccessBackstage: boolean
 }
 
-const PLAN_LIMITS: Record<string, Omit<PlanLimits, 'plan' | 'likesUsedToday' | 'likesRemaining'>> = {
+// Limites estáticos por plano — valores dinâmicos (saldos) vêm do banco
+const PLAN_CONFIG: Record<string, Partial<PlanLimits>> = {
   essencial: {
-    likesPerDay: 5,
-    canSuperlike: false,
-    superlikesPerDay: 0,
-    canUndo: false,
-    canSeeWhoLiked: false,
-    canUseAllFilters: false,
-    canUseExclusionFilter: false,
-    maxPhotos: 3,
-    hasWeeklyBoost: false,
-    isBlack: false,
-    isPlus: false,
-    canAccessBackstage: false,
+    likesPerDay:            5,
+    superlikesPerDay:       1,
+    canUndo:                false,
+    canSeeWhoLiked:         false,
+    canUseAllFilters:       false,
+    canUseExclusionFilter:  false,
+    canAccessBackstage:     false,
+    canAccessFetiche:       true,   // Essencial pode solicitar Fetiche
+    maxSimultaneousBoosts:  1,
+    lupasPerDay:            0,
+    ticketsPerDay:          1,
+    maxPhotos:              10,     // todos os planos têm 10 fotos
+    videoMinutesPerDay:     60,
+    isBlack:                false,
+    isPlus:                 false,
   },
   plus: {
-    likesPerDay: 30,
-    canSuperlike: true,
-    superlikesPerDay: 5,
-    canUndo: true,
-    canSeeWhoLiked: true,
-    canUseAllFilters: true,
-    canUseExclusionFilter: true,
-    maxPhotos: 5,
-    hasWeeklyBoost: true,
-    isBlack: false,
-    isPlus: true,
-    canAccessBackstage: false,
+    likesPerDay:            30,
+    superlikesPerDay:       5,
+    canUndo:                true,
+    canSeeWhoLiked:         true,
+    canUseAllFilters:       true,
+    canUseExclusionFilter:  true,
+    canAccessBackstage:     false,
+    canAccessFetiche:       true,
+    maxSimultaneousBoosts:  1,
+    lupasPerDay:            1,
+    ticketsPerDay:          2,
+    maxPhotos:              10,
+    videoMinutesPerDay:     300,
+    isBlack:                false,
+    isPlus:                 true,
   },
   black: {
-    likesPerDay: Infinity,
-    canSuperlike: true,
-    superlikesPerDay: Infinity,
-    canUndo: true,
-    canSeeWhoLiked: true,
-    canUseAllFilters: true,
-    canUseExclusionFilter: true,
-    maxPhotos: 8,
-    hasWeeklyBoost: true,
-    isBlack: true,
-    isPlus: true,
-    canAccessBackstage: true,
+    likesPerDay:            Infinity,
+    superlikesPerDay:       10,      // Black NÃO é ilimitado — máx 10/dia
+    canUndo:                true,
+    canSeeWhoLiked:         true,
+    canUseAllFilters:       true,
+    canUseExclusionFilter:  true,
+    canAccessBackstage:     true,
+    canAccessFetiche:       true,
+    maxSimultaneousBoosts:  2,       // máx 2 boosts simultâneos
+    lupasPerDay:            2,
+    ticketsPerDay:          3,
+    maxPhotos:              10,
+    videoMinutesPerDay:     600,
+    isBlack:                true,
+    isPlus:                 true,
   },
 }
 
 export function usePlan() {
   const { user } = useAuth()
-  const supabase = createClient()
 
   const [limits, setLimits] = useState<PlanLimits>({
-    plan: null,
-    likesPerDay: 5,
-    likesUsedToday: 0,
-    likesRemaining: 5,
-    ...PLAN_LIMITS.essencial,
+    plan:                   null,
+    likesPerDay:            5,
+    likesUsedToday:         0,
+    likesRemaining:         5,
+    superlikesPerDay:       1,
+    superlikesBalance:      0,
+    canUndo:                false,
+    rewindsBalance:         0,
+    canSeeWhoLiked:         false,
+    canUseAllFilters:       false,
+    canUseExclusionFilter:  false,
+    canAccessBackstage:     false,
+    canAccessFetiche:       true,
+    boostsBalance:          0,
+    maxSimultaneousBoosts:  1,
+    lupasBalance:           0,
+    lupasPerDay:            0,
+    ticketsBalance:         0,
+    ticketsPerDay:          1,
+    maxPhotos:              10,
+    videoMinutesPerDay:     60,
+    isBlack:                false,
+    isPlus:                 false,
   })
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     if (!user) return
     loadPlan()
-  }, [user])
+  }, [user?.id])
 
   async function loadPlan() {
+    if (!user) return
     setLoading(true)
 
-    // Buscar plano ativo
-    const { data: sub } = await supabase
-      .from('subscriptions')
-      .select('plan, status, ends_at')
-      .eq('user_id', user!.id)
-      .eq('status', 'active')
-      .single()
-
-    const plan = (sub?.plan as PlanType) ?? 'essencial'
-    const planConfig = PLAN_LIMITS[plan] ?? PLAN_LIMITS.essencial
-
-    // Contar likes usados hoje
     const today = new Date().toISOString().split('T')[0]
-    const { count } = await supabase
-      .from('likes')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', user!.id)
-      .gte('created_at', `${today}T00:00:00`)
 
-    const likesUsedToday = count ?? 0
-    const likesRemaining = planConfig.likesPerDay === Infinity
+    // Buscar tudo em paralelo
+    const [profileRes, likesRes, superlikesRes, boostsRes, lupasRes, ticketsRes, rewindsRes] =
+      await Promise.all([
+        supabase.from('profiles').select('plan').eq('id', user.id).single(),
+        // likes usados hoje — coluna from_user (não user_id)
+        supabase
+          .from('likes')
+          .select('*', { count: 'exact', head: true })
+          .eq('from_user', user.id)
+          .eq('type', 'like')
+          .gte('created_at', `${today}T00:00:00`),
+        supabase.from('user_superlikes').select('amount').eq('user_id', user.id).single(),
+        supabase.from('user_boosts').select('amount').eq('user_id', user.id).single(),
+        supabase.from('user_lupas').select('amount').eq('user_id', user.id).single(),
+        supabase.from('user_tickets').select('amount').eq('user_id', user.id).single(),
+        supabase.from('user_rewinds').select('amount').eq('user_id', user.id).single(),
+      ])
+
+    const plan = (profileRes.data?.plan as PlanType) ?? 'essencial'
+    const config = PLAN_CONFIG[plan] ?? PLAN_CONFIG.essencial
+
+    const likesUsedToday = likesRes.count ?? 0
+    const likesPerDay    = config.likesPerDay ?? 5
+    const likesRemaining = likesPerDay === Infinity
       ? Infinity
-      : Math.max(0, planConfig.likesPerDay - likesUsedToday)
+      : Math.max(0, likesPerDay - likesUsedToday)
 
     setLimits({
       plan,
+      likesPerDay,
       likesUsedToday,
       likesRemaining,
-      ...planConfig,
-    })
+      superlikesBalance:     superlikesRes.data?.amount ?? 0,
+      boostsBalance:         boostsRes.data?.amount     ?? 0,
+      lupasBalance:          lupasRes.data?.amount      ?? 0,
+      ticketsBalance:        ticketsRes.data?.amount    ?? 0,
+      rewindsBalance:        rewindsRes.data?.amount    ?? 0,
+      ...config,
+    } as PlanLimits)
+
     setLoading(false)
   }
 
@@ -129,16 +184,16 @@ export function usePlan() {
   }
 
   function getUpgradeMessage(feature: string): string {
-    const messages: Record<string, string> = {
-      likes: `Você usou todas as ${limits.likesPerDay} curtidas de hoje. Faça upgrade para curtir mais!`,
-      superlike: 'SuperLike está disponível a partir do plano Plus.',
-      undo: 'Desfazer curtida está disponível a partir do plano Plus.',
-      whoLiked: 'Ver quem curtiu você está disponível a partir do plano Plus.',
-      filters: 'Filtros avançados estão disponíveis a partir do plano Plus.',
-      backstage: 'O Backstage é exclusivo para assinantes Black.',
-      photos: `Seu plano permite até ${limits.maxPhotos} fotos. Faça upgrade para adicionar mais.`,
+    const msgs: Record<string, string> = {
+      likes:      `Você usou todas as ${limits.likesPerDay} curtidas de hoje. Faça upgrade para curtir mais!`,
+      superlike:  'SuperLike está disponível a partir do plano Plus.',
+      undo:       'Desfazer curtida está disponível a partir do plano Plus.',
+      whoLiked:   'Ver quem curtiu você está disponível a partir do plano Plus.',
+      filters:    'Filtros avançados estão disponíveis a partir do plano Plus.',
+      backstage:  'O Backstage é exclusivo para assinantes Black.',
+      photos:     `Seu plano permite até ${limits.maxPhotos} fotos.`,
     }
-    return messages[feature] ?? 'Faça upgrade para acessar esta função.'
+    return msgs[feature] ?? 'Faça upgrade para acessar esta função.'
   }
 
   return {

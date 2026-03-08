@@ -2,26 +2,21 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createBrowserClient } from '@supabase/ssr'
+import { supabase } from '@/app/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 
 export function useAuth() {
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Pega o usuário atual
+    // Pega sessão atual
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       setLoading(false)
     })
 
-    // Fica ouvindo mudanças de sessão (login/logout)
+    // Ouve mudanças de sessão (login/logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null)
     })
