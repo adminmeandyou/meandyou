@@ -12,48 +12,52 @@ const resend = new Resend(process.env.RESEND_API_KEY!)
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, email, nome } = await req.json()
-    if (!userId || !email) return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
+    const { email } = await req.json()
+    if (!email) return NextResponse.json({ error: 'Email obrigatório' }, { status: 400 })
+
+    // Busca o usuário pelo email
+    const { data: { users } } = await supabase.auth.admin.listUsers()
+    const user = users.find((u) => u.email === email.toLowerCase())
+
+    // Retorna ok mesmo se não encontrar (segurança — não revela se email existe)
+    if (!user) return NextResponse.json({ ok: true })
 
     const token = crypto.randomBytes(32).toString('hex')
-    const expiresAt = new Date(Date.now() + 30 * 60 * 1000)
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000) // 30 minutos
 
-    const { error } = await supabase.from('verification_tokens').insert({
-      user_id: userId,
+    await supabase.from('password_reset_tokens').insert({
+      user_id: user.id,
       token,
       expires_at: expiresAt.toISOString(),
     })
-    if (error) return NextResponse.json({ error: 'Erro ao gerar token' }, { status: 500 })
 
-    const link = `${process.env.NEXT_PUBLIC_APP_URL}/verificacao?token=${token}`
+    const link = `${process.env.NEXT_PUBLIC_APP_URL}/nova-senha?token=${token}`
 
     await resend.emails.send({
       from: 'MeAndYou <noreply@meandyou.com.br>',
       to: email,
-      subject: '📱 Verifique sua identidade no MeAndYou',
+      subject: '🔑 Redefina sua senha no MeAndYou',
       html: `
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto; padding: 32px 24px; background: #f8faf9;">
           <h1 style="font-size: 28px; color: #111a17; margin-bottom: 4px;">
             MeAnd<span style="color: #2ec4a0;">You</span>
           </h1>
-          <p style="color: #7a9189; font-size: 13px; margin-bottom: 32px;">Verificação de identidade</p>
+          <p style="color: #7a9189; font-size: 13px; margin-bottom: 32px;">Redefinição de senha</p>
 
-          <p style="font-size: 16px; color: #111a17;">Olá${nome ? ', ' + nome : ''}! 👋</p>
           <p style="font-size: 15px; color: #444; line-height: 1.6;">
-            Seu perfil está quase pronto! O último passo é verificar sua identidade pelo celular.
-            Isso garante que todos os perfis na plataforma são de pessoas reais.
+            Recebemos uma solicitação para redefinir a senha da sua conta.
+            Clique no botão abaixo para criar uma nova senha.
           </p>
 
           <div style="background: #fff; border: 1px solid #e0ebe8; border-radius: 16px; padding: 20px; margin: 24px 0; text-align: center;">
             <p style="font-size: 13px; color: #7a9189; margin-bottom: 16px;">⏱️ Link válido por <strong>30 minutos</strong></p>
             <a href="${link}" style="display: inline-block; background: #2ec4a0; color: #fff; font-weight: 700; font-size: 16px; padding: 14px 32px; border-radius: 100px; text-decoration: none;">
-              📱 Verificar identidade
+              🔑 Redefinir senha
             </a>
-            <p style="font-size: 12px; color: #7a9189; margin-top: 16px;">Abra este link no seu celular</p>
           </div>
 
           <p style="font-size: 13px; color: #7a9189; line-height: 1.6;">
-            Se você não criou uma conta no MeAndYou, ignore este email.
+            Se você não solicitou a redefinição, ignore este email. Sua senha permanece a mesma.
           </p>
         </div>
       `,
@@ -61,6 +65,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ ok: true })
   } catch (err) {
+    console.error(err)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }

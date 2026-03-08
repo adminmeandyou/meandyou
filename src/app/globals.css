@@ -2,6 +2,17 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ✅ Tailwind v4 — declaração das classes utilitárias de fonte customizadas
+   Sem isso, className="font-fraunces" e className="font-jakarta" não geram CSS */
+@layer utilities {
+  .font-fraunces {
+    font-family: var(--font-fraunces, 'Fraunces', serif);
+  }
+  .font-jakarta {
+    font-family: var(--font-jakarta, 'Plus Jakarta Sans', sans-serif);
+  }
+}
+
 :root {
   --bg: #f8faf9;
   --white: #ffffff;
@@ -75,6 +86,12 @@ input::placeholder {
 .btn-primary:hover {
   background-color: var(--accent-dark);
   transform: translateY(-2px);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn-secondary {

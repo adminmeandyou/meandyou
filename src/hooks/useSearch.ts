@@ -1,8 +1,7 @@
-// hooks/useSearch.ts
+// src/hooks/useSearch.ts
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/useAuth'
 
 export interface SearchFilters {
@@ -37,8 +36,7 @@ const DEFAULT_FILTERS: SearchFilters = {
 }
 
 export function useSearch() {
-  const supabase = createClient()
-  const { user } = useAuth()
+  const { user, supabase } = useAuth()
 
   const [filters, setFilters] = useState<SearchFilters>(DEFAULT_FILTERS)
   const [results, setResults] = useState<ProfileResult[]>([])
@@ -47,7 +45,6 @@ export function useSearch() {
   const [locationGranted, setLocationGranted] = useState(false)
   const [savedFilters, setSavedFilters] = useState<SearchFilters | null>(null)
 
-  // Carregar filtros salvos do Supabase
   useEffect(() => {
     if (!user) return
     loadSavedFilters()
@@ -73,18 +70,13 @@ export function useSearch() {
     }
   }
 
-  // Atualizar localização do usuário
   async function updateLocation(): Promise<boolean> {
     if (!user) return false
-
     return new Promise((resolve) => {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude: lat, longitude: lng } = pos.coords
-          await supabase
-            .from('profiles')
-            .update({ lat, lng })
-            .eq('id', user.id)
+          await supabase.from('profiles').update({ lat, lng }).eq('id', user.id)
           setLocationGranted(true)
           resolve(true)
         },
@@ -97,7 +89,6 @@ export function useSearch() {
     })
   }
 
-  // Buscar perfis
   const search = useCallback(async (customFilters?: SearchFilters) => {
     if (!user) return
     setLoading(true)
@@ -117,7 +108,6 @@ export function useSearch() {
 
       let filtered = data as ProfileResult[]
 
-      // Filtro de gênero (feito no cliente pois já temos os dados)
       if (activeFilters.gender !== 'all') {
         filtered = filtered.filter((p) => p.gender === activeFilters.gender)
       }
@@ -129,9 +119,8 @@ export function useSearch() {
     } finally {
       setLoading(false)
     }
-  }, [user, filters, supabase])
+  }, [user, filters])
 
-  // Salvar filtros favoritos
   async function saveFilters() {
     if (!user) return
     await supabase
@@ -144,11 +133,9 @@ export function useSearch() {
         search_saved: true,
       })
       .eq('user_id', user.id)
-
     setSavedFilters(filters)
   }
 
-  // Resetar filtros
   function resetFilters() {
     setFilters(DEFAULT_FILTERS)
   }
