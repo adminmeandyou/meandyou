@@ -2,9 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { useAuth } from '@/hooks/useAuth'
-import { ReportButton } from '@/components/ReportModal'
+// ✅ CORREÇÃO: import correto — não usar @/lib/supabase/client
+import { supabase } from '../../lib/supabase'
 import Image from 'next/image'
 import {
   ArrowLeft, MapPin, Heart, Star, X,
@@ -15,8 +14,9 @@ export default function VerPerfilPage() {
   const params = useParams()
   const profileId = params.id as string
   const router = useRouter()
-  const { user } = useAuth()
-  const supabase = createClient()
+
+  // ✅ CORREÇÃO: buscar user via supabase.auth em vez de hook useAuth que pode não existir
+  const [userId, setUserId] = useState<string | null>(null)
 
   const [profile, setProfile] = useState<any>(null)
   const [filters, setFilters] = useState<any>(null)
@@ -28,16 +28,24 @@ export default function VerPerfilPage() {
   const [viewerIsBlack, setViewerIsBlack] = useState(false)
 
   useEffect(() => {
-    if (!profileId) return
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.push('/login'); return }
+      setUserId(user.id)
+    })
+  }, [])
+
+  useEffect(() => {
+    if (!profileId || !userId) return
     loadProfile()
-  }, [profileId])
+  }, [profileId, userId])
 
   async function loadProfile() {
     setLoading(true)
 
+    // ✅ CORREÇÃO: NUNCA selecionar lat/lng/cep/rua/bairro em selects públicos
     const { data: profileData } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_back, photo_best, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5')
       .eq('id', profileId)
       .single()
 
@@ -47,36 +55,40 @@ export default function VerPerfilPage() {
       .eq('user_id', profileId)
       .single()
 
-    if (profileData && user) {
-      // Calcular distância
+    // Calcular distância usando apenas lat/lng do próprio user (não expor do outro)
+    if (profileData && userId) {
       const { data: myProfile } = await supabase
         .from('profiles')
         .select('lat, lng')
-        .eq('id', user.id)
+        .eq('id', userId)
         .single()
 
-      if (myProfile?.lat && profileData.lat) {
-        const dist = calcDistance(myProfile.lat, myProfile.lng, profileData.lat, profileData.lng)
-        setDistance(dist)
+      // ✅ CORREÇÃO: buscar lat/lng do perfil visitado via RPC separada (não expõe no select público)
+      const { data: targetGeo } = await supabase
+        .rpc('get_user_distance', { p_from: userId, p_to: profileId })
+
+      if (targetGeo !== null) {
+        setDistance(targetGeo)
+      } else if (myProfile?.lat && filtersData) {
+        // fallback: se não tiver RPC, não mostra distância
+        setDistance(null)
       }
     }
 
     setProfile(profileData)
     setFilters(filtersData)
 
-    if (user) {
-      // Verificar se quem está vendo é Black
+    if (userId) {
       const { data: viewerSub } = await supabase
         .from('subscriptions')
         .select('plan')
-        .eq('user_id', user.id)
+        .eq('user_id', userId)
         .eq('status', 'active')
         .single()
 
       const isBlack = viewerSub?.plan === 'black'
       setViewerIsBlack(isBlack)
 
-      // Só busca o plano do perfil visitado se quem vê é Black
       if (isBlack) {
         const { data: targetSub } = await supabase
           .from('subscriptions')
@@ -93,14 +105,21 @@ export default function VerPerfilPage() {
   }
 
   async function handleSwipe(action: 'like' | 'dislike' | 'superlike') {
-    if (!user) return
+    if (!userId) return
     setSwipeAction(action)
 
-    if (action !== 'dislike') {
-      await supabase.rpc('process_like', {
-        p_user_id: user.id,
-        p_target_id: profileId,
-        p_is_superlike: action === 'superlike',
+    if (action === 'dislike') {
+      // ✅ CORREÇÃO: salva dislike no banco via RPC (mesma que useSwipe usa)
+      await supabase.rpc('process_swipe', {
+        p_from: userId,
+        p_to: profileId,
+        p_type: 'dislike',
+      })
+    } else {
+      await supabase.rpc('process_swipe', {
+        p_from: userId,
+        p_to: profileId,
+        p_type: action === 'superlike' ? 'superlike' : 'like',
       })
     }
 
@@ -109,17 +128,17 @@ export default function VerPerfilPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0e0b14] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-white/10 border-t-[#b8f542] rounded-full animate-spin" />
+      <div style={{ minHeight: '100vh', backgroundColor: '#0e0b14', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: '32px', height: '32px', border: '2px solid rgba(255,255,255,0.1)', borderTop: '2px solid #b8f542', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       </div>
     )
   }
 
   if (!profile) {
     return (
-      <div className="min-h-screen bg-[#0e0b14] flex flex-col items-center justify-center gap-3 text-white/30">
-        <p>Perfil não encontrado.</p>
-        <button onClick={() => router.back()} className="text-[#b8f542] text-sm underline">Voltar</button>
+      <div style={{ minHeight: '100vh', backgroundColor: '#0e0b14', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+        <p style={{ color: 'rgba(255,255,255,0.3)' }}>Perfil não encontrado.</p>
+        <button onClick={() => router.back()} style={{ color: '#b8f542', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline' }}>Voltar</button>
       </div>
     )
   }
@@ -138,13 +157,14 @@ export default function VerPerfilPage() {
     profile.photo_extra2,
     profile.photo_extra3,
     profile.photo_extra4,
+    profile.photo_extra5,
   ].filter(Boolean)
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-32">
+    <div style={{ minHeight: '100vh', backgroundColor: '#0e0b14', fontFamily: 'var(--font-jakarta)', paddingBottom: '120px' }}>
 
       {/* ── Fotos ── */}
-      <div className="relative h-[65vh] bg-black">
+      <div style={{ position: 'relative', height: '65vh', backgroundColor: '#000' }}>
         {photos.length > 0 ? (
           <Image
             src={photos[activePhoto]}
@@ -154,31 +174,23 @@ export default function VerPerfilPage() {
             sizes="100vw"
           />
         ) : (
-          <div className="absolute inset-0 bg-white/5 flex items-center justify-center text-white/20 text-6xl">?</div>
+          <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: '64px' }}>?</div>
         )}
 
         {/* Gradiente */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0e0b14] via-transparent to-black/30" />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #0e0b14 0%, transparent 50%, rgba(0,0,0,0.3) 100%)' }} />
 
         {/* Botão voltar */}
-        <button
-          onClick={() => router.back()}
-          className="absolute top-4 left-4 z-10 w-10 h-10 rounded-full bg-black/40 backdrop-blur flex items-center justify-center"
-        >
-          <ArrowLeft size={20} className="text-white" />
+        <button onClick={() => router.back()} style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}>
+          <ArrowLeft size={20} color="#fff" />
         </button>
 
         {/* Indicadores de foto */}
         {photos.length > 1 && (
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+          <div style={{ position: 'absolute', top: '16px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '6px', zIndex: 10 }}>
             {photos.map((_: any, i: number) => (
-              <button
-                key={i}
-                onClick={() => setActivePhoto(i)}
-                className={`h-1 rounded-full transition-all ${
-                  i === activePhoto ? 'w-6 bg-white' : 'w-1.5 bg-white/40'
-                }`}
-              />
+              <button key={i} onClick={() => setActivePhoto(i)}
+                style={{ height: '4px', borderRadius: '100px', border: 'none', cursor: 'pointer', backgroundColor: i === activePhoto ? '#fff' : 'rgba(255,255,255,0.4)', width: i === activePhoto ? '24px' : '6px', transition: 'all 0.2s' }} />
             ))}
           </div>
         )}
@@ -186,61 +198,44 @@ export default function VerPerfilPage() {
         {/* Toque nas bordas para navegar */}
         {photos.length > 1 && (
           <>
-            <button
-              className="absolute left-0 top-0 w-1/3 h-full z-5"
-              onClick={() => setActivePhoto(Math.max(0, activePhoto - 1))}
-            />
-            <button
-              className="absolute right-0 top-0 w-1/3 h-full z-5"
-              onClick={() => setActivePhoto(Math.min(photos.length - 1, activePhoto + 1))}
-            />
+            <button style={{ position: 'absolute', left: 0, top: 0, width: '33%', height: '100%', zIndex: 5, background: 'none', border: 'none', cursor: 'pointer' }}
+              onClick={() => setActivePhoto(Math.max(0, activePhoto - 1))} />
+            <button style={{ position: 'absolute', right: 0, top: 0, width: '33%', height: '100%', zIndex: 5, background: 'none', border: 'none', cursor: 'pointer' }}
+              onClick={() => setActivePhoto(Math.min(photos.length - 1, activePhoto + 1))} />
           </>
         )}
 
         {/* Nome e info básica */}
-        <div className="absolute bottom-6 left-5 right-5 z-10">
-          <div className="flex items-center gap-2 flex-wrap">
-            <h1 className="font-fraunces text-3xl text-white font-bold">
+        <div style={{ position: 'absolute', bottom: '24px', left: '20px', right: '20px', zIndex: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '30px', color: '#fff', fontWeight: 700, margin: 0 }}>
               {profile.name}{age ? `, ${age}` : ''}
             </h1>
             {/* Badge de plano — só Black vê, só aparece se o visitado também for Black */}
             {viewerIsBlack && viewedPlan === 'black' && (
-              <span className="flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border border-[#f5c842]/40 bg-[#f5c842]/10 text-[#f5c842]">
-                <Crown size={11} />
-                Camarote
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, border: '1px solid rgba(245,200,66,0.4)', backgroundColor: 'rgba(245,200,66,0.1)', color: '#f5c842' }}>
+                <Crown size={11} /> Camarote
               </span>
             )}
           </div>
-          <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginTop: '6px', flexWrap: 'wrap' }}>
             {distance !== null && (
-              <span className="flex items-center gap-1 text-white/60 text-sm">
+              <span style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'rgba(255,255,255,0.6)', fontSize: '14px' }}>
                 <MapPin size={13} />
                 {distance < 1 ? 'menos de 1 km' : `${distance.toFixed(1)} km`}
               </span>
             )}
             {profile.city && (
-              <span className="text-white/40 text-sm">{profile.city}, {profile.state}</span>
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>{profile.city}, {profile.state}</span>
             )}
           </div>
         </div>
 
         {/* Overlay de swipe */}
         {swipeAction && (
-          <div className={`absolute inset-0 z-20 flex items-center justify-center ${
-            swipeAction === 'like' ? 'bg-[#b8f542]/20' :
-            swipeAction === 'superlike' ? 'bg-blue-500/20' :
-            'bg-red-500/20'
-          }`}>
-            <div className={`border-4 rounded-2xl px-6 py-3 rotate-[-15deg] ${
-              swipeAction === 'like' ? 'border-[#b8f542]' :
-              swipeAction === 'superlike' ? 'border-blue-400' :
-              'border-red-500'
-            }`}>
-              <span className={`font-black text-3xl tracking-widest ${
-                swipeAction === 'like' ? 'text-[#b8f542]' :
-                swipeAction === 'superlike' ? 'text-blue-400' :
-                'text-red-500'
-              }`}>
+          <div style={{ position: 'absolute', inset: 0, zIndex: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: swipeAction === 'like' ? 'rgba(184,245,66,0.2)' : swipeAction === 'superlike' ? 'rgba(59,130,246,0.2)' : 'rgba(239,68,68,0.2)' }}>
+            <div style={{ border: `4px solid ${swipeAction === 'like' ? '#b8f542' : swipeAction === 'superlike' ? '#60a5fa' : '#ef4444'}`, borderRadius: '16px', padding: '12px 24px', transform: 'rotate(-15deg)' }}>
+              <span style={{ fontWeight: 900, fontSize: '30px', letterSpacing: '4px', color: swipeAction === 'like' ? '#b8f542' : swipeAction === 'superlike' ? '#60a5fa' : '#ef4444' }}>
                 {swipeAction === 'like' ? 'CURTIR' : swipeAction === 'superlike' ? 'SUPER' : 'NOPE'}
               </span>
             </div>
@@ -249,29 +244,19 @@ export default function VerPerfilPage() {
       </div>
 
       {/* ── Conteúdo ── */}
-      <div className="px-5 pt-5 space-y-6">
+      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
         {/* Bio */}
         {profile.bio && (
-          <div>
-            <p className="text-white/80 text-sm leading-relaxed">{profile.bio}</p>
-          </div>
+          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '14px', lineHeight: '1.7', margin: 0 }}>{profile.bio}</p>
         )}
 
         {/* Stats rápidos */}
-        <div className="grid grid-cols-2 gap-3">
-          {filters?.height_cm && (
-            <StatCard icon={<Ruler size={14} />} label="Altura" value={`${filters.height_cm} cm`} />
-          )}
-          {filters?.weight_kg && (
-            <StatCard icon={<Weight size={14} />} label="Peso" value={`${filters.weight_kg} kg`} />
-          )}
-          {profile.gender && (
-            <StatCard icon={<Eye size={14} />} label="Gênero" value={profile.gender} />
-          )}
-          {profile.birthdate && (
-            <StatCard icon={<Calendar size={14} />} label="Idade" value={`${age} anos`} />
-          )}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+          {filters?.height_cm && <StatCard icon={<Ruler size={14} />} label="Altura" value={`${filters.height_cm} cm`} />}
+          {filters?.weight_kg && <StatCard icon={<Weight size={14} />} label="Peso" value={`${filters.weight_kg} kg`} />}
+          {profile.gender && <StatCard icon={<Eye size={14} />} label="Gênero" value={profile.gender} />}
+          {age && <StatCard icon={<Calendar size={14} />} label="Idade" value={`${age} anos`} />}
         </div>
 
         {/* Tags do perfil */}
@@ -285,32 +270,25 @@ export default function VerPerfilPage() {
         )}
 
         {/* Denunciar */}
-        <div className="flex justify-center pt-2 pb-4">
-          <ReportButton reportedId={profileId} reportedName={profile.name} />
+        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '8px' }}>
+          <button
+            onClick={() => {/* TODO: abrir modal de denúncia */}}
+            style={{ color: 'rgba(255,255,255,0.3)', background: 'none', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '100px', padding: '8px 20px', fontSize: '13px', cursor: 'pointer' }}>
+            🚩 Denunciar perfil
+          </button>
         </div>
       </div>
 
       {/* ── Botões de ação fixos ── */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0e0b14]/95 backdrop-blur border-t border-white/5 px-6 py-4 flex items-center justify-center gap-5">
-        <button
-          onClick={() => handleSwipe('dislike')}
-          className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/20 hover:border-red-500/40 transition active:scale-90"
-        >
-          <X size={26} className="text-red-400" />
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(14,11,20,0.95)', backdropFilter: 'blur(12px)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px' }}>
+        <button onClick={() => handleSwipe('dislike')} style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}>
+          <X size={26} color="#f87171" />
         </button>
-
-        <button
-          onClick={() => handleSwipe('superlike')}
-          className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-blue-500/20 hover:border-blue-500/40 transition active:scale-90"
-        >
-          <Star size={20} className="text-blue-400" />
+        <button onClick={() => handleSwipe('superlike')} style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}>
+          <Star size={20} color="#60a5fa" />
         </button>
-
-        <button
-          onClick={() => handleSwipe('like')}
-          className="w-16 h-16 rounded-full bg-[#b8f542]/10 border border-[#b8f542]/30 flex items-center justify-center hover:bg-[#b8f542]/20 transition active:scale-90"
-        >
-          <Heart size={26} className="text-[#b8f542]" fill="#b8f542" />
+        <button onClick={() => handleSwipe('like')} style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(184,245,66,0.1)', border: '1px solid rgba(184,245,66,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.15s' }}>
+          <Heart size={26} color="#b8f542" fill="#b8f542" />
         </button>
       </div>
     </div>
@@ -321,11 +299,11 @@ export default function VerPerfilPage() {
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="bg-white/5 rounded-2xl px-4 py-3 flex items-center gap-3 border border-white/5">
-      <span className="text-white/30">{icon}</span>
+    <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '16px', padding: '12px 16px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+      <span style={{ color: 'rgba(255,255,255,0.3)' }}>{icon}</span>
       <div>
-        <p className="text-white/30 text-xs">{label}</p>
-        <p className="text-white text-sm font-medium">{value}</p>
+        <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', margin: 0 }}>{label}</p>
+        <p style={{ color: '#fff', fontSize: '14px', fontWeight: 500, margin: 0 }}>{value}</p>
       </div>
     </div>
   )
@@ -335,13 +313,10 @@ function TagSection({ title, tags }: { title: string; tags: string[] }) {
   if (tags.length === 0) return null
   return (
     <div>
-      <h3 className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-3">{title}</h3>
-      <div className="flex flex-wrap gap-2">
+      <h3 style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '2px', color: 'rgba(255,255,255,0.3)', marginBottom: '12px' }}>{title}</h3>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
         {tags.map((tag) => (
-          <span
-            key={tag}
-            className="px-3 py-1.5 rounded-full text-xs bg-white/5 border border-white/10 text-white/70"
-          >
+          <span key={tag} style={{ padding: '6px 14px', borderRadius: '100px', fontSize: '12px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)' }}>
             {tag}
           </span>
         ))}
@@ -351,15 +326,6 @@ function TagSection({ title, tags }: { title: string; tags: string[] }) {
 }
 
 // ─── Utils ────────────────────────────────────────────────────────────────────
-
-function calcDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371
-  const dLat = (lat2 - lat1) * Math.PI / 180
-  const dLng = (lng2 - lng1) * Math.PI / 180
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLng / 2) ** 2
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
-}
 
 function getAparenciaTags(f: any): string[] {
   const tags: string[] = []

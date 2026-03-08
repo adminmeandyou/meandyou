@@ -3,31 +3,31 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
-import { Camera, X, Star, ChevronRight, ChevronLeft, Check, HelpCircle } from 'lucide-react'
+import { Camera, X, Star, ChevronRight, ChevronLeft, HelpCircle } from 'lucide-react'
 
 const ETAPAS = ['Fotos', 'Básico', 'Aparência', 'Identidade', 'Estilo de vida', 'Valores', 'O que busco']
 
 const tooltips: Record<string, string> = {
-  'Homem': 'Você nasceu com corpo masculino e se identifica como homem. É o caso da maioria dos homens.',
-  'Mulher': 'Você nasceu com corpo feminino e se identifica como mulher. É o caso da maioria das mulheres.',
+  'Homem': 'Você nasceu com corpo masculino e se identifica como homem.',
+  'Mulher': 'Você nasceu com corpo feminino e se identifica como mulher.',
   'Homem trans': 'Você nasceu com corpo feminino mas se identifica e vive como homem.',
   'Mulher trans': 'Você nasceu com corpo masculino mas se identifica e vive como mulher.',
   'Não-binário(a)': 'Você não se identifica nem como homem nem como mulher, ou se identifica como os dois.',
   'Gênero fluido': 'Sua identidade pode variar — às vezes mais masculina, às vezes mais feminina.',
-  'Heterossexual': 'Atração afetiva e sexual por pessoas do gênero oposto. Ex: homem atraído por mulher.',
-  'Homossexual': 'Atração afetiva e sexual por pessoas do mesmo gênero. Ex: mulher atraída por mulher (lésbica) ou homem por homem (gay).',
+  'Heterossexual': 'Atração afetiva e sexual por pessoas do gênero oposto.',
+  'Homossexual': 'Atração afetiva e sexual por pessoas do mesmo gênero.',
   'Bissexual': 'Atração afetiva e sexual por pessoas de dois ou mais gêneros.',
-  'Pansexual': 'Atração por pessoas independentemente do gênero. O gênero não é fator determinante na atração.',
-  'Assexual': 'Pouca ou nenhuma atração sexual por outras pessoas. Pode ter atração romântica.',
-  'Demissexual': 'Sente atração sexual apenas após criar um vínculo emocional profundo com a pessoa.',
+  'Pansexual': 'Atração por pessoas independentemente do gênero.',
+  'Assexual': 'Pouca ou nenhuma atração sexual por outras pessoas.',
+  'Demissexual': 'Sente atração sexual apenas após criar um vínculo emocional profundo.',
   'Queer': 'Termo amplo para orientações e identidades que fogem do padrão heterossexual e cisgênero.',
-  'Poliamor': 'Relacionamentos múltiplos simultâneos com o conhecimento e consentimento de todos os envolvidos.',
-  'BDSM / fetiches': 'Práticas consensuais entre adultos envolvendo dominação, submissão, bondage ou outros fetiches.',
-  'Busco trisal': 'Relacionamento amoroso e/ou sexual envolvendo três pessoas simultaneamente.',
-  'Swing / relacionamento aberto': 'Casais que trocam de parceiros ou têm encontros com outras pessoas com consentimento mútuo.',
-  'Ela/Dela': 'Pronomes femininos. Ex: ela foi ao mercado, o livro é dela.',
-  'Ele/Dele': 'Pronomes masculinos. Ex: ele foi ao mercado, o livro é dele.',
-  'Elu/Delu': 'Pronomes neutros usados por pessoas não-binárias. Ex: elu foi ao mercado, o livro é delu.',
+  'Poliamor': 'Relacionamentos múltiplos simultâneos com o conhecimento de todos.',
+  'BDSM / fetiches': 'Práticas consensuais entre adultos.',
+  'Busco trisal': 'Relacionamento amoroso envolvendo três pessoas.',
+  'Swing / relacionamento aberto': 'Casais que trocam de parceiros com consentimento mútuo.',
+  'Ela/Dela': 'Pronomes femininos.',
+  'Ele/Dele': 'Pronomes masculinos.',
+  'Elu/Delu': 'Pronomes neutros usados por pessoas não-binárias.',
 }
 
 function calcularIMC(peso: string, altura: string): string {
@@ -79,60 +79,12 @@ export default function Perfil() {
   const [lat, setLat] = useState<number | null>(null)
   const [lng, setLng] = useState<number | null>(null)
   const [bio, setBio] = useState('')
-
-  // CEP
   const [cep, setCep] = useState('')
   const [cepStatus, setCepStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle')
   const [buscaRua, setBuscaRua] = useState('')
   const [estadoBusca, setEstadoBusca] = useState('')
   const [sugestoesRua, setSugestoesRua] = useState<any[]>([])
   const [buscandoRua, setBuscandoRua] = useState(false)
-
-  const buscarCep = async (value: string) => {
-    const limpo = value.replace(/\D/g, '')
-    setCep(limpo)
-    if (limpo.length !== 8) { if (limpo.length > 0 && limpo.length < 8) setCepStatus('idle'); return }
-    setCepStatus('loading')
-    try {
-      const res = await fetch(`https://viacep.com.br/ws/${limpo}/json/`)
-      const data = await res.json()
-      if (data.erro) { setCepStatus('error'); setCidade(''); setEstado(''); setBairro(''); setRua(''); return }
-      setCidade(data.localidade || '')
-      setEstado(data.uf || '')
-      setBairro(data.bairro || '')
-      setRua(data.logradouro || '')
-      setCepStatus('ok')
-      const q = encodeURIComponent(`${data.logradouro}, ${data.localidade}, ${data.uf}, Brasil`)
-      const geo = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`, { headers: { 'Accept-Language': 'pt-BR' } })
-      const geoData = await geo.json()
-      if (geoData[0]) { setLat(parseFloat(geoData[0].lat)); setLng(parseFloat(geoData[0].lon)) }
-    } catch { setCepStatus('error') }
-  }
-
-  const buscarPorRua = async (rua: string, uf: string) => {
-    if (!rua || rua.length < 4 || !uf) return
-    setBuscandoRua(true)
-    try {
-      const q = encodeURIComponent(`${rua}, ${uf}, Brasil`)
-      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&addressdetails=1&countrycodes=br`, { headers: { 'Accept-Language': 'pt-BR' } })
-      const data = await res.json()
-      setSugestoesRua(data)
-    } catch {}
-    setBuscandoRua(false)
-  }
-
-  const selecionarSugestao = async (item: any) => {
-    const addr = item.address
-    setCidade(addr.city || addr.town || addr.village || addr.municipality || '')
-    setEstado(addr.state_code || addr.state || '')
-    setBairro(addr.suburb || addr.neighbourhood || addr.quarter || '')
-    setRua(addr.road || addr.pedestrian || '')
-    setLat(parseFloat(item.lat))
-    setLng(parseFloat(item.lon))
-    setSugestoesRua([])
-    setBuscaRua(item.display_name.split(',')[0])
-    setCepStatus('ok')
-  }
 
   // ETAPA 2 - Aparência
   const [corOlhos, setCorOlhos] = useState('')
@@ -184,18 +136,62 @@ export default function Perfil() {
     })
   }, [])
 
+  const buscarCep = async (value: string) => {
+    const limpo = value.replace(/\D/g, '')
+    setCep(limpo)
+    if (limpo.length !== 8) { if (limpo.length > 0 && limpo.length < 8) setCepStatus('idle'); return }
+    setCepStatus('loading')
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${limpo}/json/`)
+      const data = await res.json()
+      if (data.erro) { setCepStatus('error'); setCidade(''); setEstado(''); setBairro(''); setRua(''); return }
+      setCidade(data.localidade || '')
+      setEstado(data.uf || '')
+      setBairro(data.bairro || '')
+      setRua(data.logradouro || '')
+      setCepStatus('ok')
+      const q = encodeURIComponent(`${data.logradouro}, ${data.localidade}, ${data.uf}, Brasil`)
+      const geo = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=1`, { headers: { 'Accept-Language': 'pt-BR' } })
+      const geoData = await geo.json()
+      if (geoData[0]) { setLat(parseFloat(geoData[0].lat)); setLng(parseFloat(geoData[0].lon)) }
+    } catch { setCepStatus('error') }
+  }
+
+  const buscarPorRua = async (ruaNome: string, uf: string) => {
+    if (!ruaNome || ruaNome.length < 4 || !uf) return
+    setBuscandoRua(true)
+    try {
+      const q = encodeURIComponent(`${ruaNome}, ${uf}, Brasil`)
+      const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${q}&format=json&limit=5&addressdetails=1&countrycodes=br`, { headers: { 'Accept-Language': 'pt-BR' } })
+      const data = await res.json()
+      setSugestoesRua(data)
+    } catch {}
+    setBuscandoRua(false)
+  }
+
+  const selecionarSugestao = (item: any) => {
+    const addr = item.address
+    setCidade(addr.city || addr.town || addr.village || addr.municipality || '')
+    setEstado(addr.state_code || addr.state || '')
+    setBairro(addr.suburb || addr.neighbourhood || addr.quarter || '')
+    setRua(addr.road || addr.pedestrian || '')
+    setLat(parseFloat(item.lat))
+    setLng(parseFloat(item.lon))
+    setSugestoesRua([])
+    setBuscaRua(item.display_name.split(',')[0])
+    setCepStatus('ok')
+  }
+
   const toggleTag = (lista: string[], setLista: (v: string[]) => void, valor: string) => {
     setLista(lista.includes(valor) ? lista.filter(i => i !== valor) : [...lista, valor])
   }
 
-  // ✅ handleFoto com moderação Sightengine
   const handleFoto = async (index: number, file: File | null) => {
     if (!file) return
     if (file.size > 5 * 1024 * 1024) { setErro('Foto muito grande. Máximo 5MB.'); return }
     const duplicada = fotos.some((f, i) => f && i !== index && f.name === file.name && f.size === file.size)
-    if (duplicada) { setErro('Esta foto já foi adicionada. Use fotos diferentes em cada posição.'); return }
+    if (duplicada) { setErro('Esta foto já foi adicionada.'); return }
 
-    // Mostra preview imediatamente
     const url = URL.createObjectURL(file)
     const novosPreviewsTemp = [...previews]; novosPreviewsTemp[index] = url; setPreviews(novosPreviewsTemp)
     setVerificandoFoto(index)
@@ -208,22 +204,19 @@ export default function Perfil() {
       const data = await res.json()
 
       if (!data.aprovado) {
-        // Remove preview se reprovada
         const novosPreviewsRej = [...previews]; novosPreviewsRej[index] = ''; setPreviews(novosPreviewsRej)
         setErro(data.motivo || 'Foto recusada. Use fotos com roupas.')
         setVerificandoFoto(null)
         return
       }
 
-      // Foto aprovada
       const novasFotos = [...fotos]; novasFotos[index] = file; setFotos(novasFotos)
       setErro('')
     } catch {
-      // Se a API do Sightengine cair, não bloqueia o usuário
+      // Se Sightengine cair, não bloqueia o usuário
       const novasFotos = [...fotos]; novasFotos[index] = file; setFotos(novasFotos)
       setErro('')
     }
-
     setVerificandoFoto(null)
   }
 
@@ -251,7 +244,7 @@ export default function Perfil() {
       if (!bio) return 'Escreva algo sobre você na bio.'
       if (bio.length < 30) return `A bio precisa ter pelo menos 30 caracteres. Você escreveu ${bio.length}.`
       if (!cidade) return 'Informe sua cidade. Use o CEP ou busque pelo nome da rua.'
-      if (!estado) return 'Estado não identificado. Use o CEP ou busque pelo nome da rua.'
+      if (!estado) return 'Estado não identificado.'
       if (!rua) return 'Informe sua rua para ativar o filtro por distância.'
     }
     if (etapa === 2) {
@@ -260,11 +253,11 @@ export default function Perfil() {
       if (corCabelo !== 'Não possuo cabelo (careca)' && !comprimentoCabelo) return 'Selecione o comprimento do seu cabelo.'
       if (!corPele) return 'Selecione sua cor de pele / etnia.'
       if (!altura) return 'Informe sua altura.'
-      if (parseInt(altura) < 100) return 'Altura mínima permitida: 100 cm.'
-      if (parseInt(altura) > 250) return 'Altura máxima permitida: 250 cm.'
+      if (parseInt(altura) < 100) return 'Altura mínima: 100 cm.'
+      if (parseInt(altura) > 250) return 'Altura máxima: 250 cm.'
       if (!peso) return 'Informe seu peso.'
-      if (parseInt(peso) < 30) return 'Peso mínimo permitido: 30 kg.'
-      if (parseInt(peso) > 300) return 'Peso máximo permitido: 300 kg.'
+      if (parseInt(peso) < 30) return 'Peso mínimo: 30 kg.'
+      if (parseInt(peso) > 300) return 'Peso máximo: 300 kg.'
       if (!corporal) return 'Selecione seu tipo corporal.'
       if (!pcd) return 'Informe se você é PCD ou não.'
     }
@@ -307,28 +300,26 @@ export default function Perfil() {
 
     try {
       if (etapa === 0) {
-        const urls: string[] = []
+        const fotoSlots = ['photo_face', 'photo_body', 'photo_side', 'photo_back', 'photo_best', 'photo_extra1', 'photo_extra2', 'photo_extra3', 'photo_extra4', 'photo_extra5']
+        const urls: (string | null)[] = Array(10).fill(null)
+
         for (let i = 0; i < fotos.length; i++) {
           if (fotos[i]) {
-            const ext = fotos[i]!.name.split('.').pop()
-            const path = `${userId}/foto_${i}.${ext}`
+            const ext = fotos[i]!.name.split('.').pop() || 'jpg'
+            // ✅ CORREÇÃO: nome único com uuid + timestamp para evitar cache stale
+            const path = `${userId}/foto_${i}_${userId}_${Date.now()}.${ext}`
             await supabase.storage.from('fotos').upload(path, fotos[i]!, { upsert: true })
             const { data } = supabase.storage.from('fotos').getPublicUrl(path)
-            urls.push(data.publicUrl)
+            urls[i] = data.publicUrl
           }
         }
-        await supabase.from('profiles').upsert({
-          id: userId,
-          photo_face: urls[0] || null,
-          photo_body: urls[1] || null,
-          photo_side: urls[2] || null,
-          photo_back: urls[3] || null,
-          photo_best: urls[fotoPrincipal] || urls[0],
-          photo_extra1: urls[5] || null,
-          photo_extra2: urls[6] || null,
-          photo_extra3: urls[7] || null,
-          photo_extra4: urls[8] || null,
-        })
+
+        const update: Record<string, string | null> = {}
+        fotoSlots.forEach((slot, i) => { update[slot] = urls[i] })
+        // photo_best usa a foto marcada como principal
+        update['photo_best'] = urls[fotoPrincipal] || urls[0]
+
+        await supabase.from('profiles').upsert({ id: userId, ...update })
       }
 
       if (etapa === 1) {
@@ -437,7 +428,7 @@ export default function Perfil() {
         const a = (v: string) => alimentacao.includes(v)
         const e = (v: string) => estiloVestir.includes(v)
         const m = (v: string) => musica.includes(v)
-        const i = (v: string) => instrumento.includes(v)
+        const inst = (v: string) => instrumento.includes(v)
         await supabase.from('filters').upsert({
           user_id: userId,
           smoke_yes: vicios === 'Fumo',
@@ -527,13 +518,13 @@ export default function Perfil() {
           music_classical: m('Clássica'),
           music_eclectic: m('Eclético — curto de tudo'),
           music_none: m('Não gosto de música'),
-          plays_guitar: i('Toco guitarra / violão'),
-          plays_piano: i('Toco piano / teclado'),
-          plays_drums: i('Toco bateria'),
-          plays_bass: i('Toco baixo'),
-          plays_other: i('Toco outro instrumento'),
-          sings: i('Canto / sou cantor(a)'),
-          no_instrument: i('Não toco instrumento'),
+          plays_guitar: inst('Toco guitarra / violão'),
+          plays_piano: inst('Toco piano / teclado'),
+          plays_drums: inst('Toco bateria'),
+          plays_bass: inst('Toco baixo'),
+          plays_other: inst('Toco outro instrumento'),
+          sings: inst('Canto / sou cantor(a)'),
+          no_instrument: inst('Não toco instrumento'),
         })
       }
 
@@ -626,10 +617,17 @@ export default function Perfil() {
           disc_polyamory: dc('Poliamor'),
           disc_bdsm: dc('BDSM / fetiches'),
         })
+
+        // ✅ CORREÇÃO: calcular profile_completeness e atualizar RPC
+        await supabase.rpc('update_profile_score', { p_user_id: userId })
+
         setSalvando(false)
-        router.push('/verificacao')
+        // ✅ CORREÇÃO: redireciona para /busca — middleware cuida de redirecionar
+        // para /verificacao se ainda não verificado
+        router.push('/busca')
         return
       }
+
       setEtapa(etapa + 1)
     } catch { setErro('Erro ao salvar. Tente novamente.') }
     setSalvando(false)
@@ -651,13 +649,13 @@ export default function Perfil() {
     )
   }
 
-  const Tag = ({ label, ativo, onClick, disabled }: { label: string, ativo: boolean, onClick: () => void, disabled?: boolean }) => (
-    <button onClick={onClick} disabled={disabled} style={{
+  const Tag = ({ label, ativo, onClick }: { label: string, ativo: boolean, onClick: () => void }) => (
+    <button onClick={onClick} style={{
       padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600',
-      border: `1.5px solid ${ativo ? 'var(--accent)' : disabled ? 'var(--border)' : 'var(--border)'}`,
+      border: `1.5px solid ${ativo ? 'var(--accent)' : 'var(--border)'}`,
       backgroundColor: ativo ? 'var(--accent-light)' : 'var(--white)',
-      color: ativo ? 'var(--accent-dark)' : disabled ? '#ccc' : 'var(--muted)',
-      cursor: disabled ? 'not-allowed' : 'pointer', transition: 'all 0.15s',
+      color: ativo ? 'var(--accent-dark)' : 'var(--muted)',
+      cursor: 'pointer', transition: 'all 0.15s',
       display: 'inline-flex', alignItems: 'center', gap: '4px'
     }}>
       {label}<Tooltip label={label} />
@@ -701,6 +699,12 @@ export default function Perfil() {
     </div>
   )
 
+  const inputStyle: React.CSSProperties = {
+    backgroundColor: 'var(--white)', border: '1px solid var(--border)', borderRadius: '12px',
+    padding: '12px 16px', color: 'var(--text)', fontFamily: 'var(--font-jakarta)',
+    fontSize: '15px', width: '100%', outline: 'none', boxSizing: 'border-box'
+  }
+
   const Progresso = () => (
     <div style={{ marginBottom: '28px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
@@ -732,7 +736,6 @@ export default function Perfil() {
         {etapa === 0 && (
           <div>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '8px' }}>Suas fotos</h2>
-
             <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid rgba(46,196,160,0.3)', borderRadius: '16px', padding: '16px', marginBottom: '20px' }}>
               <p style={{ fontSize: '13px', color: 'var(--accent-dark)', fontWeight: '600', marginBottom: '8px' }}>As 5 primeiras fotos são obrigatórias:</p>
               <p style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: '1.6' }}>
@@ -740,28 +743,18 @@ export default function Perfil() {
                 2. Corpo inteiro de frente<br />
                 3. Foto lateral<br />
                 4. Foto de costas<br />
-                5. Sua melhor foto (ficará em destaque no perfil)<br />
-                <br />
-                As demais 5 são livres — adicione as fotos que quiser.<br />
-                Toque na ⭐ para definir a foto principal.
+                5. Sua melhor foto (ficará em destaque)<br /><br />
+                As demais 5 são livres. Toque na ⭐ para definir a foto principal.
               </p>
             </div>
-
             <div style={{ backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '12px', padding: '12px 16px', marginBottom: '20px' }}>
-              <p style={{ fontSize: '12px', color: '#856404', fontWeight: '600' }}>
-                ⚠️ Estas fotos serão visíveis para todos os usuários. Não são permitidas fotos sem roupa ou semirroupa.
-              </p>
+              <p style={{ fontSize: '12px', color: '#856404', fontWeight: '600' }}>⚠️ Não são permitidas fotos sem roupa ou semirroupa.</p>
             </div>
-
-            {/* Indicador global de verificação */}
             {verificandoFoto !== null && (
               <div style={{ backgroundColor: '#f0f9ff', border: '1px solid #bae0fd', borderRadius: '12px', padding: '12px 16px', marginBottom: '16px' }}>
-                <p style={{ fontSize: '13px', color: '#0369a1', fontWeight: '600' }}>
-                  🔍 Verificando foto {verificandoFoto + 1}... aguarde
-                </p>
+                <p style={{ fontSize: '13px', color: '#0369a1', fontWeight: '600' }}>🔍 Verificando foto {verificandoFoto + 1}... aguarde</p>
               </div>
             )}
-
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '24px' }}>
               {Array(10).fill(null).map((_, i) => (
                 <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: '16px', overflow: 'hidden', border: `2px dashed ${previews[i] ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: previews[i] ? 'transparent' : 'var(--white)', cursor: 'pointer' }}>
@@ -807,13 +800,13 @@ export default function Perfil() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
               <div>
                 <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Nome *</p>
-                <input type="text" placeholder="Como você quer ser chamado(a)" value={nome} onChange={e => setNome(e.target.value)} />
+                <input type="text" placeholder="Como você quer ser chamado(a)" value={nome} onChange={e => setNome(e.target.value)} style={inputStyle} />
               </div>
               <div>
                 <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Data de nascimento *</p>
                 <input type="date" value={nascimento} onChange={e => setNascimento(e.target.value)}
                   max={new Date(new Date().setFullYear(new Date().getFullYear() - 18)).toISOString().split('T')[0]}
-                />
+                  style={inputStyle} />
                 {nascimento && (() => {
                   const hoje = new Date()
                   const nasc = new Date(nascimento)
@@ -830,14 +823,10 @@ export default function Perfil() {
               <div>
                 <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>CEP *</p>
                 <div style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    placeholder="Digite seu CEP (ex: 01310-100)"
+                  <input type="text" placeholder="Digite seu CEP (ex: 01310-100)"
                     value={cep.replace(/(\d{5})(\d{1,3})/, '$1-$2')}
-                    onChange={e => buscarCep(e.target.value)}
-                    maxLength={9}
-                    style={{ paddingRight: '44px' }}
-                  />
+                    onChange={e => buscarCep(e.target.value)} maxLength={9}
+                    style={{ ...inputStyle, paddingRight: '44px' }} />
                   {cepStatus === 'loading' && <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px' }}>⏳</span>}
                   {cepStatus === 'ok' && <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px' }}>✅</span>}
                   {cepStatus === 'error' && <span style={{ position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)', fontSize: '18px' }}>❌</span>}
@@ -849,12 +838,9 @@ export default function Perfil() {
                 <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Não sabe o CEP? Busque pela rua</p>
                 <p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '8px' }}>Digite o nome da rua e selecione o estado</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: '8px', marginBottom: '8px' }}>
-                  <input
-                    type="text"
-                    placeholder="Nome da rua, avenida, praça..."
-                    value={buscaRua}
+                  <input type="text" placeholder="Nome da rua, avenida..." value={buscaRua}
                     onChange={e => { setBuscaRua(e.target.value); if (e.target.value.length >= 4) buscarPorRua(e.target.value, estadoBusca) }}
-                  />
+                    style={inputStyle} />
                   <select value={estadoBusca} onChange={e => { setEstadoBusca(e.target.value); if (buscaRua.length >= 4) buscarPorRua(buscaRua, e.target.value) }} style={{ backgroundColor: 'var(--white)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 10px', color: 'var(--text)', fontFamily: 'var(--font-jakarta)', fontSize: '15px', width: '72px', outline: 'none' }}>
                     <option value="">UF</option>
                     {['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'].map(uf => <option key={uf}>{uf}</option>)}
@@ -875,46 +861,27 @@ export default function Perfil() {
               {cepStatus === 'ok' && (
                 <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid rgba(46,196,160,0.3)', borderRadius: '16px', padding: '16px' }}>
                   <p style={{ fontSize: '12px', fontWeight: '700', color: 'var(--accent-dark)', marginBottom: '12px' }}>✅ Endereço confirmado</p>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '10px' }}>
-                    <div>
-                      <p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>CIDADE</p>
-                      <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>{cidade || '—'}</p>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>ESTADO</p>
-                      <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>{estado || '—'}</p>
-                    </div>
-                  </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <div>
-                      <p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>BAIRRO</p>
-                      <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>{bairro || '—'}</p>
-                    </div>
-                    <div>
-                      <p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>RUA</p>
-                      <p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>{rua || '—'}</p>
-                    </div>
+                    <div><p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>CIDADE</p><p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>{cidade || '—'}</p></div>
+                    <div><p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>ESTADO</p><p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>{estado || '—'}</p></div>
+                    <div><p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>BAIRRO</p><p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>{bairro || '—'}</p></div>
+                    <div><p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '4px' }}>RUA</p><p style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>{rua || '—'}</p></div>
                   </div>
-                  {lat && lng && <p style={{ fontSize: '11px', color: 'var(--accent)', marginTop: '8px' }}>📍 Localização registrada — filtro por distância ativado</p>}
+                  {lat && lng && <p style={{ fontSize: '11px', color: 'var(--accent)', marginTop: '8px' }}>📍 Filtro por distância ativado</p>}
                 </div>
               )}
+
               <div>
                 <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Conte sobre você *</p>
-                <textarea placeholder="Fale um pouco sobre você, sua personalidade, o que você curte... (mínimo 30 caracteres)" value={bio} onChange={e => setBio(e.target.value)} maxLength={300} style={{ backgroundColor: 'var(--white)', border: `1px solid ${bio.length >= 30 ? 'var(--accent)' : bio.length > 0 ? '#ffb347' : 'var(--border)'}`, borderRadius: '12px', padding: '14px 18px', color: 'var(--text)', fontFamily: 'var(--font-jakarta)', fontSize: '15px', width: '100%', outline: 'none', resize: 'none', minHeight: '100px' }} />
+                <textarea placeholder="Fale sobre você, sua personalidade, o que curte... (mínimo 30 caracteres)" value={bio} onChange={e => setBio(e.target.value)} maxLength={300}
+                  style={{ ...inputStyle, resize: 'none', minHeight: '100px', border: `1px solid ${bio.length >= 30 ? 'var(--accent)' : bio.length > 0 ? '#ffb347' : 'var(--border)'}` }} />
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '4px' }}>
                   <span style={{ fontSize: '12px', color: bio.length >= 30 ? 'var(--accent)' : bio.length > 0 ? '#e67e00' : 'var(--muted)', fontWeight: bio.length > 0 ? '600' : '400' }}>
-                    {bio.length < 30 ? `Mínimo 30 caracteres — faltam ${30 - bio.length}` : '✅ Bio completa'}
+                    {bio.length < 30 ? `Faltam ${30 - bio.length} caracteres` : '✅ Bio completa'}
                   </span>
                   <span style={{ fontSize: '12px', color: 'var(--muted)' }}>{bio.length}/300</span>
                 </div>
               </div>
-            </div>
-
-            <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid rgba(46,196,160,0.3)', borderRadius: '16px', padding: '16px', marginTop: '24px' }}>
-              <p style={{ fontSize: '13px', color: 'var(--accent-dark)', fontWeight: '700', marginBottom: '4px' }}>A seguir: suas características</p>
-              <p style={{ fontSize: '12px', color: 'var(--muted)', lineHeight: '1.6' }}>
-                Nas próximas etapas você irá informar suas próprias características. <strong style={{ color: 'var(--text)' }}>Responda sobre você mesmo(a), não sobre o que procura em outra pessoa.</strong>
-              </p>
             </div>
           </div>
         )}
@@ -923,69 +890,44 @@ export default function Perfil() {
         {etapa === 2 && (
           <div>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '24px' }}>Sua aparência</h2>
-
             <Select label="Cor dos olhos" obrigatorio value={corOlhos} onChange={setCorOlhos} options={['Olhos pretos','Olhos castanhos','Olhos verdes','Olhos azuis','Olhos mel','Olhos acinzentados','Heterocromia']} />
             <Select label="Cor do cabelo" obrigatorio value={corCabelo} onChange={v => { setCorCabelo(v); if (v === 'Não possuo cabelo (careca)') { setComprimentoCabelo(''); setTipoCabelo('') } }} options={['Cabelo preto','Cabelo castanho','Cabelo loiro','Cabelo ruivo','Cabelo colorido','Cabelo grisalho','Não possuo cabelo (careca)']} />
-
             {corCabelo !== 'Não possuo cabelo (careca)' && corCabelo !== '' && (
               <>
                 <Select label="Comprimento do cabelo" obrigatorio value={comprimentoCabelo} onChange={setComprimentoCabelo} options={['Cabelo curto','Cabelo médio','Cabelo longo']} />
                 <Select label="Tipo do cabelo" value={tipoCabelo} onChange={setTipoCabelo} options={['Cabelo liso','Cabelo cacheado','Cabelo crespo','Cabelo ondulado']} />
               </>
             )}
-
             <Select label="Cor de pele / etnia" obrigatorio value={corPele} onChange={setCorPele} options={['Branca','Parda','Negra','Afrodescendente','Asiática','Indígena','Latina','Mediterrânea','Possuo vitiligo']} />
-
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
               <div>
                 <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Altura (cm) *</p>
-                <input type="number" placeholder="Ex: 165" value={altura} onChange={e => setAltura(e.target.value)} min={100} max={250}
-                  style={{ border: `1px solid ${altura && (parseInt(altura) < 100 || parseInt(altura) > 250) ? '#cc0000' : 'var(--border)'}` }} />
-                {altura && parseInt(altura) < 100 && <p style={{ fontSize: '11px', color: '#cc0000', marginTop: '4px' }}>Mínimo: 100 cm</p>}
-                {altura && parseInt(altura) > 250 && <p style={{ fontSize: '11px', color: '#cc0000', marginTop: '4px' }}>Máximo: 250 cm</p>}
+                <input type="number" placeholder="Ex: 165" value={altura} onChange={e => setAltura(e.target.value)} min={100} max={250} style={inputStyle} />
               </div>
               <div>
                 <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Peso (kg) *</p>
-                <input type="number" placeholder="Ex: 60" value={peso} onChange={e => setPeso(e.target.value)} min={30} max={300}
-                  style={{ border: `1px solid ${peso && (parseInt(peso) < 30 || parseInt(peso) > 300) ? '#cc0000' : 'var(--border)'}` }} />
-                {peso && parseInt(peso) < 30 && <p style={{ fontSize: '11px', color: '#cc0000', marginTop: '4px' }}>Mínimo: 30 kg</p>}
-                {peso && parseInt(peso) > 300 && <p style={{ fontSize: '11px', color: '#cc0000', marginTop: '4px' }}>Máximo: 300 kg</p>}
+                <input type="number" placeholder="Ex: 60" value={peso} onChange={e => setPeso(e.target.value)} min={30} max={300} style={inputStyle} />
               </div>
             </div>
 
-            {altura && peso && parseInt(altura) >= 100 && parseInt(altura) <= 250 && parseInt(peso) >= 30 && parseInt(peso) <= 300 && (
+            {altura && peso && parseInt(altura) >= 100 && parseInt(peso) >= 30 && (
               <div style={{ marginBottom: '20px' }}>
-                <button
-                  onClick={() => { const imc = calcularIMC(peso, altura); if (imc) setCorporal(imc) }}
-                  style={{ width: '100%', padding: '13px 16px', borderRadius: '12px', border: '1.5px dashed var(--accent)', backgroundColor: 'var(--accent-light)', color: 'var(--accent-dark)', fontFamily: 'var(--font-jakarta)', fontSize: '13px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}
-                >
+                <button onClick={() => { const imc = calcularIMC(peso, altura); if (imc) setCorporal(imc) }}
+                  style={{ width: '100%', padding: '13px 16px', borderRadius: '12px', border: '1.5px dashed var(--accent)', backgroundColor: 'var(--accent-light)', color: 'var(--accent-dark)', fontFamily: 'var(--font-jakarta)', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}>
                   🧮 Calcular IMC e sugerir tipo corporal
-                  <span style={{ fontWeight: '400', color: 'var(--muted)', fontSize: '12px' }}>(opcional)</span>
                 </button>
-                <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '6px', lineHeight: '1.5', textAlign: 'center' }}>
-                  O cálculo é uma sugestão baseada na tabela da OMS. Pessoas com alta massa muscular podem ter IMC elevado sem excesso de gordura — a escolha final é sempre sua.
-                </p>
               </div>
             )}
 
-            <div style={{ backgroundColor: '#f0f9ff', border: '1px solid #bae0fd', borderRadius: '16px', padding: '16px 18px', marginBottom: '20px', lineHeight: '1.65' }}>
-              <p style={{ fontSize: '13px', fontWeight: '700', color: '#0369a1', marginBottom: '6px' }}>💙 Nossa plataforma é feita para inclusão</p>
-              <p style={{ fontSize: '13px', color: '#374151' }}>
-                Aqui você pode ser exatamente quem você é — sem máscaras. Informações verdadeiras tornam a experiência melhor para você <em>e</em> para quem você vai conhecer. Ninguém quer se surpreender negativamente em um encontro, assim como você também não quer.
-                <br /><br />
-                Temos almas gêmeas para todos os tipos. Queremos que você encontre o que busca sendo você mesmo(a), e fazemos o máximo para que sua experiência seja mágica. É justamente isso que nos diferencia — e contamos com você para tornar tudo isso real. 🌟
-              </p>
-            </div>
-
             <div style={{ marginBottom: '20px' }}>
-              <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '1px' }}>Tipo corporal *</p>
-              <p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: '10px' }}>Selecione como você se identifica. Opções em cinza não são compatíveis com o peso e altura informados.</p>
+              <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Tipo corporal *</p>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {['Abaixo do peso', 'Peso saudável', 'Acima do peso', 'Obesidade leve', 'Obesidade severa'].map(op => {
                   const possiveis = corpoPossiveis(peso, altura)
                   const bloqueado = possiveis.length > 0 && !possiveis.includes(op)
                   return (
-                    <button key={op} onClick={() => { if (!bloqueado) setCorporal(corporal === op ? '' : op) }} disabled={bloqueado} style={{ padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', border: `1.5px solid ${bloqueado ? '#e5e7eb' : corporal === op ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: bloqueado ? '#f3f4f6' : corporal === op ? 'var(--accent-light)' : 'var(--white)', color: bloqueado ? '#9ca3af' : corporal === op ? 'var(--accent-dark)' : 'var(--muted)', cursor: bloqueado ? 'not-allowed' : 'pointer', transition: 'all 0.15s' }}>
+                    <button key={op} onClick={() => { if (!bloqueado) setCorporal(corporal === op ? '' : op) }} disabled={bloqueado}
+                      style={{ padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', border: `1.5px solid ${bloqueado ? '#e5e7eb' : corporal === op ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: bloqueado ? '#f3f4f6' : corporal === op ? 'var(--accent-light)' : 'var(--white)', color: bloqueado ? '#9ca3af' : corporal === op ? 'var(--accent-dark)' : 'var(--muted)', cursor: bloqueado ? 'not-allowed' : 'pointer' }}>
                       {op}
                     </button>
                   )
@@ -994,15 +936,13 @@ export default function Perfil() {
             </div>
 
             <Secao titulo="Características que possuo">
-              {['Possuo sardas','Possuo tatuagem','Possuo piercing','Possuo cicatriz','Uso óculos','Uso aparelho dentário','Possuo barba','Não possuo barba'].map(tag => (
+              {['Possuo sardas','Possuo tatuagem','Possuo piercing','Possuo cicatriz','Uso óculos','Uso aparelho dentário','Possuo barba'].map(tag => (
                 <Tag key={tag} label={tag} ativo={caracteristicas.includes(tag)} onClick={() => toggleTag(caracteristicas, setCaracteristicas, tag)} />
               ))}
             </Secao>
 
             <Secao titulo="Sou Pessoa com Deficiência (PCD)?" obrigatorio>
-              {['Sim, sou PCD', 'Não sou PCD'].map(op => (
-                <TagUnica key={op} label={op} valor={op} current={pcd} onChange={setPcd} />
-              ))}
+              {['Sim, sou PCD', 'Não sou PCD'].map(op => <TagUnica key={op} label={op} valor={op} current={pcd} onChange={setPcd} />)}
             </Secao>
 
             {pcd === 'Sim, sou PCD' && (
@@ -1019,46 +959,26 @@ export default function Perfil() {
         {etapa === 3 && (
           <div>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '24px' }}>Identidade</h2>
-            <div style={{ marginBottom: '20px' }}>
-              <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Gênero *</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {['Homem', 'Mulher', 'Homem trans', 'Mulher trans', 'Não-binário(a)', 'Gênero fluido'].map(label => (
-                  <button key={label} onClick={() => setGenero(genero === label ? '' : label)} style={{ padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', border: `1.5px solid ${genero === label ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: genero === label ? 'var(--accent-light)' : 'var(--white)', color: genero === label ? 'var(--accent-dark)' : 'var(--muted)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    {label}
-                    <span style={{ position: 'relative', display: 'inline-flex' }} onMouseEnter={() => setTooltip(label)} onMouseLeave={() => setTooltip('')} onClick={e => { e.stopPropagation(); setTooltip(tooltip === label ? '' : label) }}>
-                      <HelpCircle size={13} color="var(--muted)" />
-                      {tooltip === label && tooltips[label] && <span style={{ position: 'absolute', bottom: '120%', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--text)', color: '#fff', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', lineHeight: '1.4', width: '200px', zIndex: 100, whiteSpace: 'normal' }}>{tooltips[label]}</span>}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div style={{ marginBottom: '20px' }}>
-              <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Pronomes *</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {['Ela/Dela','Ele/Dele','Elu/Delu'].map(op => <TagUnica key={op} label={op} valor={op} current={pronomes} onChange={setPronomes} />)}
-              </div>
-            </div>
-            <div style={{ marginBottom: '20px' }}>
-              <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Orientação sexual *</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {['Heterossexual','Homossexual','Bissexual','Pansexual','Assexual','Demissexual','Queer'].map(op => (
-                  <button key={op} onClick={() => setOrientacao(orientacao === op ? '' : op)} style={{ padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', border: `1.5px solid ${orientacao === op ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: orientacao === op ? 'var(--accent-light)' : 'var(--white)', color: orientacao === op ? 'var(--accent-dark)' : 'var(--muted)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                    {op}
-                    <span style={{ position: 'relative', display: 'inline-flex' }} onMouseEnter={() => setTooltip(op)} onMouseLeave={() => setTooltip('')} onClick={e => { e.stopPropagation(); setTooltip(tooltip === op ? '' : op) }}>
-                      <HelpCircle size={13} color="var(--muted)" />
-                      {tooltip === op && tooltips[op] && <span style={{ position: 'absolute', bottom: '120%', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'var(--text)', color: '#fff', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', lineHeight: '1.4', width: '200px', zIndex: 100, whiteSpace: 'normal' }}>{tooltips[op]}</span>}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div style={{ marginBottom: '20px' }}>
-              <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Status civil *</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {['Solteiro(a)','Enrolado(a)','Casado(a)','Divorciando','Divorciado(a)','Viúvo(a)','Relacionamento aberto'].map(op => <TagUnica key={op} label={op} valor={op} current={statusCivil} onChange={setStatusCivil} />)}
-              </div>
-            </div>
+            <Secao titulo="Gênero" obrigatorio>
+              {['Homem', 'Mulher', 'Homem trans', 'Mulher trans', 'Não-binário(a)', 'Gênero fluido'].map(label => (
+                <button key={label} onClick={() => setGenero(genero === label ? '' : label)} style={{ padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', border: `1.5px solid ${genero === label ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: genero === label ? 'var(--accent-light)' : 'var(--white)', color: genero === label ? 'var(--accent-dark)' : 'var(--muted)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  {label}<Tooltip label={label} />
+                </button>
+              ))}
+            </Secao>
+            <Secao titulo="Pronomes" obrigatorio>
+              {['Ela/Dela','Ele/Dele','Elu/Delu'].map(op => <TagUnica key={op} label={op} valor={op} current={pronomes} onChange={setPronomes} />)}
+            </Secao>
+            <Secao titulo="Orientação sexual" obrigatorio>
+              {['Heterossexual','Homossexual','Bissexual','Pansexual','Assexual','Demissexual','Queer'].map(op => (
+                <button key={op} onClick={() => setOrientacao(orientacao === op ? '' : op)} style={{ padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', border: `1.5px solid ${orientacao === op ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: orientacao === op ? 'var(--accent-light)' : 'var(--white)', color: orientacao === op ? 'var(--accent-dark)' : 'var(--muted)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  {op}<Tooltip label={op} />
+                </button>
+              ))}
+            </Secao>
+            <Secao titulo="Status civil" obrigatorio>
+              {['Solteiro(a)','Enrolado(a)','Casado(a)','Divorciando','Divorciado(a)','Viúvo(a)','Relacionamento aberto'].map(op => <TagUnica key={op} label={op} valor={op} current={statusCivil} onChange={setStatusCivil} />)}
+            </Secao>
           </div>
         )}
 
@@ -1066,12 +986,9 @@ export default function Perfil() {
         {etapa === 4 && (
           <div>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '24px' }}>Estilo de vida</h2>
-            <div style={{ marginBottom: '28px' }}>
-              <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Vícios e substâncias *</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {['Fumo','Fumo ocasionalmente','Não fumo','Consumo bebida alcoólica','Bebo socialmente','Não consumo bebida alcoólica','Consumo cannabis','Não possuo vícios'].map(op => <TagUnica key={op} label={op} valor={op} current={vicios} onChange={setVicios} />)}
-              </div>
-            </div>
+            <Secao titulo="Vícios e substâncias" obrigatorio>
+              {['Fumo','Fumo ocasionalmente','Não fumo','Consumo bebida alcoólica','Bebo socialmente','Não consumo bebida alcoólica','Consumo cannabis','Não possuo vícios'].map(op => <TagUnica key={op} label={op} valor={op} current={vicios} onChange={setVicios} />)}
+            </Secao>
             <Secao titulo="Rotina e estilo de vida" obrigatorio>
               {['Pratico academia','Pratico esporte regularmente','Sou sedentário(a)','Sou caseiro(a)','Gosto de sair','Gosto de balada','Sou noturno(a)','Sou matutino(a)','Sou workaholic','Tenho vida equilibrada'].map(tag => <Tag key={tag} label={tag} ativo={rotina.includes(tag)} onClick={() => toggleTag(rotina, setRotina, tag)} />)}
             </Secao>
@@ -1081,14 +998,11 @@ export default function Perfil() {
             <Secao titulo="Hobbies e interesses" obrigatorio>
               {['Sou gamer','Adoro ler','Viciado(a) em filmes','Viciado(a) em séries','Curto anime / mangá','Curto música ao vivo','Faço fotografia','Arte e desenho','Danço','Faço teatro','Meditação / Yoga','Adoro viajar','Curto trilha e natureza','Sou otaku','Curto k-pop','Sou emo / punk','Sou e-girl / e-boy'].map(tag => <Tag key={tag} label={tag} ativo={hobbies.includes(tag)} onClick={() => toggleTag(hobbies, setHobbies, tag)} />)}
             </Secao>
-            <div style={{ marginBottom: '28px' }}>
-              <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '10px', textTransform: 'uppercase', letterSpacing: '1px' }}>Esportes *</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                {['Gosto de futebol','Não gosto de futebol','Pratico corrida','Pratico natação','Ando de bicicleta','Pratico artes marciais','Gosto de churrasco','Não pratico esportes'].map(op => <TagUnica key={op} label={op} valor={op} current={esportes} onChange={setEsportes} />)}
-              </div>
-            </div>
+            <Secao titulo="Esportes" obrigatorio>
+              {['Gosto de futebol','Não gosto de futebol','Pratico corrida','Pratico natação','Ando de bicicleta','Pratico artes marciais','Gosto de churrasco','Não pratico esportes'].map(op => <TagUnica key={op} label={op} valor={op} current={esportes} onChange={setEsportes} />)}
+            </Secao>
             <Secao titulo="Alimentação" obrigatorio>
-              {['Sou vegano(a)','Sou vegetariano(a)','Sou carnívoro(a)','Como de tudo','Cozinho bem','Não cozinho','Prefiro alimentação saudável','Curto comida japonesa','Curto fast food','Tenho intolerância à lactose','Tenho intolerância ao glúten'].map(tag => <Tag key={tag} label={tag} ativo={alimentacao.includes(tag)} onClick={() => toggleTag(alimentacao, setAlimentacao, tag)} />)}
+              {['Sou vegano(a)','Sou vegetariano(a)','Sou carnívoro(a)','Como de tudo','Prefiro alimentação saudável','Cozinho bem','Não cozinho','Curto comida japonesa','Curto fast food','Tenho intolerância à lactose','Tenho intolerância ao glúten'].map(tag => <Tag key={tag} label={tag} ativo={alimentacao.includes(tag)} onClick={() => toggleTag(alimentacao, setAlimentacao, tag)} />)}
             </Secao>
             <Secao titulo="Estilo de se vestir" obrigatorio>
               {['Social','Casual','Esportivo','Alternativo','Eclético','Gótico','Punk','E-girl / E-boy','K-pop'].map(tag => <Tag key={tag} label={tag} ativo={estiloVestir.includes(tag)} onClick={() => toggleTag(estiloVestir, setEstiloVestir, tag)} />)}
@@ -1139,20 +1053,10 @@ export default function Perfil() {
               <p style={{ fontSize: '12px', color: '#aaa', marginBottom: '16px', lineHeight: '1.6' }}>
                 Estas preferências são visíveis <strong style={{ color: '#f5d485' }}>apenas para outros assinantes Camarote</strong> que também as selecionaram.
               </p>
-              <div style={{ backgroundColor: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)', borderRadius: '12px', padding: '12px', marginBottom: '16px' }}>
-                <p style={{ fontSize: '12px', color: '#c9a84c', fontWeight: '700', marginBottom: '4px' }}>💛 Quer interagir com um Sugar?</p>
-                <p style={{ fontSize: '11px', color: '#aaa', lineHeight: '1.6' }}>
-                  Se você não possui o plano Camarote, pode enviar um <strong style={{ color: '#f5d485' }}>pedido de acesso</strong>. Um assinante Camarote interessado pode realizar o pagamento para interagir com você.
-                </p>
-              </div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                 {['Busco trisal','Swing / relacionamento aberto','Poliamor','BDSM / fetiches'].map(tag => (
-                  <button key={tag} onClick={() => toggleTag(discreto, setDiscreto, tag)} style={{ padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', border: `1.5px solid ${discreto.includes(tag) ? '#f5d485' : 'rgba(201,168,76,0.4)'}`, backgroundColor: discreto.includes(tag) ? 'rgba(245,212,133,0.15)' : 'rgba(255,255,255,0.05)', color: discreto.includes(tag) ? '#f5d485' : '#888', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', transition: 'all 0.15s' }}>
+                  <button key={tag} onClick={() => toggleTag(discreto, setDiscreto, tag)} style={{ padding: '8px 14px', borderRadius: '100px', fontSize: '13px', fontWeight: '600', border: `1.5px solid ${discreto.includes(tag) ? '#f5d485' : 'rgba(201,168,76,0.4)'}`, backgroundColor: discreto.includes(tag) ? 'rgba(245,212,133,0.15)' : 'rgba(255,255,255,0.05)', color: discreto.includes(tag) ? '#f5d485' : '#888', cursor: 'pointer', transition: 'all 0.15s' }}>
                     {tag}
-                    <span style={{ position: 'relative', display: 'inline-flex' }} onMouseEnter={() => setTooltip(tag)} onMouseLeave={() => setTooltip('')} onClick={e => { e.stopPropagation(); setTooltip(tooltip === tag ? '' : tag) }}>
-                      <HelpCircle size={13} color="#888" />
-                      {tooltip === tag && tooltips[tag] && <span style={{ position: 'absolute', bottom: '120%', left: '50%', transform: 'translateX(-50%)', backgroundColor: '#1a1a1a', border: '1px solid #c9a84c', color: '#f5d485', padding: '8px 12px', borderRadius: '10px', fontSize: '12px', lineHeight: '1.4', width: '200px', zIndex: 100, whiteSpace: 'normal' }}>{tooltips[tag]}</span>}
-                    </span>
                   </button>
                 ))}
               </div>
