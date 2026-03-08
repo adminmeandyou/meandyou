@@ -1,15 +1,15 @@
 'use client'
 
 import { useState } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { Flag, X, ChevronRight, Loader2, CheckCircle } from 'lucide-react'
 
 const REASONS = [
-  { value: 'fake_profile', label: 'Perfil falso' },
-  { value: 'scam', label: 'Golpe ou fraude' },
-  { value: 'harassment', label: 'Assédio' },
-  { value: 'minor', label: 'Menor de idade' },
+  { value: 'fake_profile',  label: 'Perfil falso' },
+  { value: 'scam',          label: 'Golpe ou fraude' },
+  { value: 'harassment',    label: 'Assédio' },
+  { value: 'minor',         label: 'Menor de idade' },
   { value: 'inappropriate', label: 'Conteúdo impróprio' },
 ]
 
@@ -21,7 +21,6 @@ interface ReportModalProps {
 
 export function ReportModal({ reportedId, reportedName, onClose }: ReportModalProps) {
   const { user } = useAuth()
-  const supabase = createClient()
 
   const [step, setStep] = useState<'reason' | 'details' | 'success'>('reason')
   const [selectedReason, setSelectedReason] = useState<string | null>(null)
@@ -59,10 +58,8 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm">
       <div className="w-full max-w-sm bg-[#141020] rounded-t-3xl border-t border-white/10 p-6">
 
-        {/* Handle */}
         <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-5" />
 
-        {/* Fechar */}
         <div className="flex items-center justify-between mb-5">
           <h2 className="font-fraunces text-xl text-white">
             {step === 'success' ? 'Denúncia enviada' : `Denunciar ${reportedName}`}
@@ -72,7 +69,6 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
           </button>
         </div>
 
-        {/* Step: Motivo */}
         {step === 'reason' && (
           <div className="space-y-2">
             <p className="text-white/40 text-sm mb-4">Qual o motivo da denúncia?</p>
@@ -91,9 +87,7 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
               </button>
             ))}
 
-            {error && (
-              <p className="text-red-400 text-xs text-center mt-2">{error}</p>
-            )}
+            {error && <p className="text-red-400 text-xs text-center mt-2">{error}</p>}
 
             <button
               onClick={() => selectedReason && setStep('details')}
@@ -105,12 +99,9 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
           </div>
         )}
 
-        {/* Step: Detalhes */}
         {step === 'details' && (
           <div>
-            <p className="text-white/40 text-sm mb-4">
-              Adicione mais detalhes (opcional)
-            </p>
+            <p className="text-white/40 text-sm mb-4">Adicione mais detalhes (opcional)</p>
             <textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
@@ -121,9 +112,7 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
             />
             <p className="text-right text-white/20 text-xs mt-1">{details.length}/500</p>
 
-            {error && (
-              <p className="text-red-400 text-xs text-center mt-2">{error}</p>
-            )}
+            {error && <p className="text-red-400 text-xs text-center mt-2">{error}</p>}
 
             <div className="flex gap-3 mt-4">
               <button
@@ -143,7 +132,6 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
           </div>
         )}
 
-        {/* Step: Sucesso */}
         {step === 'success' && (
           <div className="text-center py-4">
             <CheckCircle size={40} className="text-[#b8f542] mx-auto mb-4" />
@@ -162,8 +150,6 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
     </div>
   )
 }
-
-// ─── Botão de denúncia (usado em qualquer perfil) ─────────────────────────────
 
 export function ReportButton({ reportedId, reportedName }: { reportedId: string; reportedName: string }) {
   const [open, setOpen] = useState(false)
