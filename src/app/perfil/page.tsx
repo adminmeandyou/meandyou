@@ -358,7 +358,6 @@ export default function Perfil() {
           skin_white: corPele === 'Branca',
           skin_mixed: corPele === 'Parda',
           skin_black: corPele === 'Negra',
-          skin_afro: corPele === 'Afrodescendente',
           skin_asian: corPele === 'Asiática',
           skin_indigenous: corPele === 'Indígena',
           skin_latin: corPele === 'Latina',
@@ -898,7 +897,7 @@ export default function Perfil() {
                 <Select label="Tipo do cabelo" value={tipoCabelo} onChange={setTipoCabelo} options={['Cabelo liso','Cabelo cacheado','Cabelo crespo','Cabelo ondulado']} />
               </>
             )}
-            <Select label="Cor de pele / etnia" obrigatorio value={corPele} onChange={setCorPele} options={['Branca','Parda','Negra','Afrodescendente','Asiática','Indígena','Latina','Mediterrânea','Possuo vitiligo']} />
+            <Select label="Cor de pele / etnia" obrigatorio value={corPele} onChange={setCorPele} options={['Branca','Parda','Negra','Asiática','Indígena','Latina','Mediterrânea','Possuo vitiligo']} />
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px' }}>
               <div>
                 <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--muted)', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '1px' }}>Altura (cm) *</p>
