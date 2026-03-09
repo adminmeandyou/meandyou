@@ -43,6 +43,8 @@ export default function Home() {
   const router = useRouter()
   const [checking, setChecking] = useState(true)
   const animRef = useRef(false)
+  const [navVisible, setNavVisible] = useState(true)
+  const lastScrollY = useRef(0)
 
   useEffect(() => {
     supabase.auth.getUser()
@@ -96,9 +98,21 @@ export default function Home() {
     return () => observer.disconnect()
   }, [checking])
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentY = window.scrollY
+      if (currentY < 60) { setNavVisible(true) }
+      else if (currentY < lastScrollY.current) { setNavVisible(true) }
+      else { setNavVisible(false) }
+      lastScrollY.current = currentY
+    }
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   if (checking) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0d0d0d' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#08090E' }}>
         <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '36px', color: '#f0ece4' }}>
           MeAnd<span style={{ color: '#E11D48' }}>You</span>
         </h1>
@@ -150,18 +164,18 @@ export default function Home() {
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
 
         :root {
-          --bg: #0d0d0d;
-          --bg-card: #161616;
-          --bg-card2: #1e1e1e;
+          --bg: #08090E;
+          --bg-card: #0F1117;
+          --bg-card2: #13161F;
           --accent: #E11D48;
           --accent-soft: rgba(225,29,72,0.10);
           --accent-border: rgba(225,29,72,0.25);
           --gold: #F59E0B;
           --gold-soft: rgba(245,158,11,0.10);
           --gold-border: rgba(245,158,11,0.25);
-          --text: #f0ece4;
-          --text-muted: rgba(240,236,228,0.55);
-          --text-dim: rgba(240,236,228,0.30);
+          --text: #F8F9FA;
+          --text-muted: rgba(248,249,250,0.50);
+          --text-dim: rgba(248,249,250,0.30);
           --border: rgba(255,255,255,0.07);
           --border-soft: rgba(255,255,255,0.04);
           --red: #F43F5E;
@@ -175,11 +189,12 @@ export default function Home() {
 
         /* ── NAV ── */
         .lp-nav {
-          position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+          position: fixed; top: 16px; left: 50%;
           z-index: 200; display: flex; align-items: center; justify-content: space-between;
           padding: 14px 28px; width: calc(100% - 48px); max-width: 1140px;
           background: rgba(8,9,14,0.85); backdrop-filter: blur(20px);
-          border: 1px solid var(--border); border-radius: 16px;
+          border: 1px solid rgba(255,255,255,0.07); border-radius: 16px;
+          transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s;
         }
         .lp-logo { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 22px; color: var(--text); letter-spacing: -0.5px; text-decoration: none; }
         .lp-logo span { color: var(--accent); }
@@ -414,7 +429,7 @@ export default function Home() {
         }
         .lp-contact-form select:focus, .lp-contact-form input:focus, .lp-contact-form textarea:focus { border-color: rgba(225,29,72,0.4); }
         .lp-contact-form textarea { resize: none; height: 42px; }
-        .lp-contact-form option { background: #1e1e1e; }
+        .lp-contact-form option { background: #13161F; }
         .lp-contact-btn { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.2s; font-family: 'Inter', sans-serif; }
         .lp-contact-btn:hover { background: #be123c; }
         @media (max-width: 960px) { .lp-contact-form { grid-template-columns: 1fr 1fr; } .lp-diff-grid { grid-template-columns: 1fr; } }
@@ -465,7 +480,7 @@ export default function Home() {
         .lp-cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(225,29,72,0.10) 0%, transparent 60%); }
         .lp-cta h2 { font-family: 'Playfair Display', serif; font-size: clamp(36px, 5vw, 66px); font-weight: 700; letter-spacing: -2px; color: var(--text); margin-bottom: 18px; line-height: 1.08; position: relative; }
         .lp-cta p { color: var(--text-muted); font-size: 17px; margin-bottom: 44px; position: relative; }
-        .lp-btn-cta-white { background: #f0ece4; color: #0d0d0d; padding: 17px 46px; border-radius: 12px; font-weight: 700; font-size: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: transform 0.15s, box-shadow 0.2s; cursor: pointer; position: relative; }
+        .lp-btn-cta-white { background: #f0ece4; color: #08090E; padding: 17px 46px; border-radius: 12px; font-weight: 700; font-size: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: transform 0.15s, box-shadow 0.2s; cursor: pointer; position: relative; }
         .lp-btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
         .lp-cta-note { color: rgba(255,255,255,.45); font-size: 13px; margin-top: 20px; position: relative; }
 
@@ -520,7 +535,7 @@ export default function Home() {
       <div className="lp">
 
         {/* ── Navbar ── */}
-        <nav className="lp-nav">
+        <nav className="lp-nav" style={{ transform: navVisible ? 'translateX(-50%)' : 'translateX(-50%) translateY(-120%)', opacity: navVisible ? 1 : 0 }}>
           <a href="/" className="lp-logo">MeAnd<span>You</span></a>
           <ul className="lp-nav-links">
             <li><a href="#verificacao">Verificação</a></li>
@@ -532,7 +547,7 @@ export default function Home() {
         </nav>
 
         {/* ── Hero ── */}
-        <section style={{ backgroundImage: "linear-gradient(rgba(13,13,13,0.72), rgba(13,13,13,0.90)), url('/backgrounds/nova/Image_fx (1).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.72), rgba(8,9,14,0.90)), url('/backgrounds/nova/Image_fx (1).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-hero">
             <div>
               <div className="lp-badge">
@@ -930,7 +945,7 @@ export default function Home() {
         </section>
 
         {/* ── Gamificação ── */}
-        <section className="lp-gamif" style={{ backgroundImage: "linear-gradient(rgba(13,13,13,0.88), rgba(13,13,13,0.94)), url('/backgrounds/nova/Image_fx (6).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-gamif" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.88), rgba(8,9,14,0.94)), url('/backgrounds/nova/Image_fx (6).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-gamif-inner">
             <p className="lp-section-label">Muito mais do que curtidas</p>
             <h2 className="lp-section-title">Recompensas por<br />estar aqui</h2>
@@ -966,7 +981,7 @@ export default function Home() {
         </section>
 
         {/* ── Depoimentos ── */}
-        <section className="lp-testi" style={{ backgroundImage: "linear-gradient(rgba(13,13,13,0.85), rgba(13,13,13,0.92)), url('/backgrounds/nova/Image_fx (8).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-testi" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.85), rgba(8,9,14,0.92)), url('/backgrounds/nova/Image_fx (8).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-testi-inner">
             <p className="lp-section-label">Depoimentos</p>
             <h2 className="lp-section-title">Chega de encontros frustrantes.<br />Veja quem já está vivendo o mundo real.</h2>
@@ -1032,7 +1047,7 @@ export default function Home() {
         </section>
 
         {/* ── CTA final ── */}
-        <section className="lp-cta" style={{ backgroundImage: "linear-gradient(rgba(13,13,13,0.75), rgba(13,13,13,0.88)), url('/backgrounds/nova/Image_fx (7).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-cta" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.75), rgba(8,9,14,0.88)), url('/backgrounds/nova/Image_fx (7).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <h2>Sua pessoa real<br />está esperando.</h2>
           <p>Verificação real. Filtros completos. Conexões de verdade.</p>
           <a href="/planos" className="lp-btn-cta-white">

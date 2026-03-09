@@ -31,19 +31,25 @@
 
 /* ── Identidade v2: Dark Romantic (preto + vermelho) ── */
 :root {
-  --bg: #0d0d0d;
-  --bg-card: #161616;
-  --bg-card2: #1e1e1e;
+  --bg: #08090E;
+  --bg-card: #0F1117;
+  --bg-card2: #13161F;
   --white: #F8F9FA;
   --accent: #E11D48;
   --accent-dark: #be123c;
-  --accent-light: rgba(225,29,72,0.12);
+  --accent-light: rgba(225,29,72,0.10);
+  --accent-border: rgba(225,29,72,0.25);
   --text: #F8F9FA;
-  --muted: rgba(248,249,250,0.55);
-  --border: rgba(255,255,255,0.08);
+  --muted: rgba(248,249,250,0.50);
+  --muted-2: rgba(248,249,250,0.30);
+  --border: rgba(255,255,255,0.07);
+  --border-soft: rgba(255,255,255,0.04);
   --shadow: 0 4px 24px rgba(225,29,72,0.15);
   --red: #E11D48;
-  --gold: #d4a017;
+  --red-2: #F43F5E;
+  --gold: #F59E0B;
+  --gold-light: rgba(245,158,11,0.10);
+  --gold-border: rgba(245,158,11,0.25);
   --font-fraunces: 'Fraunces', serif;
   --font-jakarta: 'Plus Jakarta Sans', sans-serif;
 }
@@ -68,8 +74,8 @@ h1, h2, h3 {
 }
 
 input {
-  background-color: rgba(255,255,255,0.05);
-  border: 1px solid var(--border);
+  background-color: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
   border-radius: 12px;
   padding: 14px 18px;
   color: var(--text);
