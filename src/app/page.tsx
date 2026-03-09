@@ -107,14 +107,14 @@ export default function Home() {
   }
 
   const faqItems = [
-    { q: 'Por que não tem plano gratuito?', a: 'Porque gratuito atrai golpista. R$10 já é o suficiente para filtrar quem não está aqui com intenção real. Quem pagou para estar aqui se comporta diferente — e isso muda a experiência para todo mundo.' },
-    { q: 'O que tem de diferente no Camarote Black?', a: 'Acesso total à plataforma, incluindo a área Backstage com filtros de nicho — Sugar, BDSM, Swing, fetiches. Curtidas ilimitadas, 10 SuperCurtidas por dia, 2 Lupas/dia e suporte prioritário. É para quem quer sem limitação nenhuma.' },
-    { q: 'Como funcionam os filtros de incluir e excluir?', a: 'Simples: clique uma vez numa tag e ela fica verde — você quer ver esse perfil. Clique de novo e fica vermelho — você não quer. Mais um clique e volta ao neutro. Tudo numa tela só, sem configuração separada.' },
-    { q: 'O que acontece com meu documento depois da verificação?', a: 'Ele é descartado logo após a verificação. A gente guarda só o resultado (verificado ou não) e um hash criptografado do CPF. O documento original nunca fica salvo no sistema.' },
-    { q: 'Posso cancelar quando quiser?', a: 'Sim, qualquer hora, sem burocracia. Cancela pelo próprio app em menos de 1 minuto. O acesso continua ativo até o fim do período já pago. Sem fidelidade, sem multa.' },
-    { q: 'O app funciona para todas as orientações e identidades?', a: 'Sim. Os filtros cobrem todos os gêneros, orientações e identidades. Cada pessoa filtra exatamente o que quer encontrar. Todo mundo tem espaço aqui, sem julgamento.' },
-    { q: 'Como o app impede golpes e estelionato sentimental?', a: 'Verificação obrigatória com selfie ao vivo, documento e CPF — impossível criar perfil falso. Denúncias resolvidas em até 24h. Banimento permanente vinculado ao CPF: quem é banido não volta com outro email.' },
-    { q: 'Como denunciar um perfil?', a: 'Toque nos três pontinhos em qualquer perfil e selecione "Denunciar". Nossa equipe analisa em até 24h. Em situação de risco ou ameaça, use o botão de emergência no app para chamar o 190 direto.' },
+    { q: 'Por que não tem plano gratuito?', a: 'Porque gratuito não funciona. Todo app gratuito vira terra de ninguém — bot, golpista, vendedor de conteúdo. R$10 é o suficiente pra mudar isso. Quem pagou para estar aqui tem outro nível de seriedade, e você sente isso nas primeiras conversas.' },
+    { q: 'O que é a área Backstage do Camarote Black?', a: 'É uma seção exclusiva com perfis e filtros que não aparecem nos outros planos — Sugar, BDSM, Swing, fetiches, poliamor. Só quem assinalou a mesma intenção consegue ver. Sem exposição desnecessária, sem julgamento.' },
+    { q: 'Como funcionam os filtros de incluir e excluir?', a: 'Clique uma vez numa tag: fica verde, você quer ver. Clique de novo: fica vermelho, você não quer. Clique uma terceira vez: volta ao neutro. Tudo em uma tela, sem formulário separado. É o sistema de filtros mais completo que existe em app de relacionamento no Brasil.' },
+    { q: 'O que acontece com meu documento depois da verificação?', a: 'É descartado imediatamente. A gente não armazena foto de documento de ninguém — guardamos só o resultado da verificação e um hash criptografado do CPF. Seus dados originais nunca ficam no sistema.' },
+    { q: 'Posso cancelar quando quiser?', a: 'Sem burocracia. Cancela dentro do app a qualquer momento, sem precisar ligar pra ninguém. O acesso continua até o fim do período já pago. Sem fidelidade, sem multa, sem pegadinha.' },
+    { q: 'O app é inclusivo pra todas as orientações e identidades?', a: 'Completamente. Os filtros cobrem todas as orientações sexuais, identidades de gênero e formas de relacionamento. Cada pessoa configura o que quer ver — e o que não quer. O espaço é de todo mundo.' },
+    { q: 'Como o app combate golpes e estelionato?', a: 'Selfie ao vivo com sequência de movimentos, documento físico e CPF na criação de conta — impossível criar perfil falso. Quem é banido, é banido pelo CPF, não pelo email: não tem como voltar. Denúncias tratadas em até 24h.' },
+    { q: 'Como denuncio um perfil suspeito?', a: 'Três pontos em qualquer perfil → "Denunciar". Simples assim. Em situação de risco real ou ameaça, tem botão de emergência dentro do app que chama o 190 direto. Nossa moderação funciona 24h.' },
   ]
 
   const filterCats = [
@@ -191,8 +191,12 @@ export default function Home() {
 
         /* ── HERO ── */
         @keyframes lp-fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes lp-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
+        @keyframes lp-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes lp-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes lp-shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+        @keyframes lp-chip-float1 { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
+        @keyframes lp-chip-float2 { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-7px); } }
+        @keyframes lp-chip-float3 { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-4px); } }
 
         .lp-hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 60px; padding: 140px 56px 100px; max-width: 1200px; margin: 0 auto; }
         .lp-badge {
@@ -230,9 +234,9 @@ export default function Home() {
         .lp-hero-right { position: relative; height: 580px; display: flex; align-items: center; justify-content: center; }
         .lp-phone {
           width: 265px; height: 530px; background: var(--bg-card);
-          border-radius: 38px; border: 1px solid var(--border);
-          box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
-          overflow: hidden;
+          border-radius: 38px; border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06), 0 0 60px rgba(225,29,72,0.08);
+          overflow: hidden; animation: lp-float 7s ease-in-out infinite;
         }
         .lp-phone-header { background: var(--accent); padding: 40px 20px 16px; text-align: center; }
         .lp-phone-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #fff; }
@@ -250,14 +254,16 @@ export default function Home() {
         .lp-ph-btn.super { background: rgba(245,158,11,0.12); color: var(--gold); border: 1px solid rgba(245,158,11,0.25); }
         .lp-ph-btn.yes { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border); }
         .lp-fc {
-          position: absolute; background: var(--bg-card);
-          border: 1px solid var(--border); border-radius: 100px;
+          position: absolute; background: rgba(15,17,23,0.75);
+          backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(255,255,255,0.12); border-radius: 100px;
           padding: 8px 16px; font-size: 12px; font-weight: 600;
-          box-shadow: var(--shadow-card); white-space: nowrap; color: var(--text); z-index: 10;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
+          white-space: nowrap; color: var(--text); z-index: 10;
         }
-        .lp-fc1 { top: 48px; left: -10px; }
-        .lp-fc2 { top: 260px; right: -20px; }
-        .lp-fc3 { bottom: 80px; left: 0px; }
+        .lp-fc1 { top: 48px; left: -10px; animation: lp-chip-float1 5s ease-in-out infinite; }
+        .lp-fc2 { top: 260px; right: -20px; animation: lp-chip-float2 6s ease-in-out infinite 0.5s; }
+        .lp-fc3 { bottom: 80px; left: 0px; animation: lp-chip-float3 5.5s ease-in-out infinite 1s; }
         .lp-fc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 4px; }
 
         /* ── Sections ── */
@@ -280,8 +286,8 @@ export default function Home() {
         .lp-verification { padding: 100px 56px; background: var(--bg); }
         .lp-verification-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
         .lp-verify-steps { display: flex; flex-direction: column; gap: 14px; }
-        .lp-verify-step { display: flex; align-items: flex-start; gap: 18px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 18px; padding: 22px 24px; transition: border-color 0.2s, box-shadow 0.2s; }
-        .lp-verify-step:hover { border-color: var(--accent-border); box-shadow: 0 4px 24px rgba(225,29,72,0.08); }
+        .lp-verify-step { display: flex; align-items: flex-start; gap: 18px; background: rgba(15,17,23,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.07); border-radius: 18px; padding: 22px 24px; transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s; }
+        .lp-verify-step:hover { border-color: var(--accent-border); box-shadow: 0 8px 32px rgba(225,29,72,0.10); transform: translateX(4px); }
         .lp-vstep-num { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; flex-shrink: 0; }
         .lp-verify-step h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
         .lp-verify-step p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0; }
@@ -337,8 +343,8 @@ export default function Home() {
         .lp-pricing { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border); }
         .lp-pricing-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
         .lp-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 60px; }
-        .lp-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 24px; padding: 36px 28px; text-align: left; position: relative; transition: transform 0.2s, box-shadow 0.2s; }
-        .lp-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-card); }
+        .lp-card { background: rgba(15,17,23,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.07); border-radius: 24px; padding: 36px 28px; text-align: left; position: relative; transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.35s; }
+        .lp-card:hover { transform: translateY(-6px); box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
         .lp-card.mid { border-color: var(--accent-border); background: linear-gradient(160deg, var(--bg-card) 60%, rgba(225,29,72,0.06)); }
         .lp-card.vip { border-color: var(--gold-border); background: linear-gradient(160deg, var(--bg-card) 60%, rgba(245,158,11,0.06)); }
         .lp-feat-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; padding: 5px 18px; border-radius: 100px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
@@ -378,8 +384,8 @@ export default function Home() {
         .lp-testi { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border); }
         .lp-testi-inner { max-width: 1100px; margin: 0 auto; }
         .lp-testi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 60px; }
-        .lp-testi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 30px; transition: border-color 0.2s; }
-        .lp-testi-card:hover { border-color: rgba(255,255,255,0.12); }
+        .lp-testi-card { background: rgba(15,17,23,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 30px; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s; }
+        .lp-testi-card:hover { border-color: rgba(225,29,72,0.25); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(225,29,72,0.08); }
         .lp-testi-stars { color: var(--gold); font-size: 13px; margin-bottom: 14px; letter-spacing: 2px; }
         .lp-testi-text { font-size: 14px; color: var(--text-muted); line-height: 1.75; margin-bottom: 20px; font-style: italic; }
         .lp-testi-author { display: flex; align-items: center; gap: 12px; }
@@ -809,10 +815,10 @@ export default function Home() {
             <h2 className="lp-section-title">Conexões que realmente aconteceram.</h2>
             <div className="lp-testi-grid">
               {[
-                { name: 'Amanda C.', role: 'São Paulo · 28 anos · Plano Plus', text: 'Fiz uma videochamada antes do primeiro encontro e aquilo mudou tudo pra mim. Cheguei no café sabendo exatamente com quem estava. Sem aquela ansiedade de "será que a foto é real?". Nunca tive isso em nenhum app.' },
-                { name: 'Pedro H.', role: 'Curitiba · 31 anos · Camarote Black', text: 'Sou direto sobre o que quero e nunca funcionou em app nenhum. Aqui abri a área Backstage, filtrei intenção, encontrei alguém com os mesmos fetiches. Conversa direta, sem julgamento, desde a primeira mensagem.' },
-                { name: 'Rafael M.', role: 'Belo Horizonte · 35 anos · Camarote Black', text: 'O nível é completamente diferente. Todo mundo aqui pagou para estar, todo mundo passou por verificação. Já na primeira semana a diferença foi absurda. Sem bot, sem enrolação, sem golpe.' },
-                { name: 'Letícia R.', role: 'Porto Alegre · 26 anos · Plano Plus', text: 'A videochamada foi o que me convenceu. Antes de qualquer encontro já tinha visto a pessoa de verdade, conversado por vídeo, sentido a vibe. Chegou pessoalmente exatamente como apareceu na tela.' },
+                { name: 'Fernanda O.', role: 'São Paulo · 29 anos · Plano Plus', text: 'Fiz videochamada antes do primeiro encontro. Não era "oi, tudo bem", era conversa de verdade — 40 minutos. Quando nos encontramos pessoalmente, já não tinha aquela tensão de desconhecido. Foi diferente de tudo que já vivi em app.' },
+                { name: 'Lucas M.', role: 'Rio de Janeiro · 34 anos · Camarote Black', text: 'Nunca encontrei espaço pra falar abertamente sobre o que gosto, sem julgamento. No Backstage filtrei o que queria, encontrei alguém compatível. Sem rodeio, sem fingir que quer outra coisa. Isso vale mais do que qualquer feature.' },
+                { name: 'Camila S.', role: 'Belo Horizonte · 27 anos · Plano Plus', text: 'Passei anos em app sem conseguir filtrar nem o básico. Aqui eu exclui quem bebe, quem fuma, quem quer algo casual. Ficaram só perfis que faziam sentido. Conversa mais curta, encontro mais rápido, sem perda de tempo.' },
+                { name: 'Thiago R.', role: 'Curitiba · 36 anos · Camarote Black', text: 'Já cai em golpe em outro app. Aqui o badge de verificado não é enfeite — é selfie ao vivo, documento, CPF. Quando você vê aquele selo sabe que tem uma pessoa real do outro lado. Isso muda completamente a confiança na conversa.' },
               ].map((t, i) => (
                 <div key={i} className="lp-testi-card lp-anim">
                   <div className="lp-testi-stars">★★★★★</div>
