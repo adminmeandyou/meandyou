@@ -233,15 +233,19 @@ export default function Home() {
         /* Phone mockup */
         .lp-hero-right { position: relative; height: 580px; display: flex; align-items: center; justify-content: center; }
         .lp-phone {
-          width: 265px; height: 530px; background: var(--bg-card);
+          width: 265px; height: 560px; background: var(--bg-card);
           border-radius: 38px; border: 1px solid rgba(255,255,255,0.1);
           box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06), 0 0 60px rgba(225,29,72,0.08);
-          overflow: hidden; animation: lp-float 7s ease-in-out infinite;
+          overflow: hidden; will-change: transform;
+          animation: lp-float 8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+          transform: translateZ(0);
         }
-        .lp-phone-header { background: var(--accent); padding: 40px 20px 16px; text-align: center; }
+        .lp-phone-header { background: var(--accent); padding: 36px 20px 14px; text-align: center; }
         .lp-phone-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #fff; }
-        .lp-phone-card { margin: 12px; background: var(--bg-card2); border-radius: 18px; overflow: hidden; border: 1px solid var(--border); }
-        .lp-phone-img { height: 196px; background: linear-gradient(135deg, #1a0a14, #2d0f22, #3d1530); display: flex; align-items: center; justify-content: center; font-size: 64px; position: relative; }
+        .lp-phone-card { margin: 10px; background: var(--bg-card2); border-radius: 18px; overflow: hidden; border: 1px solid var(--border); }
+        .lp-phone-img { height: 210px; background: linear-gradient(160deg, #1a0a14 0%, #3d1530 50%, #2a0e24 100%); display: flex; align-items: center; justify-content: center; font-size: 64px; position: relative; overflow: hidden; }
+        .lp-phone-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+        .lp-phone-bio { font-size: 10.5px; color: var(--text-muted); line-height: 1.55; padding: 0 14px 10px; }
         .lp-v-badge { position: absolute; top: 10px; right: 10px; background: var(--accent); color: #fff; border-radius: 100px; padding: 4px 10px; font-size: 10px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
         .lp-phone-info { padding: 12px 14px 10px; }
         .lp-phone-name { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--text); }
@@ -261,9 +265,9 @@ export default function Home() {
           box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
           white-space: nowrap; color: var(--text); z-index: 10;
         }
-        .lp-fc1 { top: 48px; left: -10px; animation: lp-chip-float1 5s ease-in-out infinite; }
-        .lp-fc2 { top: 260px; right: -20px; animation: lp-chip-float2 6s ease-in-out infinite 0.5s; }
-        .lp-fc3 { bottom: 80px; left: 0px; animation: lp-chip-float3 5.5s ease-in-out infinite 1s; }
+        .lp-fc1 { top: 48px; left: -10px; }
+        .lp-fc2 { top: 270px; right: -20px; }
+        .lp-fc3 { bottom: 90px; left: 0px; }
         .lp-fc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 4px; }
 
         /* ── Sections ── */
@@ -307,7 +311,7 @@ export default function Home() {
         .lp-filter-cat > p { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.55; }
         .lp-tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
         .lp-ftag { border-radius: 100px; padding: 4px 12px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; user-select: none; }
-        .lp-ftag.inc { background: rgba(34,197,94,0.10); color: #22c55e; border-color: rgba(34,197,94,0.30); }
+        .lp-ftag.inc { background: rgba(129,140,248,0.12); color: #818CF8; border-color: rgba(129,140,248,0.30); }
         .lp-ftag.exc { background: rgba(244,63,94,0.08); color: #F43F5E; border-color: rgba(244,63,94,0.25); }
         .lp-ftag.neu { background: rgba(255,255,255,0.04); color: var(--text-muted); border-color: var(--border); }
         .lp-ftag:hover { transform: scale(1.05); }
@@ -369,6 +373,46 @@ export default function Home() {
         .lp-btn-outline-p:hover { border-color: rgba(255,255,255,0.2); }
         .lp-btn-rose { background: var(--accent); color: #fff; }
         .lp-btn-gold { background: var(--gold); color: #fff; }
+
+        /* ── DIFERENCIAIS ── */
+        .lp-diff { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border); }
+        .lp-diff-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
+        .lp-diff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 60px; }
+        .lp-diff-card {
+          background: var(--bg-card); border: 1px solid var(--border); border-radius: 28px;
+          padding: 44px 32px; text-align: left; position: relative; overflow: hidden;
+          transition: border-color 0.35s, transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.35s;
+        }
+        .lp-diff-card::before {
+          content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+          background: linear-gradient(90deg, var(--accent), rgba(129,140,248,0.8));
+          transform: scaleX(0); transition: transform 0.4s ease; transform-origin: left;
+        }
+        .lp-diff-card:hover { border-color: var(--accent-border); transform: translateY(-8px); box-shadow: 0 24px 60px rgba(225,29,72,0.1); }
+        .lp-diff-card:hover::before { transform: scaleX(1); }
+        .lp-diff-num { font-family: 'Playfair Display', serif; font-size: 64px; font-weight: 700; color: rgba(225,29,72,0.08); line-height: 1; margin-bottom: 16px; }
+        .lp-diff-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; color: var(--accent); }
+        .lp-diff-card h3 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+        .lp-diff-card p { font-size: 14px; color: var(--text-muted); line-height: 1.75; margin: 0; }
+        .lp-diff-tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 20px; background: var(--accent-soft); border: 1px solid var(--accent-border); color: #FB7185; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+
+        /* ── FOOTER CONTACT ── */
+        .lp-footer-contact { max-width: 1100px; margin: 0 auto; padding: 40px 56px; border-top: 1px solid var(--border); }
+        .lp-footer-contact h4 { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(248,249,250,0.5); margin-bottom: 20px; }
+        .lp-contact-form { display: grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 12px; align-items: end; }
+        .lp-contact-form select, .lp-contact-form input, .lp-contact-form textarea {
+          background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px;
+          color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 14px;
+          outline: none; transition: border-color 0.2s;
+          appearance: none; -webkit-appearance: none;
+        }
+        .lp-contact-form select:focus, .lp-contact-form input:focus, .lp-contact-form textarea:focus { border-color: rgba(225,29,72,0.4); }
+        .lp-contact-form textarea { resize: none; height: 42px; }
+        .lp-contact-form option { background: #13161F; }
+        .lp-contact-btn { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.2s; font-family: 'Inter', sans-serif; }
+        .lp-contact-btn:hover { background: #be1239; }
+        @media (max-width: 960px) { .lp-contact-form { grid-template-columns: 1fr 1fr; } .lp-diff-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 600px) { .lp-contact-form { grid-template-columns: 1fr; } .lp-footer-contact { padding: 32px 24px; } }
 
         /* ── GAMIFICATION ── */
         .lp-gamif { padding: 100px 56px; background: var(--bg-card); border-top: 1px solid var(--border); }
@@ -523,7 +567,11 @@ export default function Home() {
                 </div>
                 <div className="lp-phone-card">
                   <div className="lp-phone-img">
-                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(225,29,72,0.4)" strokeWidth="1"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                    <img
+                      src="/julia.jpg"
+                      alt="Julia, 26"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+                    />
                     <div className="lp-v-badge">
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
                       Verificada
@@ -537,6 +585,7 @@ export default function Home() {
                       <span className="lp-phone-tag">SP</span>
                     </div>
                   </div>
+                  <p className="lp-phone-bio">Gamer nas horas vagas, vegana há 3 anos. Procuro conexão genuína — alguém pra conversar de verdade antes de qualquer encontro.</p>
                 </div>
                 <div className="lp-phone-actions">
                   <button className="lp-ph-btn no">
@@ -558,18 +607,18 @@ export default function Home() {
         <section className="lp-problem">
           <div className="lp-problem-inner">
             <div>
-              <p className="lp-section-label">O problema</p>
-              <h2>Os apps antigos<br />viraram um <em>caos.</em></h2>
+              <p className="lp-section-label">Por que é diferente</p>
+              <h2>Os apps antigos<br />não <em>evoluíram.</em></h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '16px', lineHeight: 1.75, marginTop: '14px' }}>
-                Perfis falsos, vendedores de conteúdo e golpistas tomaram conta.
+                Continuam com as mesmas limitações de sempre. O MeAndYou foi construído para resolver isso.
               </p>
             </div>
             <div className="lp-prob-list">
               {[
-                { n: '01', t: 'Perfis falsos e bots', d: 'A maioria dos matches é com conta falsa ou alguém querendo vender conteúdo.' },
-                { n: '02', t: 'Ninguém é quem diz ser', d: 'Foto antiga, idade errada, intenções escondidas.' },
-                { n: '03', t: 'Filtros que não filtram nada', d: 'Idade e distância não resolvem. O que importa fica invisível.' },
-                { n: '04', t: 'Golpes e abordagens indesejadas', d: 'Plataformas sem verificação viram terreno fértil para comportamento abusivo.' },
+                { n: '01', t: 'Identidade não verificada', d: 'Foto desatualizada, informações imprecisas, intenções que só aparecem semanas depois.' },
+                { n: '02', t: 'Filtros que não filtram nada', d: 'Apenas idade e distância. O que realmente importa pra você fica invisível.' },
+                { n: '03', t: 'Sem espaço pra ser você mesmo', d: 'Plataformas genéricas que tratam todo mundo igual, sem considerar o que cada um busca.' },
+                { n: '04', t: 'Conversas que não levam a lugar nenhum', d: 'Sem filtros de intenção, você só descobre o que a outra pessoa quer depois de muito tempo.' },
               ].map(item => (
                 <div key={item.n} className="lp-prob-item lp-anim">
                   <div className="lp-prob-num">{item.n}</div>
@@ -613,7 +662,7 @@ export default function Home() {
               <p className="lp-section-label">Filtros</p>
               <h2 className="lp-section-title">Você decide exatamente quem quer,<br />e quem <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>não</em> quer.</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto 20px', lineHeight: 1.7 }}>
-                Mais de 100 filtros. Clique uma vez para <strong style={{ color: '#22c55e' }}>incluir</strong>, clique de novo para <strong style={{ color: 'var(--red)' }}>excluir</strong>.
+                Mais de 100 filtros. Clique uma vez para <strong style={{ color: '#818CF8' }}>incluir</strong>, clique de novo para <strong style={{ color: 'var(--red)' }}>excluir</strong>.
               </p>
             </div>
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
@@ -699,6 +748,57 @@ export default function Home() {
           </div>
         </section>
 
+        {/* ── Diferenciais ── */}
+        <section className="lp-diff">
+          <div className="lp-diff-inner">
+            <p className="lp-section-label">Diferenciais</p>
+            <h2 className="lp-section-title">Tudo que outros apps<br />nunca tiveram.</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
+              Três recursos que mudam completamente a forma de se conectar.
+            </p>
+            <div className="lp-diff-grid">
+              <div className="lp-diff-card lp-anim">
+                <div className="lp-diff-num">01</div>
+                <div className="lp-diff-icon">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2.5"/><circle cx="15" cy="12" r="2.5"/><circle cx="9" cy="18" r="2.5"/></svg>
+                </div>
+                <h3>Filtros com mais de 100 opções</h3>
+                <p>Cor dos olhos, tipo de corpo, personalidade, estilo de vida, intenções, religião, fetiches. Inclua o que quer ver. Exclua o que não combina. Você define exatamente quem aparece pra você — e quem não aparece.</p>
+                <span className="lp-diff-tag">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  100+ filtros disponíveis
+                </span>
+              </div>
+
+              <div className="lp-diff-card lp-anim">
+                <div className="lp-diff-num">02</div>
+                <div className="lp-diff-icon">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                </div>
+                <h3>Backstage — o lugar onde você pode ser você</h3>
+                <p>Área exclusiva para o plano Black. Filtros e perfis que não aparecem em nenhum outro lugar: Sugar, BDSM, Swing, fetiches, poliamor. Só quem assinalou a mesma intenção pode ver. Sem exposição, sem julgamento.</p>
+                <span className="lp-diff-tag">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Exclusivo Camarote Black
+                </span>
+              </div>
+
+              <div className="lp-diff-card lp-anim">
+                <div className="lp-diff-num">03</div>
+                <div className="lp-diff-icon">
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
+                </div>
+                <h3>Videochamada direto pelo chat</h3>
+                <p>Sem sair do app. Sem trocar número. Você inicia uma chamada de vídeo em tempo real direto na conversa. Veja quem é a pessoa de verdade antes de qualquer encontro — e chegue ao café sem surpresa nenhuma.</p>
+                <span className="lp-diff-tag">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                  Tempo real · Sem apps externos
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* ── Planos ── */}
         <section className="lp-pricing" id="precos">
           <div className="lp-pricing-inner">
@@ -713,7 +813,7 @@ export default function Home() {
                 <p className="lp-plan-area">Pista</p>
                 <div className="lp-plan-price"><sup>R$</sup>10</div>
                 <p className="lp-plan-period">por mês</p>
-                <p className="lp-plan-desc">O ponto de entrada. Para quem quer explorar a plataforma com segurança, já saindo na frente dos apps gratuitos cheios de perfis falsos.</p>
+                <p className="lp-plan-desc">O ponto de entrada. Para quem quer explorar a plataforma com pessoas verificadas e já ter acesso aos filtros essenciais.</p>
                 <ul className="lp-feats">
                   <li>Verificação de identidade</li>
                   <li>30 curtidas por dia</li>
@@ -914,8 +1014,25 @@ export default function Home() {
               <a href="/ajuda">Central de ajuda</a>
             </div>
           </div>
+          <div className="lp-footer-contact">
+            <h4>Fale Conosco</h4>
+            <div className="lp-contact-form">
+              <select defaultValue="">
+                <option value="" disabled>Assunto</option>
+                <option value="suporte">Suporte técnico</option>
+                <option value="conta">Minha conta</option>
+                <option value="cobranca">Cobrança / plano</option>
+                <option value="denuncia">Denúncia de perfil</option>
+                <option value="parceria">Parceria</option>
+                <option value="outro">Outro</option>
+              </select>
+              <input type="date" style={{ colorScheme: 'dark' }} />
+              <textarea placeholder="Sua mensagem..." />
+              <button className="lp-contact-btn">Enviar</button>
+            </div>
+          </div>
           <div className="lp-footer-bottom">
-            <p>© {new Date().getFullYear()} MeAndYou · Todos os direitos reservados · CNPJ em registro</p>
+            <p>© {new Date().getFullYear()} MeAndYou · Todos os direitos reservados</p>
             <div className="lp-footer-btm-links">
               <a href="/privacidade">Privacidade</a>
               <a href="/termos">Termos</a>
