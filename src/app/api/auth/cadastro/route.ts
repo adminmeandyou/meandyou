@@ -10,10 +10,31 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, senha, nomeCompleto, nomeExibicao, telefone, cpf, refCode } = await req.json()
+    const { email, senha, nomeCompleto, nomeExibicao, telefone, cpf, refCode, cfToken } = await req.json()
 
     if (!email || !senha || !nomeCompleto || !nomeExibicao || !telefone || !cpf) {
       return NextResponse.json({ error: 'Preencha todos os campos' }, { status: 400 })
+    }
+
+    // Verificar Cloudflare Turnstile (se configurado)
+    const turnstileSecret = process.env.TURNSTILE_SECRET_KEY
+    if (turnstileSecret) {
+      if (!cfToken) {
+        return NextResponse.json({ error: 'Verificação de segurança necessária' }, { status: 400 })
+      }
+      const turnstileRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          secret:   turnstileSecret,
+          response: cfToken,
+          remoteip: req.headers.get('x-forwarded-for') ?? undefined,
+        }),
+      })
+      const turnstileData = await turnstileRes.json()
+      if (!turnstileData.success) {
+        return NextResponse.json({ error: 'Verificação de segurança falhou. Tente novamente.' }, { status: 400 })
+      }
     }
 
     // 1. Verificar CPF duplicado — 1 conta por CPF

@@ -41,7 +41,10 @@ const STORE_OFFERS: Record<string, StoreItem> = {
 // ── Validação HMAC ────────────────────────────────────────────────────────
 function validarHMAC(req: NextRequest, rawBody: string): boolean {
   const secret = process.env.CAKTOPAY_SECRET
-  if (!secret) return true // Se não configurado, pula validação em dev
+  if (!secret) {
+    console.error('CAKTOPAY_SECRET não configurado — rejeitar webhook')
+    return false
+  }
 
   const assinatura = req.headers.get('x-cakto-signature') || req.headers.get('x-webhook-signature')
   if (!assinatura) return false
@@ -51,10 +54,14 @@ function validarHMAC(req: NextRequest, rawBody: string): boolean {
     .update(rawBody)
     .digest('hex')
 
-  return crypto.timingSafeEqual(
-    Buffer.from(assinatura.replace('sha256=', ''), 'hex'),
-    Buffer.from(hmac, 'hex')
-  )
+  try {
+    return crypto.timingSafeEqual(
+      Buffer.from(assinatura.replace('sha256=', ''), 'hex'),
+      Buffer.from(hmac, 'hex')
+    )
+  } catch {
+    return false
+  }
 }
 
 export async function POST(req: NextRequest) {
@@ -76,6 +83,28 @@ export async function POST(req: NextRequest) {
     }
 
     const orderId       = body?.id              || body?.data?.id
+
+    // 3. Idempotência — ignora webhooks duplicados pelo mesmo orderId
+    // IMPORTANTE: rode este SQL no Supabase antes de usar:
+    // CREATE TABLE IF NOT EXISTS cakto_webhook_log (
+    //   order_id text PRIMARY KEY,
+    //   processed_at timestamptz DEFAULT now()
+    // );
+    if (orderId) {
+      const { error: insertError } = await supabaseAdmin
+        .from('cakto_webhook_log')
+        .insert({ order_id: orderId })
+
+      if (insertError) {
+        // Conflito = já foi processado
+        if (insertError.code === '23505') {
+          console.log(`Webhook duplicado ignorado: ${orderId}`)
+          return NextResponse.json({ received: true })
+        }
+        // Tabela não existe ainda — prossegue sem idempotência e loga aviso
+        console.warn('cakto_webhook_log não encontrada — crie a tabela no Supabase')
+      }
+    }
     const customerEmail = body?.customer?.email || body?.data?.customer?.email
     const offerSlug     = body?.offer?.slug     || body?.data?.offer?.slug || ''
     const metadata      = body?.metadata        || body?.data?.metadata   || {}
@@ -84,7 +113,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email não encontrado' }, { status: 400 })
     }
 
-    // 3. Buscar usuário por email na tabela users — NUNCA usar listUsers()
+    // 4. Buscar usuário por email na tabela users — NUNCA usar listUsers()
     const { data: userRow } = await supabaseAdmin
       .from('users')
       .select('id')

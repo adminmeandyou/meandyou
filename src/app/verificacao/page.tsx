@@ -41,6 +41,7 @@ function Verificacao() {
   const [modoVerso, setModoVerso] = useState<ModoCaptura>('escolha')
 
   const [faceApiCarregado, setFaceApiCarregado] = useState(false)
+  const [faceApiErro, setFaceApiErro] = useState(false)
   const [livnessIniciado, setLivenessIniciado] = useState(false)
   const [passoAtual, setPassoAtual] = useState(0)
   const [passosConcluidos, setPassosConcluidos] = useState<boolean[]>(Array(PASSOS_LIVENESS.length).fill(false))
@@ -82,24 +83,37 @@ function Verificacao() {
 
   const carregarFaceApi = async () => {
     if ((window as any).faceapi) { setFaceApiCarregado(true); return }
-    return new Promise<void>((resolve, reject) => {
-      const script = document.createElement('script')
-      script.src = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js'
-      script.onload = async () => {
-        const faceapi = (window as any).faceapi
-        try {
-          const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model'
-          await Promise.all([
-            faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-            faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-          ])
-          setFaceApiCarregado(true)
-          resolve()
-        } catch (e) { reject(e) }
-      }
-      script.onerror = reject
-      document.head.appendChild(script)
-    })
+    setFaceApiErro(false)
+
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('timeout')), 15000)
+    )
+
+    try {
+      await Promise.race([
+        new Promise<void>((resolve, reject) => {
+          const script = document.createElement('script')
+          script.src = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js'
+          script.onload = async () => {
+            const faceapi = (window as any).faceapi
+            try {
+              const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model'
+              await Promise.all([
+                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+              ])
+              setFaceApiCarregado(true)
+              resolve()
+            } catch (e) { reject(e) }
+          }
+          script.onerror = reject
+          document.head.appendChild(script)
+        }),
+        timeout,
+      ])
+    } catch {
+      setFaceApiErro(true)
+    }
   }
 
   useEffect(() => {
@@ -163,6 +177,7 @@ function Verificacao() {
         body: JSON.stringify({ token: tk }),
       })
       const data = await res.json()
+      if (res.status === 403 || data.error === 'mobile_required') { setStatus('desktop'); return }
       if (data.error === 'expirado') { setStatus('expirado'); return }
       if (data.error === 'usado') { setStatus('usado'); return }
       if (data.error || !data.userId) { setStatus('erro'); setMensagem('Link inválido ou não encontrado.'); return }
@@ -234,7 +249,10 @@ function Verificacao() {
     try {
       await carregarFaceApi()
     } catch {
-      setFeedbackLiveness('Erro ao carregar detector. Verifique sua conexão e tente novamente.')
+      setFeedbackLiveness('Erro ao carregar detector.')
+    }
+    if (faceApiErro) {
+      setFeedbackLiveness('Não foi possível carregar o detector facial. Verifique sua conexão e tente novamente.')
       return
     }
     setPassoAtual(0)
@@ -656,9 +674,15 @@ function Verificacao() {
               {feedbackLiveness && (
                 <p style={{ fontSize: '13px', color: 'var(--red)', marginBottom: '12px' }}>{feedbackLiveness}</p>
               )}
-              <button onClick={iniciarLiveness} style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
-                🎥 Iniciar verificação facial
-              </button>
+              {faceApiErro ? (
+                <button onClick={iniciarLiveness} style={{ width: '100%', backgroundColor: 'transparent', color: 'var(--accent)', border: '1.5px solid var(--accent)', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
+                  Tentar novamente
+                </button>
+              ) : (
+                <button onClick={iniciarLiveness} style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
+                  Iniciar verificacao facial
+                </button>
+              )}
             </>
           )}
 

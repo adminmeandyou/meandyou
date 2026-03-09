@@ -1,8 +1,10 @@
 'use client'
 
-import { useState, Suspense } from 'react'
+import { useState, Suspense, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+
+const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''
 
 function CadastroInner() {
   const searchParams = useSearchParams()
@@ -18,6 +20,25 @@ function CadastroInner() {
   const [erro, setErro]                 = useState('')
   const [sucesso, setSucesso]           = useState(false)
   const [verSenha, setVerSenha]         = useState(false)
+  const [cfToken, setCfToken]           = useState('')
+  const turnstileRef                    = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!TURNSTILE_SITE_KEY) return
+
+    // Carrega o script do Turnstile uma vez
+    if (!document.getElementById('cf-turnstile-script')) {
+      const script = document.createElement('script')
+      script.id = 'cf-turnstile-script'
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
+      script.async = true
+      document.head.appendChild(script)
+    }
+
+    // Callback global chamado pelo widget
+    ;(window as any).onTurnstileSuccess = (token: string) => setCfToken(token)
+    ;(window as any).onTurnstileExpired = () => setCfToken('')
+  }, [])
 
   const formatarTelefone = (valor: string) => {
     const nums = valor.replace(/\D/g, '').slice(0, 11)
@@ -64,6 +85,11 @@ function CadastroInner() {
       return
     }
 
+    if (TURNSTILE_SITE_KEY && !cfToken) {
+      setErro('Complete a verificacao de segurança')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -79,6 +105,7 @@ function CadastroInner() {
           telefone:     telefoneLimpo,
           cpf:          cpfLimpo,
           refCode,
+          cfToken,
         }),
       })
 
@@ -212,6 +239,18 @@ function CadastroInner() {
                 </button>
               </div>
             </div>
+
+            {TURNSTILE_SITE_KEY && (
+              <div
+                ref={turnstileRef}
+                className="cf-turnstile"
+                data-sitekey={TURNSTILE_SITE_KEY}
+                data-callback="onTurnstileSuccess"
+                data-expired-callback="onTurnstileExpired"
+                data-theme="dark"
+                style={{ display: 'flex', justifyContent: 'center' }}
+              />
+            )}
 
             {erro && <p style={{ color: 'var(--red)', fontSize: '14px', textAlign: 'center' }}>{erro}</p>}
 

@@ -6,8 +6,20 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+function isMobileUA(ua: string): boolean {
+  const isEmulator = /bluestacks|nox|memu|ldplayer|gameloop|android.*sdk|sdk.*android/i.test(ua)
+  if (isEmulator) return false
+  return /android|iphone|ipad|ipod|mobile/i.test(ua)
+}
+
 export async function POST(req: NextRequest) {
   try {
+    // Verificação server-side: só aceita celular real
+    const userAgent = req.headers.get('user-agent') || ''
+    if (!isMobileUA(userAgent)) {
+      return NextResponse.json({ error: 'mobile_required' }, { status: 403 })
+    }
+
     const { token } = await req.json()
     if (!token) return NextResponse.json({ error: 'Token inválido' }, { status: 400 })
 
