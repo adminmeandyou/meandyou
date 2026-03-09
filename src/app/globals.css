@@ -13,8 +13,8 @@
   }
 }
 
-/* ── BACKUP identidade antiga (clara com verde-água) ──────────────────────
-:root-backup {
+/* ── BACKUP identidade v1 (clara com verde-água) ──────────────────────
+:root-backup-v1 {
   --bg: #f8faf9;
   --white: #ffffff;
   --accent: #2ec4a0;
@@ -29,21 +29,21 @@
 }
 ──────────────────────────────────────────────────────────────────────── */
 
-/* ── Nova identidade: Dark Sensual ── */
+/* ── Identidade v2: Dark Romantic (preto + vermelho) ── */
 :root {
   --bg: #0d0d0d;
   --bg-card: #161616;
   --bg-card2: #1e1e1e;
-  --white: #f0ece4;
-  --accent: #c9a96e;
-  --accent-dark: #b8924a;
-  --accent-light: rgba(201,169,110,0.12);
-  --text: #f0ece4;
-  --muted: rgba(240,236,228,0.50);
+  --white: #F8F9FA;
+  --accent: #E11D48;
+  --accent-dark: #be123c;
+  --accent-light: rgba(225,29,72,0.12);
+  --text: #F8F9FA;
+  --muted: rgba(248,249,250,0.55);
   --border: rgba(255,255,255,0.08);
-  --shadow: 0 4px 24px rgba(201,169,110,0.15);
-  --red: #F43F5E;
-  --gold: #F59E0B;
+  --shadow: 0 4px 24px rgba(225,29,72,0.15);
+  --red: #E11D48;
+  --gold: #d4a017;
   --font-fraunces: 'Fraunces', serif;
   --font-jakarta: 'Plus Jakarta Sans', sans-serif;
 }
@@ -91,7 +91,7 @@ input::placeholder {
 
 .btn-primary {
   background-color: var(--accent);
-  color: #0d0d0d;
+  color: #fff;
   font-weight: 700;
   padding: 14px 32px;
   border-radius: 100px;
@@ -100,7 +100,7 @@ input::placeholder {
   font-family: var(--font-jakarta);
   font-size: 16px;
   transition: all 0.2s;
-  box-shadow: 0 8px 32px rgba(201,169,110,0.35);
+  box-shadow: 0 8px 32px rgba(225,29,72,0.35);
   width: 100%;
 }
 

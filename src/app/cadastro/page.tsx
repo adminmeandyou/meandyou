@@ -149,7 +149,7 @@ function CadastroInner() {
             Bem-vindo(a) ao MeAndYou, <strong style={{ color: 'var(--text)' }}>{nomeExibicao}</strong>!
             <br /><br />Faça login para continuar.
           </p>
-          <Link href="/login" style={{ display: 'block', backgroundColor: 'var(--accent)', color: '#0d0d0d', padding: '14px 32px', borderRadius: '100px', textDecoration: 'none', fontWeight: '700', fontSize: '15px' }}>
+          <Link href="/login" style={{ display: 'block', backgroundColor: 'var(--accent)', color: '#fff', padding: '14px 32px', borderRadius: '100px', textDecoration: 'none', fontWeight: '700', fontSize: '15px' }}>
             Fazer login
           </Link>
         </div>
@@ -167,7 +167,7 @@ function CadastroInner() {
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '15px' }}>Crie sua conta e encontre conexões reais</p>
           {refCode && (
-            <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'var(--accent)', color: '#0d0d0d', fontSize: '13px', fontWeight: '600', padding: '6px 14px', borderRadius: '100px' }}>
+            <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'var(--accent)', color: '#fff', fontSize: '13px', fontWeight: '600', padding: '6px 14px', borderRadius: '100px' }}>
               Voce foi convidado! Ganhe tickets de boas-vindas ao criar sua conta
             </div>
           )}
