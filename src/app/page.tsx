@@ -597,7 +597,7 @@ export default function Home() {
         </section>
 
         {/* ── O Problema ── */}
-        <section className="lp-problem" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.82), rgba(8,9,14,0.82)), url('/backgrounds/3 (1).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-problem">
           <div className="lp-problem-inner">
             <div>
               <p className="lp-section-label">Por que é diferente</p>
@@ -623,7 +623,7 @@ export default function Home() {
         </section>
 
         {/* ── Verificação ── */}
-        <section className="lp-verification" id="verificacao" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.83), rgba(8,9,14,0.83)), url('/backgrounds/Image_fx (13).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-verification" id="verificacao">
           <div className="lp-verification-inner">
             <div>
               <p className="lp-section-label">Verificação rigorosa</p>
@@ -742,7 +742,7 @@ export default function Home() {
         </section>
 
         {/* ── Diferenciais ── */}
-        <section className="lp-diff" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.80), rgba(8,9,14,0.80)), url('/backgrounds/7 (1).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-diff">
           <div className="lp-diff-inner">
             <p className="lp-section-label">Diferenciais</p>
             <h2 className="lp-section-title">Tudo que outros apps<br />nunca tiveram.</h2>
@@ -902,7 +902,7 @@ export default function Home() {
         </section>
 
         {/* ── Depoimentos ── */}
-        <section className="lp-testi" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.80), rgba(8,9,14,0.80)), url('/backgrounds/5 (1).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-testi">
           <div className="lp-testi-inner">
             <p className="lp-section-label">Depoimentos</p>
             <h2 className="lp-section-title">Conexões que realmente aconteceram.</h2>
