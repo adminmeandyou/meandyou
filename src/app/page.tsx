@@ -212,7 +212,7 @@ export default function Home() {
         .lp-badge {
           display: inline-flex; align-items: center; gap: 8px;
           background: var(--accent-soft); border: 1px solid var(--accent-border);
-          color: #dfc088; padding: 7px 18px; border-radius: 100px;
+          color: #F43F5E; padding: 7px 18px; border-radius: 100px;
           font-size: 13px; font-weight: 600; margin-bottom: 28px;
           animation: lp-fadeUp .5s ease both;
         }
@@ -258,7 +258,7 @@ export default function Home() {
         .lp-phone-info { padding: 12px 14px 10px; }
         .lp-phone-name { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--text); }
         .lp-phone-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
-        .lp-phone-tag { background: var(--accent-soft); color: #dfc088; border-radius: 100px; padding: 3px 9px; font-size: 10px; font-weight: 600; }
+        .lp-phone-tag { background: var(--accent-soft); color: #F43F5E; border-radius: 100px; padding: 3px 9px; font-size: 10px; font-weight: 600; }
         .lp-phone-actions { display: flex; justify-content: center; gap: 14px; padding: 10px 16px 14px; }
         .lp-ph-btn { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: transform 0.15s; }
         .lp-ph-btn:hover { transform: scale(1.1); }
@@ -415,7 +415,7 @@ export default function Home() {
         .lp-diff-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; color: var(--accent); }
         .lp-diff-card h3 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
         .lp-diff-card p { font-size: 14px; color: var(--text-muted); line-height: 1.75; margin: 0; }
-        .lp-diff-tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 20px; background: var(--accent-soft); border: 1px solid var(--accent-border); color: #dfc088; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+        .lp-diff-tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 20px; background: var(--accent-soft); border: 1px solid var(--accent-border); color: #F43F5E; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
 
         /* ── FOOTER CONTACT ── */
         .lp-footer-contact { max-width: 1100px; margin: 0 auto; padding: 40px 56px; border-top: 1px solid var(--border); }
