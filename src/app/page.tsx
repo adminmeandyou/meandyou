@@ -304,7 +304,7 @@ export default function Home() {
         .lp-filter-cat > p { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.55; }
         .lp-tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
         .lp-ftag { border-radius: 100px; padding: 4px 12px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; user-select: none; }
-        .lp-ftag.inc { background: rgba(129,140,248,0.12); color: #818CF8; border-color: rgba(129,140,248,0.30); }
+        .lp-ftag.inc { background: rgba(46,196,160,0.12); color: #2ec4a0; border-color: rgba(46,196,160,0.30); }
         .lp-ftag.exc { background: rgba(244,63,94,0.08); color: #F43F5E; border-color: rgba(244,63,94,0.25); }
         .lp-ftag.neu { background: rgba(255,255,255,0.04); color: var(--text-muted); border-color: var(--border); }
         .lp-ftag:hover { transform: scale(1.05); }
@@ -655,7 +655,7 @@ export default function Home() {
               <p className="lp-section-label">Filtros</p>
               <h2 className="lp-section-title">Você decide exatamente quem quer,<br />e quem <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>não</em> quer.</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto 20px', lineHeight: 1.7 }}>
-                Mais de 100 filtros. Clique uma vez para <strong style={{ color: '#818CF8' }}>incluir</strong>, clique de novo para <strong style={{ color: 'var(--red)' }}>excluir</strong>.
+                Mais de 100 filtros. Clique uma vez para <strong style={{ color: '#2ec4a0' }}>incluir</strong>, clique de novo para <strong style={{ color: 'var(--red)' }}>excluir</strong>.
               </p>
             </div>
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
