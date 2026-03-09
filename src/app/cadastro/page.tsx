@@ -1,10 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 
-export default function Cadastro() {
+function CadastroInner() {
   const searchParams = useSearchParams()
   const refCode      = searchParams.get('ref') ?? ''
   const router       = useRouter()
@@ -199,5 +199,13 @@ export default function Cadastro() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function Cadastro() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: "100vh", backgroundColor: "var(--bg)" }} />}>
+      <CadastroInner />
+    </Suspense>
   )
 }
