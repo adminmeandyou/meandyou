@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, Suspense } from 'react'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
 function CadastroInner() {
   const searchParams = useSearchParams()
   const refCode      = searchParams.get('ref') ?? ''
-  const router       = useRouter()
 
   const [nomeCompleto, setNomeCompleto] = useState('')
   const [nomeExibicao, setNomeExibicao] = useState('')
@@ -18,6 +17,7 @@ function CadastroInner() {
   const [loading, setLoading]           = useState(false)
   const [erro, setErro]                 = useState('')
   const [sucesso, setSucesso]           = useState(false)
+  const [verSenha, setVerSenha]         = useState(false)
 
   const formatarTelefone = (valor: string) => {
     const nums = valor.replace(/\D/g, '').slice(0, 11)
@@ -89,7 +89,7 @@ function CadastroInner() {
         return
       }
 
-      // 2. Login automático após cadastro para setar os cookies de sessão
+      // 2. Login automático após cadastro
       const loginRes = await fetch('/api/auth/login', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -97,11 +97,9 @@ function CadastroInner() {
       })
 
       if (loginRes.ok) {
-        // Redireciona para onboarding (exibido uma única vez após cadastro)
-        router.push('/onboarding')
-        router.refresh()
+        // Hard redirect para garantir que middleware leia os cookies
+        window.location.href = '/onboarding'
       } else {
-        // Login falhou mas conta foi criada — manda para login manual
         setSucesso(true)
       }
 
@@ -124,7 +122,7 @@ function CadastroInner() {
             Bem-vindo(a) ao MeAndYou, <strong style={{ color: 'var(--text)' }}>{nomeExibicao}</strong>!
             <br /><br />Faça login para continuar.
           </p>
-          <Link href="/login" style={{ display: 'block', backgroundColor: 'var(--accent)', color: '#fff', padding: '14px 32px', borderRadius: '100px', textDecoration: 'none', fontWeight: '700', fontSize: '15px' }}>
+          <Link href="/login" style={{ display: 'block', backgroundColor: 'var(--accent)', color: '#0d0d0d', padding: '14px 32px', borderRadius: '100px', textDecoration: 'none', fontWeight: '700', fontSize: '15px' }}>
             Fazer login
           </Link>
         </div>
@@ -142,13 +140,13 @@ function CadastroInner() {
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '15px' }}>Crie sua conta e encontre conexões reais</p>
           {refCode && (
-            <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'var(--accent)', color: '#fff', fontSize: '13px', fontWeight: '600', padding: '6px 14px', borderRadius: '100px' }}>
-              🎁 Você foi convidado! Ganhe tickets de boas-vindas ao criar sua conta
+            <div style={{ marginTop: '12px', display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'var(--accent)', color: '#0d0d0d', fontSize: '13px', fontWeight: '600', padding: '6px 14px', borderRadius: '100px' }}>
+              Voce foi convidado! Ganhe tickets de boas-vindas ao criar sua conta
             </div>
           )}
         </div>
 
-        <div style={{ backgroundColor: 'var(--white)', border: '1px solid var(--border)', borderRadius: '24px', padding: '36px', boxShadow: 'var(--shadow)' }}>
+        <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px', padding: '36px', boxShadow: 'var(--shadow)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
             <div>
@@ -181,7 +179,38 @@ function CadastroInner() {
 
             <div>
               <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>Senha</label>
-              <input type="password" placeholder="Mínimo 6 caracteres" value={senha} onChange={(e) => setSenha(e.target.value)} />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={verSenha ? 'text' : 'password'}
+                  placeholder="Minimo 6 caracteres"
+                  value={senha}
+                  onChange={(e) => setSenha(e.target.value)}
+                  style={{ paddingRight: '48px' }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setVerSenha(!verSenha)}
+                  style={{
+                    position: 'absolute', right: '14px', top: '50%',
+                    transform: 'translateY(-50%)', background: 'none',
+                    border: 'none', cursor: 'pointer', padding: '4px',
+                    color: 'var(--muted)', display: 'flex', alignItems: 'center',
+                  }}
+                  aria-label={verSenha ? 'Ocultar senha' : 'Ver senha'}
+                >
+                  {verSenha ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                      <circle cx="12" cy="12" r="3"/>
+                    </svg>
+                  )}
+                </button>
+              </div>
             </div>
 
             {erro && <p style={{ color: 'var(--red)', fontSize: '14px', textAlign: 'center' }}>{erro}</p>}
@@ -191,7 +220,7 @@ function CadastroInner() {
             </button>
 
             <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '14px' }}>
-              Já tem conta?{' '}
+              Ja tem conta?{' '}
               <Link href="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: '600' }}>Entrar</Link>
             </p>
 

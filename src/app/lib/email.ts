@@ -95,7 +95,7 @@ export async function sendWelcomeEmail(email: string, nome: string) {
   `
   await resend.emails.send({
     from: FROM, to: email,
-    subject: 'Bem-vindo(a) ao MeAndYou! 💚',
+    subject: 'Bem-vindo(a) ao MeAndYou',
     html: base(content, `Olá ${nome}, sua conta foi criada. Complete seu perfil agora.`),
   })
 }
@@ -113,7 +113,7 @@ export async function sendVerificationEmail(email: string, nome: string, token: 
   `
   await resend.emails.send({
     from: FROM, to: email,
-    subject: '📋 Verifique sua identidade no MeAndYou',
+    subject: 'Verifique sua identidade no MeAndYou',
     html: base(content, 'Confirme sua identidade para ganhar o selo verificado.'),
   })
 }
@@ -132,7 +132,7 @@ export async function sendPasswordResetEmail(email: string, nome: string, token:
   `
   await resend.emails.send({
     from: FROM, to: email,
-    subject: '🔑 Redefinir senha — MeAndYou',
+    subject: 'Redefinir senha - MeAndYou',
     html: base(content, 'Solicitação de redefinição de senha recebida.'),
   })
 }
