@@ -95,29 +95,29 @@ export default function Home() {
 
   const filterCats = [
     { emoji: '👁️', title: 'Cor dos olhos', desc: 'Todas as variações existentes, incluindo casos raros.', tags: ['Olhos pretos','Olhos castanhos','Olhos verdes','Olhos azuis','Olhos mel','Olhos acinzentados','Heterocromia'] },
-    { emoji: '💇‍♀️', title: 'Cabelo', desc: 'Cor e comprimento dos cabelos.', tags: ['Cabelo preto','Cabelo castanho','Cabelo loiro','Cabelo ruivo','Cabelo colorido','Cabelo cacheado','Cabelo crespo','Careca'] },
-    { emoji: '🎨', title: 'Cor de pele e etnia', desc: 'Inclusão total. Todas as tonalidades e origens étnicas.', tags: ['Branca','Parda','Negra','Afrodescendente','Asiática','Indígena','Latina','Mediterrânea','Vitiligo'] },
-    { emoji: '📏', title: 'Altura e corpo', desc: 'Defina faixas ou escolha por perfil corporal.', tags: ['Corpo magro','Corpo atlético','Corpo médio','Corpo cheinho','Corpo plus size','Alta','Baixa','Média'] },
-    { emoji: '✨', title: 'Características físicas', desc: 'Detalhes que fazem diferença na atração.', tags: ['Tem sardas','Tem tatuagem','Tem piercing','Usa óculos','Barba','Sem barba'] },
-    { emoji: '♿', title: 'Pessoa com deficiência (PCD)', desc: 'Inclusão total. Selecione para encontrar ou ser encontrado.', tags: ['Deficiência visual','Deficiência auditiva','Deficiência motora','Autismo (TEA)','TDAH','Cadeirante'] },
+    { emoji: '💇‍♀️', title: 'Cor do cabelo', desc: 'Cor natural ou tingida dos cabelos.', tags: ['Cabelo preto','Cabelo castanho','Cabelo loiro','Cabelo ruivo','Cabelo colorido','Cabelo grisalho','Não possuo cabelo (careca)'] },
+    { emoji: '〰️', title: 'Tipo e comprimento do cabelo', desc: 'Textura e tamanho dos fios.', tags: ['Cabelo curto','Cabelo médio','Cabelo longo','Cabelo liso','Cabelo ondulado','Cabelo cacheado','Cabelo crespo'] },
+    { emoji: '🎨', title: 'Cor de pele e etnia', desc: 'Inclusão total. Todas as tonalidades e origens étnicas.', tags: ['Branca','Parda','Negra','Afrodescendente','Asiática','Indígena','Latina','Mediterrânea','Possuo vitiligo'] },
+    { emoji: '📏', title: 'Tipo corporal', desc: 'Biotipo com base em peso e altura.', tags: ['Abaixo do peso','Peso saudável','Acima do peso','Obesidade leve','Obesidade severa'] },
+    { emoji: '✨', title: 'Características físicas', desc: 'Detalhes que fazem diferença na atração.', tags: ['Possuo sardas','Possuo tatuagem','Possuo piercing','Possuo cicatriz','Uso óculos','Uso aparelho dentário','Possuo barba'] },
+    { emoji: '♿', title: 'Pessoa com deficiência (PCD)', desc: 'Inclusão total. Selecione para encontrar ou ser encontrado.', tags: ['Deficiência visual','Deficiência auditiva','Deficiência motora','Deficiência intelectual','Autismo (TEA)','TDAH','Sou cadeirante','Nanismo','Outra'] },
     { emoji: '🏳️‍🌈', title: 'Orientação sexual', desc: 'Todo mundo tem seu espaço aqui, sem julgamento.', tags: ['Heterossexual','Homossexual','Bissexual','Pansexual','Assexual','Demissexual','Queer'] },
-    { emoji: '🪪', title: 'Identidade de gênero', desc: 'Como a pessoa se identifica e como prefere ser chamada.', tags: ['Mulher cis','Homem cis','Mulher trans','Homem trans','Não-binária','Fluido de gênero'] },
-    { emoji: '💍', title: 'Status civil', desc: 'Situação atual no campo amoroso.', tags: ['Solteira','Enrolada','Divorciada','Viúva','Relacionamento aberto'] },
-    { emoji: '🙏', title: 'Religião e espiritualidade', desc: 'Fé e espiritualidade como parte da compatibilidade.', tags: ['Evangélica','Católica','Espírita','Umbandista','Budista','Agnóstica','Ateia'] },
-    { emoji: '🚬', title: 'Vícios e substâncias', desc: 'Hábitos que impactam diretamente a convivência.', tags: ['Fuma cigarro','Fuma ocasionalmente','Não fuma','Bebe socialmente','Não consome bebida','Consome cannabis','Não tem vícios'] },
-    { emoji: '🏋️‍♀️', title: 'Estilo de vida e rotina', desc: 'Como a pessoa organiza o dia a dia e o tempo livre.', tags: ['Pratica academia','Pratica esporte','Sedentária','Caseira','Gosta de sair','Gosta de balada','Workaholic'] },
-    { emoji: '🧠', title: 'Personalidade', desc: 'Introvertida, extrovertida e tudo entre os dois extremos.', tags: ['Extrovertida','Introvertida','Ambiverte','Tímida','Comunicativa','Reservada','Calma','Intensa'] },
-    { emoji: '🎮', title: 'Hobbies e entretenimento', desc: 'O que a pessoa faz no tempo livre.', tags: ['Gamer','Leitora','Cinéfila','Fotografia','Arte e desenho','Dança','Trilha e natureza','Viagens'] },
-    { emoji: '🥗', title: 'Alimentação', desc: 'Compatibilidade alimentar importa mais do que parece.', tags: ['Vegana','Vegetariana','Carnívora','Gosta de cozinhar','Alimentação saudável','Gosta de comida japonesa'] },
-    { emoji: '👗', title: 'Estilo de se vestir', desc: 'A forma de se vestir diz muito sobre quem a pessoa é.', tags: ['Casual','Elegante','Streetwear','Gótica','Alternativa','Esportiva','Vintage','Hippie'] },
-    { emoji: '🎵', title: 'Música e cultura', desc: 'Afinidade musical e cultural no dia a dia.', tags: ['Funk','Sertanejo','Pagode','Rock','Metal','Pop','Hip-hop / Rap','Gospel','K-pop'] },
-    { emoji: '👶', title: 'Filhos e família', desc: 'Um dos pontos mais decisivos em qualquer relacionamento sério.', tags: ['Tem filhos','Não tem filhos','Quer ter filhos','Não quer ter filhos','Aberta à adoção'] },
-    { emoji: '🐶', title: 'Animais de estimação', desc: 'Pet lover ou prefere não ter bicho em casa.', tags: ['Tem cachorro','Tem gato','Ama animais','Não tem pets','Alérgica a animais'] },
-    { emoji: '🎓', title: 'Escolaridade', desc: 'Nível de estudo e formação acadêmica.', tags: ['Ensino médio completo','Superior incompleto','Superior completo','Pós-graduada','Mestrado','Doutorado'] },
-    { emoji: '💼', title: 'Situação profissional', desc: 'Carreira, autonomia financeira e estilo de trabalho.', tags: ['CLT','Empreendedora','Freelancer','Profissional liberal','Servidora pública','Trabalha remoto'] },
-    { emoji: '🗳️', title: 'Posição política', desc: 'Compatibilidade de valores e visão de mundo.', tags: ['Esquerda','Centro-esquerda','Centro','Centro-direita','Direita','Apolítica'] },
-    { emoji: '🎯', title: 'O que busca na plataforma', desc: 'Seja claro sobre suas intenções. Isso evita perda de tempo dos dois lados.', tags: ['Relacionamento sério','Encontros casuais','Amizade','Companhia para eventos','Sugar Baby','Sugar Daddy / Mommy'], tip: 'Perfis de categorias sensíveis ficam visíveis apenas para quem também selecionou a mesma intenção.' },
-    { emoji: '🔒', title: 'Perfil discreto (exclusivo Black)', desc: 'Visível apenas para outros membros que também marcaram a mesma categoria.', tags: ['Busca trisal','Swing / relacionamento aberto','Poliamor','BDSM / fetiches'], tip: 'Estas opções ficam ocultas para quem não marcou a mesma categoria. Disponível apenas no plano Black.' },
+    { svg: true, title: 'Identidade de gênero', desc: 'Como a pessoa se identifica e como prefere ser chamada.', tags: ['Homem','Mulher','Homem trans','Mulher trans','Não-binário(a)','Gênero fluido'] },
+    { emoji: '💍', title: 'Status civil', desc: 'Situação atual no campo amoroso.', tags: ['Solteiro(a)','Enrolado(a)','Casado(a)','Divorciando','Divorciado(a)','Viúvo(a)','Relacionamento aberto'] },
+    { emoji: '🙏', title: 'Religião e espiritualidade', desc: 'Fé e espiritualidade como parte da compatibilidade.', tags: ['Evangélico(a)','Católico(a)','Espírita','Umbandista','Candomblé','Budista','Judaico(a)','Islâmico(a)','Hindu','Agnóstico(a)','Ateu / Ateia','Espiritualizado(a) sem religião'] },
+    { emoji: '🚬', title: 'Vícios e substâncias', desc: 'Hábitos que impactam diretamente a convivência.', tags: ['Fumo','Fumo ocasionalmente','Não fumo','Consumo bebida alcoólica','Bebo socialmente','Não consumo bebida alcoólica','Consumo cannabis','Não possuo vícios'] },
+    { emoji: '🏋️‍♀️', title: 'Estilo de vida e rotina', desc: 'Como a pessoa organiza o dia a dia e o tempo livre.', tags: ['Pratico academia','Pratico esporte regularmente','Sou sedentário(a)','Sou caseiro(a)','Gosto de sair','Gosto de balada','Sou noturno(a)','Sou matutino(a)','Sou workaholic','Tenho vida equilibrada'] },
+    { emoji: '🧠', title: 'Personalidade', desc: 'Introvertido(a), extrovertido(a) e tudo entre os dois extremos.', tags: ['Sou extrovertido(a)','Sou introvertido(a)','Sou ambiverte','Sou tímido(a)','Sou comunicativo(a)','Sou antissocial','Sou reservado(a)','Sou agitado(a)','Sou calmo(a)','Sou intenso(a)'] },
+    { emoji: '🎮', title: 'Hobbies e entretenimento', desc: 'O que a pessoa faz no tempo livre.', tags: ['Sou gamer','Adoro ler','Viciado(a) em filmes','Viciado(a) em séries','Curto anime / mangá','Curto música ao vivo','Faço fotografia','Arte e desenho','Danço','Faço teatro','Meditação / Yoga','Adoro viajar','Curto trilha e natureza','Sou otaku','Curto k-pop','Sou emo / punk','Sou e-girl / e-boy'] },
+    { emoji: '🥗', title: 'Alimentação', desc: 'Compatibilidade alimentar importa mais do que parece.', tags: ['Sou vegano(a)','Sou vegetariano(a)','Sou carnívoro(a)','Como de tudo','Prefiro alimentação saudável','Cozinho bem','Não cozinho','Curto comida japonesa','Curto fast food','Tenho intolerância à lactose','Tenho intolerância ao glúten'] },
+    { emoji: '👗', title: 'Estilo de se vestir', desc: 'A forma de se vestir diz muito sobre quem a pessoa é.', tags: ['Social','Casual','Esportivo','Alternativo','Eclético','Gótico','Punk','E-girl / E-boy','K-pop'] },
+    { emoji: '🎵', title: 'Gosto musical', desc: 'Afinidade musical no dia a dia.', tags: ['Funk','Sertanejo','Pagode','Rock','Metal','Pop','Eletrônica','Hip-hop / Rap','MPB / Bossa Nova','Gospel','K-pop','Clássica','Eclético — curto de tudo','Não gosto de música'] },
+    { emoji: '👶', title: 'Filhos e família', desc: 'Um dos pontos mais decisivos em qualquer relacionamento sério.', tags: ['Tenho filhos','Não tenho filhos','Quero ter filhos','Não quero ter filhos','Aberto(a) à adoção','Ainda não decidi'] },
+    { emoji: '🐶', title: 'Animais de estimação', desc: 'Pet lover ou prefere não ter bicho em casa.', tags: ['Tenho cachorro','Tenho gato','Tenho outros pets','Adoro animais','Não tenho pets','Tenho alergia a animais','Não gosto de animais'] },
+    { emoji: '🎓', title: 'Escolaridade', desc: 'Nível de estudo e formação acadêmica.', tags: ['Ensino fundamental','Ensino médio completo','Ensino superior incompleto','Ensino superior completo','Pós-graduado(a)','Mestrado','Doutorado','Concursado(a)','Sou estudante'] },
+    { emoji: '💼', title: 'Situação profissional', desc: 'Carreira, autonomia financeira e estilo de trabalho.', tags: ['CLT','Empreendedor(a)','Freelancer','Profissional liberal','Servidor(a) público(a)','Autônomo(a)','Trabalho remoto','Estou desempregado(a)'] },
+    { emoji: '🎯', title: 'O que busca na plataforma', desc: 'Seja claro sobre suas intenções. Isso evita perda de tempo dos dois lados.', tags: ['Relacionamento sério','Relacionamento casual','Amizade','Companhia para eventos','Relação conjugal','Aberto(a) a experiências','Sugar Baby','Sugar Daddy / Mommy','Ainda estou definindo'], tip: 'Perfis de categorias sensíveis ficam visíveis apenas para quem também selecionou a mesma intenção.' },
+    { emoji: '🔒', title: 'Perfil discreto (exclusivo Black)', desc: 'Visível apenas para outros membros que também marcaram a mesma categoria.', tags: ['Busco trisal','Swing / relacionamento aberto','Poliamor','BDSM / fetiches'], tip: 'Estas opções ficam ocultas para quem não marcou a mesma categoria. Disponível apenas no plano Black.' },
   ]
 
   return (
@@ -465,7 +465,10 @@ export default function Home() {
               {filterCats.map((cat, i) => (
                 <div key={i} className="lp-filter-cat lp-anim">
                   <div className="lp-cat-header">
-                    <span className="lp-cat-emoji">{cat.emoji}</span>
+                    {cat.svg
+                      ? <svg style={{ width: 26, height: 26, flexShrink: 0, color: 'var(--lp-accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h4m-4 4h6m-6 4h2"/><circle cx="17" cy="10" r="2"/></svg>
+                      : <span className="lp-cat-emoji">{cat.emoji}</span>
+                    }
                     <h3>{cat.title}</h3>
                   </div>
                   <p>{cat.desc}</p>
