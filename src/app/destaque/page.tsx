@@ -61,7 +61,7 @@ export default function DestaquesPage() {
     // Debita 1 lupa
     const { error } = await supabase.rpc('use_lupa', { p_user_id: user!.id, p_target_id: profileId })
     if (!error) {
-      setRevealedIds((prev) => new Set([...prev, profileId]))
+      setRevealedIds((prev) => new Set(Array.from(prev).concat(profileId)))
       setLupas((l) => l - 1)
     }
     setRevealing(null)
