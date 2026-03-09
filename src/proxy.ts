@@ -11,7 +11,7 @@ const PROTECTED_ROUTES = [
 ]
 
 // Rotas públicas (redireciona para /busca se já logado)
-const PUBLIC_ONLY_ROUTES = ['/login', '/cadastro', '/recuperar-senha']
+const PUBLIC_ONLY_ROUTES = ['/login', '/cadastro', '/recuperar-senha', '/nova-senha']
 
 export async function proxy(req: NextRequest) {
   const res = NextResponse.next()
