@@ -107,8 +107,11 @@ export async function POST(req: NextRequest) {
         p_cakto_order_id: orderId,
       })
       // Recompensa indicação se houver referral pendente
-      await supabaseAdmin.rpc('reward_referral', { p_referred_id: userId })
-        .catch(err => console.error('Erro ao recompensar indicação:', err))
+      try {
+        await supabaseAdmin.rpc('reward_referral', { p_referred_id: userId })
+      } catch (err) {
+        console.error('Erro ao recompensar indicação:', err)
+      }
 
       console.log(`Plano ${plan} ativado para ${customerEmail}`)
       return NextResponse.json({ success: true })
