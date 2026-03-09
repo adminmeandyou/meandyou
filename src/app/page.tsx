@@ -191,12 +191,7 @@ export default function Home() {
 
         /* ── HERO ── */
         @keyframes lp-fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes lp-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
         @keyframes lp-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
-        @keyframes lp-shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
-        @keyframes lp-chip-float1 { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-5px); } }
-        @keyframes lp-chip-float2 { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-7px); } }
-        @keyframes lp-chip-float3 { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-4px); } }
 
         .lp-hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 60px; padding: 140px 56px 100px; max-width: 1200px; margin: 0 auto; }
         .lp-badge {
@@ -236,9 +231,7 @@ export default function Home() {
           width: 265px; height: 560px; background: var(--bg-card);
           border-radius: 38px; border: 1px solid rgba(255,255,255,0.1);
           box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06), 0 0 60px rgba(225,29,72,0.08);
-          overflow: hidden; will-change: transform;
-          animation: lp-float 8s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-          transform: translateZ(0);
+          overflow: hidden;
         }
         .lp-phone-header { background: var(--accent); padding: 36px 20px 14px; text-align: center; }
         .lp-phone-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #fff; }
