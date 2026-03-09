@@ -35,13 +35,17 @@ export async function enviarPushParaUsuario({
   fromUserId,
 }: SendPushParams) {
   // 1. Salvar notificação no banco
-  await supabaseAdmin.from('notifications').insert({
-    user_id:      targetUserId,
-    type,
-    from_user_id: fromUserId ?? null,
-    read:         false,
-    data,
-  }).catch(err => console.error('Erro ao inserir notificação:', err))
+  try {
+    await supabaseAdmin.from('notifications').insert({
+      user_id:      targetUserId,
+      type,
+      from_user_id: fromUserId ?? null,
+      read:         false,
+      data,
+    })
+  } catch (err) {
+    console.error('Erro ao inserir notificação:', err)
+  }
 
   // 2. Buscar subscriptions do usuário
   const { data: subs } = await supabaseAdmin
@@ -63,11 +67,12 @@ export async function enviarPushParaUsuario({
     } catch (err: any) {
       // Subscription expirada ou inválida — remover do banco
       if (err.statusCode === 404 || err.statusCode === 410) {
-        await supabaseAdmin
-          .from('push_subscriptions')
-          .delete()
-          .eq('endpoint', sub.endpoint)
-          .catch(() => {})
+        try {
+          await supabaseAdmin
+            .from('push_subscriptions')
+            .delete()
+            .eq('endpoint', sub.endpoint)
+        } catch (_) {}
       } else {
         console.error('Erro ao enviar push:', err)
       }
