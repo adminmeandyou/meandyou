@@ -267,17 +267,30 @@ export default function Home() {
         .lp-section-label { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
         .lp-section-title { font-family: 'Playfair Display', serif; font-size: clamp(30px, 4vw, 52px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
 
-        /* ── PROBLEM ── */
+        /* ── COMPARATIVO ── */
         .lp-problem { padding: 100px 56px; background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-        .lp-problem-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
-        .lp-problem h2 { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 46px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 20px; }
+        .lp-problem-inner { max-width: 1000px; margin: 0 auto; }
+        .lp-problem-header { text-align: center; margin-bottom: 56px; }
+        .lp-problem h2 { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 48px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 14px; }
         .lp-problem h2 em { color: var(--accent); font-style: italic; }
-        .lp-prob-list { display: flex; flex-direction: column; gap: 12px; }
-        .lp-prob-item { display: flex; align-items: flex-start; gap: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; transition: border-color 0.2s, transform 0.2s; cursor: default; }
-        .lp-prob-item:hover { border-color: rgba(225,29,72,0.2); transform: translateX(4px); }
-        .lp-prob-num { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-soft); border: 1px solid var(--accent-border); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12px; flex-shrink: 0; font-family: 'Playfair Display', serif; }
-        .lp-prob-item h4 { font-size: 14px; font-weight: 600; margin-bottom: 3px; color: var(--text); }
-        .lp-prob-item p { font-size: 13px; color: var(--text-muted); line-height: 1.55; margin: 0; }
+        .lp-cmp-header { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin-bottom: 4px; }
+        .lp-cmp-col-label { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 14px 20px; border-radius: 12px 12px 0 0; }
+        .lp-cmp-col-label.them { color: var(--text-dim); background: rgba(255,255,255,0.03); }
+        .lp-cmp-col-label.us { color: #2ec4a0; background: rgba(46,196,160,0.08); border: 1px solid rgba(46,196,160,0.15); border-bottom: none; }
+        .lp-cmp-col-label.feature { color: transparent; }
+        .lp-cmp-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; border-bottom: 1px solid var(--border-soft); }
+        .lp-cmp-row:last-child { border-bottom: none; }
+        .lp-cmp-feature { padding: 16px 20px; font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; }
+        .lp-cmp-cell { padding: 16px 20px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+        .lp-cmp-cell.them { color: var(--text-muted); background: rgba(255,255,255,0.015); }
+        .lp-cmp-cell.us { color: var(--text); background: rgba(46,196,160,0.04); border-left: 1px solid rgba(46,196,160,0.12); border-right: 1px solid rgba(46,196,160,0.12); }
+        .lp-cmp-row:last-child .lp-cmp-cell.us { border-bottom: 1px solid rgba(46,196,160,0.12); border-radius: 0 0 12px 12px; }
+        .lp-cmp-x { width: 18px; height: 18px; border-radius: 50%; background: rgba(244,63,94,0.12); color: #F43F5E; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .lp-cmp-check { width: 18px; height: 18px; border-radius: 50%; background: rgba(46,196,160,0.15); color: #2ec4a0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        @media (max-width: 700px) {
+          .lp-cmp-header, .lp-cmp-row { grid-template-columns: 1fr 1fr; }
+          .lp-cmp-feature { display: none; }
+        }
 
         /* ── VERIFICATION ── */
         .lp-verification { padding: 100px 56px; background: var(--bg); }
@@ -596,26 +609,80 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── O Problema ── */}
+        {/* ── Comparativo ── */}
         <section className="lp-problem">
           <div className="lp-problem-inner">
-            <div>
-              <p className="lp-section-label">Por que é diferente</p>
-              <h2>Os apps antigos<br />não <em>evoluíram.</em></h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '16px', lineHeight: 1.75, marginTop: '14px' }}>
-                Continuam com as mesmas limitações de sempre. O MeAndYou foi construído para resolver isso.
+            <div className="lp-problem-header lp-anim">
+              <p className="lp-section-label">Comparativo</p>
+              <h2>MeAndYou vs.<br /><em>os outros apps.</em></h2>
+              <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '480px', margin: '0 auto', lineHeight: 1.7 }}>
+                Não é opinião. É uma lista do que existe aqui e não existe em nenhum outro lugar.
               </p>
             </div>
-            <div className="lp-prob-list">
+
+            <div className="lp-anim">
+              <div className="lp-cmp-header">
+                <div className="lp-cmp-col-label feature" />
+                <div className="lp-cmp-col-label them">Outros apps</div>
+                <div className="lp-cmp-col-label us">MeAndYou</div>
+              </div>
+
               {[
-                { n: '01', t: 'Identidade não verificada', d: 'Foto desatualizada, informações imprecisas, intenções que só aparecem semanas depois.' },
-                { n: '02', t: 'Filtros que não filtram nada', d: 'Apenas idade e distância. O que realmente importa pra você fica invisível.' },
-                { n: '03', t: 'Sem espaço pra ser você mesmo', d: 'Plataformas genéricas que tratam todo mundo igual, sem considerar o que cada um busca.' },
-                { n: '04', t: 'Conversas que não levam a lugar nenhum', d: 'Sem filtros de intenção, você só descobre o que a outra pessoa quer depois de muito tempo.' },
-              ].map(item => (
-                <div key={item.n} className="lp-prob-item lp-anim">
-                  <div className="lp-prob-num">{item.n}</div>
-                  <div><h4>{item.t}</h4><p>{item.d}</p></div>
+                {
+                  feature: 'Verificação de identidade',
+                  them: 'Opcional ou inexistente',
+                  us: 'Selfie ao vivo + documento + CPF',
+                },
+                {
+                  feature: 'Filtros de busca',
+                  them: 'Apenas idade e distância',
+                  us: '100+ filtros: corpo, estilo, personalidade e mais',
+                },
+                {
+                  feature: 'Diversidade e inclusão',
+                  them: 'Campos genéricos e limitados',
+                  us: 'Todas as orientações, gêneros e identidades',
+                },
+                {
+                  feature: 'Espaço para fetiches',
+                  them: 'Não existe',
+                  us: 'Área Backstage exclusiva e privada',
+                },
+                {
+                  feature: 'Privacidade',
+                  them: 'Perfil visível para qualquer um',
+                  us: 'Você controla quem te vê e o que aparece',
+                },
+                {
+                  feature: 'Qualidade dos perfis',
+                  them: 'Gratuito — entra quem quiser',
+                  us: 'Acesso pago = pessoas com intenção real',
+                },
+                {
+                  feature: 'Videochamada',
+                  them: 'Precisa sair do app',
+                  us: 'Direto no chat, em tempo real',
+                },
+                {
+                  feature: 'Proteção contra contas falsas',
+                  them: 'Reativa com outro e-mail',
+                  us: '1 conta por CPF — banimento permanente',
+                },
+              ].map((row, i) => (
+                <div key={i} className="lp-cmp-row">
+                  <div className="lp-cmp-feature">{row.feature}</div>
+                  <div className="lp-cmp-cell them">
+                    <span className="lp-cmp-x">
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </span>
+                    {row.them}
+                  </div>
+                  <div className="lp-cmp-cell us">
+                    <span className="lp-cmp-check">
+                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                    </span>
+                    {row.us}
+                  </div>
                 </div>
               ))}
             </div>
