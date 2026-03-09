@@ -6,10 +6,6 @@ import { supabase } from '@/app/lib/supabase'
 import { CheckCircle, XCircle, Eye } from 'lucide-react'
 
 export default function AdminDenuncias() {
-  
-    
-    
-  )
   const [reports, setReports] = useState<any[]>([])
   const [filter, setFilter] = useState<'pending' | 'resolved' | 'ignored'>('pending')
   const [loading, setLoading] = useState(true)

@@ -13,10 +13,6 @@ const FILTER_LABELS: Record<string, string> = {
 }
 
 export default function AdminUsuarios() {
-  
-    
-    
-  )
   const [users, setUsers] = useState<any[]>([])
   const [search, setSearch] = useState('')
   const [filter, setFilter] = useState('todos')

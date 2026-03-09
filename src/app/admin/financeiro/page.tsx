@@ -5,10 +5,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
 
 export default function AdminFinanceiro() {
-  
-    
-    
-  )
   const [revenue, setRevenue] = useState<any[]>([])
   const [signups, setSignups] = useState<any[]>([])
   const [loading, setLoading] = useState(true)

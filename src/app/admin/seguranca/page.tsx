@@ -6,10 +6,6 @@ import { supabase } from '@/app/lib/supabase'
 import { CheckCircle, XCircle } from 'lucide-react'
 
 export default function AdminSeguranca() {
-  
-    
-    
-  )
   const [pending, setPending] = useState<any[]>([])
   const [banned, setBanned] = useState<any[]>([])
   const [tab, setTab] = useState<'verificacoes' | 'banidos'>('verificacoes')

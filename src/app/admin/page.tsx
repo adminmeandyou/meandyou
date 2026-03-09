@@ -40,10 +40,6 @@ function Card({ label, value, sub, icon: Icon, color = '#e11d48' }: any) {
 }
 
 export default function AdminDashboard() {
-  
-    
-    
-  )
   const [metrics, setMetrics] = useState<Metrics | null>(null)
   const [loading, setLoading] = useState(true)
 

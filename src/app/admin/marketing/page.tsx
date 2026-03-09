@@ -5,10 +5,6 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
 
 export default function AdminMarketing() {
-  
-    
-    
-  )
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
 
