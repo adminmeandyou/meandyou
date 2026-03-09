@@ -13,7 +13,8 @@
   }
 }
 
-:root {
+/* ── BACKUP identidade antiga (clara com verde-água) ──────────────────────
+:root-backup {
   --bg: #f8faf9;
   --white: #ffffff;
   --accent: #2ec4a0;
@@ -25,6 +26,24 @@
   --shadow: 0 4px 24px rgba(46,196,160,0.12);
   --red: #e84545;
   --gold: #d4a017;
+}
+──────────────────────────────────────────────────────────────────────── */
+
+/* ── Nova identidade: Dark Sensual ── */
+:root {
+  --bg: #0d0d0d;
+  --bg-card: #161616;
+  --bg-card2: #1e1e1e;
+  --white: #f0ece4;
+  --accent: #c9a96e;
+  --accent-dark: #b8924a;
+  --accent-light: rgba(201,169,110,0.12);
+  --text: #f0ece4;
+  --muted: rgba(240,236,228,0.50);
+  --border: rgba(255,255,255,0.08);
+  --shadow: 0 4px 24px rgba(201,169,110,0.15);
+  --red: #F43F5E;
+  --gold: #F59E0B;
   --font-fraunces: 'Fraunces', serif;
   --font-jakarta: 'Plus Jakarta Sans', sans-serif;
 }
@@ -41,6 +60,7 @@ body {
   font-family: var(--font-jakarta);
   font-size: 16px;
   line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3 {
@@ -48,7 +68,7 @@ h1, h2, h3 {
 }
 
 input {
-  background-color: var(--white);
+  background-color: rgba(255,255,255,0.05);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px 18px;
@@ -58,6 +78,7 @@ input {
   width: 100%;
   outline: none;
   transition: border 0.2s;
+  color-scheme: dark;
 }
 
 input:focus {
@@ -70,7 +91,7 @@ input::placeholder {
 
 .btn-primary {
   background-color: var(--accent);
-  color: #fff;
+  color: #0d0d0d;
   font-weight: 700;
   padding: 14px 32px;
   border-radius: 100px;
@@ -79,7 +100,7 @@ input::placeholder {
   font-family: var(--font-jakarta);
   font-size: 16px;
   transition: all 0.2s;
-  box-shadow: 0 8px 32px rgba(46,196,160,0.35);
+  box-shadow: 0 8px 32px rgba(201,169,110,0.35);
   width: 100%;
 }
 

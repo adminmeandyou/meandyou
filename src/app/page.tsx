@@ -20,9 +20,9 @@ function FaqItem({ pergunta, resposta }: { pergunta: string; resposta: string })
         {pergunta}
         <span style={{
           width: '28px', height: '28px', borderRadius: '50%',
-          background: aberto ? '#E11D48' : 'rgba(225,29,72,0.12)',
-          border: '1px solid rgba(225,29,72,0.3)',
-          color: aberto ? '#fff' : '#E11D48',
+          background: aberto ? '#c9a96e' : 'rgba(201,169,110,0.12)',
+          border: '1px solid rgba(201,169,110,0.3)',
+          color: aberto ? '#0d0d0d' : '#c9a96e',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '18px', flexShrink: 0, fontWeight: 700,
           transform: aberto ? 'rotate(45deg)' : 'none',
@@ -98,50 +98,50 @@ export default function Home() {
 
   if (checking) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#08090E' }}>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '36px', color: '#F8F9FA' }}>
-          MeAnd<span style={{ color: '#E11D48' }}>You</span>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0d0d0d' }}>
+        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '36px', color: '#f0ece4' }}>
+          MeAnd<span style={{ color: '#c9a96e' }}>You</span>
         </h1>
       </div>
     )
   }
 
   const faqItems = [
-    { q: 'Por que não tem plano gratuito?', a: 'Porque gratuito não funciona. Todo app gratuito vira terra de ninguém — bot, golpista, vendedor de conteúdo. R$10 é o suficiente pra mudar isso. Quem pagou para estar aqui tem outro nível de seriedade, e você sente isso nas primeiras conversas.' },
-    { q: 'O que é a área Backstage do Camarote Black?', a: 'É uma seção exclusiva com perfis e filtros que não aparecem nos outros planos — Sugar, BDSM, Swing, fetiches, poliamor. Só quem assinalou a mesma intenção consegue ver. Sem exposição desnecessária, sem julgamento.' },
-    { q: 'Como funcionam os filtros de incluir e excluir?', a: 'Clique uma vez numa tag: fica verde, você quer ver. Clique de novo: fica vermelho, você não quer. Clique uma terceira vez: volta ao neutro. Tudo em uma tela, sem formulário separado. É o sistema de filtros mais completo que existe em app de relacionamento no Brasil.' },
-    { q: 'O que acontece com meu documento depois da verificação?', a: 'É descartado imediatamente. A gente não armazena foto de documento de ninguém — guardamos só o resultado da verificação e um hash criptografado do CPF. Seus dados originais nunca ficam no sistema.' },
-    { q: 'Posso cancelar quando quiser?', a: 'Sem burocracia. Cancela dentro do app a qualquer momento, sem precisar ligar pra ninguém. O acesso continua até o fim do período já pago. Sem fidelidade, sem multa, sem pegadinha.' },
-    { q: 'O app é inclusivo pra todas as orientações e identidades?', a: 'Completamente. Os filtros cobrem todas as orientações sexuais, identidades de gênero e formas de relacionamento. Cada pessoa configura o que quer ver — e o que não quer. O espaço é de todo mundo.' },
-    { q: 'Como o app combate golpes e estelionato?', a: 'Selfie ao vivo com sequência de movimentos, documento físico e CPF na criação de conta — impossível criar perfil falso. Quem é banido, é banido pelo CPF, não pelo email: não tem como voltar. Denúncias tratadas em até 24h.' },
-    { q: 'Como denuncio um perfil suspeito?', a: 'Três pontos em qualquer perfil → "Denunciar". Simples assim. Em situação de risco real ou ameaça, tem botão de emergência dentro do app que chama o 190 direto. Nossa moderação funciona 24h.' },
+    { q: 'Por que não existe um plano gratuito?', a: 'Porque o gratuito atrai quem não sabe o que quer. Aplicativos abertos viram bagunça: perfis falsos, pessoas inativas e perda de tempo. Cobrar um valor acessível (a partir de R$10) cria um filtro imediato. Quem investe para estar aqui, por menor que seja o valor, tem outro nível de intenção. Você percebe a diferença de nível já na primeira mensagem.' },
+    { q: 'O que exatamente é a área Backstage do Camarote Black?', a: 'É o seu espaço privado para desejos específicos. Uma área com filtros exclusivos que não existem nos planos comuns: Sugar, BDSM, Swing, fetiches e poliamor. A regra de ouro aqui é a discrição: você só vê e é visto por quem marcou as exatas mesmas intenções. Zero exposição desnecessária, zero julgamento e 100% de alinhamento direto ao ponto.' },
+    { q: 'Como funcionam os filtros de "incluir" e "excluir"?', a: 'É o sistema mais rápido e cirúrgico do Brasil, feito direto na tela principal. Clicou na tag, ficou verde: você quer ver aquele perfil. Clicou de novo, ficou vermelho: perfil bloqueado da sua frente. Clicou a terceira vez: volta ao neutro. Você molda a sua busca em segundos, sem precisar preencher formulários chatos.' },
+    { q: 'O que acontece com a foto do meu documento depois da verificação?', a: 'Ela é descartada imediatamente. Nós não armazenamos fotos de RG, CNH ou rosto de ninguém. Nossa tecnologia apenas valida a autenticidade na hora e guarda um código criptografado atrelado ao seu CPF. Sua privacidade é absoluta e seus dados originais nunca ficam soltos no nosso sistema.' },
+    { q: 'Posso cancelar a assinatura quando eu quiser?', a: 'Com dois cliques, direto no aplicativo. Sem burocracia, sem precisar mandar e-mail ou falar com atendente. Você cancela na hora e continua usando normalmente até o final do período que já pagou. Zero fidelidade, zero multa, zero dor de cabeça.' },
+    { q: 'O aplicativo funciona para todas as orientações e gêneros?', a: 'Completamente. Nosso sistema de filtros foi desenhado para abraçar todas as orientações sexuais, identidades de gênero e formatos de relacionamento. É você quem dita quem entra e quem sai da sua tela. O espaço é livre e se adapta perfeitamente ao que você procura.' },
+    { q: 'Como vocês garantem que os perfis são 100% reais?', a: 'Nossa barreira de entrada é implacável contra fakes e perfis falsos. Exigimos selfie ao vivo com sequência de movimentos, leitura de documento físico e validação de CPF na criação da conta. E o mais importante: se alguém quebra as regras e é banido, o bloqueio é feito direto no CPF. Não adianta criar outro e-mail, a pessoa simplesmente não volta.' },
+    { q: 'Como funciona a segurança e moderação do app?', a: 'Nossa equipe trabalha 24 horas por dia. Viu um comportamento fora do padrão? É só clicar nos três pontos do perfil e em "Denunciar". Além disso, fomos além: para situações de risco em encontros presenciais, o app possui um Botão de Emergência oculto que aciona o 190 imediatamente, garantindo a sua integridade física.' },
   ]
 
   const filterCats = [
-    { emoji: '👁️', title: 'Cor dos olhos', desc: 'Todas as variações existentes, incluindo casos raros.', tags: ['Olhos pretos', 'Olhos castanhos', 'Olhos verdes', 'Olhos azuis', 'Olhos mel', 'Olhos acinzentados', 'Heterocromia'] },
-    { emoji: '💇', title: 'Cor do cabelo', desc: 'Cor natural ou tingida dos cabelos.', tags: ['Cabelo preto', 'Cabelo castanho', 'Cabelo loiro', 'Cabelo ruivo', 'Cabelo colorido', 'Cabelo grisalho', 'Não possuo cabelo (careca)'] },
-    { emoji: '〰️', title: 'Tipo e comprimento do cabelo', desc: 'Textura e tamanho dos fios.', tags: ['Cabelo curto', 'Cabelo médio', 'Cabelo longo', 'Cabelo liso', 'Cabelo ondulado', 'Cabelo cacheado', 'Cabelo crespo'] },
-    { emoji: '🎨', title: 'Cor de pele e etnia', desc: 'Inclusão total. Todas as tonalidades e origens étnicas.', tags: ['Branca', 'Parda', 'Negra', 'Asiática', 'Indígena', 'Latina', 'Mediterrânea', 'Possuo vitiligo'] },
-    { emoji: '📏', title: 'Tipo corporal', desc: 'Biotipo com base em peso e altura.', tags: ['Abaixo do peso', 'Peso saudável', 'Acima do peso', 'Obesidade leve', 'Obesidade severa'] },
-    { emoji: '✨', title: 'Características físicas', desc: 'Detalhes que fazem diferença na atração.', tags: ['Possuo sardas', 'Possuo tatuagem', 'Possuo piercing', 'Possuo cicatriz', 'Uso óculos', 'Uso aparelho dentário', 'Possuo barba'] },
-    { emoji: '♿', title: 'Pessoa com deficiência (PCD)', desc: 'Inclusão total. Selecione para encontrar ou ser encontrado.', tags: ['Deficiência visual', 'Deficiência auditiva', 'Deficiência motora', 'Deficiência intelectual', 'Autismo (TEA)', 'TDAH', 'Sou cadeirante', 'Nanismo', 'Outra'] },
-    { emoji: '🏳️‍🌈', title: 'Orientação sexual', desc: 'Todo mundo tem seu espaço aqui, sem julgamento.', tags: ['Heterossexual', 'Homossexual', 'Bissexual', 'Pansexual', 'Assexual', 'Demissexual', 'Queer'] },
-    { svgId: true, title: 'Identidade de gênero', desc: 'Como a pessoa se identifica e como prefere ser chamada.', tags: ['Homem', 'Mulher', 'Homem trans', 'Mulher trans', 'Não-binário(a)', 'Gênero fluido'] },
-    { emoji: '💍', title: 'Status civil', desc: 'Situação atual no campo amoroso.', tags: ['Solteiro(a)', 'Enrolado(a)', 'Casado(a)', 'Divorciando', 'Divorciado(a)', 'Viúvo(a)', 'Relacionamento aberto'] },
-    { emoji: '🙏', title: 'Religião e espiritualidade', desc: 'Fé e espiritualidade como parte da compatibilidade.', tags: ['Evangélico(a)', 'Católico(a)', 'Espírita', 'Umbandista', 'Candomblé', 'Budista', 'Judaico(a)', 'Islâmico(a)', 'Hindu', 'Agnóstico(a)', 'Ateu / Ateia', 'Espiritualizado(a) sem religião'] },
-    { emoji: '🚬', title: 'Vícios e substâncias', desc: 'Hábitos que impactam diretamente a convivência.', tags: ['Fumo', 'Fumo ocasionalmente', 'Não fumo', 'Consumo bebida alcoólica', 'Bebo socialmente', 'Não consumo bebida alcoólica', 'Consumo cannabis', 'Não possuo vícios'] },
-    { emoji: '🏋️', title: 'Estilo de vida e rotina', desc: 'Como a pessoa organiza o dia a dia e o tempo livre.', tags: ['Pratico academia', 'Pratico esporte regularmente', 'Sou sedentário(a)', 'Sou caseiro(a)', 'Gosto de sair', 'Gosto de balada', 'Sou noturno(a)', 'Sou matutino(a)', 'Sou workaholic', 'Tenho vida equilibrada'] },
-    { emoji: '🧠', title: 'Personalidade', desc: 'Introvertido(a), extrovertido(a) e tudo entre os dois extremos.', tags: ['Sou extrovertido(a)', 'Sou introvertido(a)', 'Sou ambiverte', 'Sou tímido(a)', 'Sou comunicativo(a)', 'Sou antissocial', 'Sou reservado(a)', 'Sou agitado(a)', 'Sou calmo(a)', 'Sou intenso(a)'] },
-    { emoji: '🎮', title: 'Hobbies e entretenimento', desc: 'O que a pessoa faz no tempo livre.', tags: ['Sou gamer', 'Adoro ler', 'Viciado(a) em filmes', 'Viciado(a) em séries', 'Curto anime / mangá', 'Curto música ao vivo', 'Faço fotografia', 'Arte e desenho', 'Danço', 'Faço teatro', 'Meditação / Yoga', 'Adoro viajar', 'Curto trilha e natureza'] },
-    { emoji: '🥗', title: 'Alimentação', desc: 'Compatibilidade alimentar importa mais do que parece.', tags: ['Sou vegano(a)', 'Sou vegetariano(a)', 'Sou carnívoro(a)', 'Como de tudo', 'Prefiro alimentação saudável', 'Cozinho bem', 'Não cozinho', 'Curto comida japonesa', 'Curto fast food'] },
-    { emoji: '👗', title: 'Estilo de se vestir', desc: 'A forma de se vestir diz muito sobre quem a pessoa é.', tags: ['Social', 'Casual', 'Esportivo', 'Alternativo', 'Eclético', 'Gótico', 'Punk', 'E-girl / E-boy', 'K-pop'] },
-    { emoji: '🎵', title: 'Gosto musical', desc: 'Afinidade musical no dia a dia.', tags: ['Funk', 'Sertanejo', 'Pagode', 'Rock', 'Metal', 'Pop', 'Eletrônica', 'Hip-hop / Rap', 'MPB / Bossa Nova', 'Gospel', 'K-pop', 'Clássica', 'Eclético — curto de tudo'] },
-    { emoji: '👶', title: 'Filhos e família', desc: 'Um dos pontos mais decisivos em qualquer relacionamento sério.', tags: ['Tenho filhos', 'Não tenho filhos', 'Quero ter filhos', 'Não quero ter filhos', 'Aberto(a) à adoção', 'Ainda não decidi'] },
-    { emoji: '🐶', title: 'Animais de estimação', desc: 'Pet lover ou prefere não ter bicho em casa.', tags: ['Tenho cachorro', 'Tenho gato', 'Tenho outros pets', 'Adoro animais', 'Não tenho pets', 'Tenho alergia a animais', 'Não gosto de animais'] },
-    { emoji: '🎓', title: 'Escolaridade', desc: 'Nível de estudo e formação acadêmica.', tags: ['Ensino fundamental', 'Ensino médio completo', 'Ensino superior incompleto', 'Ensino superior completo', 'Pós-graduado(a)', 'Mestrado', 'Doutorado'] },
-    { emoji: '💼', title: 'Situação profissional', desc: 'Carreira, autonomia financeira e estilo de trabalho.', tags: ['CLT', 'Empreendedor(a)', 'Freelancer', 'Profissional liberal', 'Servidor(a) público(a)', 'Autônomo(a)', 'Trabalho remoto', 'Estou desempregado(a)'] },
-    { emoji: '🎯', title: 'O que busca na plataforma', desc: 'Seja claro sobre suas intenções. Isso evita perda de tempo dos dois lados.', tags: ['Relacionamento sério', 'Relacionamento casual', 'Amizade', 'Companhia para eventos', 'Relação conjugal', 'Aberto(a) a experiências', 'Sugar Baby', 'Sugar Daddy / Mommy', 'Ainda estou definindo'], tip: 'Perfis de categorias sensíveis ficam visíveis apenas para quem também selecionou a mesma intenção.' },
-    { emoji: '🔒', title: 'Perfil discreto (exclusivo Black)', desc: 'Visível apenas para outros membros que também marcaram a mesma categoria.', tags: ['Busco trisal', 'Swing / relacionamento aberto', 'Poliamor', 'BDSM / fetiches'], tip: 'Estas opções ficam ocultas para quem não marcou a mesma categoria. Disponível apenas no plano Black.' },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>, title: 'Cor dos olhos', desc: 'Todas as variações existentes, incluindo casos raros.', tags: ['Olhos pretos', 'Olhos castanhos', 'Olhos verdes', 'Olhos azuis', 'Olhos mel', 'Olhos acinzentados', 'Heterocromia'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/></svg>, title: 'Cor do cabelo', desc: 'Cor natural ou tingida dos cabelos.', tags: ['Cabelo preto', 'Cabelo castanho', 'Cabelo loiro', 'Cabelo ruivo', 'Cabelo colorido', 'Cabelo grisalho', 'Não possuo cabelo (careca)'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>, title: 'Tipo e comprimento do cabelo', desc: 'Textura e tamanho dos fios.', tags: ['Cabelo curto', 'Cabelo médio', 'Cabelo longo', 'Cabelo liso', 'Cabelo ondulado', 'Cabelo cacheado', 'Cabelo crespo'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, title: 'Cor de pele e etnia', desc: 'Inclusão total. Todas as tonalidades e origens étnicas.', tags: ['Branca', 'Parda', 'Negra', 'Asiática', 'Indígena', 'Latina', 'Mediterrânea', 'Possuo vitiligo'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, title: 'Tipo corporal', desc: 'Biotipo com base em peso e altura.', tags: ['Abaixo do peso', 'Peso saudável', 'Acima do peso', 'Obesidade leve', 'Obesidade severa'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>, title: 'Características físicas', desc: 'Detalhes que fazem diferença na atração.', tags: ['Possuo sardas', 'Possuo tatuagem', 'Possuo piercing', 'Possuo cicatriz', 'Uso óculos', 'Uso aparelho dentário', 'Possuo barba'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="4" r="2"/><path d="m10 22-1-6-3-2"/><path d="m14 22 1-6 3-2"/><path d="M8 10h8"/></svg>, title: 'Pessoa com deficiência (PCD)', desc: 'Inclusão total. Selecione para encontrar ou ser encontrado.', tags: ['Deficiência visual', 'Deficiência auditiva', 'Deficiência motora', 'Deficiência intelectual', 'Autismo (TEA)', 'TDAH', 'Sou cadeirante', 'Nanismo', 'Outra'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, title: 'Orientação sexual', desc: 'Todo mundo tem seu espaço aqui, sem julgamento.', tags: ['Heterossexual', 'Homossexual', 'Bissexual', 'Pansexual', 'Assexual', 'Demissexual', 'Queer'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h4m-4 4h6m-6 4h2"/><circle cx="17" cy="10" r="2"/></svg>, title: 'Identidade de gênero', desc: 'Como a pessoa se identifica e como prefere ser chamada.', tags: ['Homem', 'Mulher', 'Homem trans', 'Mulher trans', 'Não-binário(a)', 'Gênero fluido'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>, title: 'Status civil', desc: 'Situação atual no campo amoroso.', tags: ['Solteiro(a)', 'Enrolado(a)', 'Casado(a)', 'Divorciando', 'Divorciado(a)', 'Viúvo(a)', 'Relacionamento aberto'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>, title: 'Religião e espiritualidade', desc: 'Fé e espiritualidade como parte da compatibilidade.', tags: ['Evangélico(a)', 'Católico(a)', 'Espírita', 'Umbandista', 'Candomblé', 'Budista', 'Judaico(a)', 'Islâmico(a)', 'Hindu', 'Agnóstico(a)', 'Ateu / Ateia', 'Espiritualizado(a) sem religião'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="4.93" y1="9.93" x2="19.07" y2="14.07"/></svg>, title: 'Vícios e substâncias', desc: 'Hábitos que impactam diretamente a convivência.', tags: ['Fumo', 'Fumo ocasionalmente', 'Não fumo', 'Consumo bebida alcoólica', 'Bebo socialmente', 'Não consumo bebida alcoólica', 'Consumo cannabis', 'Não possuo vícios'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>, title: 'Estilo de vida e rotina', desc: 'Como a pessoa organiza o dia a dia e o tempo livre.', tags: ['Pratico academia', 'Pratico esporte regularmente', 'Sou sedentário(a)', 'Sou caseiro(a)', 'Gosto de sair', 'Gosto de balada', 'Sou noturno(a)', 'Sou matutino(a)', 'Sou workaholic', 'Tenho vida equilibrada'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>, title: 'Personalidade', desc: 'Introvertido(a), extrovertido(a) e tudo entre os dois extremos.', tags: ['Sou extrovertido(a)', 'Sou introvertido(a)', 'Sou ambiverte', 'Sou tímido(a)', 'Sou comunicativo(a)', 'Sou antissocial', 'Sou reservado(a)', 'Sou agitado(a)', 'Sou calmo(a)', 'Sou intenso(a)'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/><line x1="15" y1="12" x2="15.01" y2="12"/><line x1="18" y1="10" x2="18.01" y2="10"/><rect x="2" y="6" width="20" height="12" rx="4"/></svg>, title: 'Hobbies e entretenimento', desc: 'O que a pessoa faz no tempo livre.', tags: ['Sou gamer', 'Adoro ler', 'Viciado(a) em filmes', 'Viciado(a) em séries', 'Curto anime / mangá', 'Curto música ao vivo', 'Faço fotografia', 'Arte e desenho', 'Danço', 'Faço teatro', 'Meditação / Yoga', 'Adoro viajar', 'Curto trilha e natureza'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>, title: 'Alimentação', desc: 'Compatibilidade alimentar importa mais do que parece.', tags: ['Sou vegano(a)', 'Sou vegetariano(a)', 'Sou carnívoro(a)', 'Como de tudo', 'Prefiro alimentação saudável', 'Cozinho bem', 'Não cozinho', 'Curto comida japonesa', 'Curto fast food'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>, title: 'Estilo de se vestir', desc: 'A forma de se vestir diz muito sobre quem a pessoa é.', tags: ['Social', 'Casual', 'Esportivo', 'Alternativo', 'Eclético', 'Gótico', 'Punk', 'E-girl / E-boy', 'K-pop'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>, title: 'Gosto musical', desc: 'Afinidade musical no dia a dia.', tags: ['Funk', 'Sertanejo', 'Pagode', 'Rock', 'Metal', 'Pop', 'Eletrônica', 'Hip-hop / Rap', 'MPB / Bossa Nova', 'Gospel', 'K-pop', 'Clássica', 'Eclético, curto de tudo'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/><path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/></svg>, title: 'Filhos e família', desc: 'Um dos pontos mais decisivos em qualquer relacionamento sério.', tags: ['Tenho filhos', 'Não tenho filhos', 'Quero ter filhos', 'Não quero ter filhos', 'Aberto(a) à adoção', 'Ainda não decidi'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/><path d="M12 21.23s-3-2.5-3-5"/></svg>, title: 'Animais de estimação', desc: 'Pet lover ou prefere não ter bicho em casa.', tags: ['Tenho cachorro', 'Tenho gato', 'Tenho outros pets', 'Adoro animais', 'Não tenho pets', 'Tenho alergia a animais', 'Não gosto de animais'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>, title: 'Escolaridade', desc: 'Nível de estudo e formação acadêmica.', tags: ['Ensino fundamental', 'Ensino médio completo', 'Ensino superior incompleto', 'Ensino superior completo', 'Pós-graduado(a)', 'Mestrado', 'Doutorado'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>, title: 'Situação profissional', desc: 'Carreira, autonomia financeira e estilo de trabalho.', tags: ['CLT', 'Empreendedor(a)', 'Freelancer', 'Profissional liberal', 'Servidor(a) público(a)', 'Autônomo(a)', 'Trabalho remoto', 'Estou desempregado(a)'] },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>, title: 'O que busca na plataforma', desc: 'Seja claro sobre suas intenções. Isso evita perda de tempo dos dois lados.', tags: ['Relacionamento sério', 'Relacionamento casual', 'Amizade', 'Companhia para eventos', 'Relação conjugal', 'Aberto(a) a experiências', 'Sugar Baby', 'Sugar Daddy / Mommy', 'Ainda estou definindo'], tip: 'Perfis de categorias sensíveis ficam visíveis apenas para quem também selecionou a mesma intenção.' },
+    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, title: 'Perfil discreto (exclusivo Black)', desc: 'Visível apenas para outros membros que também marcaram a mesma categoria.', tags: ['Busco trisal', 'Swing / relacionamento aberto', 'Poliamor', 'BDSM / fetiches'], tip: 'Estas opções ficam ocultas para quem não marcou a mesma categoria. Disponível apenas no plano Black.' },
   ]
 
   return (
@@ -150,22 +150,22 @@ export default function Home() {
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
 
         :root {
-          --bg: #08090E;
-          --bg-card: #0F1117;
-          --bg-card2: #13161F;
-          --accent: #E11D48;
-          --accent-soft: rgba(225,29,72,0.10);
-          --accent-border: rgba(225,29,72,0.25);
+          --bg: #0d0d0d;
+          --bg-card: #161616;
+          --bg-card2: #1e1e1e;
+          --accent: #c9a96e;
+          --accent-soft: rgba(201,169,110,0.10);
+          --accent-border: rgba(201,169,110,0.25);
           --gold: #F59E0B;
           --gold-soft: rgba(245,158,11,0.10);
           --gold-border: rgba(245,158,11,0.25);
-          --text: #F8F9FA;
-          --text-muted: rgba(248,249,250,0.50);
-          --text-dim: rgba(248,249,250,0.30);
+          --text: #f0ece4;
+          --text-muted: rgba(240,236,228,0.55);
+          --text-dim: rgba(240,236,228,0.30);
           --border: rgba(255,255,255,0.07);
           --border-soft: rgba(255,255,255,0.04);
           --red: #F43F5E;
-          --shadow-accent: 0 20px 60px rgba(225,29,72,0.18);
+          --shadow-accent: 0 20px 60px rgba(201,169,110,0.18);
           --shadow-card: 0 8px 32px rgba(0,0,0,0.4);
         }
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -186,8 +186,8 @@ export default function Home() {
         .lp-nav-links { display: flex; gap: 4px; list-style: none; }
         .lp-nav-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 8px 14px; border-radius: 8px; transition: color 0.2s, background 0.2s; }
         .lp-nav-links a:hover { color: var(--text); background: var(--border-soft); }
-        .lp-nav-cta { background: var(--accent) !important; color: #fff !important; padding: 10px 22px !important; border-radius: 10px !important; font-weight: 600 !important; }
-        .lp-nav-cta:hover { background: #be1239 !important; }
+        .lp-nav-cta { background: var(--accent) !important; color: #0d0d0d !important; padding: 10px 22px !important; border-radius: 10px !important; font-weight: 600 !important; }
+        .lp-nav-cta:hover { background: #b8924a !important; }
 
         /* ── HERO ── */
         @keyframes lp-fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
@@ -197,7 +197,7 @@ export default function Home() {
         .lp-badge {
           display: inline-flex; align-items: center; gap: 8px;
           background: var(--accent-soft); border: 1px solid var(--accent-border);
-          color: #FB7185; padding: 7px 18px; border-radius: 100px;
+          color: #dfc088; padding: 7px 18px; border-radius: 100px;
           font-size: 13px; font-weight: 600; margin-bottom: 28px;
           animation: lp-fadeUp .5s ease both;
         }
@@ -208,12 +208,12 @@ export default function Home() {
         .lp-hero-sub strong { color: var(--text); font-weight: 600; }
         .lp-actions { display: flex; gap: 12px; flex-wrap: wrap; animation: lp-fadeUp .5s .3s ease both; }
         .lp-btn-main {
-          background: var(--accent); color: #fff; padding: 15px 34px; border-radius: 12px;
+          background: var(--accent); color: #0d0d0d; padding: 15px 34px; border-radius: 12px;
           font-weight: 700; font-size: 15px; text-decoration: none; display: inline-flex;
-          align-items: center; gap: 10px; box-shadow: 0 8px 32px rgba(225,29,72,.35);
+          align-items: center; gap: 10px; box-shadow: 0 8px 32px rgba(201,169,110,.35);
           transition: background 0.2s, transform 0.15s, box-shadow 0.2s; cursor: pointer;
         }
-        .lp-btn-main:hover { background: #be1239; transform: translateY(-2px); box-shadow: 0 12px 40px rgba(225,29,72,.45); }
+        .lp-btn-main:hover { background: #b8924a; transform: translateY(-2px); box-shadow: 0 12px 40px rgba(201,169,110,.45); }
         .lp-btn-outline {
           background: transparent; color: var(--text); padding: 15px 30px; border-radius: 12px;
           font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid var(--border);
@@ -230,7 +230,7 @@ export default function Home() {
         .lp-phone {
           width: 265px; height: 560px; background: var(--bg-card);
           border-radius: 38px; border: 1px solid rgba(255,255,255,0.1);
-          box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06), 0 0 60px rgba(225,29,72,0.08);
+          box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06), 0 0 60px rgba(201,169,110,0.08);
           overflow: hidden;
         }
         .lp-phone-header { background: var(--accent); padding: 36px 20px 14px; text-align: center; }
@@ -243,7 +243,7 @@ export default function Home() {
         .lp-phone-info { padding: 12px 14px 10px; }
         .lp-phone-name { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--text); }
         .lp-phone-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
-        .lp-phone-tag { background: var(--accent-soft); color: #FB7185; border-radius: 100px; padding: 3px 9px; font-size: 10px; font-weight: 600; }
+        .lp-phone-tag { background: var(--accent-soft); color: #dfc088; border-radius: 100px; padding: 3px 9px; font-size: 10px; font-weight: 600; }
         .lp-phone-actions { display: flex; justify-content: center; gap: 14px; padding: 10px 16px 14px; }
         .lp-ph-btn { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: transform 0.15s; }
         .lp-ph-btn:hover { transform: scale(1.1); }
@@ -297,7 +297,7 @@ export default function Home() {
         .lp-verification-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
         .lp-verify-steps { display: flex; flex-direction: column; gap: 14px; }
         .lp-verify-step { display: flex; align-items: flex-start; gap: 18px; background: rgba(15,17,23,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.07); border-radius: 18px; padding: 22px 24px; transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s; }
-        .lp-verify-step:hover { border-color: var(--accent-border); box-shadow: 0 8px 32px rgba(225,29,72,0.10); transform: translateX(4px); }
+        .lp-verify-step:hover { border-color: var(--accent-border); box-shadow: 0 8px 32px rgba(201,169,110,0.10); transform: translateX(4px); }
         .lp-vstep-num { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; flex-shrink: 0; }
         .lp-verify-step h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
         .lp-verify-step p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0; }
@@ -309,7 +309,7 @@ export default function Home() {
         .lp-filter-categories { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .lp-filter-cat { background: var(--bg); border: 1px solid var(--border); border-radius: 20px; padding: 26px; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s; position: relative; overflow: hidden; }
         .lp-filter-cat::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); transform: scaleX(0); transition: transform 0.3s; transform-origin: left; }
-        .lp-filter-cat:hover { border-color: var(--accent-border); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(225,29,72,0.08); }
+        .lp-filter-cat:hover { border-color: var(--accent-border); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(201,169,110,0.08); }
         .lp-filter-cat:hover::after { transform: scaleX(1); }
         .lp-cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .lp-cat-emoji { font-size: 22px; }
@@ -329,7 +329,7 @@ export default function Home() {
         .lp-intentions-header { text-align: center; margin-bottom: 56px; }
         .lp-intentions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 14px; }
         .lp-intent-card { border: 1px solid var(--border); border-radius: 20px; padding: 28px 18px; text-align: center; background: var(--bg-card); transition: all 0.25s cubic-bezier(.34,1.56,.64,1); cursor: default; }
-        .lp-intent-card:hover { border-color: var(--accent-border); background: rgba(225,29,72,0.06); transform: translateY(-6px) scale(1.02); box-shadow: 0 16px 40px rgba(225,29,72,0.12); }
+        .lp-intent-card:hover { border-color: var(--accent-border); background: rgba(201,169,110,0.06); transform: translateY(-6px) scale(1.02); box-shadow: 0 16px 40px rgba(201,169,110,0.12); }
         .lp-intent-icon { width: 46px; height: 46px; margin: 0 auto 14px; color: var(--accent); transition: transform 0.3s; }
         .lp-intent-card:hover .lp-intent-icon { transform: scale(1.15) rotate(-5deg); }
         .lp-intent-card h3 { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; margin-bottom: 5px; color: var(--text); }
@@ -343,8 +343,8 @@ export default function Home() {
         .lp-how-step { position: relative; z-index: 1; opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s ease; text-align: center; }
         .lp-how-step.visible { opacity: 1; transform: translateY(0); }
         .lp-how-step:nth-child(1) { transition-delay: 0s; } .lp-how-step:nth-child(2) { transition-delay: .15s; } .lp-how-step:nth-child(3) { transition-delay: .3s; } .lp-how-step:nth-child(4) { transition-delay: .45s; }
-        .lp-step-icon { width: 68px; height: 68px; border-radius: 50%; background: var(--bg); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; box-shadow: 0 4px 20px rgba(225,29,72,0.12); transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s; }
-        .lp-how-step:hover .lp-step-icon { transform: translateY(-6px) scale(1.08); box-shadow: 0 14px 32px rgba(225,29,72,0.25); }
+        .lp-step-icon { width: 68px; height: 68px; border-radius: 50%; background: var(--bg); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; box-shadow: 0 4px 20px rgba(201,169,110,0.12); transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s; }
+        .lp-how-step:hover .lp-step-icon { transform: translateY(-6px) scale(1.08); box-shadow: 0 14px 32px rgba(201,169,110,0.25); }
         .lp-step-icon svg { width: 26px; height: 26px; color: var(--accent); }
         .lp-how-step h3 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
         .lp-how-step p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
@@ -355,7 +355,7 @@ export default function Home() {
         .lp-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 60px; }
         .lp-card { background: rgba(15,17,23,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.07); border-radius: 24px; padding: 36px 28px; text-align: left; position: relative; transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.35s; }
         .lp-card:hover { transform: translateY(-6px); box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
-        .lp-card.mid { border-color: var(--accent-border); background: linear-gradient(160deg, var(--bg-card) 60%, rgba(225,29,72,0.06)); }
+        .lp-card.mid { border-color: var(--accent-border); background: linear-gradient(160deg, var(--bg-card) 60%, rgba(201,169,110,0.06)); }
         .lp-card.vip { border-color: var(--gold-border); background: linear-gradient(160deg, var(--bg-card) 60%, rgba(245,158,11,0.06)); }
         .lp-feat-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; padding: 5px 18px; border-radius: 100px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
         .lp-feat-badge.rose { background: var(--accent); color: #fff; }
@@ -369,7 +369,7 @@ export default function Home() {
         .lp-feats { list-style: none; margin-bottom: 28px; padding: 0; }
         .lp-feats li { font-size: 13px; color: var(--text-muted); padding: 7px 0; border-bottom: 1px solid var(--border-soft); display: flex; align-items: flex-start; gap: 8px; }
         .lp-feats li:last-child { border-bottom: none; }
-        .lp-feats li::before { content: ''; display: inline-block; width: 16px; height: 16px; border-radius: 50%; background: rgba(225,29,72,0.12); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23E11D48' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; flex-shrink: 0; margin-top: 1px; }
+        .lp-feats li::before { content: ''; display: inline-block; width: 16px; height: 16px; border-radius: 50%; background: rgba(201,169,110,0.12); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23c9a96e' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: center; flex-shrink: 0; margin-top: 1px; }
         .lp-feats li.off { opacity: .4; }
         .lp-feats li.off::before { background-color: rgba(255,255,255,0.06); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='3' stroke-linecap='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'/%3E%3Cline x1='6' y1='6' x2='18' y2='18'/%3E%3C/svg%3E"); }
         .lp-feats li.gold-check::before { background-color: rgba(245,158,11,0.12); background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23F59E0B' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E"); }
@@ -394,13 +394,13 @@ export default function Home() {
           background: linear-gradient(90deg, var(--accent), rgba(129,140,248,0.8));
           transform: scaleX(0); transition: transform 0.4s ease; transform-origin: left;
         }
-        .lp-diff-card:hover { border-color: var(--accent-border); transform: translateY(-8px); box-shadow: 0 24px 60px rgba(225,29,72,0.1); }
+        .lp-diff-card:hover { border-color: var(--accent-border); transform: translateY(-8px); box-shadow: 0 24px 60px rgba(201,169,110,0.1); }
         .lp-diff-card:hover::before { transform: scaleX(1); }
-        .lp-diff-num { font-family: 'Playfair Display', serif; font-size: 64px; font-weight: 700; color: rgba(225,29,72,0.08); line-height: 1; margin-bottom: 16px; }
+        .lp-diff-num { font-family: 'Playfair Display', serif; font-size: 64px; font-weight: 700; color: rgba(201,169,110,0.08); line-height: 1; margin-bottom: 16px; }
         .lp-diff-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; color: var(--accent); }
         .lp-diff-card h3 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
         .lp-diff-card p { font-size: 14px; color: var(--text-muted); line-height: 1.75; margin: 0; }
-        .lp-diff-tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 20px; background: var(--accent-soft); border: 1px solid var(--accent-border); color: #FB7185; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+        .lp-diff-tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 20px; background: var(--accent-soft); border: 1px solid var(--accent-border); color: #dfc088; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
 
         /* ── FOOTER CONTACT ── */
         .lp-footer-contact { max-width: 1100px; margin: 0 auto; padding: 40px 56px; border-top: 1px solid var(--border); }
@@ -412,11 +412,11 @@ export default function Home() {
           outline: none; transition: border-color 0.2s;
           appearance: none; -webkit-appearance: none;
         }
-        .lp-contact-form select:focus, .lp-contact-form input:focus, .lp-contact-form textarea:focus { border-color: rgba(225,29,72,0.4); }
+        .lp-contact-form select:focus, .lp-contact-form input:focus, .lp-contact-form textarea:focus { border-color: rgba(201,169,110,0.4); }
         .lp-contact-form textarea { resize: none; height: 42px; }
-        .lp-contact-form option { background: #13161F; }
-        .lp-contact-btn { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.2s; font-family: 'Inter', sans-serif; }
-        .lp-contact-btn:hover { background: #be1239; }
+        .lp-contact-form option { background: #1e1e1e; }
+        .lp-contact-btn { background: var(--accent); color: #0d0d0d; border: none; border-radius: 10px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.2s; font-family: 'Inter', sans-serif; }
+        .lp-contact-btn:hover { background: #b8924a; }
         @media (max-width: 960px) { .lp-contact-form { grid-template-columns: 1fr 1fr; } .lp-diff-grid { grid-template-columns: 1fr; } }
         @media (max-width: 600px) { .lp-contact-form { grid-template-columns: 1fr; } .lp-footer-contact { padding: 32px 24px; } }
 
@@ -435,7 +435,7 @@ export default function Home() {
         .lp-testi-inner { max-width: 1100px; margin: 0 auto; }
         .lp-testi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 60px; }
         .lp-testi-card { background: rgba(15,17,23,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 30px; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s; }
-        .lp-testi-card:hover { border-color: rgba(225,29,72,0.25); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(225,29,72,0.08); }
+        .lp-testi-card:hover { border-color: rgba(201,169,110,0.25); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(201,169,110,0.08); }
         .lp-testi-stars { color: var(--gold); font-size: 13px; margin-bottom: 14px; letter-spacing: 2px; }
         .lp-testi-text { font-size: 14px; color: var(--text-muted); line-height: 1.75; margin-bottom: 20px; font-style: italic; }
         .lp-testi-author { display: flex; align-items: center; gap: 12px; }
@@ -461,11 +461,11 @@ export default function Home() {
         .lp-safety-item p { font-size: 12px; color: var(--text-muted); line-height: 1.55; margin: 0; }
 
         /* ── CTA ── */
-        .lp-cta { padding: 110px 56px; background: var(--accent); text-align: center; position: relative; overflow: hidden; }
-        .lp-cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(255,255,255,0.08) 0%, transparent 60%); }
-        .lp-cta h2 { font-family: 'Playfair Display', serif; font-size: clamp(36px, 5vw, 66px); font-weight: 700; letter-spacing: -2px; color: #fff; margin-bottom: 18px; line-height: 1.08; position: relative; }
-        .lp-cta p { color: rgba(255,255,255,.75); font-size: 17px; margin-bottom: 44px; position: relative; }
-        .lp-btn-cta-white { background: #fff; color: #be1239; padding: 17px 46px; border-radius: 12px; font-weight: 700; font-size: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: transform 0.15s, box-shadow 0.2s; cursor: pointer; position: relative; }
+        .lp-cta { padding: 110px 56px; background: var(--bg); text-align: center; position: relative; overflow: hidden; }
+        .lp-cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(201,169,110,0.10) 0%, transparent 60%); }
+        .lp-cta h2 { font-family: 'Playfair Display', serif; font-size: clamp(36px, 5vw, 66px); font-weight: 700; letter-spacing: -2px; color: var(--text); margin-bottom: 18px; line-height: 1.08; position: relative; }
+        .lp-cta p { color: var(--text-muted); font-size: 17px; margin-bottom: 44px; position: relative; }
+        .lp-btn-cta-white { background: #f0ece4; color: #0d0d0d; padding: 17px 46px; border-radius: 12px; font-weight: 700; font-size: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: transform 0.15s, box-shadow 0.2s; cursor: pointer; position: relative; }
         .lp-btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
         .lp-cta-note { color: rgba(255,255,255,.45); font-size: 13px; margin-top: 20px; position: relative; }
 
@@ -527,12 +527,12 @@ export default function Home() {
             <li><a href="#filtros">Filtros</a></li>
             <li><a href="#precos">Planos</a></li>
             <li><a href="#seguranca">Segurança</a></li>
-            <li><a href="/cadastro" className="lp-nav-cta">Começar agora</a></li>
+            <li><a href="/planos" className="lp-nav-cta">Começar agora</a></li>
           </ul>
         </nav>
 
         {/* ── Hero ── */}
-        <section style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.78), rgba(8,9,14,0.92)), url('/backgrounds/1 (1).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section style={{ backgroundImage: "linear-gradient(rgba(13,13,13,0.72), rgba(13,13,13,0.90)), url('/backgrounds/nova/Image_fx (1).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-hero">
             <div>
               <div className="lp-badge">
@@ -544,7 +544,7 @@ export default function Home() {
                 O app de relacionamentos com <strong>verificação rigorosa de identidade</strong> e os filtros mais completos do Brasil.
               </p>
               <div className="lp-actions">
-                <a href="/cadastro" className="lp-btn-main">
+                <a href="/planos" className="lp-btn-main">
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
                   Começar agora
                 </a>
@@ -563,9 +563,9 @@ export default function Home() {
             </div>
 
             <div className="lp-hero-right">
-              <div className="lp-fc lp-fc1"><span className="lp-fc-dot" />Gótica · Verificada</div>
-              <div className="lp-fc lp-fc2"><span className="lp-fc-dot" />Gamer · São Paulo</div>
-              <div className="lp-fc lp-fc3"><span className="lp-fc-dot" />Evangélica · MG</div>
+              <div className="lp-fc lp-fc1"><span className="lp-fc-dot" />Gótica, 25 anos · acabou de se cadastrar</div>
+              <div className="lp-fc lp-fc2"><span className="lp-fc-dot" />Gamer, São Paulo · está online</div>
+              <div className="lp-fc lp-fc3"><span className="lp-fc-dot" />Evangélica, MG · está escrevendo</div>
               <div className="lp-phone">
                 <div className="lp-phone-header">
                   <div className="lp-phone-logo">MeAndYou</div>
@@ -591,7 +591,7 @@ export default function Home() {
                       <span className="lp-phone-tag">SP</span>
                     </div>
                   </div>
-                  <p className="lp-phone-bio">Gamer nas horas vagas, vegana há 3 anos. Procuro conexão genuína — alguém pra conversar de verdade antes de qualquer encontro.</p>
+                  <p className="lp-phone-bio">Gamer nas horas vagas, vegana há 3 anos. Procuro conexão genuína, alguém pra conversar de verdade antes de qualquer encontro.</p>
                 </div>
                 <div className="lp-phone-actions">
                   <button className="lp-ph-btn no">
@@ -655,7 +655,7 @@ export default function Home() {
                 },
                 {
                   feature: 'Qualidade dos perfis',
-                  them: 'Gratuito — entra quem quiser',
+                  them: 'Gratuito, entra quem quiser',
                   us: 'Acesso pago = pessoas com intenção real',
                 },
                 {
@@ -666,7 +666,7 @@ export default function Home() {
                 {
                   feature: 'Proteção contra contas falsas',
                   them: 'Reativa com outro e-mail',
-                  us: '1 conta por CPF — banimento permanente',
+                  us: '1 conta por CPF. Banimento permanente.',
                 },
               ].map((row, i) => (
                 <div key={i} className="lp-cmp-row">
@@ -703,7 +703,7 @@ export default function Home() {
               {[
                 { n: '1', t: 'Selfie ao vivo', d: 'Sequência de movimentos detectada em tempo real. Impossível usar foto ou vídeo.' },
                 { n: '2', t: 'Documento de identidade', d: 'RG ou CNH validados. Confirma nome, idade e nacionalidade reais.' },
-                { n: '3', t: 'Validação de CPF', d: 'Checagem automática. Apenas 1 conta por CPF — sem duplicatas.' },
+                { n: '3', t: 'Validação de CPF', d: 'Checagem automática. Apenas 1 conta por CPF, sem duplicatas.' },
                 { n: '4', t: 'Monitoramento contínuo', d: 'Algoritmo anti-fraude ativo. Denúncias respondidas em até 24h.' },
               ].map(item => (
                 <div key={item.n} className="lp-verify-step lp-anim">
@@ -735,10 +735,7 @@ export default function Home() {
               {filterCats.map((cat, i) => (
                 <div key={i} className="lp-filter-cat lp-anim">
                   <div className="lp-cat-header">
-                    {cat.svgId
-                      ? <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="16" rx="2" /><path d="M7 9h4m-4 4h6m-6 4h2" /><circle cx="17" cy="10" r="2" /></svg>
-                      : <span className="lp-cat-emoji">{cat.emoji}</span>
-                    }
+                    {cat.icon}
                     <h3>{cat.title}</h3>
                   </div>
                   <p>{cat.desc}</p>
@@ -793,7 +790,7 @@ export default function Home() {
             </p>
             <div className="lp-steps-row">
               {[
-                { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg>, t: 'Escolha seu plano', d: 'A partir de R$10/mês. Sem conta gratuita — isso afasta golpistas.' },
+                { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg>, t: 'Escolha seu plano', d: 'A partir de R$10/mês. Sem conta gratuita. Isso afasta golpistas.' },
                 { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>, t: 'Verifique sua identidade', d: 'Selfie ao vivo + documento. Menos de 3 minutos pelo celular.' },
                 { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg>, t: 'Configure seus filtros', d: 'Inclua e exclua como quiser. 100+ opções para ser preciso.' },
                 { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>, t: 'Dê match e conecte', d: 'Só pessoas reais, com intenções compatíveis com as suas.' },
@@ -823,7 +820,7 @@ export default function Home() {
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2.5"/><circle cx="15" cy="12" r="2.5"/><circle cx="9" cy="18" r="2.5"/></svg>
                 </div>
                 <h3>Filtros com mais de 100 opções</h3>
-                <p>Cor dos olhos, tipo de corpo, personalidade, estilo de vida, intenções, religião, fetiches. Inclua o que quer ver. Exclua o que não combina. Você define exatamente quem aparece pra você — e quem não aparece.</p>
+                <p>Cor dos olhos, tipo de corpo, personalidade, estilo de vida, intenções, religião, fetiches. Inclua o que quer ver. Exclua o que não combina. Você define exatamente quem aparece pra você, e quem não aparece.</p>
                 <span className="lp-diff-tag">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
                   100+ filtros disponíveis
@@ -835,7 +832,7 @@ export default function Home() {
                 <div className="lp-diff-icon">
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
                 </div>
-                <h3>Backstage — o lugar onde você pode ser você</h3>
+                <h3>Backstage: o lugar onde você pode ser você</h3>
                 <p>Área exclusiva para o plano Black. Filtros e perfis que não aparecem em nenhum outro lugar: Sugar, BDSM, Swing, fetiches, poliamor. Só quem assinalou a mesma intenção pode ver. Sem exposição, sem julgamento.</p>
                 <span className="lp-diff-tag">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
@@ -849,7 +846,7 @@ export default function Home() {
                   <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
                 </div>
                 <h3>Videochamada direto pelo chat</h3>
-                <p>Sem sair do app. Sem trocar número. Você inicia uma chamada de vídeo em tempo real direto na conversa. Veja quem é a pessoa de verdade antes de qualquer encontro — e chegue ao café sem surpresa nenhuma.</p>
+                <p>Sem sair do app. Sem trocar número. Você inicia uma chamada de vídeo em tempo real direto na conversa. Veja quem é a pessoa de verdade antes de qualquer encontro. Chegue ao café sem surpresa nenhuma.</p>
                 <span className="lp-diff-tag">
                   <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
                   Tempo real · Sem apps externos
@@ -884,7 +881,7 @@ export default function Home() {
                   <li className="off">Ver quem curtiu você</li>
                   <li className="off">Desfazer curtida</li>
                 </ul>
-                <a href="/cadastro?plano=essencial" className="lp-btn-price lp-btn-outline-p">Assinar Essencial</a>
+                <a href="/planos" className="lp-btn-price lp-btn-outline-p">Assinar Essencial</a>
               </div>
 
               <div className="lp-card mid lp-anim">
@@ -905,7 +902,7 @@ export default function Home() {
                   <li>1 Lupa/dia no Destaque</li>
                   <li>2 tickets de roleta/dia</li>
                 </ul>
-                <a href="/cadastro?plano=plus" className="lp-btn-price lp-btn-rose">Assinar Plus</a>
+                <a href="/planos" className="lp-btn-price lp-btn-rose">Assinar Plus</a>
               </div>
 
               <div className="lp-card vip lp-anim">
@@ -926,14 +923,14 @@ export default function Home() {
                   <li className="gold-check">Destaque máximo no algoritmo</li>
                   <li className="gold-check">Suporte prioritário 24h</li>
                 </ul>
-                <a href="/cadastro?plano=black" className="lp-btn-price lp-btn-gold">Assinar Camarote Black</a>
+                <a href="/planos" className="lp-btn-price lp-btn-gold">Assinar Camarote Black</a>
               </div>
             </div>
           </div>
         </section>
 
         {/* ── Gamificação ── */}
-        <section className="lp-gamif">
+        <section className="lp-gamif" style={{ backgroundImage: "linear-gradient(rgba(13,13,13,0.88), rgba(13,13,13,0.94)), url('/backgrounds/nova/Image_fx (6).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-gamif-inner">
             <p className="lp-section-label">Muito mais do que curtidas</p>
             <h2 className="lp-section-title">Recompensas por<br />estar aqui</h2>
@@ -969,16 +966,16 @@ export default function Home() {
         </section>
 
         {/* ── Depoimentos ── */}
-        <section className="lp-testi">
+        <section className="lp-testi" style={{ backgroundImage: "linear-gradient(rgba(13,13,13,0.85), rgba(13,13,13,0.92)), url('/backgrounds/nova/Image_fx (8).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-testi-inner">
             <p className="lp-section-label">Depoimentos</p>
-            <h2 className="lp-section-title">Conexões que realmente aconteceram.</h2>
+            <h2 className="lp-section-title">Chega de encontros frustrantes.<br />Veja quem já está vivendo o mundo real.</h2>
             <div className="lp-testi-grid">
               {[
-                { name: 'Fernanda O.', role: 'São Paulo · 29 anos · Plano Plus', text: 'Fiz videochamada antes do primeiro encontro. Não era "oi, tudo bem", era conversa de verdade — 40 minutos. Quando nos encontramos pessoalmente, já não tinha aquela tensão de desconhecido. Foi diferente de tudo que já vivi em app.' },
-                { name: 'Lucas M.', role: 'Rio de Janeiro · 34 anos · Camarote Black', text: 'Nunca encontrei espaço pra falar abertamente sobre o que gosto, sem julgamento. No Backstage filtrei o que queria, encontrei alguém compatível. Sem rodeio, sem fingir que quer outra coisa. Isso vale mais do que qualquer feature.' },
-                { name: 'Camila S.', role: 'Belo Horizonte · 27 anos · Plano Plus', text: 'Passei anos em app sem conseguir filtrar nem o básico. Aqui eu exclui quem bebe, quem fuma, quem quer algo casual. Ficaram só perfis que faziam sentido. Conversa mais curta, encontro mais rápido, sem perda de tempo.' },
-                { name: 'Thiago R.', role: 'Curitiba · 36 anos · Camarote Black', text: 'Já cai em golpe em outro app. Aqui o badge de verificado não é enfeite — é selfie ao vivo, documento, CPF. Quando você vê aquele selo sabe que tem uma pessoa real do outro lado. Isso muda completamente a confiança na conversa.' },
+                { name: 'Camila S.', role: 'Belo Horizonte · 27 anos · Plano Plus', text: 'Passei muito tempo em apps conversando com pessoas que estavam em momentos diferentes do meu. Aqui eu fui direto ao ponto: ativei os filtros e deixei claro que procuro algo sério. O app cortou o ruído e me conectou só com quem estava na mesma página. Encontrei uma pessoa incrível, sem perder o meu tempo nem o tempo de ninguém.' },
+                { name: 'Lucas M.', role: 'Rio de Janeiro · 34 anos · Camarote Black', text: 'A pior parte de conhecer gente nova é quando um quer uma coisa e o outro quer outra. No Backstage, eu joguei limpo sobre o que eu curto e deixei claro que meu foco agora é apenas diversão casual. Deu match com uma mulher que queria exatamente a mesma coisa para aquela noite. Fomos direto ao assunto, com muita química e zero cobrança.' },
+                { name: 'Thiago R.', role: 'Curitiba · 36 anos · Camarote Black', text: 'Eu valorizo muito o meu tempo e gosto de proporcionar experiências exclusivas. O Camarote Black é perfeito porque atrai pessoas que buscam esse mesmo nível. A verificação rigorosa por documento e selfie garante que os perfis são reais. Você conversa com a tranquilidade de que a pessoa existe de verdade e que os interesses estão 100% alinhados desde o primeiro oi.' },
+                { name: 'Fernanda O.', role: 'São Paulo · 29 anos · Plano Plus', text: 'Eu queria sair e me divertir, mas dava uma preguiça enorme de chegar no bar e descobrir na hora que a química não rolava. A videochamada aqui mudou o jogo. Bati 40 minutos de papo, vi que a energia batia pela tela mesmo, e fomos pro encontro presencial já com aquele clima bom. Corta toda a tensão de conhecer alguém novo.' },
               ].map((t, i) => (
                 <div key={i} className="lp-testi-card lp-anim">
                   <div className="lp-testi-stars">★★★★★</div>
@@ -1001,8 +998,8 @@ export default function Home() {
         {/* ── FAQ ── */}
         <section className="lp-faq">
           <div className="lp-faq-inner">
-            <p className="lp-section-label">Dúvidas</p>
-            <h2 className="lp-section-title">Perguntas frequentes</h2>
+            <p className="lp-section-label">FAQ</p>
+            <h2 className="lp-section-title">Dúvidas Frequentes</h2>
             <div className="lp-faq-list">
               {faqItems.map((item, i) => <FaqItem key={i} pergunta={item.q} resposta={item.a} />)}
             </div>
@@ -1035,10 +1032,10 @@ export default function Home() {
         </section>
 
         {/* ── CTA final ── */}
-        <section className="lp-cta" style={{ backgroundImage: "linear-gradient(rgba(225,29,72,0.72), rgba(180,10,40,0.88)), url('/backgrounds/2 (1).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-cta" style={{ backgroundImage: "linear-gradient(rgba(13,13,13,0.75), rgba(13,13,13,0.88)), url('/backgrounds/nova/Image_fx (7).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <h2>Sua pessoa real<br />está esperando.</h2>
           <p>Verificação real. Filtros completos. Conexões de verdade.</p>
-          <a href="/cadastro" className="lp-btn-cta-white">
+          <a href="/planos" className="lp-btn-cta-white">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
             Escolher meu plano
           </a>
@@ -1068,7 +1065,7 @@ export default function Home() {
             </div>
             <div className="lp-footer-col">
               <h4>Conta</h4>
-              <a href="/cadastro">Criar conta</a>
+              <a href="/planos">Criar conta</a>
               <a href="/login">Entrar</a>
               <a href="/suporte">Suporte</a>
               <a href="/ajuda">Central de ajuda</a>
