@@ -107,14 +107,14 @@ export default function Home() {
   }
 
   const faqItems = [
-    { q: 'Por que não tem plano gratuito?', a: 'Cobrar mesmo que R$10 já é uma barreira que afasta a maioria dos golpistas e perfis falsos. Quem está aqui pagou para estar. Isso muda o comportamento das pessoas e melhora a qualidade dos matches para todo mundo.' },
-    { q: 'O que é o plano Camarote Black?', a: 'O plano premium com acesso a todos os perfis da plataforma, área exclusiva Backstage, curtidas ilimitadas, 10 SuperCurtidas por dia, 2 Lupas/dia para revelar perfis no Destaque e suporte prioritário 24h.' },
-    { q: 'Como funciona o filtro de exclusão?', a: 'Clique uma vez em qualquer tag para marcar como "quero encontrar". Clique de novo para mudar para "não quero ver". Cada filtro vira automaticamente inclusão ou exclusão, sem campos separados.' },
-    { q: 'O que acontece com meus documentos após a verificação?', a: 'Seus documentos são usados somente para verificação e descartados em seguida. Guardamos apenas o resultado da verificação e o hash criptografado do CPF. Os documentos originais nunca são armazenados.' },
-    { q: 'Posso cancelar quando quiser?', a: 'Sim. Sem fidelidade, sem multa de cancelamento. Você cancela direto pelo app a qualquer momento. O acesso continua até o fim do período já pago.' },
-    { q: 'O app é inclusivo para diferentes orientações e identidades?', a: 'Sim. O MeAndYou tem filtros específicos para todos os gêneros e orientações. Todo mundo tem espaço aqui e pode filtrar exatamente o que procura.' },
-    { q: 'Como o app combate golpes e estelionato sentimental?', a: 'Verificação de identidade obrigatória com CPF, selfie ao vivo e documento; sistema de denúncia com resposta em até 24h; banimento permanente por CPF para quem tenta fraude.' },
-    { q: 'Como denunciar um perfil suspeito?', a: 'Em qualquer perfil, toque no ícone de três pontos e selecione "Denunciar". Nossa equipe analisa em até 24h. Se for urgente ou em caso de ameaça, use o botão de emergência no app para ligar direto para o 190.' },
+    { q: 'Por que não tem plano gratuito?', a: 'Porque gratuito atrai golpista. R$10 já é o suficiente para filtrar quem não está aqui com intenção real. Quem pagou para estar aqui se comporta diferente — e isso muda a experiência para todo mundo.' },
+    { q: 'O que tem de diferente no Camarote Black?', a: 'Acesso total à plataforma, incluindo a área Backstage com filtros de nicho — Sugar, BDSM, Swing, fetiches. Curtidas ilimitadas, 10 SuperCurtidas por dia, 2 Lupas/dia e suporte prioritário. É para quem quer sem limitação nenhuma.' },
+    { q: 'Como funcionam os filtros de incluir e excluir?', a: 'Simples: clique uma vez numa tag e ela fica verde — você quer ver esse perfil. Clique de novo e fica vermelho — você não quer. Mais um clique e volta ao neutro. Tudo numa tela só, sem configuração separada.' },
+    { q: 'O que acontece com meu documento depois da verificação?', a: 'Ele é descartado logo após a verificação. A gente guarda só o resultado (verificado ou não) e um hash criptografado do CPF. O documento original nunca fica salvo no sistema.' },
+    { q: 'Posso cancelar quando quiser?', a: 'Sim, qualquer hora, sem burocracia. Cancela pelo próprio app em menos de 1 minuto. O acesso continua ativo até o fim do período já pago. Sem fidelidade, sem multa.' },
+    { q: 'O app funciona para todas as orientações e identidades?', a: 'Sim. Os filtros cobrem todos os gêneros, orientações e identidades. Cada pessoa filtra exatamente o que quer encontrar. Todo mundo tem espaço aqui, sem julgamento.' },
+    { q: 'Como o app impede golpes e estelionato sentimental?', a: 'Verificação obrigatória com selfie ao vivo, documento e CPF — impossível criar perfil falso. Denúncias resolvidas em até 24h. Banimento permanente vinculado ao CPF: quem é banido não volta com outro email.' },
+    { q: 'Como denunciar um perfil?', a: 'Toque nos três pontinhos em qualquer perfil e selecione "Denunciar". Nossa equipe analisa em até 24h. Em situação de risco ou ameaça, use o botão de emergência no app para chamar o 190 direto.' },
   ]
 
   const filterCats = [
@@ -232,7 +232,7 @@ export default function Home() {
           width: 265px; height: 530px; background: var(--bg-card);
           border-radius: 38px; border: 1px solid var(--border);
           box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05);
-          overflow: hidden; animation: lp-float 5s ease-in-out infinite;
+          overflow: hidden;
         }
         .lp-phone-header { background: var(--accent); padding: 40px 20px 16px; text-align: center; }
         .lp-phone-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #fff; }
@@ -301,7 +301,7 @@ export default function Home() {
         .lp-filter-cat > p { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.55; }
         .lp-tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
         .lp-ftag { border-radius: 100px; padding: 4px 12px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; user-select: none; }
-        .lp-ftag.inc { background: var(--accent-soft); color: #FB7185; border-color: var(--accent-border); }
+        .lp-ftag.inc { background: rgba(34,197,94,0.10); color: #22c55e; border-color: rgba(34,197,94,0.30); }
         .lp-ftag.exc { background: rgba(244,63,94,0.08); color: #F43F5E; border-color: rgba(244,63,94,0.25); }
         .lp-ftag.neu { background: rgba(255,255,255,0.04); color: var(--text-muted); border-color: var(--border); }
         .lp-ftag:hover { transform: scale(1.05); }
@@ -607,7 +607,7 @@ export default function Home() {
               <p className="lp-section-label">Filtros</p>
               <h2 className="lp-section-title">Você decide exatamente quem quer,<br />e quem <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>não</em> quer.</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto 20px', lineHeight: 1.7 }}>
-                Mais de 100 filtros. Clique uma vez para <strong style={{ color: '#FB7185' }}>incluir</strong>, clique de novo para <strong style={{ color: 'var(--red)' }}>excluir</strong>.
+                Mais de 100 filtros. Clique uma vez para <strong style={{ color: '#22c55e' }}>incluir</strong>, clique de novo para <strong style={{ color: 'var(--red)' }}>excluir</strong>.
               </p>
             </div>
             <div style={{ textAlign: 'center', marginBottom: '48px' }}>
@@ -680,7 +680,7 @@ export default function Home() {
               {[
                 { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg>, t: 'Escolha seu plano', d: 'A partir de R$10/mês. Sem conta gratuita — isso afasta golpistas.' },
                 { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>, t: 'Verifique sua identidade', d: 'Selfie ao vivo + documento. Menos de 3 minutos pelo celular.' },
-                { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>, t: 'Configure seus filtros', d: 'Inclua e exclua como quiser. 100+ opções para ser preciso.' },
+                { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg>, t: 'Configure seus filtros', d: 'Inclua e exclua como quiser. 100+ opções para ser preciso.' },
                 { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>, t: 'Dê match e conecte', d: 'Só pessoas reais, com intenções compatíveis com as suas.' },
               ].map((step, i) => (
                 <div key={i} className="lp-how-step">
@@ -710,7 +710,7 @@ export default function Home() {
                 <p className="lp-plan-desc">O ponto de entrada. Para quem quer explorar a plataforma com segurança, já saindo na frente dos apps gratuitos cheios de perfis falsos.</p>
                 <ul className="lp-feats">
                   <li>Verificação de identidade</li>
-                  <li>5 curtidas por dia</li>
+                  <li>30 curtidas por dia</li>
                   <li>1 filtro ativo por vez</li>
                   <li>Ver matches recebidos</li>
                   <li className="off">Filtros acumulados</li>
@@ -730,7 +730,7 @@ export default function Home() {
                 <p className="lp-plan-desc">A experiência completa de filtragem. Para quem está realmente em busca de uma conexão e quer usar todos os recursos da plataforma.</p>
                 <ul className="lp-feats">
                   <li>Verificação de identidade</li>
-                  <li>30 curtidas por dia</li>
+                  <li>100 curtidas por dia</li>
                   <li>Todos os filtros acumulados</li>
                   <li>Filtro de exclusão</li>
                   <li>Ver quem curtiu você</li>
@@ -809,10 +809,10 @@ export default function Home() {
             <h2 className="lp-section-title">Conexões que realmente aconteceram.</h2>
             <div className="lp-testi-grid">
               {[
-                { name: 'Amanda C.', role: 'São Paulo · 28 anos · Plano Plus', text: 'Finalmente um app onde todo mundo é real. Coloquei filtro de evangélica não fumante e os matches vieram certeiros. Estou namorando há 3 meses.' },
-                { name: 'Pedro H.', role: 'Curitiba · 31 anos · Camarote Black', text: 'Filtrei gótica, não fumante e que gosta de trilha. Parecia impossível. Em 3 dias tinha match perfeito. A verificação me deu confiança que nenhum outro app deu.' },
-                { name: 'Rafael M.', role: 'Belo Horizonte · 35 anos · Camarote Black', text: 'Os apps antigos viraram bagunça de golpe. Aqui foi conversa real do início. Assinei o Camarote e o nível das pessoas é completamente diferente.' },
-                { name: 'Letícia R.', role: 'Porto Alegre · 26 anos · Plano Plus', text: 'Usei o filtro de exclusão para tirar quem gosta de apostas e quem bebe demais. Parece bobagem mas fez toda a diferença. Encontrei alguém com os mesmos valores.' },
+                { name: 'Amanda C.', role: 'São Paulo · 28 anos · Plano Plus', text: 'Fiz uma videochamada antes do primeiro encontro e aquilo mudou tudo pra mim. Cheguei no café sabendo exatamente com quem estava. Sem aquela ansiedade de "será que a foto é real?". Nunca tive isso em nenhum app.' },
+                { name: 'Pedro H.', role: 'Curitiba · 31 anos · Camarote Black', text: 'Sou direto sobre o que quero e nunca funcionou em app nenhum. Aqui abri a área Backstage, filtrei intenção, encontrei alguém com os mesmos fetiches. Conversa direta, sem julgamento, desde a primeira mensagem.' },
+                { name: 'Rafael M.', role: 'Belo Horizonte · 35 anos · Camarote Black', text: 'O nível é completamente diferente. Todo mundo aqui pagou para estar, todo mundo passou por verificação. Já na primeira semana a diferença foi absurda. Sem bot, sem enrolação, sem golpe.' },
+                { name: 'Letícia R.', role: 'Porto Alegre · 26 anos · Plano Plus', text: 'A videochamada foi o que me convenceu. Antes de qualquer encontro já tinha visto a pessoa de verdade, conversado por vídeo, sentido a vibe. Chegou pessoalmente exatamente como apareceu na tela.' },
               ].map((t, i) => (
                 <div key={i} className="lp-testi-card lp-anim">
                   <div className="lp-testi-stars">★★★★★</div>
