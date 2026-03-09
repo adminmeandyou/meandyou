@@ -8,13 +8,15 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-webpush.setVapidDetails(
-  `mailto:${process.env.RESEND_FROM_EMAIL || 'noreply@meandyou.com.br'}`,
-  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-  process.env.VAPID_PRIVATE_KEY!
-)
-
 type NotificationType = 'match' | 'message' | 'superlike' | 'boost_expired' | 'plan_expired'
+
+function initWebPush() {
+  webpush.setVapidDetails(
+    `mailto:${process.env.RESEND_FROM_EMAIL || 'noreply@meandyou.com.br'}`,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+    process.env.VAPID_PRIVATE_KEY!
+  )
+}
 
 interface SendPushParams {
   targetUserId: string
@@ -34,6 +36,7 @@ export async function enviarPushParaUsuario({
   data = {},
   fromUserId,
 }: SendPushParams) {
+  initWebPush()
   // 1. Salvar notificação no banco
   try {
     await supabaseAdmin.from('notifications').insert({
