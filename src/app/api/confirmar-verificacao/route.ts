@@ -64,8 +64,11 @@ export async function POST(req: NextRequest) {
     }
 
     // 5. Atualizar score do perfil (verificação aumenta credibilidade)
-    await supabase.rpc('update_profile_score', { p_user_id: userId })
-      .catch(err => console.error('Erro ao atualizar score:', err))
+    try {
+      await supabase.rpc('update_profile_score', { p_user_id: userId })
+    } catch (err) {
+      console.error('Erro ao atualizar score:', err)
+    }
 
     return NextResponse.json({ ok: true })
   } catch (err) {
