@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useChat } from '@/hooks/useChat'
 import { useParams, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { VideoCallButton } from '@/components/VideoCall'
 import Image from 'next/image'
@@ -16,7 +16,7 @@ export default function ChatPage() {
   const matchId = params.matchId as string
   const router = useRouter()
   const { user } = useAuth()
-  const supabase = createClient()
+
 
   const { messages, loading, sending, error, sendMessage, currentUserId } = useChat(matchId)
 

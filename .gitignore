@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# Windows WSL metadata (nunca commitar)
+*:Zone.Identifier
+
 # debug
 npm-debug.log*
 yarn-debug.log*
