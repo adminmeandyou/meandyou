@@ -3,7 +3,8 @@ import { Resend } from 'resend'
 
 const resend = new Resend(process.env.RESEND_API_KEY!)
 const FROM = 'MeAndYou <noreply@meandyou.com.br>'
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://www.meandyou.com.br'
+// Domínio fixo para emails — nunca usar URL do Vercel em links de email
+const APP_URL = 'https://www.meandyou.com.br'
 
 // ─── Helpers de template ──────────────────────────────────────────────────
 
