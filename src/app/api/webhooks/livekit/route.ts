@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
       const matchId = parts[1]
       if (!matchId) return NextResponse.json({ received: true })
 
-      const createdAt = room.creationTime ?? 0 // Unix timestamp em segundos
+      const createdAt = Number(room.creationTime ?? 0) // Unix timestamp em segundos
       const now = Math.floor(Date.now() / 1000)
       const duracaoSegundos = now - createdAt
       const duracaoMinutos = Math.ceil(duracaoSegundos / 60)
