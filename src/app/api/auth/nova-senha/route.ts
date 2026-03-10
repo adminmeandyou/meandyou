@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { sendPasswordChangedEmail } from '@/app/lib/email'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -35,6 +36,17 @@ export async function POST(req: NextRequest) {
       .from('password_reset_tokens')
       .update({ used: true })
       .eq('token', token)
+
+    // Notifica usuário por email (best-effort)
+    const { data: userRow } = await supabase
+      .from('users')
+      .select('email, nome_completo')
+      .eq('id', tokenData.user_id)
+      .single()
+    if (userRow?.email) {
+      const nome = userRow.nome_completo?.split(' ')[0] ?? 'Usuário'
+      await sendPasswordChangedEmail(userRow.email, nome)
+    }
 
     return NextResponse.json({ ok: true })
   } catch (err) {

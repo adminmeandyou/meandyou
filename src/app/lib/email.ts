@@ -6,6 +6,15 @@ const FROM = 'MeAndYou <noreply@meandyou.com.br>'
 // Domínio fixo para emails — nunca usar URL do Vercel em links de email
 const APP_URL = 'https://www.meandyou.com.br'
 
+// Wrapper com try/catch — falhas do Resend são logadas mas nunca propagadas ao chamador
+async function enviar(params: Parameters<typeof resend.emails.send>[0]): Promise<void> {
+  try {
+    await resend.emails.send(params)
+  } catch (err) {
+    console.error('[email] Falha ao enviar email:', err)
+  }
+}
+
 // ─── Helpers de template ──────────────────────────────────────────────────
 
 function base(content: string, previewText = '') {
@@ -94,7 +103,7 @@ export async function sendWelcomeEmail(email: string, nome: string) {
     ${btn(`${APP_URL}/perfil`, 'Completar meu perfil')}
     ${note('Se não foi você que criou esta conta, entre em contato pelo suporte imediatamente.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: 'Bem-vindo(a) ao MeAndYou',
     html: base(content, `Olá ${nome}, sua conta foi criada. Complete seu perfil agora.`),
@@ -112,7 +121,7 @@ export async function sendVerificationEmail(email: string, nome: string, token: 
     ${btn(link, 'Verificar minha identidade')}
     ${note('Este link é pessoal e intransferível. Se não solicitou, ignore este email.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: 'Verifique sua identidade no MeAndYou',
     html: base(content, 'Confirme sua identidade para ganhar o selo verificado.'),
@@ -131,7 +140,7 @@ export async function sendPasswordResetEmail(email: string, nome: string, token:
     ${alertBox('🔒 Se não foi você que solicitou, <strong style="color:#ffffff;">ignore este email</strong>. Sua senha não será alterada.')}
     ${note('Nunca compartilhe este link. O MeAndYou jamais pedirá sua senha.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: 'Redefinir senha - MeAndYou',
     html: base(content, 'Solicitação de redefinição de senha recebida.'),
@@ -149,7 +158,7 @@ export async function sendPasswordChangedEmail(email: string, nome: string) {
     ${btn(`${APP_URL}/suporte`, 'Reportar acesso indevido', '#ef4444')}
     ${note('Se foi você, pode ignorar este email com segurança.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: '🔒 Sua senha foi alterada — MeAndYou',
     html: base(content, 'Sua senha foi alterada. Se não foi você, aja agora.'),
@@ -167,7 +176,7 @@ export async function sendEmailChangeConfirmEmail(novoEmail: string, nome: strin
     ${alertBox('⚠️ Se não foi você que solicitou, ignore este email e seu endereço anterior continuará ativo.')}
     ${note('Este link expira em 1 hora.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: novoEmail,
     subject: 'Confirme seu novo e-mail — MeAndYou',
     html: base(content, 'Confirme a alteração do seu endereço de e-mail.'),
@@ -193,7 +202,7 @@ export async function sendNewDeviceLoginEmail(email: string, nome: string, dispo
     ${alertBox('Se foi você, pode ignorar. Caso contrário, redefina sua senha agora.', '#ef4444')}
     ${btn(`${APP_URL}/recuperar-senha`, 'Redefinir senha por segurança', '#ef4444')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: '⚠️ Novo login detectado na sua conta — MeAndYou',
     html: base(content, 'Detectamos um acesso em novo dispositivo. Verifique se foi você.'),
@@ -210,7 +219,7 @@ export async function sendSuspiciousLoginEmail(email: string, nome: string, tent
     ${btn(`${APP_URL}/recuperar-senha`, 'Redefinir minha senha agora', '#ef4444')}
     ${note('Se foi você que errou a senha, aguarde o desbloqueio automático e tente novamente.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: '🚨 Tentativas suspeitas de acesso à sua conta',
     html: base(content, `${tentativas} tentativas de login com falha detectadas.`),
@@ -230,7 +239,7 @@ export async function sendAccountBlockedEmail(email: string, nome: string, minut
     ${btn(`${APP_URL}/recuperar-senha`, 'Redefinir senha e desbloquear')}
     ${note('Bloqueios temporários protegem sua conta contra acessos não autorizados.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: '🔒 Conta bloqueada temporariamente — MeAndYou',
     html: base(content, 'Sua conta foi bloqueada. Veja como desbloquear.'),
@@ -251,7 +260,7 @@ export async function sendAccountDeletedEmail(email: string, nome: string) {
     ], '#6b7280')}
     ${note('Esta ação é irreversível. Para usar o MeAndYou novamente, será necessário criar uma nova conta.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: 'Sua conta foi excluída — MeAndYou',
     html: base(content, 'Seus dados foram removidos permanentemente conforme a LGPD.'),
@@ -263,24 +272,29 @@ export async function sendAccountDeletedEmail(email: string, nome: string) {
 // ═════════════════════════════════════════════════════════════════════════
 
 // 10. Confirmação de compra / plano ativado
-export async function sendPlanActivatedEmail(email: string, nome: string, plano: 'Plus' | 'Black', valorPago?: string) {
-  const isBlack = plano === 'Black'
-  const cor = isBlack ? '#a855f7' : '#3b82f6'
+export async function sendPlanActivatedEmail(email: string, nome: string, plano: string, valorPago?: string) {
+  const p = plano.toLowerCase()
+  const isBlack = p === 'black'
+  const isPlus = p === 'plus'
+  const planoDisplay = isBlack ? 'Black' : isPlus ? 'Plus' : 'Essencial'
+  const cor = isBlack ? '#a855f7' : isPlus ? '#3b82f6' : '#E11D48'
   const features = isBlack
-    ? ['10 SuperCurtidas por dia', 'Lupas ilimitadas', 'Acesso ao Backstage (Sugar e Fetiche)', 'Desfazer curtida ilimitado', 'Boost diário automático', '3 Tickets diários para a Roleta', 'Suporte prioritário']
-    : ['5 SuperCurtidas por dia', '2 Lupas por dia', 'Desfazer curtida (1/dia)', 'Filtros avançados desbloqueados']
+    ? ['10 SuperCurtidas/dia', '2 Lupas/dia', 'Acesso ao Backstage (Sugar e Fetiche)', 'Desfazer curtida (1/dia)', '3 Tickets diários para a Roleta', 'Suporte prioritário 24h']
+    : isPlus
+    ? ['5 SuperCurtidas/dia', '2 Lupas/dia', 'Desfazer curtida (1/dia)', '2 Tickets diários', 'Ver quem curtiu você', 'Filtros avançados desbloqueados']
+    : ['5 curtidas/dia', '1 Ticket diário para a Roleta', 'Verificação de identidade incluída', 'Solicitar acesso Fetiche']
   const content = `
     ${badge(`🎉 Plano ${plano} ativado!`, cor)}
-    ${heading(`Seu plano ${plano} está ativo, ${nome}!`)}
+    ${heading(`Seu plano ${planoDisplay} está ativo, ${nome}!`)}
     ${sub(`Pagamento confirmado${valorPago ? ` de <strong style="color:#ffffff;">${valorPago}</strong>` : ''}. Confira seus benefícios:`)}
     ${infoBox('Seus benefícios:', features, cor)}
     ${btn(`${APP_URL}/busca`, 'Começar a usar agora')}
     ${note('Em caso de dúvidas sobre cobranças, acesse o suporte.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
-    subject: `🎉 Plano ${plano} ativado — MeAndYou`,
-    html: base(content, `Seu plano ${plano} foi ativado com sucesso!`),
+    subject: `🎉 Plano ${planoDisplay} ativado — MeAndYou`,
+    html: base(content, `Seu plano ${planoDisplay} foi ativado com sucesso!`),
   })
 }
 
@@ -306,7 +320,7 @@ export async function sendReceiptEmail(
     ${btn(`${APP_URL}/minha-assinatura`, 'Ver minha assinatura')}
     ${note('Para cancelar sua assinatura ou questionar uma cobrança, acesse o suporte.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `Recibo — ${plano} ${valor} — MeAndYou`,
     html: base(content, `Pagamento de ${valor} confirmado para o plano ${plano}.`),
@@ -333,7 +347,7 @@ export async function sendRenewalReminderEmail(
     ${btn(`${APP_URL}/minha-assinatura`, 'Gerenciar assinatura')}
     ${note('Para cancelar antes da renovação, acesse Configurações → Plano → Cancelar assinatura.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `Sua assinatura ${plano} renova em ${dataRenovacao} — MeAndYou`,
     html: base(content, `Renovação do plano ${plano} em ${dataRenovacao}.`),
@@ -354,7 +368,7 @@ export async function sendPaymentFailedEmail(email: string, nome: string, plano:
     ${btn(`${APP_URL}/minha-assinatura`, 'Atualizar forma de pagamento', '#ef4444')}
     ${note('Se o problema persistir, entre em contato com o suporte ou com seu banco.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: '⚠️ Falha no pagamento — MeAndYou',
     html: base(content, 'Não conseguimos processar seu pagamento. Veja como resolver.'),
@@ -375,7 +389,7 @@ export async function sendTermsUpdatedEmail(email: string, nome: string, dataVig
     ${btn(`${APP_URL}/termos`, 'Ler os novos termos')}
     ${note('Se tiver dúvidas, entre em contato pelo suporte.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: 'Atualização dos Termos de Uso — MeAndYou',
     html: base(content, `Termos de Uso atualizados. Vigência a partir de ${dataVigencia}.`),
@@ -392,7 +406,7 @@ export async function sendPrivacyUpdatedEmail(email: string, nome: string, dataV
     ${btn(`${APP_URL}/privacidade`, 'Ler a nova política')}
     ${note('Para solicitações LGPD, acesse o suporte.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: 'Atualização da Política de Privacidade — MeAndYou',
     html: base(content, `Política de Privacidade atualizada. Vigência a partir de ${dataVigencia}.`),
@@ -414,7 +428,7 @@ export async function sendDataDeletionConfirmedEmail(email: string, nome: string
     ], '#22c55e')}
     ${note('Guarde este email como comprovante da exclusão. Esta ação é irreversível.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: '✅ Confirmação de exclusão de dados — MeAndYou',
     html: base(content, 'Seus dados foram excluídos conforme solicitado (LGPD).'),
@@ -444,7 +458,7 @@ export async function sendOnboardingTipsEmail(email: string, nome: string) {
     ])}
     ${btn(`${APP_URL}/perfil`, 'Completar meu perfil')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: '💡 Dicas para criar conexões reais no MeAndYou',
     html: base(content, 'Veja como aproveitar ao máximo o MeAndYou.'),
@@ -467,7 +481,7 @@ export async function sendIncompleteProfileEmail(email: string, nome: string, po
     ${btn(`${APP_URL}/perfil`, 'Completar meu perfil')}
     ${note('Leva menos de 3 minutos. Vale muito a pena!')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `Seu perfil está ${porcentagem}% completo — finalize agora`,
     html: base(content, `Complete seu perfil e receba até 3× mais curtidas.`),
@@ -492,7 +506,7 @@ export async function sendSupportTicketOpenedEmail(email: string, nome: string, 
     ${btn(`${APP_URL}/suporte`, 'Ver meu ticket')}
     ${note('Você receberá um email assim que houver uma atualização.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `Ticket #${ticketId} aberto — MeAndYou Suporte`,
     html: base(content, `Ticket #${ticketId} aberto. Responderemos em até 24h úteis.`),
@@ -511,7 +525,7 @@ export async function sendSupportTicketResolvedEmail(email: string, nome: string
     ${btn(`${APP_URL}/suporte`, 'Ver resposta completa')}
     ${note('Se o problema não foi resolvido, responda diretamente pelo suporte no app.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `✅ Ticket #${ticketId} respondido — MeAndYou`,
     html: base(content, `Seu ticket #${ticketId} foi respondido.`),
@@ -536,7 +550,7 @@ export async function sendVerificationApprovedEmail(email: string, nome: string)
     ], '#22c55e')}
     ${btn(`${APP_URL}/busca`, 'Explorar perfis agora')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: '✅ Identidade verificada — MeAndYou',
     html: base(content, 'Sua identidade foi verificada com sucesso!'),
@@ -558,7 +572,7 @@ export async function sendVerificationRejectedEmail(email: string, nome: string,
     ${btn(`${APP_URL}/verificacao`, 'Tentar novamente')}
     ${note('Se o problema persistir, entre em contato pelo suporte.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: 'Verificação não aprovada — tente novamente',
     html: base(content, 'Não conseguimos verificar sua identidade. Veja as dicas.'),
@@ -580,7 +594,7 @@ export async function sendPhotoRejectedEmail(email: string, nome: string, motivo
     ${btn(`${APP_URL}/perfil`, 'Atualizar minhas fotos')}
     ${note('Se acredita que foi um erro, entre em contato com o suporte para revisão manual.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: 'Uma foto do seu perfil foi removida',
     html: base(content, 'Uma das suas fotos não passou pela moderação.'),
@@ -600,7 +614,7 @@ export async function sendNewMatchEmail(email: string, nome: string, nomeMatch: 
     ${btn(`${APP_URL}/conversas`, 'Iniciar conversa')}
     ${note('Quem age primeiro tem mais chances de conexão real. Seja você mesmo!')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `💚 Você deu match com ${nomeMatch}!`,
     html: base(content, `Você e ${nomeMatch} se curtiram. Inicie a conversa agora!`),
@@ -616,7 +630,7 @@ export async function sendNewLikeEmail(email: string, nome: string, qtd: number)
     ${btn(`${APP_URL}/busca`, 'Ver e curtir de volta')}
     ${note('Use o Destaque para ver quem curtiu você antes de dar match.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `❤️ ${qtd} ${qtd === 1 ? 'pessoa curtiu' : 'pessoas curtiram'} você!`,
     html: base(content, `${qtd} ${qtd === 1 ? 'pessoa curtiu' : 'pessoas curtiram'} seu perfil.`),
@@ -632,7 +646,7 @@ export async function sendProfileViewEmail(email: string, nome: string, qtdVisit
     ${btn(`${APP_URL}/destaque`, 'Ver quem me visitou')}
     ${note('Perfis com foto verificada e bio completa recebem muito mais visitas.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `👀 ${qtdVisitas} ${qtdVisitas === 1 ? 'pessoa visitou' : 'pessoas visitaram'} seu perfil`,
     html: base(content, `${qtdVisitas} visitas no seu perfil recentemente.`),
@@ -648,7 +662,7 @@ export async function sendConversationStartedEmail(email: string, nome: string, 
     ${btn(`${APP_URL}/conversas`, 'Ver a mensagem')}
     ${note('Responder rápido aumenta muito a chance de uma conexão real.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `💬 ${nomeRemetente} te mandou uma mensagem!`,
     html: base(content, `${nomeRemetente} iniciou uma conversa com você.`),
@@ -665,7 +679,7 @@ export async function sendUnreadMessageEmail(email: string, nome: string, nomeRe
     ${btn(`${APP_URL}/conversas`, 'Responder agora')}
     ${note('Para pausar notificações por email, acesse Configurações no app.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `💬 ${nomeRemetente} enviou uma mensagem`,
     html: base(content, `${nomeRemetente} está esperando sua resposta.`),
@@ -684,7 +698,7 @@ export async function sendNewProfilesNearbyEmail(email: string, nome: string, qt
     ${sub(`Olá, ${nome}! <strong style="color:#ffffff;">${qtd} novos usuários</strong> entraram no MeAndYou em ${cidade}. Pode ser alguém especial!`)}
     ${btn(`${APP_URL}/busca`, 'Explorar perfis')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `🗺️ ${qtd} novos perfis em ${cidade} — MeAndYou`,
     html: base(content, `${qtd} novos usuários chegaram na sua região.`),
@@ -700,7 +714,7 @@ export async function sendCompatibleProfilesEmail(email: string, nome: string, q
     ${btn(`${APP_URL}/busca`, 'Ver perfis compatíveis')}
     ${note('Quanto mais completo seu perfil, mais precisa fica a compatibilidade.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `🎯 ${qtd} perfis compatíveis encontrados para você`,
     html: base(content, `${qtd} perfis com alta compatibilidade esperando.`),
@@ -716,7 +730,7 @@ export async function sendReactivationLikesEmail(email: string, nome: string, qt
     ${btn(`${APP_URL}/busca`, 'Ver quem me curtiu')}
     ${note('As curtidas ficam salvas — mas não espere demais!')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `👀 ${qtd} ${qtd === 1 ? 'pessoa curtiu' : 'pessoas curtiram'} você enquanto estava fora`,
     html: base(content, `${qtd} curtidas esperando. Volte para criar matches!`),
@@ -732,7 +746,7 @@ export async function sendReactivationStreakEmail(email: string, nome: string) {
     ${btn(`${APP_URL}/streak`, 'Salvar meu streak agora')}
     ${note('O streak reseta à meia-noite. Basta fazer login para manter sua sequência.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: '⚠️ Seu streak está prestes a resetar — MeAndYou',
     html: base(content, 'Faltam menos de 24h para seu streak resetar. Entre agora!'),
@@ -748,7 +762,7 @@ export async function sendReactivationMatchesEmail(email: string, nome: string) 
     ${btn(`${APP_URL}/conversas`, 'Ver minhas conversas')}
     ${note('Conexões reais precisam de atenção. Que tal mandar uma mensagem hoje?')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: '💚 Seus matches estão esperando por você',
     html: base(content, 'Seus matches estão esperando sua mensagem.'),
@@ -774,7 +788,7 @@ export async function sendTicketAvailableEmail(email: string, nome: string, qtd:
     ], '#a855f7')}
     ${btn(`${APP_URL}/roleta`, 'Girar a roleta agora', '#a855f7')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `🎟️ Você tem ${qtd} ${plural} para girar!`,
     html: base(content, `${qtd} ${plural} esperando na Roleta.`),
@@ -790,7 +804,7 @@ export async function sendRewardReceivedEmail(email: string, nome: string, premi
     ${btn(`${APP_URL}/loja`, 'Ver meu saldo')}
     ${note('Continue usando o app para acumular mais recompensas!')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `🎁 Você ganhou ${premio} — MeAndYou`,
     html: base(content, `Você ganhou ${premio}. Já disponível na sua conta!`),
@@ -808,9 +822,9 @@ export async function sendBoostExpiredEmail(email: string, nome: string) {
     ${heading('Seu Boost acabou')}
     ${sub(`Olá, ${nome}. Seu Boost de visibilidade expirou. Ative outro para continuar aparecendo para mais pessoas!`)}
     ${btn(`${APP_URL}/loja`, 'Ativar novo Boost')}
-    ${note('Usuários Black recebem 1 Boost automático por dia. Confira o plano Black!')}
+    ${note('Plano Black tem até 2 Boosts simultâneos ativos. Confira o plano Black!')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: '⚡ Seu Boost acabou — MeAndYou',
     html: base(content, 'Seu boost expirou. Ative outro para aparecer mais.'),
@@ -830,14 +844,14 @@ export async function sendUpgradePromptEmail(email: string, nome: string) {
       'Filtros avançados desbloqueados',
     ], '#3b82f6')}
     ${infoBox('Com o plano Black:', [
-      '10 SuperCurtidas + Boost diário automático',
-      'Lupas ilimitadas + 3 Tickets diários',
+      '10 SuperCurtidas/dia + até 2 Boosts simultâneos',
+      '2 Lupas/dia + 3 Tickets diários',
       'Acesso ao Backstage (Sugar e Fetiche)',
       'Suporte prioritário',
     ], '#a855f7')}
     ${btn(`${APP_URL}/planos`, 'Ver planos e preços')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: '🚀 Desbloqueie recursos exclusivos no MeAndYou',
     html: base(content, 'Veja o que você está perdendo sem um plano premium.'),
@@ -860,7 +874,7 @@ export async function sendSubscriptionPromoEmail(
     ${btn(linkCheckout, `Assinar ${plano} com ${desconto} off`, '#ef4444')}
     ${note('Esta oferta é pessoal e intransferível. Válida apenas para novas assinaturas.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: `🔥 ${desconto} off no plano ${plano} — só até ${dataExpiracao}`,
     html: base(content, `${desconto} off no plano ${plano}. Expira em ${dataExpiracao}.`),
@@ -893,7 +907,7 @@ export async function sendMarketingEmail(
     ${divider()}
     ${note('Você recebe este email por ter uma conta no MeAndYou. Para cancelar emails promocionais, acesse Configurações no app.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: assunto,
     html: base(content, previewTexto ?? titulo),
@@ -921,7 +935,7 @@ export async function sendInstitutionalEmail(
     ${divider()}
     ${note('Este é um email institucional enviado a todos os usuários do MeAndYou. Não é possível cancelar o recebimento deste tipo de comunicado.')}
   `
-  await resend.emails.send({
+  await enviar({
     from: FROM, to: email,
     subject: assunto,
     html: base(content, titulo),

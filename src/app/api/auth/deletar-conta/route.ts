@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { sendAccountDeletedEmail } from '@/app/lib/email'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,6 +21,11 @@ export async function DELETE(req: NextRequest) {
     }
 
     const userId = user.id
+    const userEmail = user.email ?? ''
+
+    // Busca nome ANTES de deletar qualquer dado
+    const { data: profileName } = await supabase.from('profiles').select('name').eq('id', userId).single()
+    const nomeDisplay = profileName?.name?.split(' ')[0] ?? 'Usuário'
 
     // ─── PASSO 0: Deletar do Supabase Auth PRIMEIRO ────────────────────────────
     // Feito antes de qualquer dado do banco para garantir que, se falhar,
@@ -90,6 +96,9 @@ export async function DELETE(req: NextRequest) {
     // 7. Deletar users
     const { error: userErr } = await supabase.from('users').delete().eq('id', userId)
     if (userErr) console.error('Deletar users error:', userErr)
+
+    // Email de confirmação LGPD (best-effort — dados já deletados)
+    if (userEmail) await sendAccountDeletedEmail(userEmail, nomeDisplay)
 
     return NextResponse.json({ success: true })
   } catch (err) {

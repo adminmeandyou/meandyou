@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
+import { sendPlanActivatedEmail } from '@/app/lib/email'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -142,6 +143,9 @@ export async function POST(req: NextRequest) {
       }
 
       console.log(`Plano ${plan} ativado para ${customerEmail}`)
+      const { data: profileData } = await supabaseAdmin.from('profiles').select('name').eq('id', userId).single()
+      const nomeDisplay = profileData?.name?.split(' ')[0] ?? 'Usuário'
+      await sendPlanActivatedEmail(customerEmail, nomeDisplay, plan)
       return NextResponse.json({ success: true })
     }
 
