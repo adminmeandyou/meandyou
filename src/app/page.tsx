@@ -235,7 +235,7 @@ export default function Home() {
       setCurrentCard(c => (c + 1) % swipeCards.length)
       setSwipeDir(null)
       swipeLock.current = false
-    }, 450)
+    }, 420)
   }
 
   if (checking) {
@@ -262,7 +262,7 @@ export default function Home() {
       placeholder: 'linear-gradient(160deg,#0a1020 0%,#1a2a4a 50%,#0d1830 100%)',
     },
     {
-      name: 'Ana Paula, 38', photo: '/Ana paula.jpg',
+      name: 'Ana Paula, 38', photo: '/ana-paula.jpg',
       tags: ['Mãe', 'Pet', 'Secretária'],
       bio: 'Mãe de 2, tutora de um golden louco e secretária. Procuro um companheiro pra dividir a rotina e os momentos bons da vida.',
       placeholder: 'linear-gradient(160deg,#120a1a 0%,#2d1545 50%,#1a0e30 100%)',
@@ -481,7 +481,7 @@ export default function Home() {
           width: 265px; height: 560px; background: var(--bg-card);
           border-radius: 38px; border: 1px solid rgba(255,255,255,0.1);
           box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06), 0 0 60px rgba(225,29,72,0.08);
-          overflow: hidden;
+          overflow: hidden; animation: card-enter 0.38s cubic-bezier(.34,1.4,.64,1) both;
         }
         .lp-phone-header { background: var(--accent); padding: 36px 20px 14px; text-align: center; }
         .lp-phone-logo { font-family: var(--font-fraunces), serif; font-size: 18px; font-weight: 700; color: #fff; }
@@ -779,14 +779,21 @@ export default function Home() {
         .lp-notif-exit { animation: lp-notif-out 0.4s ease forwards; }
 
         /* ── CARD DECK ── */
-        @keyframes swipe-left-anim { from { transform:translateX(0) rotate(0deg); opacity:1; } to { transform:translateX(-140%) rotate(-22deg); opacity:0; } }
-        @keyframes swipe-right-anim { from { transform:translateX(0) rotate(0deg); opacity:1; } to { transform:translateX(140%) rotate(22deg); opacity:0; } }
-        @keyframes swipe-up-anim { from { transform:translateY(0) scale(1); opacity:1; } to { transform:translateY(-130%) scale(0.9); opacity:0; } }
+        @keyframes swipe-left-anim { from { transform:translateX(0) rotate(0deg); opacity:1; } to { transform:translateX(-160%) rotate(-28deg); opacity:0; } }
+        @keyframes swipe-right-anim { from { transform:translateX(0) rotate(0deg); opacity:1; } to { transform:translateX(160%) rotate(28deg); opacity:0; } }
+        @keyframes swipe-up-anim { from { transform:translateY(0) scale(1); opacity:1; } to { transform:translateY(-140%) scale(0.85); opacity:0; } }
+        @keyframes card-enter { from { opacity:0; transform:scale(0.90) translateY(16px); } to { opacity:1; transform:scale(1) translateY(0); } }
         @keyframes match-glow { 0%{box-shadow:0 0 0 0 rgba(46,196,160,0.6)} 50%{box-shadow:0 0 0 20px rgba(46,196,160,0)} 100%{box-shadow:0 0 0 0 rgba(46,196,160,0)} }
         @keyframes nope-glow { 0%{box-shadow:0 0 0 0 rgba(244,63,94,0.6)} 50%{box-shadow:0 0 0 20px rgba(244,63,94,0)} 100%{box-shadow:0 0 0 0 rgba(244,63,94,0)} }
-        .card-swipe-left { animation: swipe-left-anim 0.45s cubic-bezier(0.4,0,0.6,1) forwards; }
-        .card-swipe-right { animation: swipe-right-anim 0.45s cubic-bezier(0.4,0,0.6,1) forwards; pointer-events:none; border-color:rgba(46,196,160,0.5)!important; }
-        .card-swipe-up { animation: swipe-up-anim 0.45s cubic-bezier(0.4,0,0.6,1) forwards; }
+        .card-swipe-left { animation: swipe-left-anim 0.42s cubic-bezier(0.55,0,1,0.45) forwards; }
+        .card-swipe-right { animation: swipe-right-anim 0.42s cubic-bezier(0.55,0,1,0.45) forwards; pointer-events:none; }
+        .card-swipe-up { animation: swipe-up-anim 0.42s cubic-bezier(0.55,0,1,0.45) forwards; }
+        .card-entering { animation: card-enter 0.38s cubic-bezier(.34,1.4,.64,1) forwards; }
+        .lp-swipe-label { position:absolute; top:20px; border-radius:8px; padding:6px 16px; font-size:14px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; border:2px solid; opacity:0; pointer-events:none; z-index:10; transition:opacity 0.15s; }
+        .lp-swipe-label.nope { left:16px; color:#F43F5E; border-color:#F43F5E; transform:rotate(-15deg); }
+        .lp-swipe-label.like { right:16px; color:#4ade80; border-color:#4ade80; transform:rotate(15deg); }
+        .lp-swipe-label.super { top:auto; bottom:80px; left:50%; transform:translateX(-50%); color:#F59E0B; border-color:#F59E0B; }
+        .card-swipe-left .lp-swipe-label.nope, .card-swipe-right .lp-swipe-label.like, .card-swipe-up .lp-swipe-label.super { opacity:1; }
         .lp-deck-wrap { position:relative; width:340px; height:580px; display:flex; align-items:center; justify-content:center; }
         .lp-deck-side { position:absolute; width:220px; height:460px; border-radius:30px; overflow:hidden; filter:blur(5px); opacity:0.30; border:1px solid rgba(255,255,255,0.05); background:var(--bg-card); top:50%; transform:translateY(-50%); transition:opacity 0.3s; }
         .lp-deck-left { left:0; }
@@ -942,8 +949,13 @@ export default function Home() {
                 })()}
 
                 {/* Phone principal */}
-                <div className={`lp-phone${swipeDir === 'left' ? ' card-swipe-left' : swipeDir === 'right' ? ' card-swipe-right' : swipeDir === 'up' ? ' card-swipe-up' : ''}`}
+                <div
+                  key={currentCard}
+                  className={`lp-phone${swipeDir === 'left' ? ' card-swipe-left' : swipeDir === 'right' ? ' card-swipe-right' : swipeDir === 'up' ? ' card-swipe-up' : ''}`}
                   style={{ position:'relative', zIndex:2 }}>
+                  <span className="lp-swipe-label nope">PASSAR</span>
+                  <span className="lp-swipe-label like">CURTIR</span>
+                  <span className="lp-swipe-label super">SUPER</span>
                   <div className="lp-phone-header">
                     <div className="lp-phone-logo">MeAndYou</div>
                     <div style={{ fontSize:'10px', opacity:0.75, marginTop:'3px', color:'#fff' }}>Conexões reais</div>
