@@ -28,11 +28,12 @@ export async function POST(req: NextRequest) {
       ?? req.headers.get('x-real-ip')
       ?? 'unknown'
     const umaHoraAtras = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-    const { count: tentativas } = await supabase
-      .from('analytics_events')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const query = supabase.from('analytics_events') as any
+    const { count: tentativas } = await query
       .select('*', { count: 'exact', head: true })
       .eq('event_type', 'token_validation_attempt')
-      .eq('metadata->>ip' as any, ip)
+      .eq('metadata->>ip', ip)
       .gte('created_at', umaHoraAtras)
 
     if ((tentativas ?? 0) >= 10) {
