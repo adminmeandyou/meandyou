@@ -958,7 +958,7 @@ export default function Home() {
                   <span className="lp-swipe-label super">SUPER</span>
                   <div className="lp-phone-header">
                     <div className="lp-phone-logo">
-                      <img src="/logo.png" alt="MeAndYou" style={{ height: '26px', filter: 'brightness(0) invert(1)' }} />
+                      <img src="/logo.png" alt="MeAndYou" style={{ height: '36px', maxWidth: '160px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} />
                     </div>
                     <div style={{ fontSize:'10px', opacity:0.75, marginTop:'5px', color:'#fff' }}>Conexões reais</div>
                   </div>
