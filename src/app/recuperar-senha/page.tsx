@@ -58,7 +58,7 @@ export default function RecuperarSenha() {
         </div>
 
         <div style={{
-          backgroundColor: 'var(--white)',
+          backgroundColor: 'var(--bg-card)',
           border: '1px solid var(--border)',
           borderRadius: '24px',
           padding: '36px',

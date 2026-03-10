@@ -46,6 +46,19 @@ export default function Home() {
   const [navVisible, setNavVisible] = useState(true)
   const lastScrollY = useRef(0)
 
+  // Card deck
+  const [currentCard, setCurrentCard] = useState(0)
+  const [swipeDir, setSwipeDir] = useState<null | 'left' | 'right' | 'up'>(null)
+  const swipeLock = useRef(false)
+
+  // Notifications
+  const [notifList, setNotifList] = useState<Array<{id: number, text: string, exiting: boolean}>>([])
+  const notifIdRef = useRef(0)
+  const notifIndexRef = useRef(0)
+
+  // Location
+  const [userCity, setUserCity] = useState('')
+
   useEffect(() => {
     supabase.auth.getUser()
       .then(({ data: { user } }) => { if (user) { router.push('/dashboard') } else { setChecking(false) } })
@@ -110,6 +123,60 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // IP geolocation para notificações personalizadas
+  useEffect(() => {
+    fetch('https://ipapi.co/json/')
+      .then(r => r.json())
+      .then(d => { if (d.city) setUserCity(d.city) })
+      .catch(() => {})
+  }, [])
+
+  // Notificações animadas
+  useEffect(() => {
+    if (checking) return
+    const cityNames = ['Ana', 'Carlos', 'Juliana', 'Marcos', 'Beatriz', 'Rafael', 'Leticia', 'Diego', 'Priscila', 'Bruno']
+    const cityActions = [
+      (c: string) => `${cityNames[Math.floor(Math.random()*cityNames.length)]}, de ${c} · acabou de entrar`,
+      (c: string) => `Alguém de ${c} · assinou o Plus agora`,
+      (c: string) => `${cityNames[Math.floor(Math.random()*cityNames.length)]} de ${c} · está te procurando`,
+      (c: string) => `Novo usuário de ${c} · verificou identidade`,
+      (c: string) => `${cityNames[Math.floor(Math.random()*cityNames.length)]} de ${c} · ganhou na roleta`,
+    ]
+
+    const addNotif = () => {
+      const idx = notifIndexRef.current
+      notifIndexRef.current = idx + 1
+      const total = idx + 1
+      let text: string
+      // A cada 4 notificações, inserir 1 baseada na cidade (se disponível)
+      if (userCity && total % 4 === 3) {
+        const fn = cityActions[Math.floor(Math.random() * cityActions.length)]
+        text = fn(userCity)
+      } else {
+        text = BASE_NOTIFS[idx % BASE_NOTIFS.length]
+      }
+      const id = ++notifIdRef.current
+      setNotifList(prev => [...prev.slice(-2), { id, text, exiting: false }])
+      setTimeout(() => setNotifList(prev => prev.map(x => x.id === id ? { ...x, exiting: true } : x)), 3200)
+      setTimeout(() => setNotifList(prev => prev.filter(x => x.id !== id)), 3700)
+    }
+
+    addNotif()
+    const t = setInterval(addNotif, 3500)
+    return () => clearInterval(t)
+  }, [checking, userCity]) // eslint-disable-line
+
+  const handleSwipe = (dir: 'left' | 'right' | 'up') => {
+    if (swipeLock.current) return
+    swipeLock.current = true
+    setSwipeDir(dir)
+    setTimeout(() => {
+      setCurrentCard(c => (c + 1) % swipeCards.length)
+      setSwipeDir(null)
+      swipeLock.current = false
+    }, 450)
+  }
+
   if (checking) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#08090E' }}>
@@ -119,6 +186,80 @@ export default function Home() {
       </div>
     )
   }
+
+  const swipeCards = [
+    {
+      name: 'Julia, 26', photo: '/julia.jpg',
+      tags: ['Gamer', 'Vegana', 'SP'],
+      bio: 'Gamer nas horas vagas, vegana há 3 anos. Procuro conexão genuína, alguém pra conversar de verdade antes de qualquer encontro.',
+      placeholder: 'linear-gradient(160deg,#1a0a14 0%,#3d1530 50%,#2a0e24 100%)',
+    },
+    {
+      name: 'Paulo, 55', photo: '/paulo.jpg',
+      tags: ['Eletricista', 'RJ', 'Fuma'],
+      bio: 'Eletricista de mão cheia, churrasco todo fim de semana e uma cerveja gelada. Direto ao ponto e sem enrolação — vida é curta demais.',
+      placeholder: 'linear-gradient(160deg,#0a1020 0%,#1a2a4a 50%,#0d1830 100%)',
+    },
+    {
+      name: 'Ana Paula, 38', photo: '/ana-paula.jpg',
+      tags: ['Mãe', 'Pet', 'Secretária'],
+      bio: 'Mãe de 2, tutora de um golden louco e secretária. Procuro um companheiro pra dividir a rotina e os momentos bons da vida.',
+      placeholder: 'linear-gradient(160deg,#120a1a 0%,#2d1545 50%,#1a0e30 100%)',
+    },
+  ]
+
+  const BASE_NOTIFS = [
+    'Gótica, 25 · acabou de se cadastrar',
+    'Gamer, São Paulo · está online agora',
+    'Evangélica, 32 · ativo há 3 min',
+    'Vinicius, 28 · assinou o Plus',
+    'Larissa, 31 · assinou o Camarote Black',
+    'Felipe, RJ · ganhou 3 SuperCurtidas na roleta',
+    'Bruna, 26 · perdeu um match',
+    'Carlos, 38 · fez upgrade para Plus',
+    'Tatiana, 27 · acabou de se cadastrar',
+    'Rodrigo, 45 · procurando relacionamento sério',
+    'Juliana, 23 · verificou identidade agora',
+    'Diego, 36 · deu match com alguém',
+    'Natalia, 28 · configurou 52 filtros',
+    'Marcos, 41 · ativo agora',
+    'Renata, 29 · ganhou Boost na roleta',
+    'Rafael, 33 · procurando algo casual',
+    'Giovana, 27 · se cadastrou agora',
+    'Thiago, 44 · ganhou 5 Lupas',
+    'Amanda, 22 · enviou SuperCurtida',
+    'Lucas, 30 · assinou o Essencial',
+    'Camila, 25 · fez upgrade para Black',
+    'Gustavo, 37 · logou pela primeira vez',
+    'Isabela, 31 · verificou identidade',
+    'Bruno, 29 · procurando amizade',
+    'Mariana, 26 · encontrou seu match',
+    'Fernando, 48 · ativo há pouco',
+    'Patricia, 34 · ganhou na roleta',
+    'Daniel, 27 · acabou de curtir alguém',
+    'Luciana, 32 · streak de 7 dias!',
+    'Eduardo, 39 · assinou o Black',
+    'Fernanda, 28 · deu match com alguém',
+    'Henrique, 25 · está online agora',
+    'Leticia, 30 · verificou identidade',
+    'Ricardo, 42 · procurando relacionamento',
+    'Vanessa, 33 · ganhou SuperCurtidas',
+    'Andre, 31 · streak de 14 dias!',
+    'Pedro, 35 · ganhou Boost na roleta',
+    'Beatriz, 24 · se cadastrou agora',
+    'Leonardo, 38 · fez upgrade para Plus',
+    'Carolina, 29 · curtiu 5 perfis hoje',
+    'Marcelo, 45 · ativo agora',
+    'Sabrina, 27 · deu match',
+    'Alex, 32 · streak de 30 dias!',
+    'Priscila, 36 · encontrou conexão',
+    'Roberto, 50 · se cadastrou hoje',
+    'Bianca, 23 · verificou identidade',
+    'Fabricio, 41 · assinou o Plus',
+    'Simone, 35 · procurando algo sério',
+    'Caio, 28 · acabou de ganhar na roleta',
+    'Rebeca, 24 · deu SuperCurtida em alguém',
+  ]
 
   const faqItems = [
     { q: 'Por que não existe um plano gratuito?', a: 'Porque o gratuito atrai quem não sabe o que quer. Aplicativos abertos viram bagunça: perfis falsos, pessoas inativas e perda de tempo. Cobrar um valor acessível (a partir de R$10) cria um filtro imediato. Quem investe para estar aqui, por menor que seja o valor, tem outro nível de intenção. Você percebe a diferença de nível já na primeira mensagem.' },
@@ -499,11 +640,61 @@ export default function Home() {
         .lp-footer-btm-links a:hover { color: rgba(248,249,250,0.6); }
 
         /* ── RESPONSIVE ── */
+        /* ── BG FADE ── */
+        .lp-bg-fade { position: relative; }
+        .lp-bg-fade::before, .lp-bg-fade::after {
+          content: ''; position: absolute; left: 0; right: 0; height: 180px; z-index: 2; pointer-events: none;
+        }
+        .lp-bg-fade::before { top: 0; background: linear-gradient(to bottom, #08090E 0%, transparent 100%); }
+        .lp-bg-fade::after { bottom: 0; background: linear-gradient(to top, #08090E 0%, transparent 100%); }
+        .lp-bg-fade > * { position: relative; z-index: 3; }
+
+        /* ── NOTIFICATIONS ── */
+        @keyframes lp-notif-in { from { opacity:0; transform:translateY(10px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+        @keyframes lp-notif-out { from { opacity:1; transform:translateY(0) scale(1); } to { opacity:0; transform:translateY(-10px) scale(0.95); } }
+        .lp-notif-area { position:absolute; top:10px; left:-20px; z-index:20; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+        .lp-notif-item { background:rgba(8,9,14,0.90); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.13); border-radius:100px; padding:8px 16px; font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; display:flex; align-items:center; gap:6px; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+        .lp-notif-enter { animation: lp-notif-in 0.4s ease forwards; }
+        .lp-notif-exit { animation: lp-notif-out 0.4s ease forwards; }
+
+        /* ── CARD DECK ── */
+        @keyframes swipe-left-anim { from { transform:translateX(0) rotate(0deg); opacity:1; } to { transform:translateX(-140%) rotate(-22deg); opacity:0; } }
+        @keyframes swipe-right-anim { from { transform:translateX(0) rotate(0deg); opacity:1; } to { transform:translateX(140%) rotate(22deg); opacity:0; } }
+        @keyframes swipe-up-anim { from { transform:translateY(0) scale(1); opacity:1; } to { transform:translateY(-130%) scale(0.9); opacity:0; } }
+        @keyframes match-glow { 0%{box-shadow:0 0 0 0 rgba(46,196,160,0.6)} 50%{box-shadow:0 0 0 20px rgba(46,196,160,0)} 100%{box-shadow:0 0 0 0 rgba(46,196,160,0)} }
+        @keyframes nope-glow { 0%{box-shadow:0 0 0 0 rgba(244,63,94,0.6)} 50%{box-shadow:0 0 0 20px rgba(244,63,94,0)} 100%{box-shadow:0 0 0 0 rgba(244,63,94,0)} }
+        .card-swipe-left { animation: swipe-left-anim 0.45s cubic-bezier(0.4,0,0.6,1) forwards; }
+        .card-swipe-right { animation: swipe-right-anim 0.45s cubic-bezier(0.4,0,0.6,1) forwards; pointer-events:none; border-color:rgba(46,196,160,0.5)!important; }
+        .card-swipe-up { animation: swipe-up-anim 0.45s cubic-bezier(0.4,0,0.6,1) forwards; }
+        .lp-deck-wrap { position:relative; width:340px; height:580px; display:flex; align-items:center; justify-content:center; }
+        .lp-deck-side { position:absolute; width:220px; height:460px; border-radius:30px; overflow:hidden; filter:blur(5px); opacity:0.30; border:1px solid rgba(255,255,255,0.05); background:var(--bg-card); top:50%; transform:translateY(-50%); transition:opacity 0.3s; }
+        .lp-deck-left { left:0; }
+        .lp-deck-right { right:0; }
+        .lp-deck-side-img { width:100%; height:100%; object-fit:cover; object-position:top; }
+        .lp-ph-btn { width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; transition:transform 0.15s, box-shadow 0.2s; }
+        .lp-ph-btn:hover { transform:scale(1.12); }
+        .lp-ph-btn:active { transform:scale(0.95); }
+        .lp-ph-btn.no:active { animation:nope-glow 0.5s ease; }
+        .lp-ph-btn.yes:active { animation:match-glow 0.5s ease; }
+
+        /* ── CTA melhorado ── */
+        .lp-cta-title em { color:var(--accent); font-style:italic; }
+        @keyframes cta-title-glow { 0%,100%{text-shadow:0 0 30px rgba(225,29,72,0.2)} 50%{text-shadow:0 0 60px rgba(225,29,72,0.45)} }
+        .lp-cta-title { animation:cta-title-glow 4s ease-in-out infinite; }
+        @keyframes cta-fade-up { from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)} }
+        .lp-cta-sub { animation: cta-fade-up 0.8s 0.3s ease both; }
+        .lp-cta-sub strong { color:var(--text); font-weight:700; }
+        .lp-cta-sub em { color:var(--accent); font-style:italic; font-weight:600; }
+
         @media (max-width: 960px) {
           .lp-nav { width: calc(100% - 32px); top: 12px; padding: 12px 20px; }
           .lp-nav-links { display: none; }
           .lp-hero { grid-template-columns: 1fr; padding: 110px 24px 60px; }
-          .lp-hero-right { display: none; }
+          .lp-hero-right { display: flex; justify-content: center; margin-top: 40px; }
+          .lp-deck-wrap { width: 300px; height: 520px; }
+          .lp-deck-side { width: 180px; height: 400px; }
+          .lp-notif-area { left: -10px; top: 5px; }
+          .lp-notif-item { font-size: 11px; padding: 7px 12px; }
           .lp-problem-inner, .lp-verification-inner { grid-template-columns: 1fr; gap: 40px; }
           .lp-steps-row { grid-template-columns: repeat(2, 1fr); }
           .lp-steps-row::before { display: none; }
@@ -547,7 +738,7 @@ export default function Home() {
         </nav>
 
         {/* ── Hero ── */}
-        <section style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.72), rgba(8,9,14,0.90)), url('/backgrounds/nova/Image_fx (1).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.55), rgba(8,9,14,0.80)), url('/backgrounds/nova/Image_fx (1).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-hero">
             <div>
               <div className="lp-badge">
@@ -578,47 +769,80 @@ export default function Home() {
             </div>
 
             <div className="lp-hero-right">
-              <div className="lp-fc lp-fc1"><span className="lp-fc-dot" />Gótica, 25 anos · acabou de se cadastrar</div>
-              <div className="lp-fc lp-fc2"><span className="lp-fc-dot" />Gamer, São Paulo · está online</div>
-              <div className="lp-fc lp-fc3"><span className="lp-fc-dot" />Evangélica, MG · está escrevendo</div>
-              <div className="lp-phone">
-                <div className="lp-phone-header">
-                  <div className="lp-phone-logo">MeAndYou</div>
-                  <div style={{ fontSize: '10px', opacity: 0.75, marginTop: '3px', color: '#fff' }}>Conexões reais</div>
-                </div>
-                <div className="lp-phone-card">
-                  <div className="lp-phone-img">
-                    <img
-                      src="/julia.jpg"
-                      alt="Julia, 26"
-                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
-                    />
-                    <div className="lp-v-badge">
-                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
-                      Verificada
+              <div className="lp-deck-wrap">
+
+                {/* Notificações animadas */}
+                <div className="lp-notif-area">
+                  {notifList.map(n => (
+                    <div key={n.id} className={`lp-notif-item ${n.exiting ? 'lp-notif-exit' : 'lp-notif-enter'}`}>
+                      <span className="lp-fc-dot" />{n.text}
                     </div>
-                  </div>
-                  <div className="lp-phone-info">
-                    <div className="lp-phone-name">Julia, 26</div>
-                    <div className="lp-phone-tags">
-                      <span className="lp-phone-tag">Gamer</span>
-                      <span className="lp-phone-tag">Vegana</span>
-                      <span className="lp-phone-tag">SP</span>
+                  ))}
+                </div>
+
+                {/* Card borrado da esquerda */}
+                {(() => {
+                  const prev = swipeCards[(currentCard + swipeCards.length - 1) % swipeCards.length]
+                  return (
+                    <div className="lp-deck-side lp-deck-left">
+                      <div style={{ width:'100%', height:'100%', background: prev.placeholder }}>
+                        <img src={prev.photo} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'top', display:'block' }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display='none' }} />
+                      </div>
                     </div>
+                  )
+                })()}
+
+                {/* Phone principal */}
+                <div className={`lp-phone${swipeDir === 'left' ? ' card-swipe-left' : swipeDir === 'right' ? ' card-swipe-right' : swipeDir === 'up' ? ' card-swipe-up' : ''}`}
+                  style={{ position:'relative', zIndex:2 }}>
+                  <div className="lp-phone-header">
+                    <div className="lp-phone-logo">MeAndYou</div>
+                    <div style={{ fontSize:'10px', opacity:0.75, marginTop:'3px', color:'#fff' }}>Conexões reais</div>
                   </div>
-                  <p className="lp-phone-bio">Gamer nas horas vagas, vegana há 3 anos. Procuro conexão genuína, alguém pra conversar de verdade antes de qualquer encontro.</p>
+                  <div className="lp-phone-card">
+                    <div className="lp-phone-img" style={{ background: swipeCards[currentCard].placeholder }}>
+                      <img src={swipeCards[currentCard].photo} alt={swipeCards[currentCard].name}
+                        style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'top', display:'block' }}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display='none' }} />
+                      <div className="lp-v-badge">
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                        Verificado
+                      </div>
+                    </div>
+                    <div className="lp-phone-info">
+                      <div className="lp-phone-name">{swipeCards[currentCard].name}</div>
+                      <div className="lp-phone-tags">
+                        {swipeCards[currentCard].tags.map((t,i) => <span key={i} className="lp-phone-tag">{t}</span>)}
+                      </div>
+                    </div>
+                    <p className="lp-phone-bio">{swipeCards[currentCard].bio}</p>
+                  </div>
+                  <div className="lp-phone-actions">
+                    <button className="lp-ph-btn no" onClick={() => handleSwipe('left')}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                    <button className="lp-ph-btn super" onClick={() => handleSwipe('up')}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </button>
+                    <button className="lp-ph-btn yes" onClick={() => handleSwipe('right')}>
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    </button>
+                  </div>
                 </div>
-                <div className="lp-phone-actions">
-                  <button className="lp-ph-btn no">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
-                  </button>
-                  <button className="lp-ph-btn super">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
-                  </button>
-                  <button className="lp-ph-btn yes">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                  </button>
-                </div>
+
+                {/* Card borrado da direita */}
+                {(() => {
+                  const next = swipeCards[(currentCard + 1) % swipeCards.length]
+                  return (
+                    <div className="lp-deck-side lp-deck-right">
+                      <div style={{ width:'100%', height:'100%', background: next.placeholder }}>
+                        <img src={next.photo} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'top', display:'block' }}
+                          onError={(e) => { (e.target as HTMLImageElement).style.display='none' }} />
+                      </div>
+                    </div>
+                  )
+                })()}
               </div>
             </div>
           </div>
@@ -945,7 +1169,7 @@ export default function Home() {
         </section>
 
         {/* ── Gamificação ── */}
-        <section className="lp-gamif" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.88), rgba(8,9,14,0.94)), url('/backgrounds/nova/Image_fx (6).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-gamif lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.75), rgba(8,9,14,0.88)), url('/backgrounds/nova/Image_fx (6).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-gamif-inner">
             <p className="lp-section-label">Muito mais do que curtidas</p>
             <h2 className="lp-section-title">Recompensas por<br />estar aqui</h2>
@@ -981,7 +1205,7 @@ export default function Home() {
         </section>
 
         {/* ── Depoimentos ── */}
-        <section className="lp-testi" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.85), rgba(8,9,14,0.92)), url('/backgrounds/nova/Image_fx (8).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-testi lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.72), rgba(8,9,14,0.88)), url('/backgrounds/nova/Image_fx (8).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-testi-inner">
             <p className="lp-section-label">Depoimentos</p>
             <h2 className="lp-section-title">Chega de encontros frustrantes.<br />Veja quem já está vivendo o mundo real.</h2>
@@ -1047,10 +1271,14 @@ export default function Home() {
         </section>
 
         {/* ── CTA final ── */}
-        <section className="lp-cta" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.75), rgba(8,9,14,0.88)), url('/backgrounds/nova/Image_fx (7).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
-          <h2>Sua pessoa real<br />está esperando.</h2>
-          <p>Verificação real. Filtros completos. Conexões de verdade.</p>
-          <a href="/planos" className="lp-btn-cta-white">
+        <section className="lp-cta lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.60), rgba(8,9,14,0.82)), url('/backgrounds/nova/Image_fx (7).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+          <h2 className="lp-cta-title">
+            Sua pessoa <em>real</em><br />está <em style={{ fontStyle:'italic', color:'var(--accent)' }}>esperando.</em>
+          </h2>
+          <p className="lp-cta-sub" style={{ color:'var(--text-muted)', fontSize:'17px', marginBottom:'44px', position:'relative' }}>
+            <strong>Verificação real.</strong> Filtros completos. Conexões de <em>verdade.</em>
+          </p>
+          <a href="/planos" className="lp-btn-cta-white" style={{ position:'relative' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
             Escolher meu plano
           </a>
