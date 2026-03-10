@@ -1,0 +1,59 @@
+import { createClient } from '@supabase/supabase-js'
+import { NextRequest, NextResponse } from 'next/server'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
+
+export async function POST(req: NextRequest) {
+  try {
+    // Valida sessão
+    const accessToken = req.cookies.get('sb-access-token')?.value
+    if (!accessToken) {
+      return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
+    }
+
+    const { data: { user }, error: authErr } = await supabase.auth.getUser(accessToken)
+    if (authErr || !user) {
+      return NextResponse.json({ error: 'Sessão inválida' }, { status: 401 })
+    }
+
+    const { subscription_id } = await req.json()
+    if (!subscription_id) {
+      return NextResponse.json({ error: 'subscription_id obrigatório' }, { status: 400 })
+    }
+
+    // Verifica que a assinatura pertence ao usuário e está ativa
+    const { data: sub, error: subErr } = await supabase
+      .from('subscriptions')
+      .select('id, status, user_id')
+      .eq('id', subscription_id)
+      .eq('user_id', user.id)
+      .single()
+
+    if (subErr || !sub) {
+      return NextResponse.json({ error: 'Assinatura não encontrada' }, { status: 404 })
+    }
+
+    if (sub.status !== 'active') {
+      return NextResponse.json({ error: 'Assinatura não está ativa' }, { status: 400 })
+    }
+
+    // Cancela — acesso continua até ends_at; pg_cron faz o downgrade ao expirar
+    const { error: updateErr } = await supabase
+      .from('subscriptions')
+      .update({ status: 'cancelled' })
+      .eq('id', subscription_id)
+
+    if (updateErr) {
+      console.error('Erro ao cancelar assinatura:', updateErr)
+      return NextResponse.json({ error: 'Erro ao cancelar' }, { status: 500 })
+    }
+
+    return NextResponse.json({ ok: true })
+  } catch (err) {
+    console.error('Cancelar assinatura error:', err)
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+  }
+}
