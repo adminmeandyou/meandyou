@@ -721,6 +721,20 @@ export default function Home() {
         .lp-testi-role { font-size: 11px; color: var(--text-dim); }
 
         /* ── FAQ ── */
+        /* ── QUEM SOMOS ── */
+        .lp-about { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border); }
+        .lp-about-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+        .lp-about-logo { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
+        .lp-about-name-block { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; }
+        .lp-about-name-block .label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
+        .lp-about-name-block .val { font-family: var(--font-fraunces), serif; font-size: 22px; font-weight: 700; color: var(--text); }
+        .lp-about-name-block .note { font-size: 12px; color: rgba(248,249,250,0.55); margin-top: 4px; font-weight: 400; }
+        .lp-about-text h2 { font-family: var(--font-fraunces), serif; font-size: clamp(26px, 3vw, 40px); font-weight: 700; letter-spacing: -1px; line-height: 1.15; margin-bottom: 20px; }
+        .lp-about-text h2 em { font-style: italic; color: var(--accent); }
+        .lp-about-text p { font-size: 15px; font-weight: 400; color: rgba(248,249,250,0.70); line-height: 1.8; margin-bottom: 16px; }
+        .lp-about-text p:last-child { margin-bottom: 0; }
+        @media (max-width: 860px) { .lp-about-inner { grid-template-columns: 1fr; gap: 48px; } .lp-about { padding: 72px 24px; } }
+
         .lp-faq { padding: 100px 56px; background: var(--bg-card); border-top: 1px solid var(--border); }
         .lp-faq-inner { max-width: 760px; margin: 0 auto; text-align: center; }
         .lp-faq-list { margin-top: 56px; text-align: left; }
@@ -1409,7 +1423,7 @@ export default function Home() {
         <section className="lp-install">
           <div className="lp-install-inner">
             <div className="lp-install-left lp-anim">
-              <img src="/logo.png" alt="MeAndYou" style={{ width: 'min(480px, 100%)', height: 'auto', marginBottom: '32px', display: 'block' }} />
+              <img src="/logo.png" alt="MeAndYou" style={{ width: 'min(480px, 100%)', height: 'auto', marginBottom: '12px', display: 'block' }} />
               <p className="lp-section-label">App</p>
               <h2>Baixe agora.<br /><em>Sem loja de apps.</em></h2>
               <p>Funciona como um app de verdade — ícone na tela inicial, notificações em tempo real. Sem ocupar espaço da loja, sem burocracia.</p>
@@ -1484,6 +1498,34 @@ export default function Home() {
                   <p>Role o menu para baixo, toque na opção e confirme.</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Quem somos ── */}
+        <section className="lp-about">
+          <div className="lp-about-inner">
+            <div className="lp-about-logo lp-anim">
+              <img src="/logo.png" alt="MeAndYou" style={{ width: '100%', maxWidth: '320px', height: 'auto' }} />
+              <div className="lp-about-name-block">
+                <div className="label">Nome no app</div>
+                <div className="val">MeAndYou</div>
+                <div className="note">meandyou.com.br · nome técnico e de domínio</div>
+              </div>
+              <div className="lp-about-name-block">
+                <div className="label">Identidade visual</div>
+                <div className="val">Me&amp;You</div>
+                <div className="note">logotipo oficial · o &amp; é intencional</div>
+              </div>
+            </div>
+            <div className="lp-about-text lp-anim">
+              <p className="lp-section-label">Quem somos</p>
+              <h2>Nascemos de uma<br /><em>pergunta simples.</em></h2>
+              <p>Por que é tão difícil encontrar alguém real no Brasil? Não falta gente — falta conexão. Falta filtro. Falta segurança de saber com quem você está falando antes de marcar um encontro.</p>
+              <p>O MeAndYou surgiu para mudar isso. Um app construído do zero com verificação biométrica obrigatória, mais de 100 filtros reais e videochamada antes do primeiro encontro. Sem perfis falsos. Sem enrolação.</p>
+              <p style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px', fontSize: '13px', color: 'rgba(248,249,250,0.65)', lineHeight: 1.75 }}>
+                <strong style={{ color: 'var(--text)', fontWeight: 600 }}>Sobre o nome:</strong> o app se chama <strong style={{ color: 'var(--text)', fontWeight: 600 }}>MeAndYou</strong> — pensado para ser simples de digitar e lembrar no domínio. O logo usa <strong style={{ color: 'var(--accent)', fontWeight: 600 }}>Me&amp;You</strong> com o &amp; porque é mais elegante visualmente e carrega o mesmo significado: <em>eu e você</em>. É uma escolha de design, não um erro.
+              </p>
             </div>
           </div>
         </section>
