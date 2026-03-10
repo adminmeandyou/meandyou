@@ -454,7 +454,7 @@ export default function Home() {
         .lp-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: lp-pulse 2s ease-in-out infinite; }
         .lp-hero h1 { font-family: var(--font-fraunces), serif; font-size: clamp(44px, 5vw, 74px); font-weight: 700; line-height: 1.06; letter-spacing: -2px; margin-bottom: 24px; animation: lp-fadeUp .5s .1s ease both; }
         .lp-hero h1 em { font-style: italic; color: var(--accent); }
-        .lp-hero-sub { font-size: 17px; color: var(--text-muted); max-width: 460px; margin-bottom: 40px; line-height: 1.75; animation: lp-fadeUp .5s .2s ease both; }
+        .lp-hero-sub { font-size: 17px; font-weight: 400; color: rgba(248,249,250,0.72); max-width: 460px; margin-bottom: 40px; line-height: 1.75; animation: lp-fadeUp .5s .2s ease both; }
         .lp-hero-sub strong { color: var(--text); font-weight: 600; }
         .lp-actions { display: flex; gap: 12px; flex-wrap: wrap; animation: lp-fadeUp .5s .3s ease both; }
         .lp-btn-main {
@@ -483,8 +483,8 @@ export default function Home() {
           box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06), 0 0 60px rgba(225,29,72,0.08);
           overflow: hidden; animation: card-enter 0.38s cubic-bezier(.34,1.4,.64,1) both;
         }
-        .lp-phone-header { background: var(--accent); padding: 36px 20px 14px; text-align: center; }
-        .lp-phone-logo { font-family: var(--font-fraunces), serif; font-size: 18px; font-weight: 700; color: #fff; }
+        .lp-phone-header { background: var(--accent); padding: 36px 20px 14px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .lp-phone-logo { display: flex; align-items: center; justify-content: center; }
         .lp-phone-card { margin: 10px; background: var(--bg-card2); border-radius: 18px; overflow: hidden; border: 1px solid var(--border); }
         .lp-phone-img { height: 210px; background: linear-gradient(160deg, #1a0a14 0%, #3d1530 50%, #2a0e24 100%); display: flex; align-items: center; justify-content: center; font-size: 64px; position: relative; overflow: hidden; }
         .lp-phone-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
@@ -526,17 +526,17 @@ export default function Home() {
         .lp-cmp-header { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin-bottom: 4px; }
         .lp-cmp-col-label { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 14px 20px; border-radius: 12px 12px 0 0; }
         .lp-cmp-col-label.them { color: var(--text-dim); background: rgba(255,255,255,0.03); }
-        .lp-cmp-col-label.us { color: #E11D48; background: rgba(225,29,72,0.08); border: 1px solid rgba(225,29,72,0.15); border-bottom: none; }
+        .lp-cmp-col-label.us { color: #10b981; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.20); border-bottom: none; }
         .lp-cmp-col-label.feature { color: transparent; }
         .lp-cmp-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; border-bottom: 1px solid var(--border-soft); }
         .lp-cmp-row:last-child { border-bottom: none; }
-        .lp-cmp-feature { padding: 16px 20px; font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; }
+        .lp-cmp-feature { padding: 16px 20px; font-size: 13px; font-weight: 500; color: var(--text); display: flex; align-items: center; }
         .lp-cmp-cell { padding: 16px 20px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
         .lp-cmp-cell.them { color: var(--text-muted); background: rgba(255,255,255,0.015); }
-        .lp-cmp-cell.us { color: var(--text); background: rgba(225,29,72,0.04); border-left: 1px solid rgba(225,29,72,0.12); border-right: 1px solid rgba(225,29,72,0.12); }
-        .lp-cmp-row:last-child .lp-cmp-cell.us { border-bottom: 1px solid rgba(225,29,72,0.12); border-radius: 0 0 12px 12px; }
+        .lp-cmp-cell.us { color: rgba(248,249,250,0.92); background: rgba(16,185,129,0.05); border-left: 1px solid rgba(16,185,129,0.15); border-right: 1px solid rgba(16,185,129,0.15); }
+        .lp-cmp-row:last-child .lp-cmp-cell.us { border-bottom: 1px solid rgba(16,185,129,0.15); border-radius: 0 0 12px 12px; }
         .lp-cmp-x { width: 18px; height: 18px; border-radius: 50%; background: rgba(244,63,94,0.12); color: #F43F5E; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .lp-cmp-check { width: 18px; height: 18px; border-radius: 50%; background: rgba(225,29,72,0.15); color: #E11D48; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .lp-cmp-check { width: 18px; height: 18px; border-radius: 50%; background: rgba(16,185,129,0.15); color: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         @media (max-width: 700px) {
           .lp-cmp-header, .lp-cmp-row { grid-template-columns: 1fr 1fr; }
           .lp-cmp-feature { display: none; }
@@ -550,7 +550,7 @@ export default function Home() {
         .lp-verify-step:hover { border-color: var(--accent-border); box-shadow: 0 8px 32px rgba(225,29,72,0.10); transform: translateX(4px); }
         .lp-vstep-num { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 700; flex-shrink: 0; }
         .lp-verify-step h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
-        .lp-verify-step p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0; }
+        .lp-verify-step p { font-size: 13px; font-weight: 400; color: rgba(248,249,250,0.68); line-height: 1.6; margin: 0; }
 
         /* ── FILTERS ── */
         .lp-filters-section { padding: 100px 56px; background: var(--bg-card); border-top: 1px solid var(--border); }
@@ -583,7 +583,7 @@ export default function Home() {
         .lp-intent-icon { width: 46px; height: 46px; margin: 0 auto 14px; color: var(--accent); transition: transform 0.3s; }
         .lp-intent-card:hover .lp-intent-icon { transform: scale(1.15) rotate(-5deg); }
         .lp-intent-card h3 { font-family: var(--font-fraunces), serif; font-size: 15px; font-weight: 700; margin-bottom: 5px; color: var(--text); }
-        .lp-intent-card p { font-size: 11px; color: var(--text-muted); line-height: 1.55; }
+        .lp-intent-card p { font-size: 11px; font-weight: 400; color: rgba(248,249,250,0.65); line-height: 1.55; }
 
         /* ── HOW IT WORKS ── */
         .lp-how { padding: 100px 56px; background: var(--bg-card); border-top: 1px solid var(--border); }
@@ -596,8 +596,8 @@ export default function Home() {
         .lp-step-icon { width: 68px; height: 68px; border-radius: 50%; background: var(--bg); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; box-shadow: 0 4px 20px rgba(225,29,72,0.12); transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s; }
         .lp-how-step:hover .lp-step-icon { transform: translateY(-6px) scale(1.08); box-shadow: 0 14px 32px rgba(225,29,72,0.25); }
         .lp-step-icon svg { width: 26px; height: 26px; color: var(--accent); }
-        .lp-how-step h3 { font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
-        .lp-how-step p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+        .lp-how-step h3 { font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
+        .lp-how-step p { font-size: 13px; font-weight: 400; color: rgba(248,249,250,0.65); line-height: 1.6; }
 
         /* ── PRICING ── */
         .lp-pricing { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border); }
@@ -649,7 +649,7 @@ export default function Home() {
         .lp-diff-num { font-family: var(--font-fraunces), serif; font-size: 64px; font-weight: 700; color: rgba(225,29,72,0.08); line-height: 1; margin-bottom: 16px; }
         .lp-diff-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; color: var(--accent); }
         .lp-diff-card h3 { font-family: var(--font-fraunces), serif; font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
-        .lp-diff-card p { font-size: 14px; color: var(--text-muted); line-height: 1.75; margin: 0; }
+        .lp-diff-card p { font-size: 14px; font-weight: 400; color: rgba(248,249,250,0.68); line-height: 1.75; margin: 0; }
         .lp-diff-tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 20px; background: var(--accent-soft); border: 1px solid var(--accent-border); color: #F43F5E; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
 
         /* ── FOOTER CONTACT ── */
@@ -678,7 +678,7 @@ export default function Home() {
         .lp-gamif-card:hover { border-color: var(--accent-border); transform: translateY(-4px); }
         .lp-gamif-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: var(--accent); }
         .lp-gamif-card h3 { font-family: var(--font-fraunces), serif; font-size: 20px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
-        .lp-gamif-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin: 0; }
+        .lp-gamif-card p { font-size: 14px; font-weight: 400; color: rgba(248,249,250,0.68); line-height: 1.7; margin: 0; }
 
         /* ── INSTALL PWA ── */
         .lp-install { padding: 100px 56px; background: var(--bg-card); border-top: 1px solid var(--border); }
@@ -714,7 +714,7 @@ export default function Home() {
         .lp-testi-card { background: rgba(15,17,23,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 30px; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s; }
         .lp-testi-card:hover { border-color: rgba(225,29,72,0.25); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(225,29,72,0.08); }
         .lp-testi-stars { color: var(--gold); font-size: 13px; margin-bottom: 14px; letter-spacing: 2px; }
-        .lp-testi-text { font-size: 14px; color: var(--text-muted); line-height: 1.75; margin-bottom: 20px; font-style: italic; }
+        .lp-testi-text { font-size: 14px; font-weight: 400; color: rgba(248,249,250,0.78); line-height: 1.75; margin-bottom: 20px; font-style: italic; }
         .lp-testi-author { display: flex; align-items: center; gap: 12px; }
         .lp-testi-av { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .lp-testi-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
@@ -957,8 +957,10 @@ export default function Home() {
                   <span className="lp-swipe-label like">CURTIR</span>
                   <span className="lp-swipe-label super">SUPER</span>
                   <div className="lp-phone-header">
-                    <div className="lp-phone-logo">MeAndYou</div>
-                    <div style={{ fontSize:'10px', opacity:0.75, marginTop:'3px', color:'#fff' }}>Conexões reais</div>
+                    <div className="lp-phone-logo">
+                      <img src="/logo.png" alt="MeAndYou" style={{ height: '26px', filter: 'brightness(0) invert(1)' }} />
+                    </div>
+                    <div style={{ fontSize:'10px', opacity:0.75, marginTop:'5px', color:'#fff' }}>Conexões reais</div>
                   </div>
                   <div className="lp-phone-card">
                     <div className="lp-phone-img" style={{ background: swipeCards[currentCard].placeholder }}>
