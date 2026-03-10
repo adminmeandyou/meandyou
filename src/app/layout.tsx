@@ -19,6 +19,12 @@ const plusJakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: 'MeAndYou — Relacionamentos com pessoas verificadas',
   description: 'O app de relacionamentos com verificação real de identidade e os filtros mais completos do Brasil.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'MeAndYou',
+  },
   openGraph: {
     title: 'MeAndYou',
     description: 'Relacionamentos reais com pessoas verificadas',
@@ -50,6 +56,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
+      <head>
+        <link rel="apple-touch-icon" href="/logo.png" />
+        <meta name="theme-color" content="#E11D48" />
+        <script dangerouslySetInnerHTML={{
+          __html: `if ('serviceWorker' in navigator) { window.addEventListener('load', function() { navigator.serviceWorker.register('/sw.js'); }); }`
+        }} />
+      </head>
       <body className={`${fraunces.variable} ${plusJakarta.variable}`}>
         {children}
       </body>
