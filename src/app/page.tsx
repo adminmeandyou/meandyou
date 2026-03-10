@@ -902,7 +902,7 @@ export default function Home() {
         </div>
 
         {/* ── Hero ── */}
-        <section className="lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.55), rgba(8,9,14,0.80)), url('/backgrounds/nova/Image_fx (1).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.55), rgba(8,9,14,0.80)), url('/backgrounds/hero.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-hero">
             <div>
               <div className="lp-badge">
@@ -1338,7 +1338,7 @@ export default function Home() {
         </section>
 
         {/* ── Gamificação ── */}
-        <section className="lp-gamif lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.75), rgba(8,9,14,0.88)), url('/backgrounds/nova/Image_fx (6).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-gamif lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.75), rgba(8,9,14,0.88)), url('/backgrounds/MUITO%20MAIS%20DO%20QUE%20CURTIDAS.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-gamif-inner">
             <p className="lp-section-label">Muito mais do que curtidas</p>
             <h2 className="lp-section-title">Recompensas por<br />estar aqui</h2>
@@ -1374,7 +1374,7 @@ export default function Home() {
         </section>
 
         {/* ── Depoimentos ── */}
-        <section className="lp-testi lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.72), rgba(8,9,14,0.88)), url('/backgrounds/nova/Image_fx (8).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-testi lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.72), rgba(8,9,14,0.88)), url('/backgrounds/depoimentos.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-testi-inner">
             <p className="lp-section-label">Depoimentos</p>
             <h2 className="lp-section-title">Chega de encontros frustrantes.<br />Veja quem já está vivendo o mundo real.</h2>
@@ -1522,7 +1522,7 @@ export default function Home() {
         </section>
 
         {/* ── CTA final ── */}
-        <section className="lp-cta lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.60), rgba(8,9,14,0.82)), url('/backgrounds/nova/Image_fx (7).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        <section className="lp-cta lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.60), rgba(8,9,14,0.82)), url('/backgrounds/diferenciais.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <h2 className="lp-cta-title">
             Sua pessoa <em>real</em><br />está <em style={{ fontStyle:'italic', color:'var(--accent)' }}>esperando.</em>
           </h2>
