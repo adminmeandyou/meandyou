@@ -7,7 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {
   ArrowLeft, Send, Video, MoreVertical,
-  Loader2, AlertCircle, Lock
+  Loader2, AlertCircle, Lock, ShieldAlert
 } from 'lucide-react'
 
 interface Message {
@@ -42,6 +42,7 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
   const [rateLimited, setRateLimited] = useState(false)
+  const [emergencyModal, setEmergencyModal] = useState(false)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -317,10 +318,52 @@ export default function ChatPage() {
           <Video size={16} className="text-white/60" />
         </button>
 
+        {/* Botão de emergência oculto */}
+        <button
+          onClick={() => setEmergencyModal(true)}
+          className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/10 hover:border-red-500/30 transition"
+          title="Emergência"
+        >
+          <ShieldAlert size={16} className="text-white/20 hover:text-red-400" />
+        </button>
+
         <button className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
           <MoreVertical size={16} className="text-white/60" />
         </button>
       </header>
+
+      {/* ── Modal de Emergência ── */}
+      {emergencyModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+          onClick={() => setEmergencyModal(false)}
+        >
+          <div
+            className="bg-[#1a0a0a] border border-red-500/30 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="w-14 h-14 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center mx-auto mb-4">
+              <ShieldAlert size={28} className="text-red-400" />
+            </div>
+            <h3 className="text-white font-fraunces text-xl font-bold mb-2">Você está em perigo?</h3>
+            <p className="text-white/50 text-sm mb-6 leading-relaxed">
+              Esta ação ligará imediatamente para a <strong className="text-white/70">Polícia Militar (190)</strong>. Use apenas em situações de risco real.
+            </p>
+            <a
+              href="tel:190"
+              className="block w-full py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-base transition mb-3"
+            >
+              Ligar 190 agora
+            </a>
+            <button
+              onClick={() => setEmergencyModal(false)}
+              className="block w-full py-3 text-white/30 text-sm hover:text-white/60 transition"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Aviso de privacidade ── */}
       <div className="shrink-0 flex items-center justify-center gap-1.5 py-2 text-white/20 text-[11px]">

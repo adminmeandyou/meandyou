@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase'
 import Image from 'next/image'
 import {
   ArrowLeft, MapPin, Heart, Star, X,
-  Eye, Calendar, Ruler, Weight, Crown
+  Eye, Calendar, Ruler, Weight, Crown, ShieldAlert
 } from 'lucide-react'
 
 export default function VerPerfilPage() {
@@ -26,6 +26,7 @@ export default function VerPerfilPage() {
   const [distance, setDistance] = useState<number | null>(null)
   const [viewedPlan, setViewedPlan] = useState<string | null>(null)
   const [viewerIsBlack, setViewerIsBlack] = useState(false)
+  const [emergencyModal, setEmergencyModal] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -184,6 +185,48 @@ export default function VerPerfilPage() {
         <button onClick={() => router.back()} style={{ position: 'absolute', top: '16px', left: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}>
           <ArrowLeft size={20} color="#fff" />
         </button>
+
+        {/* Botão de emergência oculto */}
+        <button
+          onClick={() => setEmergencyModal(true)}
+          style={{ position: 'absolute', top: '16px', right: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer' }}
+          title="Emergência"
+        >
+          <ShieldAlert size={18} color="rgba(255,255,255,0.25)" />
+        </button>
+
+        {/* Modal de Emergência */}
+        {emergencyModal && (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)', padding: '16px' }}
+            onClick={() => setEmergencyModal(false)}
+          >
+            <div
+              style={{ backgroundColor: '#1a0a0a', border: '1px solid rgba(239,68,68,0.3)', borderRadius: '20px', padding: '28px 24px', maxWidth: '360px', width: '100%', textAlign: 'center' }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <ShieldAlert size={28} color="#f87171" />
+              </div>
+              <h3 style={{ color: '#F8F9FA', fontFamily: 'var(--font-fraunces)', fontSize: '20px', fontWeight: 700, marginBottom: '8px' }}>Você está em perigo?</h3>
+              <p style={{ color: 'rgba(248,249,250,0.45)', fontSize: '14px', lineHeight: 1.6, marginBottom: '24px' }}>
+                Esta ação ligará imediatamente para a <strong style={{ color: 'rgba(248,249,250,0.7)' }}>Polícia Militar (190)</strong>. Use apenas em situações de risco real.
+              </p>
+              <a
+                href="tel:190"
+                style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '12px', backgroundColor: '#dc2626', color: '#fff', fontWeight: 700, fontSize: '16px', textDecoration: 'none', marginBottom: '12px' }}
+              >
+                Ligar 190 agora
+              </a>
+              <button
+                onClick={() => setEmergencyModal(false)}
+                style={{ display: 'block', width: '100%', padding: '12px', background: 'none', border: 'none', color: 'rgba(248,249,250,0.3)', fontSize: '14px', cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* Indicadores de foto */}
         {photos.length > 1 && (

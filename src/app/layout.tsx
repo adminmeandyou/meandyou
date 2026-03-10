@@ -25,6 +25,20 @@ export const metadata: Metadata = {
     siteName: 'MeAndYou',
     locale: 'pt_BR',
     type: 'website',
+    images: [
+      {
+        url: 'https://www.meandyou.com.br/logo.png',
+        width: 1200,
+        height: 630,
+        alt: 'MeAndYou — Relacionamentos com pessoas verificadas',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'MeAndYou',
+    description: 'Relacionamentos reais com pessoas verificadas',
+    images: ['https://www.meandyou.com.br/logo.png'],
   },
 }
 

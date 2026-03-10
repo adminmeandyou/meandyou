@@ -59,6 +59,45 @@ export default function Home() {
   // Location
   const [userCity, setUserCity] = useState('')
 
+  // Formulário de contato
+  const [contatoNome, setContatoNome] = useState('')
+  const [contatoEmail, setContatoEmail] = useState('')
+  const [contatoAssunto, setContatoAssunto] = useState('')
+  const [contatoMensagem, setContatoMensagem] = useState('')
+  const [contatoEnviando, setContatoEnviando] = useState(false)
+  const [contatoEnviado, setContatoEnviado] = useState(false)
+  const [contatoErro, setContatoErro] = useState('')
+
+  async function handleContatoSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setContatoErro('')
+    if (!contatoNome.trim() || !contatoEmail.trim() || !contatoAssunto || !contatoMensagem.trim()) {
+      setContatoErro('Preencha todos os campos.')
+      return
+    }
+    setContatoEnviando(true)
+    try {
+      const res = await fetch('/api/contato', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nome: contatoNome,
+          email: contatoEmail,
+          assunto: contatoAssunto,
+          mensagem: contatoMensagem,
+        }),
+      })
+      const json = await res.json()
+      if (!res.ok) { setContatoErro(json.error ?? 'Erro ao enviar.'); return }
+      setContatoEnviado(true)
+      setContatoNome(''); setContatoEmail(''); setContatoAssunto(''); setContatoMensagem('')
+    } catch {
+      setContatoErro('Erro ao enviar. Tente novamente.')
+    } finally {
+      setContatoEnviando(false)
+    }
+  }
+
   useEffect(() => {
     supabase.auth.getUser()
       .then(({ data: { user } }) => { if (user) { router.push('/dashboard') } else { setChecking(false) } })
@@ -195,13 +234,13 @@ export default function Home() {
       placeholder: 'linear-gradient(160deg,#1a0a14 0%,#3d1530 50%,#2a0e24 100%)',
     },
     {
-      name: 'Paulo, 55', photo: '/paulo.jpg',
+      name: 'Roberto, 55', photo: '/Roberto.jpg',
       tags: ['Eletricista', 'RJ', 'Fuma'],
       bio: 'Eletricista de mão cheia, churrasco todo fim de semana e uma cerveja gelada. Direto ao ponto e sem enrolação — vida é curta demais.',
       placeholder: 'linear-gradient(160deg,#0a1020 0%,#1a2a4a 50%,#0d1830 100%)',
     },
     {
-      name: 'Ana Paula, 38', photo: '/ana-paula.jpg',
+      name: 'Ana Paula, 38', photo: '/Ana paula.jpg',
       tags: ['Mãe', 'Pet', 'Secretária'],
       bio: 'Mãe de 2, tutora de um golden louco e secretária. Procuro um companheiro pra dividir a rotina e os momentos bons da vida.',
       placeholder: 'linear-gradient(160deg,#120a1a 0%,#2d1545 50%,#1a0e30 100%)',
@@ -299,8 +338,43 @@ export default function Home() {
     { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, title: 'Perfil discreto (exclusivo Black)', desc: 'Visível apenas para outros membros que também marcaram a mesma categoria.', tags: ['Busco trisal', 'Swing / relacionamento aberto', 'Poliamor', 'BDSM / fetiches'], tip: 'Estas opções ficam ocultas para quem não marcou a mesma categoria. Disponível apenas no plano Black.' },
   ]
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': 'https://www.meandyou.com.br/#organization',
+        name: 'MeAndYou',
+        url: 'https://www.meandyou.com.br',
+        logo: 'https://www.meandyou.com.br/logo.png',
+        description: 'App de relacionamentos brasileiro com verificação real de identidade e os filtros mais completos do Brasil.',
+        contactPoint: {
+          '@type': 'ContactPoint',
+          email: 'adminmeandyou@proton.me',
+          contactType: 'customer support',
+          availableLanguage: 'Portuguese',
+        },
+      },
+      {
+        '@type': 'FAQPage',
+        mainEntity: faqItems.map(item => ({
+          '@type': 'Question',
+          name: item.q,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: item.a,
+          },
+        })),
+      },
+    ],
+  }
+
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
 
@@ -432,17 +506,17 @@ export default function Home() {
         .lp-cmp-header { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin-bottom: 4px; }
         .lp-cmp-col-label { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 14px 20px; border-radius: 12px 12px 0 0; }
         .lp-cmp-col-label.them { color: var(--text-dim); background: rgba(255,255,255,0.03); }
-        .lp-cmp-col-label.us { color: #2ec4a0; background: rgba(46,196,160,0.08); border: 1px solid rgba(46,196,160,0.15); border-bottom: none; }
+        .lp-cmp-col-label.us { color: #E11D48; background: rgba(225,29,72,0.08); border: 1px solid rgba(225,29,72,0.15); border-bottom: none; }
         .lp-cmp-col-label.feature { color: transparent; }
         .lp-cmp-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; border-bottom: 1px solid var(--border-soft); }
         .lp-cmp-row:last-child { border-bottom: none; }
         .lp-cmp-feature { padding: 16px 20px; font-size: 13px; font-weight: 600; color: var(--text); display: flex; align-items: center; }
         .lp-cmp-cell { padding: 16px 20px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
         .lp-cmp-cell.them { color: var(--text-muted); background: rgba(255,255,255,0.015); }
-        .lp-cmp-cell.us { color: var(--text); background: rgba(46,196,160,0.04); border-left: 1px solid rgba(46,196,160,0.12); border-right: 1px solid rgba(46,196,160,0.12); }
-        .lp-cmp-row:last-child .lp-cmp-cell.us { border-bottom: 1px solid rgba(46,196,160,0.12); border-radius: 0 0 12px 12px; }
+        .lp-cmp-cell.us { color: var(--text); background: rgba(225,29,72,0.04); border-left: 1px solid rgba(225,29,72,0.12); border-right: 1px solid rgba(225,29,72,0.12); }
+        .lp-cmp-row:last-child .lp-cmp-cell.us { border-bottom: 1px solid rgba(225,29,72,0.12); border-radius: 0 0 12px 12px; }
         .lp-cmp-x { width: 18px; height: 18px; border-radius: 50%; background: rgba(244,63,94,0.12); color: #F43F5E; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .lp-cmp-check { width: 18px; height: 18px; border-radius: 50%; background: rgba(46,196,160,0.15); color: #2ec4a0; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .lp-cmp-check { width: 18px; height: 18px; border-radius: 50%; background: rgba(225,29,72,0.15); color: #E11D48; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         @media (max-width: 700px) {
           .lp-cmp-header, .lp-cmp-row { grid-template-columns: 1fr 1fr; }
           .lp-cmp-feature { display: none; }
@@ -1316,20 +1390,49 @@ export default function Home() {
           </div>
           <div className="lp-footer-contact">
             <h4>Fale Conosco</h4>
-            <div className="lp-contact-form">
-              <select defaultValue="">
-                <option value="" disabled>Assunto</option>
-                <option value="suporte">Suporte técnico</option>
-                <option value="conta">Minha conta</option>
-                <option value="cobranca">Cobrança / plano</option>
-                <option value="denuncia">Denúncia de perfil</option>
-                <option value="parceria">Parceria</option>
-                <option value="outro">Outro</option>
-              </select>
-              <input type="date" style={{ colorScheme: 'dark' }} />
-              <textarea placeholder="Sua mensagem..." />
-              <button className="lp-contact-btn">Enviar</button>
-            </div>
+            {contatoEnviado ? (
+              <p style={{ color: '#4ade80', fontSize: '14px', marginTop: '12px' }}>
+                Mensagem enviada! Respondemos em breve.
+              </p>
+            ) : (
+              <form className="lp-contact-form" onSubmit={handleContatoSubmit}>
+                <input
+                  type="text"
+                  placeholder="Seu nome"
+                  value={contatoNome}
+                  onChange={e => setContatoNome(e.target.value)}
+                />
+                <input
+                  type="email"
+                  placeholder="Seu e-mail"
+                  value={contatoEmail}
+                  onChange={e => setContatoEmail(e.target.value)}
+                />
+                <select
+                  value={contatoAssunto}
+                  onChange={e => setContatoAssunto(e.target.value)}
+                >
+                  <option value="" disabled>Assunto</option>
+                  <option value="suporte">Suporte técnico</option>
+                  <option value="conta">Minha conta</option>
+                  <option value="cobranca">Cobrança / plano</option>
+                  <option value="denuncia">Denúncia de perfil</option>
+                  <option value="parceria">Parceria</option>
+                  <option value="outro">Outro</option>
+                </select>
+                <textarea
+                  placeholder="Sua mensagem..."
+                  value={contatoMensagem}
+                  onChange={e => setContatoMensagem(e.target.value)}
+                />
+                {contatoErro && (
+                  <p style={{ color: '#f87171', fontSize: '13px', margin: '4px 0 0' }}>{contatoErro}</p>
+                )}
+                <button className="lp-contact-btn" type="submit" disabled={contatoEnviando}>
+                  {contatoEnviando ? 'Enviando...' : 'Enviar'}
+                </button>
+              </form>
+            )}
           </div>
           <div className="lp-footer-bottom">
             <p>© {new Date().getFullYear()} MeAndYou · Todos os direitos reservados</p>

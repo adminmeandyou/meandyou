@@ -1,0 +1,31 @@
+User-agent: *
+Allow: /
+Allow: /planos
+Allow: /termos
+Allow: /privacidade
+Allow: /ajuda
+Allow: /login
+Allow: /cadastro
+Allow: /recuperar-senha
+
+Disallow: /admin/
+Disallow: /api/
+Disallow: /dashboard/
+Disallow: /busca/
+Disallow: /perfil/
+Disallow: /matches/
+Disallow: /conversas/
+Disallow: /backstage/
+Disallow: /destaque/
+Disallow: /loja/
+Disallow: /indicar/
+Disallow: /notificacoes/
+Disallow: /suporte/
+Disallow: /roleta/
+Disallow: /streak/
+Disallow: /minha-assinatura/
+Disallow: /onboarding/
+Disallow: /verificacao/
+Disallow: /deletar-conta/
+
+Sitemap: https://www.meandyou.com.br/sitemap.xml
