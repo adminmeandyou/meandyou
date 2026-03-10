@@ -52,6 +52,10 @@ export default function Home() {
   const [swipeDir, setSwipeDir] = useState<null | 'left' | 'right' | 'up'>(null)
   const swipeLock = useRef(false)
 
+  // PWA Install
+  const [installPrompt, setInstallPrompt] = useState<any>(null)
+  const [installDone, setInstallDone] = useState(false)
+
   // Notifications
   const [notifList, setNotifList] = useState<Array<{id: number, text: string, exiting: boolean}>>([])
   const notifIdRef = useRef(0)
@@ -162,6 +166,21 @@ export default function Home() {
     window.addEventListener('scroll', handleScroll, { passive: true })
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  // PWA install prompt (Android/Chrome)
+  useEffect(() => {
+    const handler = (e: any) => { e.preventDefault(); setInstallPrompt(e) }
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const handleInstall = async () => {
+    if (!installPrompt) return
+    installPrompt.prompt()
+    const { outcome } = await installPrompt.userChoice
+    if (outcome === 'accepted') setInstallDone(true)
+    setInstallPrompt(null)
+  }
 
   // IP geolocation para notificações personalizadas (fallback: cidade aleatória se API falhar ou atingir limite)
   useEffect(() => {
@@ -660,6 +679,33 @@ export default function Home() {
         .lp-gamif-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: var(--accent); }
         .lp-gamif-card h3 { font-family: var(--font-fraunces), serif; font-size: 20px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
         .lp-gamif-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin: 0; }
+
+        /* ── INSTALL PWA ── */
+        .lp-install { padding: 100px 56px; background: var(--bg-card); border-top: 1px solid var(--border); }
+        .lp-install-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+        .lp-install-left h2 { font-family: var(--font-fraunces), serif; font-size: clamp(30px, 4vw, 52px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
+        .lp-install-left h2 em { color: var(--accent); font-style: italic; }
+        .lp-install-left p { font-size: 16px; color: var(--text-muted); line-height: 1.75; margin-bottom: 36px; max-width: 440px; }
+        .lp-install-actions { display: flex; flex-direction: column; gap: 12px; max-width: 360px; }
+        .lp-install-btn { display: flex; align-items: center; gap: 12px; padding: 15px 24px; border-radius: 14px; font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer; border: none; transition: transform 0.15s, box-shadow 0.2s, background 0.2s; font-family: var(--font-jakarta), sans-serif; width: 100%; }
+        .lp-install-btn:hover { transform: translateY(-2px); }
+        .lp-install-btn.android { background: var(--accent); color: #fff; box-shadow: 0 8px 32px rgba(225,29,72,.30); }
+        .lp-install-btn.android:hover { background: #be123c; box-shadow: 0 12px 40px rgba(225,29,72,.45); }
+        .lp-install-btn.ios { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); }
+        .lp-install-btn.ios:hover { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.15); }
+        .lp-install-btn-icon { width: 22px; height: 22px; flex-shrink: 0; }
+        .lp-install-btn-text { display: flex; flex-direction: column; text-align: left; }
+        .lp-install-btn-text small { font-size: 11px; font-weight: 400; opacity: 0.7; margin-bottom: 1px; }
+        .lp-install-done { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #4ade80; font-weight: 600; padding: 15px 0; }
+        .lp-install-right { display: flex; flex-direction: column; gap: 16px; }
+        .lp-install-step { display: flex; align-items: flex-start; gap: 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; }
+        .lp-install-step-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-fraunces), serif; font-size: 15px; font-weight: 700; flex-shrink: 0; }
+        .lp-install-step-num.android { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border); }
+        .lp-install-step-num.ios { background: rgba(255,255,255,0.06); color: rgba(248,249,250,0.6); border: 1px solid var(--border); }
+        .lp-install-step h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+        .lp-install-step p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; }
+        .lp-install-os-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin: 8px 0 4px; }
+        @media (max-width: 960px) { .lp-install-inner { grid-template-columns: 1fr; gap: 48px; } .lp-install { padding: 72px 24px; } .lp-install-actions { max-width: 100%; } }
 
         /* ── TESTIMONIALS ── */
         .lp-testi { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border); }
@@ -1341,6 +1387,88 @@ export default function Home() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Instalar PWA ── */}
+        <section className="lp-install">
+          <div className="lp-install-inner">
+            <div className="lp-install-left lp-anim">
+              <p className="lp-section-label">App</p>
+              <h2>Baixe agora.<br /><em>Sem loja de apps.</em></h2>
+              <p>Funciona como um app de verdade — ícone na tela inicial, notificações em tempo real. Sem ocupar espaço da loja, sem burocracia.</p>
+              <div className="lp-install-actions">
+                {installDone ? (
+                  <div className="lp-install-done">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    App instalado com sucesso!
+                  </div>
+                ) : (
+                  <>
+                    <button onClick={handleInstall} className="lp-install-btn android" style={{ opacity: installPrompt ? 1 : 0.5, cursor: installPrompt ? 'pointer' : 'default' }}>
+                      <svg className="lp-install-btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341 14.6 10.5l2.184-3.78a.75.75 0 0 0-1.3-.75L13.3 9.75H10.7L9.516 5.97a.75.75 0 0 0-1.3.75L10.4 10.5l-2.923 4.841A.75.75 0 1 0 8.777 16L12 10.933 15.223 16a.75.75 0 1 0 1.3-.659zM6.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm11 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+                      <span className="lp-install-btn-text">
+                        <small>Toque para instalar</small>
+                        Instalar no Android
+                      </span>
+                    </button>
+                    <a href="#ios-steps" className="lp-install-btn ios">
+                      <svg className="lp-install-btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                      <span className="lp-install-btn-text">
+                        <small>Passo a passo</small>
+                        Instalar no iPhone
+                      </span>
+                    </a>
+                  </>
+                )}
+              </div>
+            </div>
+            <div className="lp-install-right lp-anim" id="ios-steps">
+              <p className="lp-install-os-label">Android · Chrome</p>
+              <div className="lp-install-step">
+                <div className="lp-install-step-num android">1</div>
+                <div>
+                  <h4>Abra no Chrome</h4>
+                  <p>Acesse meandyou.com.br pelo navegador Chrome no seu Android.</p>
+                </div>
+              </div>
+              <div className="lp-install-step">
+                <div className="lp-install-step-num android">2</div>
+                <div>
+                  <h4>Toque nos 3 pontos ⋮</h4>
+                  <p>No canto superior direito do Chrome, abra o menu de opções.</p>
+                </div>
+              </div>
+              <div className="lp-install-step">
+                <div className="lp-install-step-num android">3</div>
+                <div>
+                  <h4>Adicionar à tela inicial</h4>
+                  <p>Selecione a opção e confirme. O ícone aparece na sua tela.</p>
+                </div>
+              </div>
+              <p className="lp-install-os-label" style={{ marginTop: '8px' }}>iPhone · Safari</p>
+              <div className="lp-install-step">
+                <div className="lp-install-step-num ios">1</div>
+                <div>
+                  <h4>Abra no Safari</h4>
+                  <p>O Safari é obrigatório no iPhone para instalar apps pela web.</p>
+                </div>
+              </div>
+              <div className="lp-install-step">
+                <div className="lp-install-step-num ios">2</div>
+                <div>
+                  <h4>Toque em Compartilhar</h4>
+                  <p>Ícone de seta para cima na barra inferior do Safari.</p>
+                </div>
+              </div>
+              <div className="lp-install-step">
+                <div className="lp-install-step-num ios">3</div>
+                <div>
+                  <h4>Adicionar à Tela de Início</h4>
+                  <p>Role o menu para baixo, toque na opção e confirme.</p>
+                </div>
+              </div>
             </div>
           </div>
         </section>
