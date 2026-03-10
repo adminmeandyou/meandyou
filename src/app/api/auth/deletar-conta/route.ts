@@ -21,6 +21,15 @@ export async function DELETE(req: NextRequest) {
 
     const userId = user.id
 
+    // ─── PASSO 0: Deletar do Supabase Auth PRIMEIRO ────────────────────────────
+    // Feito antes de qualquer dado do banco para garantir que, se falhar,
+    // a conta ainda existe intacta e o usuário pode tentar novamente.
+    const { error: deleteAuthErr } = await supabase.auth.admin.deleteUser(userId)
+    if (deleteAuthErr) {
+      console.error('Erro ao deletar auth user:', deleteAuthErr)
+      return NextResponse.json({ error: 'Não foi possível excluir sua conta. Tente novamente ou contate o suporte.' }, { status: 500 })
+    }
+
     // ─── Sequência obrigatória LGPD ────────────────────────────────────────────
 
     // 1. Deletar fotos do bucket
@@ -64,13 +73,6 @@ export async function DELETE(req: NextRequest) {
 
     // 7. Deletar users
     await supabase.from('users').delete().eq('id', userId)
-
-    // 8. Deletar do Supabase Auth (deve ser o último)
-    const { error: deleteErr } = await supabase.auth.admin.deleteUser(userId)
-    if (deleteErr) {
-      console.error('Erro ao deletar auth user:', deleteErr)
-      // Não retorna erro — dados já foram removidos, auth pode ser limpo manualmente
-    }
 
     return NextResponse.json({ success: true })
   } catch (err) {
