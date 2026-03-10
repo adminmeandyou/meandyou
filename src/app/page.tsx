@@ -163,12 +163,14 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // IP geolocation para notificações personalizadas
+  // IP geolocation para notificações personalizadas (fallback: cidade aleatória se API falhar ou atingir limite)
   useEffect(() => {
+    const cidades = ['São Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Curitiba', 'Porto Alegre', 'Salvador', 'Fortaleza', 'Recife', 'Manaus', 'Goiânia', 'Campinas', 'Florianópolis']
+    const cidadeAleatoria = cidades[Math.floor(Math.random() * cidades.length)]
     fetch('https://ipapi.co/json/')
       .then(r => r.json())
-      .then(d => { if (d.city) setUserCity(d.city) })
-      .catch(() => {})
+      .then(d => { setUserCity(d.city || cidadeAleatoria) })
+      .catch(() => { setUserCity(cidadeAleatoria) })
   }, [])
 
   // Notificações animadas
