@@ -457,7 +457,7 @@ export default function Home() {
         .lp-stat-div { width: 1px; background: var(--border); }
 
         /* Phone mockup */
-        .lp-hero-right { position: relative; height: 580px; display: flex; align-items: center; justify-content: center; }
+        .lp-hero-right { position: relative; height: 660px; display: flex; align-items: center; justify-content: center; }
         .lp-phone {
           width: 265px; height: 560px; background: var(--bg-card);
           border-radius: 38px; border: 1px solid rgba(255,255,255,0.1);
@@ -727,7 +727,7 @@ export default function Home() {
         /* ── NOTIFICATIONS ── */
         @keyframes lp-notif-in { from { opacity:0; transform:translateY(10px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
         @keyframes lp-notif-out { from { opacity:1; transform:translateY(0) scale(1); } to { opacity:0; transform:translateY(-10px) scale(0.95); } }
-        .lp-notif-area { position:absolute; top:10px; left:-20px; z-index:20; display:flex; flex-direction:column; gap:8px; pointer-events:none; }
+        .lp-notif-area { position:absolute; bottom:0; left:50%; transform:translateX(-50%); z-index:20; display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none; }
         .lp-notif-item { background:rgba(8,9,14,0.90); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.13); border-radius:100px; padding:8px 16px; font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; display:flex; align-items:center; gap:6px; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
         .lp-notif-enter { animation: lp-notif-in 0.4s ease forwards; }
         .lp-notif-exit { animation: lp-notif-out 0.4s ease forwards; }
@@ -785,7 +785,7 @@ export default function Home() {
           .lp-hero-right { display: flex; justify-content: center; margin-top: 40px; }
           .lp-deck-wrap { width: 300px; height: 520px; }
           .lp-deck-side { width: 180px; height: 400px; }
-          .lp-notif-area { left: -10px; top: 5px; }
+          .lp-notif-area { left: 50%; transform: translateX(-50%); bottom: 0; }
           .lp-notif-item { font-size: 11px; padding: 7px 12px; }
           .lp-problem-inner, .lp-verification-inner { grid-template-columns: 1fr; gap: 40px; }
           .lp-steps-row { grid-template-columns: repeat(2, 1fr); }
@@ -882,15 +882,6 @@ export default function Home() {
             <div className="lp-hero-right">
               <div className="lp-deck-wrap">
 
-                {/* Notificações animadas */}
-                <div className="lp-notif-area">
-                  {notifList.map(n => (
-                    <div key={n.id} className={`lp-notif-item ${n.exiting ? 'lp-notif-exit' : 'lp-notif-enter'}`}>
-                      <span className="lp-fc-dot" />{n.text}
-                    </div>
-                  ))}
-                </div>
-
                 {/* Card borrado da esquerda */}
                 {(() => {
                   const prev = swipeCards[(currentCard + swipeCards.length - 1) % swipeCards.length]
@@ -954,6 +945,15 @@ export default function Home() {
                     </div>
                   )
                 })()}
+              </div>
+
+              {/* Notificações animadas — abaixo do celular */}
+              <div className="lp-notif-area">
+                {notifList.map(n => (
+                  <div key={n.id} className={`lp-notif-item ${n.exiting ? 'lp-notif-exit' : 'lp-notif-enter'}`}>
+                    <span className="lp-fc-dot" />{n.text}
+                  </div>
+                ))}
               </div>
             </div>
           </div>
