@@ -4,10 +4,10 @@ import { createServerClient } from '@supabase/ssr'
 
 // Rotas protegidas (requer autenticação)
 const PROTECTED_ROUTES = [
-  '/busca', '/match', '/chat', '/perfil', '/planos', '/dashboard',
+  '/busca', '/match', '/matches', '/chat', '/perfil', '/planos', '/dashboard',
   '/conversas', '/loja', '/destaque', '/indicar', '/backstage',
   '/roleta', '/streak', '/onboarding', '/notificacoes', '/suporte',
-  '/ajuda', '/deletar-conta',
+  '/ajuda', '/deletar-conta', '/minha-assinatura', '/videochamada', '/verificacao',
 ]
 
 // Rotas públicas (redireciona para /busca se já logado)
