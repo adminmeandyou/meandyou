@@ -15,6 +15,7 @@ const plusJakarta = Plus_Jakarta_Sans({
   display: 'swap',
 })
 
+
 export const metadata: Metadata = {
   title: 'MeAndYou — Relacionamentos com pessoas verificadas',
   description: 'O app de relacionamentos com verificação real de identidade e os filtros mais completos do Brasil.',

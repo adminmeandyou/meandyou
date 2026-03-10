@@ -14,7 +14,7 @@ function FaqItem({ pergunta, resposta }: { pergunta: string; resposta: string })
           width: '100%', background: 'none', border: 'none', cursor: 'pointer',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           gap: '16px', fontWeight: 600, fontSize: '15px', color: '#F8F9FA',
-          fontFamily: "'Inter', sans-serif", textAlign: 'left', padding: 0,
+          fontFamily: "var(--font-jakarta), sans-serif", textAlign: 'left', padding: 0,
         }}
       >
         {pergunta}
@@ -220,7 +220,7 @@ export default function Home() {
   if (checking) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#08090E' }}>
-        <h1 style={{ fontFamily: "'Playfair Display', serif", fontSize: '36px', color: '#f0ece4' }}>
+        <h1 style={{ fontFamily: "var(--font-fraunces), serif", fontSize: '36px', color: '#f0ece4' }}>
           MeAnd<span style={{ color: '#E11D48' }}>You</span>
         </h1>
       </div>
@@ -377,8 +377,6 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700&family=Inter:wght@300;400;500;600;700&display=swap');
-
         :root {
           --bg: #08090E;
           --bg-card: #0F1117;
@@ -401,7 +399,7 @@ export default function Home() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 
-        .lp { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; font-size: 16px; line-height: 1.6; overflow-x: hidden; }
+        .lp { background: var(--bg); color: var(--text); font-family: var(--font-jakarta), sans-serif; font-size: 16px; line-height: 1.6; overflow-x: hidden; }
 
         /* ── NAV ── */
         .lp-nav {
@@ -412,7 +410,7 @@ export default function Home() {
           border: 1px solid rgba(255,255,255,0.07); border-radius: 16px;
           transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s;
         }
-        .lp-logo { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 22px; color: var(--text); letter-spacing: -0.5px; text-decoration: none; }
+        .lp-logo { font-family: var(--font-fraunces), serif; font-weight: 700; font-size: 22px; color: var(--text); letter-spacing: -0.5px; text-decoration: none; }
         .lp-logo span { color: var(--accent); }
         .lp-nav-links { display: flex; gap: 4px; list-style: none; }
         .lp-nav-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 8px 14px; border-radius: 8px; transition: color 0.2s, background 0.2s; }
@@ -433,7 +431,7 @@ export default function Home() {
           animation: lp-fadeUp .5s ease both;
         }
         .lp-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: lp-pulse 2s ease-in-out infinite; }
-        .lp-hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(44px, 5vw, 74px); font-weight: 700; line-height: 1.06; letter-spacing: -2px; margin-bottom: 24px; animation: lp-fadeUp .5s .1s ease both; }
+        .lp-hero h1 { font-family: var(--font-fraunces), serif; font-size: clamp(44px, 5vw, 74px); font-weight: 700; line-height: 1.06; letter-spacing: -2px; margin-bottom: 24px; animation: lp-fadeUp .5s .1s ease both; }
         .lp-hero h1 em { font-style: italic; color: var(--accent); }
         .lp-hero-sub { font-size: 17px; color: var(--text-muted); max-width: 460px; margin-bottom: 40px; line-height: 1.75; animation: lp-fadeUp .5s .2s ease both; }
         .lp-hero-sub strong { color: var(--text); font-weight: 600; }
@@ -452,7 +450,7 @@ export default function Home() {
         }
         .lp-btn-outline:hover { border-color: rgba(255,255,255,0.2); background: rgba(255,255,255,0.04); }
         .lp-stats { display: flex; gap: 32px; margin-top: 48px; animation: lp-fadeUp .5s .4s ease both; }
-        .lp-stat-val { font-family: 'Playfair Display', serif; font-size: 28px; font-weight: 700; line-height: 1; color: var(--text); }
+        .lp-stat-val { font-family: var(--font-fraunces), serif; font-size: 28px; font-weight: 700; line-height: 1; color: var(--text); }
         .lp-stat-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
         .lp-stat-div { width: 1px; background: var(--border); }
 
@@ -465,14 +463,14 @@ export default function Home() {
           overflow: hidden;
         }
         .lp-phone-header { background: var(--accent); padding: 36px 20px 14px; text-align: center; }
-        .lp-phone-logo { font-family: 'Playfair Display', serif; font-size: 18px; font-weight: 700; color: #fff; }
+        .lp-phone-logo { font-family: var(--font-fraunces), serif; font-size: 18px; font-weight: 700; color: #fff; }
         .lp-phone-card { margin: 10px; background: var(--bg-card2); border-radius: 18px; overflow: hidden; border: 1px solid var(--border); }
         .lp-phone-img { height: 210px; background: linear-gradient(160deg, #1a0a14 0%, #3d1530 50%, #2a0e24 100%); display: flex; align-items: center; justify-content: center; font-size: 64px; position: relative; overflow: hidden; }
         .lp-phone-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
         .lp-phone-bio { font-size: 10.5px; color: var(--text-muted); line-height: 1.55; padding: 0 14px 10px; }
         .lp-v-badge { position: absolute; top: 10px; right: 10px; background: var(--accent); color: #fff; border-radius: 100px; padding: 4px 10px; font-size: 10px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
         .lp-phone-info { padding: 12px 14px 10px; }
-        .lp-phone-name { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--text); }
+        .lp-phone-name { font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 700; color: var(--text); }
         .lp-phone-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
         .lp-phone-tag { background: var(--accent-soft); color: #F43F5E; border-radius: 100px; padding: 3px 9px; font-size: 10px; font-weight: 600; }
         .lp-phone-actions { display: flex; justify-content: center; gap: 14px; padding: 10px 16px 14px; }
@@ -496,13 +494,13 @@ export default function Home() {
 
         /* ── Sections ── */
         .lp-section-label { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
-        .lp-section-title { font-family: 'Playfair Display', serif; font-size: clamp(30px, 4vw, 52px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
+        .lp-section-title { font-family: var(--font-fraunces), serif; font-size: clamp(30px, 4vw, 52px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
 
         /* ── COMPARATIVO ── */
         .lp-problem { padding: 100px 56px; background: var(--bg-card); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
         .lp-problem-inner { max-width: 1000px; margin: 0 auto; }
         .lp-problem-header { text-align: center; margin-bottom: 56px; }
-        .lp-problem h2 { font-family: 'Playfair Display', serif; font-size: clamp(28px, 4vw, 48px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 14px; }
+        .lp-problem h2 { font-family: var(--font-fraunces), serif; font-size: clamp(28px, 4vw, 48px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 14px; }
         .lp-problem h2 em { color: var(--accent); font-style: italic; }
         .lp-cmp-header { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin-bottom: 4px; }
         .lp-cmp-col-label { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 14px 20px; border-radius: 12px 12px 0 0; }
@@ -529,7 +527,7 @@ export default function Home() {
         .lp-verify-steps { display: flex; flex-direction: column; gap: 14px; }
         .lp-verify-step { display: flex; align-items: flex-start; gap: 18px; background: rgba(15,17,23,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.07); border-radius: 18px; padding: 22px 24px; transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s; }
         .lp-verify-step:hover { border-color: var(--accent-border); box-shadow: 0 8px 32px rgba(225,29,72,0.10); transform: translateX(4px); }
-        .lp-vstep-num { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; flex-shrink: 0; }
+        .lp-vstep-num { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 700; flex-shrink: 0; }
         .lp-verify-step h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
         .lp-verify-step p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0; }
 
@@ -544,7 +542,7 @@ export default function Home() {
         .lp-filter-cat:hover::after { transform: scaleX(1); }
         .lp-cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
         .lp-cat-emoji { font-size: 22px; }
-        .lp-filter-cat h3 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; color: var(--text); }
+        .lp-filter-cat h3 { font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 700; color: var(--text); }
         .lp-filter-cat > p { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.55; }
         .lp-tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
         .lp-ftag { border-radius: 100px; padding: 4px 12px; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s; border: 1px solid transparent; user-select: none; }
@@ -563,7 +561,7 @@ export default function Home() {
         .lp-intent-card:hover { border-color: var(--accent-border); background: rgba(225,29,72,0.06); transform: translateY(-6px) scale(1.02); box-shadow: 0 16px 40px rgba(225,29,72,0.12); }
         .lp-intent-icon { width: 46px; height: 46px; margin: 0 auto 14px; color: var(--accent); transition: transform 0.3s; }
         .lp-intent-card:hover .lp-intent-icon { transform: scale(1.15) rotate(-5deg); }
-        .lp-intent-card h3 { font-family: 'Playfair Display', serif; font-size: 15px; font-weight: 700; margin-bottom: 5px; color: var(--text); }
+        .lp-intent-card h3 { font-family: var(--font-fraunces), serif; font-size: 15px; font-weight: 700; margin-bottom: 5px; color: var(--text); }
         .lp-intent-card p { font-size: 11px; color: var(--text-muted); line-height: 1.55; }
 
         /* ── HOW IT WORKS ── */
@@ -577,7 +575,7 @@ export default function Home() {
         .lp-step-icon { width: 68px; height: 68px; border-radius: 50%; background: var(--bg); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; box-shadow: 0 4px 20px rgba(225,29,72,0.12); transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s; }
         .lp-how-step:hover .lp-step-icon { transform: translateY(-6px) scale(1.08); box-shadow: 0 14px 32px rgba(225,29,72,0.25); }
         .lp-step-icon svg { width: 26px; height: 26px; color: var(--accent); }
-        .lp-how-step h3 { font-family: 'Playfair Display', serif; font-size: 17px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+        .lp-how-step h3 { font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
         .lp-how-step p { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
 
         /* ── PRICING ── */
@@ -591,9 +589,9 @@ export default function Home() {
         .lp-feat-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; padding: 5px 18px; border-radius: 100px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
         .lp-feat-badge.rose { background: var(--accent); color: #fff; }
         .lp-feat-badge.gold { background: var(--gold); color: #fff; }
-        .lp-plan-name { font-family: 'Playfair Display', serif; font-size: 26px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+        .lp-plan-name { font-family: var(--font-fraunces), serif; font-size: 26px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
         .lp-plan-area { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 16px; }
-        .lp-plan-price { font-family: 'Playfair Display', serif; font-size: 52px; font-weight: 700; letter-spacing: -2px; line-height: 1; margin-bottom: 2px; color: var(--text); }
+        .lp-plan-price { font-family: var(--font-fraunces), serif; font-size: 52px; font-weight: 700; letter-spacing: -2px; line-height: 1; margin-bottom: 2px; color: var(--text); }
         .lp-plan-price sup { font-size: 20px; vertical-align: top; margin-top: 10px; display: inline-block; }
         .lp-plan-period { font-size: 12px; color: var(--text-muted); margin-bottom: 20px; }
         .lp-plan-desc { font-size: 13px; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6; padding-bottom: 20px; border-bottom: 1px solid var(--border); }
@@ -627,9 +625,9 @@ export default function Home() {
         }
         .lp-diff-card:hover { border-color: var(--accent-border); transform: translateY(-8px); box-shadow: 0 24px 60px rgba(225,29,72,0.1); }
         .lp-diff-card:hover::before { transform: scaleX(1); }
-        .lp-diff-num { font-family: 'Playfair Display', serif; font-size: 64px; font-weight: 700; color: rgba(225,29,72,0.08); line-height: 1; margin-bottom: 16px; }
+        .lp-diff-num { font-family: var(--font-fraunces), serif; font-size: 64px; font-weight: 700; color: rgba(225,29,72,0.08); line-height: 1; margin-bottom: 16px; }
         .lp-diff-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; color: var(--accent); }
-        .lp-diff-card h3 { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
+        .lp-diff-card h3 { font-family: var(--font-fraunces), serif; font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
         .lp-diff-card p { font-size: 14px; color: var(--text-muted); line-height: 1.75; margin: 0; }
         .lp-diff-tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 20px; background: var(--accent-soft); border: 1px solid var(--accent-border); color: #F43F5E; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
 
@@ -639,14 +637,14 @@ export default function Home() {
         .lp-contact-form { display: grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 12px; align-items: end; }
         .lp-contact-form select, .lp-contact-form input, .lp-contact-form textarea {
           background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 10px;
-          color: var(--text); font-family: 'Inter', sans-serif; font-size: 13px; padding: 10px 14px;
+          color: var(--text); font-family: var(--font-jakarta), sans-serif; font-size: 13px; padding: 10px 14px;
           outline: none; transition: border-color 0.2s;
           appearance: none; -webkit-appearance: none;
         }
         .lp-contact-form select:focus, .lp-contact-form input:focus, .lp-contact-form textarea:focus { border-color: rgba(225,29,72,0.4); }
         .lp-contact-form textarea { resize: none; height: 42px; }
         .lp-contact-form option { background: #13161F; }
-        .lp-contact-btn { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.2s; font-family: 'Inter', sans-serif; }
+        .lp-contact-btn { background: var(--accent); color: #fff; border: none; border-radius: 10px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.2s; font-family: var(--font-jakarta), sans-serif; }
         .lp-contact-btn:hover { background: #be123c; }
         @media (max-width: 960px) { .lp-contact-form { grid-template-columns: 1fr 1fr; } .lp-diff-grid { grid-template-columns: 1fr; } }
         @media (max-width: 600px) { .lp-contact-form { grid-template-columns: 1fr; } .lp-footer-contact { padding: 32px 24px; } }
@@ -658,7 +656,7 @@ export default function Home() {
         .lp-gamif-card { background: var(--bg); border: 1px solid var(--border); border-radius: 24px; padding: 36px 28px; text-align: left; transition: border-color 0.2s, transform 0.2s; }
         .lp-gamif-card:hover { border-color: var(--accent-border); transform: translateY(-4px); }
         .lp-gamif-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: var(--accent); }
-        .lp-gamif-card h3 { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+        .lp-gamif-card h3 { font-family: var(--font-fraunces), serif; font-size: 20px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
         .lp-gamif-card p { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin: 0; }
 
         /* ── TESTIMONIALS ── */
@@ -682,7 +680,7 @@ export default function Home() {
         /* ── SAFETY ── */
         .lp-safety { padding: 90px 56px; background: var(--bg); border-top: 1px solid var(--border); }
         .lp-safety-inner { max-width: 1100px; margin: 0 auto; }
-        .lp-safety h2 { font-family: 'Playfair Display', serif; font-size: clamp(24px, 3vw, 40px); font-weight: 700; letter-spacing: -1px; margin-bottom: 40px; color: var(--text); }
+        .lp-safety h2 { font-family: var(--font-fraunces), serif; font-size: clamp(24px, 3vw, 40px); font-weight: 700; letter-spacing: -1px; margin-bottom: 40px; color: var(--text); }
         .lp-safety h2 em { color: var(--accent); font-style: italic; }
         .lp-safety-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
         .lp-safety-item { display: flex; align-items: flex-start; gap: 14px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px; transition: border-color 0.2s; }
@@ -694,7 +692,7 @@ export default function Home() {
         /* ── CTA ── */
         .lp-cta { padding: 110px 56px; background: var(--bg); text-align: center; position: relative; overflow: hidden; }
         .lp-cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(225,29,72,0.10) 0%, transparent 60%); }
-        .lp-cta h2 { font-family: 'Playfair Display', serif; font-size: clamp(36px, 5vw, 66px); font-weight: 700; letter-spacing: -2px; color: var(--text); margin-bottom: 18px; line-height: 1.08; position: relative; }
+        .lp-cta h2 { font-family: var(--font-fraunces), serif; font-size: clamp(36px, 5vw, 66px); font-weight: 700; letter-spacing: -2px; color: var(--text); margin-bottom: 18px; line-height: 1.08; position: relative; }
         .lp-cta p { color: var(--text-muted); font-size: 17px; margin-bottom: 44px; position: relative; }
         .lp-btn-cta-white { background: #f0ece4; color: #08090E; padding: 17px 46px; border-radius: 12px; font-weight: 700; font-size: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: transform 0.15s, box-shadow 0.2s; cursor: pointer; position: relative; }
         .lp-btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
@@ -703,7 +701,7 @@ export default function Home() {
         /* ── FOOTER ── */
         .lp-footer { background: #020306; color: var(--text-dim); border-top: 1px solid var(--border); }
         .lp-footer-top { max-width: 1100px; margin: 0 auto; padding: 60px 56px 40px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
-        .lp-footer-logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 12px; display: block; text-decoration: none; }
+        .lp-footer-logo { font-family: var(--font-fraunces), serif; font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 12px; display: block; text-decoration: none; }
         .lp-footer-logo span { color: var(--accent); }
         .lp-footer-col h4 { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(248,249,250,0.5); margin-bottom: 16px; }
         .lp-footer-col a { display: block; font-size: 13px; color: var(--text-dim); text-decoration: none; margin-bottom: 10px; transition: color 0.2s; }
