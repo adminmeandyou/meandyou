@@ -1409,6 +1409,7 @@ export default function Home() {
         <section className="lp-install">
           <div className="lp-install-inner">
             <div className="lp-install-left lp-anim">
+              <img src="/logo.png" alt="MeAndYou" style={{ height: '52px', marginBottom: '28px', display: 'block' }} />
               <p className="lp-section-label">App</p>
               <h2>Baixe agora.<br /><em>Sem loja de apps.</em></h2>
               <p>Funciona como um app de verdade — ícone na tela inicial, notificações em tempo real. Sem ocupar espaço da loja, sem burocracia.</p>
