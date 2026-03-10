@@ -483,7 +483,7 @@ export default function Home() {
           box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06), 0 0 60px rgba(225,29,72,0.08);
           overflow: hidden; animation: card-enter 0.38s cubic-bezier(.34,1.4,.64,1) both;
         }
-        .lp-phone-header { background: var(--bg); padding: 36px 20px 18px; text-align: center; display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid var(--border); }
+        .lp-phone-header { background: var(--bg); padding: 36px 20px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid var(--border); }
         .lp-phone-logo { display: flex; align-items: center; justify-content: center; }
         .lp-phone-card { margin: 10px; background: var(--bg-card2); border-radius: 18px; overflow: hidden; border: 1px solid var(--border); }
         .lp-phone-img { height: 210px; background: linear-gradient(160deg, #1a0a14 0%, #3d1530 50%, #2a0e24 100%); display: flex; align-items: center; justify-content: center; font-size: 64px; position: relative; overflow: hidden; }
@@ -958,9 +958,9 @@ export default function Home() {
                   <span className="lp-swipe-label super">SUPER</span>
                   <div className="lp-phone-header">
                     <div className="lp-phone-logo">
-                      <img src="/logo.png" alt="MeAndYou" style={{ height: '108px', maxWidth: '220px', objectFit: 'contain' }} />
+                      <img src="/logo.png" alt="MeAndYou" style={{ height: '28px', maxWidth: '140px', objectFit: 'contain' }} />
                     </div>
-                    <div style={{ fontSize:'10px', opacity:0.75, marginTop:'5px', color:'#fff' }}>Conexões reais</div>
+                    <div style={{ fontSize:'10px', opacity:0.6, marginTop:'3px', color: 'var(--muted)' }}>Conexões reais</div>
                   </div>
                   <div className="lp-phone-card">
                     <div className="lp-phone-img" style={{ background: swipeCards[currentCard].placeholder }}>
