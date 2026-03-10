@@ -44,6 +44,7 @@ export default function Home() {
   const [checking, setChecking] = useState(true)
   const animRef = useRef(false)
   const [navVisible, setNavVisible] = useState(true)
+  const [menuAberto, setMenuAberto] = useState(false)
   const lastScrollY = useRef(0)
 
   // Card deck
@@ -760,9 +761,26 @@ export default function Home() {
         .lp-cta-sub strong { color:var(--text); font-weight:700; }
         .lp-cta-sub em { color:var(--accent); font-style:italic; font-weight:600; }
 
+        /* ── HAMBÚRGUER ── */
+        .lp-hamburger { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 5px; width: 40px; height: 40px; background: none; border: none; cursor: pointer; padding: 4px; }
+        .lp-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: transform 0.3s, opacity 0.3s; }
+        .lp-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+        .lp-hamburger.open span:nth-child(2) { opacity: 0; }
+        .lp-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+        /* ── DRAWER MOBILE ── */
+        .lp-mobile-menu { display: none; position: fixed; inset: 0; z-index: 199; }
+        .lp-mobile-menu.open { display: block; }
+        .lp-mobile-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); }
+        .lp-mobile-drawer { position: absolute; top: 0; right: 0; width: 280px; height: 100%; background: #0F1117; border-left: 1px solid rgba(255,255,255,0.07); padding: 80px 28px 40px; display: flex; flex-direction: column; gap: 8px; }
+        .lp-mobile-drawer a { color: rgba(248,249,250,0.7); text-decoration: none; font-size: 18px; font-weight: 500; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: block; transition: color 0.2s; }
+        .lp-mobile-drawer a:hover { color: #F8F9FA; }
+        .lp-mobile-drawer .lp-nav-cta { background: var(--accent) !important; color: #fff !important; border-radius: 12px !important; padding: 14px 20px !important; border-bottom: none !important; text-align: center; margin-top: 12px; font-weight: 600 !important; }
+
         @media (max-width: 960px) {
           .lp-nav { width: calc(100% - 32px); top: 12px; padding: 12px 20px; }
           .lp-nav-links { display: none; }
+          .lp-hamburger { display: flex; }
           .lp-hero { grid-template-columns: 1fr; padding: 110px 24px 60px; }
           .lp-hero-right { display: flex; justify-content: center; margin-top: 40px; }
           .lp-deck-wrap { width: 300px; height: 520px; }
@@ -809,7 +827,26 @@ export default function Home() {
             <li><a href="#seguranca">Segurança</a></li>
             <li><a href="/planos" className="lp-nav-cta">Começar agora</a></li>
           </ul>
+          <button
+            className={`lp-hamburger${menuAberto ? ' open' : ''}`}
+            onClick={() => setMenuAberto(!menuAberto)}
+            aria-label="Menu"
+          >
+            <span /><span /><span />
+          </button>
         </nav>
+
+        {/* ── Menu Mobile ── */}
+        <div className={`lp-mobile-menu${menuAberto ? ' open' : ''}`}>
+          <div className="lp-mobile-overlay" onClick={() => setMenuAberto(false)} />
+          <div className="lp-mobile-drawer">
+            <a href="#verificacao" onClick={() => setMenuAberto(false)}>Verificação</a>
+            <a href="#filtros" onClick={() => setMenuAberto(false)}>Filtros</a>
+            <a href="#precos" onClick={() => setMenuAberto(false)}>Planos</a>
+            <a href="#seguranca" onClick={() => setMenuAberto(false)}>Segurança</a>
+            <a href="/planos" className="lp-nav-cta" onClick={() => setMenuAberto(false)}>Começar agora</a>
+          </div>
+        </div>
 
         {/* ── Hero ── */}
         <section className="lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.55), rgba(8,9,14,0.80)), url('/backgrounds/nova/Image_fx (1).png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
