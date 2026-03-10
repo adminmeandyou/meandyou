@@ -31,29 +31,37 @@ export async function DELETE(req: NextRequest) {
     }
 
     // ─── Sequência obrigatória LGPD ────────────────────────────────────────────
+    // IMPORTANTE: auth já foi deletado acima. Todos os erros abaixo são logados mas não
+    // interrompem o fluxo — queremos limpar o máximo possível de dados mesmo em falhas parciais.
 
     // 1. Deletar fotos do bucket
-    const { data: fotos } = await supabase.storage.from('fotos').list(userId)
-    if (fotos && fotos.length > 0) {
-      const paths = fotos.map((f) => `${userId}/${f.name}`)
-      await supabase.storage.from('fotos').remove(paths)
-    }
+    try {
+      const { data: fotos } = await supabase.storage.from('fotos').list(userId)
+      if (fotos && fotos.length > 0) {
+        const paths = fotos.map((f) => `${userId}/${f.name}`)
+        await supabase.storage.from('fotos').remove(paths)
+      }
+    } catch (err) { console.error('Deletar fotos error:', err) }
 
     // 2. Deletar documentos do bucket
-    const { data: docs } = await supabase.storage.from('documentos').list(userId)
-    if (docs && docs.length > 0) {
-      const paths = docs.map((d) => `${userId}/${d.name}`)
-      await supabase.storage.from('documentos').remove(paths)
-    }
+    try {
+      const { data: docs } = await supabase.storage.from('documentos').list(userId)
+      if (docs && docs.length > 0) {
+        const paths = docs.map((d) => `${userId}/${d.name}`)
+        await supabase.storage.from('documentos').remove(paths)
+      }
+    } catch (err) { console.error('Deletar documentos error:', err) }
 
     // 3. Deletar mensagens enviadas
-    await supabase.from('messages').delete().eq('sender_id', userId)
+    const { error: msgErr } = await supabase.from('messages').delete().eq('sender_id', userId)
+    if (msgErr) console.error('Deletar messages error:', msgErr)
 
     // 4. Deletar matches
-    await supabase.from('matches').delete().or(`user1.eq.${userId},user2.eq.${userId}`)
+    const { error: matchErr } = await supabase.from('matches').delete().or(`user1.eq.${userId},user2.eq.${userId}`)
+    if (matchErr) console.error('Deletar matches error:', matchErr)
 
-    // 5. Deletar dados relacionais
-    await Promise.all([
+    // 5. Deletar dados relacionais (logs de erro sem interromper)
+    const relationalDeletes = await Promise.allSettled([
       supabase.from('likes').delete().or(`from_user.eq.${userId},to_user.eq.${userId}`),
       supabase.from('referrals').delete().or(`referrer_id.eq.${userId},referred_id.eq.${userId}`),
       supabase.from('notifications').delete().eq('user_id', userId),
@@ -64,15 +72,24 @@ export async function DELETE(req: NextRequest) {
       supabase.from('daily_streaks').delete().eq('user_id', userId),
       supabase.from('push_subscriptions').delete().eq('user_id', userId),
       supabase.from('analytics_events').delete().eq('user_id', userId),
-      supabase.from('video_calls').delete().or(`caller_id.eq.${userId},callee_id.eq.${userId}`),
     ])
+    relationalDeletes.forEach((r, i) => {
+      if (r.status === 'rejected') console.error(`Deletar relacional[${i}] error:`, r.reason)
+    })
+
+    // video_calls pode não existir em todos os ambientes — ignorar erro silenciosamente
+    try {
+      await supabase.from('video_calls').delete().or(`caller_id.eq.${userId},callee_id.eq.${userId}`)
+    } catch (_) {}
 
     // 6. Deletar profiles (cascade: filters, user_superlikes, user_boosts,
     //    user_tickets, user_lupas, user_rewinds)
-    await supabase.from('profiles').delete().eq('id', userId)
+    const { error: profileErr } = await supabase.from('profiles').delete().eq('id', userId)
+    if (profileErr) console.error('Deletar profiles error:', profileErr)
 
     // 7. Deletar users
-    await supabase.from('users').delete().eq('id', userId)
+    const { error: userErr } = await supabase.from('users').delete().eq('id', userId)
+    if (userErr) console.error('Deletar users error:', userErr)
 
     return NextResponse.json({ success: true })
   } catch (err) {

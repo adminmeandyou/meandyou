@@ -7,26 +7,7 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Rate limiting em memória: max 10 uploads/usuário/hora
-// (resets em cold starts do serverless — proteção razoável)
-const uploadCounts = new Map<string, { count: number; windowStart: number }>()
 const MAX_UPLOADS_POR_HORA = 10
-const UMA_HORA_MS = 60 * 60 * 1000
-
-function verificarRateLimit(userId: string): boolean {
-  const agora = Date.now()
-  const entry = uploadCounts.get(userId)
-
-  if (!entry || agora - entry.windowStart > UMA_HORA_MS) {
-    uploadCounts.set(userId, { count: 1, windowStart: agora })
-    return true
-  }
-
-  if (entry.count >= MAX_UPLOADS_POR_HORA) return false
-
-  entry.count++
-  return true
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -41,13 +22,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    // 2. Rate limit: max 10 uploads por hora por usuário
-    if (!verificarRateLimit(user.id)) {
+    // 2. Rate limit: max 10 uploads por hora por usuário (DB-based — funciona em serverless)
+    const umaHoraAtras = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    const { count: uploadCount } = await supabaseAdmin
+      .from('analytics_events')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('event_type', 'photo_upload_attempt')
+      .gte('created_at', umaHoraAtras)
+
+    if ((uploadCount ?? 0) >= MAX_UPLOADS_POR_HORA) {
       return NextResponse.json(
         { error: 'Limite de uploads atingido. Tente novamente em 1 hora.' },
         { status: 429 }
       )
     }
+
+    // Registrar tentativa antes de chamar Sightengine
+    try {
+      await supabaseAdmin.from('analytics_events').insert({
+        user_id: user.id,
+        event_type: 'photo_upload_attempt',
+        metadata: {},
+      })
+    } catch (_) {}
 
     // 3. Pegar foto do form
     const formData = await req.formData()

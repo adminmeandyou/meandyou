@@ -30,12 +30,11 @@ const STORE_OFFERS: Record<string, StoreItem> = {
   // Boosts
   'hsv4ooq': { type: 'boost',     amount: 1,  item_type: 'boost_1'       },
   'sgbdabs': { type: 'boost',     amount: 5,  item_type: 'boost_5'       },
-  // Lupas — slugs a definir no Cakto, substituir quando criados
-  'lupa_5_slug':  { type: 'lupa',   amount: 5,  item_type: 'lupas_5'       },
-  'lupa_15_slug': { type: 'lupa',   amount: 15, item_type: 'lupas_15'      },
-  'lupa_30_slug': { type: 'lupa',   amount: 30, item_type: 'lupas_30'      },
-  // Rewinds — slug a definir no Cakto
-  'rewind_5_slug': { type: 'rewind', amount: 5, item_type: 'rewinds_5'     },
+  // TODO: substituir pelos slugs reais ao criar os produtos no painel Cakto
+  // 'SLUG_LUPA_5':    { type: 'lupa',   amount: 5,  item_type: 'lupas_5'   },
+  // 'SLUG_LUPA_15':   { type: 'lupa',   amount: 15, item_type: 'lupas_15'  },
+  // 'SLUG_LUPA_30':   { type: 'lupa',   amount: 30, item_type: 'lupas_30'  },
+  // 'SLUG_REWIND_5':  { type: 'rewind', amount: 5,  item_type: 'rewinds_5' },
 }
 
 // ── Validação HMAC ────────────────────────────────────────────────────────
@@ -185,7 +184,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true })
     }
 
-    console.warn('Oferta não reconhecida:', offerSlug)
+    // ATENÇÃO: oferta não mapeada — pode ser slug de Lupa/Rewind ainda não configurado.
+    // Adicionar o slug real em STORE_OFFERS para que compras desse item sejam creditadas.
+    console.error(`Webhook Cakto: oferta não reconhecida — slug="${offerSlug}", orderId="${orderId}", email="${customerEmail}"`)
     return NextResponse.json({ received: true })
 
   } catch (err) {

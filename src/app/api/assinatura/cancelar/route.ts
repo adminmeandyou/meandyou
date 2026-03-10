@@ -40,7 +40,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Assinatura não está ativa' }, { status: 400 })
     }
 
-    // Cancela — acesso continua até ends_at; pg_cron faz o downgrade ao expirar
+    // TODO: chamar API da Cakto para parar a recorrência antes de atualizar o banco.
+    // Sem isso, o usuário cancela no app mas pode ser cobrado no próximo ciclo.
+    // Verificar com suporte Cakto o endpoint de cancelamento de recorrência.
+    console.warn(`Cancelamento de assinatura ${subscription_id} — integração Cakto pendente, recorrência pode continuar`)
+
+    // Cancela no banco — acesso continua até ends_at; pg_cron faz o downgrade ao expirar
     const { error: updateErr } = await supabase
       .from('subscriptions')
       .update({ status: 'cancelled' })

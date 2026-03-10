@@ -45,8 +45,9 @@ export async function POST(req: NextRequest) {
       if (!room) return NextResponse.json({ received: true })
 
       // matchId está no nome da sala: "match-{matchId}"
-      // ou pode ter userId também: "match-{matchId}-{userId1}-{userId2}"
-      const matchId = parts[1]
+      // UUIDs contêm hífens (ex: 550e8400-e29b-41d4-a716-446655440000), então
+      // NÃO usar parts[1] (truncaria o UUID). Usar slice(1).join('-') para reconstruir.
+      const matchId = parts.slice(1).join('-')
       if (!matchId) return NextResponse.json({ received: true })
 
       const createdAt = Number(room.creationTime ?? 0) // Unix timestamp em segundos

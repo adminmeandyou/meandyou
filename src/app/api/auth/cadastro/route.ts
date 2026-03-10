@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
     }).eq('id', userId)
 
     // 4. Inicializar saldos zerados
-    await Promise.all([
+    const saldoResults = await Promise.allSettled([
       supabase.from('user_tickets').insert({ user_id: userId, amount: 0 }),
       supabase.from('user_lupas').insert({ user_id: userId, amount: 0 }),
       supabase.from('user_superlikes').insert({ user_id: userId, amount: 0 }),
@@ -93,6 +93,9 @@ export async function POST(req: NextRequest) {
         last_login_date: null,
       }),
     ])
+    saldoResults.forEach((r, i) => {
+      if (r.status === 'rejected') console.error(`Inicializar saldo[${i}] error:`, r.reason)
+    })
 
     // 5. Vincular indicação se veio de referral
     if (refCode) {
