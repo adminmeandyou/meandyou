@@ -59,7 +59,6 @@ export default function Home() {
   // Notifications
   const [notifList, setNotifList] = useState<Array<{id: number, text: string, exiting: boolean}>>([])
   const notifIdRef = useRef(0)
-  const notifIndexRef = useRef(0)
 
   // Location
   const [userCity, setUserCity] = useState('')
@@ -118,29 +117,26 @@ export default function Home() {
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
-          const el = e.target as HTMLElement
-          el.style.opacity = '1'
-          el.style.transform = 'translateY(0)'
+          ;(e.target as HTMLElement).classList.add('lp-visible')
+          observer.unobserve(e.target)
         }
       })
-    }, { threshold: 0.07 })
+    }, { threshold: 0.06, rootMargin: '0px 0px -32px 0px' })
 
     document.querySelectorAll('.lp-anim').forEach(el => {
-      const e = el as HTMLElement
-      if (prefersReduced) { e.style.opacity = '1'; return }
-      e.style.opacity = '0'
-      e.style.transform = 'translateY(20px)'
-      e.style.transition = 'opacity 0.5s ease, transform 0.5s ease'
-      observer.observe(e)
+      if (prefersReduced) { (el as HTMLElement).classList.add('lp-visible'); return }
+      observer.observe(el)
     })
 
     const howObserver = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
-          e.target.querySelectorAll('.lp-how-step').forEach((s: any) => s.classList.add('visible'))
+          e.target.querySelectorAll('.lp-how-step').forEach((s: any, i: number) => {
+            setTimeout(() => s.classList.add('visible'), i * 110)
+          })
         }
       })
-    }, { threshold: 0.15 })
+    }, { threshold: 0.12 })
     const stepsRow = document.querySelector('.lp-steps-row')
     if (stepsRow) howObserver.observe(stepsRow)
 
@@ -192,39 +188,58 @@ export default function Home() {
       .catch(() => { setUserCity(cidadeAleatoria) })
   }, [])
 
-  // Notificações animadas
+  // Notificações animadas — geração dinâmica e totalmente aleatória
   useEffect(() => {
     if (checking) return
-    const cityNames = ['Ana', 'Carlos', 'Juliana', 'Marcos', 'Beatriz', 'Rafael', 'Leticia', 'Diego', 'Priscila', 'Bruno']
-    const cityActions = [
-      (c: string) => `${cityNames[Math.floor(Math.random()*cityNames.length)]}, de ${c} · acabou de entrar`,
-      (c: string) => `Alguém de ${c} · assinou o Plus agora`,
-      (c: string) => `${cityNames[Math.floor(Math.random()*cityNames.length)]} de ${c} · está te procurando`,
-      (c: string) => `Novo usuário de ${c} · verificou identidade`,
-      (c: string) => `${cityNames[Math.floor(Math.random()*cityNames.length)]} de ${c} · ganhou na roleta`,
+
+    const nm = ['Ana','Carlos','Juliana','Marcos','Beatriz','Rafael','Leticia','Diego','Priscila','Bruno','Fernanda','Gustavo','Isabela','Thiago','Camila','Leonardo','Vanessa','Eduardo','Patricia','Rodrigo','Mariana','Felipe','Natalia','Vinicius','Larissa','Amanda','Ricardo','Bianca','Fabricio','Simone','Caio','Rebeca','Henrique','Luciana','Andre','Sabrina','Alex','Carolina','Marcelo','Giovana','Renata','Daniel','Pedro','Tatiana','Luiz','Monica','Gabriel','Aline','Sergio','Claudia','Paulo','Silvia','Eliane','Tiago','Bruna','Joao','Adriana','Flavia','Matheus']
+    const ct = userCity
+      ? [userCity,'São Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiânia','Campinas','Florianópolis','Belém','São Luís','Maceió','Natal','Teresina','Campo Grande','João Pessoa','Aracaju','Porto Velho','Macapá','Boa Vista','Palmas','Vitória','Macaé','Ribeirão Preto','Uberlândia','Contagem']
+      : ['São Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiânia','Campinas','Florianópolis','Belém','São Luís','Maceió','Natal','Teresina','Campo Grande','João Pessoa','Aracaju','Porto Velho','Macapá','Boa Vista','Palmas','Vitória','Macaé','Ribeirão Preto','Uberlândia','Contagem','Feira de Santana']
+    const filtros = ['que não queira ter filhos','que tenha pets','que seja evangélico(a)','que seja espiritualista','que seja vegano(a)','que seja vegetariano(a)','que não fume','que não beba','que faça academia','que goste de viajar','que seja introvertido(a)','que seja extrovertido(a)','que goste de leitura','que seja gamer','que goste de anime','que goste de sertanejo','que goste de funk','que goste de rock','que goste de MPB','que tenha cabelo crespo','que tenha olhos verdes','que seja loiro(a)','que goste de churrasco','que goste de trilha e natureza','que seja ateu(a)','que seja agnóstico(a)','que seja católico(a)','que curta K-pop','que seja divorciado(a)','que tenha tatuagem','que use óculos','que goste de dança','que goste de fotografia','que goste de séries','que goste de meditação','que seja empreendedor(a)','que trabalhe remoto','que tenha barba','que seja bissexual','que curta pagode','que seja solteiro(a) sem filhos','que goste de teatro','que pratique yoga','que goste de jazz','que goste de filmes']
+    const premios = ['3 SuperCurtidas','1 Boost','5 Lupas','2 Desfazer Curtidas','3 tickets de roleta','1 dia de Modo Invisível','5 SuperCurtidas','10 Lupas']
+
+    const rnd = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)]
+    const idade = () => Math.floor(Math.random() * 37) + 18
+
+    const gens = [
+      () => `${rnd(nm)}, ${idade()} · acabou de se cadastrar em ${rnd(ct)}`,
+      () => `${rnd(nm)}, ${idade()} · verificou identidade agora`,
+      () => `${rnd(nm)} de ${rnd(ct)} · assinou o Plus`,
+      () => `${rnd(nm)} de ${rnd(ct)} · assinou o Camarote Black`,
+      () => `${rnd(nm)} de ${rnd(ct)} · assinou o Essencial`,
+      () => `${rnd(nm)}, ${idade()} · fez upgrade para Plus`,
+      () => `${rnd(nm)}, ${idade()} · fez upgrade para Black`,
+      () => `${rnd(nm)} de ${rnd(ct)} · deu match agora`,
+      () => `${rnd(nm)}, ${idade()} · enviou uma SuperCurtida`,
+      () => `${rnd(nm)}, ${idade()} · ganhou ${rnd(premios)} na roleta`,
+      () => `${rnd(nm)} de ${rnd(ct)} · ganhou ${rnd(premios)} na roleta`,
+      () => `${rnd(nm)}, ${idade()} · atingiu streak de 7 dias`,
+      () => `${rnd(nm)}, ${idade()} · atingiu streak de 14 dias`,
+      () => `${rnd(nm)}, ${idade()} · atingiu streak de 30 dias`,
+      () => `${rnd(nm)} de ${rnd(ct)} · configurou ${Math.floor(Math.random()*30)+20} filtros`,
+      () => `${rnd(nm)}, ${idade()} · curtiu ${Math.floor(Math.random()*8)+3} perfis hoje`,
+      () => `${rnd(nm)} de ${rnd(ct)} · está procurando alguém ${rnd(filtros)}`,
+      () => `${rnd(nm)}, ${idade()} · está procurando alguém ${rnd(filtros)}`,
+      () => `${rnd(nm)} de ${rnd(ct)} · perdeu um match hoje`,
+      () => `${rnd(nm)}, ${idade()} · encontrou uma conexão em ${rnd(ct)}`,
+      () => `Novo perfil em ${rnd(ct)} · ${rnd(nm)}, ${idade()} verificado`,
+      () => `${rnd(nm)} de ${rnd(ct)} · usou uma Lupa no Destaque`,
+      () => `${rnd(nm)}, ${idade()} · resgatou prêmio do calendário`,
     ]
 
+    let timer: ReturnType<typeof setTimeout>
     const addNotif = () => {
-      const idx = notifIndexRef.current
-      notifIndexRef.current = idx + 1
-      const total = idx + 1
-      let text: string
-      // A cada 4 notificações, inserir 1 baseada na cidade (se disponível)
-      if (userCity && total % 4 === 3) {
-        const fn = cityActions[Math.floor(Math.random() * cityActions.length)]
-        text = fn(userCity)
-      } else {
-        text = BASE_NOTIFS[idx % BASE_NOTIFS.length]
-      }
+      const text = rnd(gens)()
       const id = ++notifIdRef.current
       setNotifList(prev => [...prev.slice(-2), { id, text, exiting: false }])
-      setTimeout(() => setNotifList(prev => prev.map(x => x.id === id ? { ...x, exiting: true } : x)), 3200)
-      setTimeout(() => setNotifList(prev => prev.filter(x => x.id !== id)), 3700)
+      setTimeout(() => setNotifList(prev => prev.map(x => x.id === id ? { ...x, exiting: true } : x)), 4200)
+      setTimeout(() => setNotifList(prev => prev.filter(x => x.id !== id)), 4800)
+      timer = setTimeout(addNotif, 4000 + Math.random() * 4000)
     }
 
-    addNotif()
-    const t = setInterval(addNotif, 3500)
-    return () => clearInterval(t)
+    timer = setTimeout(addNotif, 1500 + Math.random() * 2000)
+    return () => clearTimeout(timer)
   }, [checking, userCity]) // eslint-disable-line
 
   const handleSwipe = (dir: 'left' | 'right' | 'up') => {
@@ -269,58 +284,6 @@ export default function Home() {
     },
   ]
 
-  const BASE_NOTIFS = [
-    'Gótica, 25 · acabou de se cadastrar',
-    'Gamer, São Paulo · está online agora',
-    'Evangélica, 32 · ativo há 3 min',
-    'Vinicius, 28 · assinou o Plus',
-    'Larissa, 31 · assinou o Camarote Black',
-    'Felipe, RJ · ganhou 3 SuperCurtidas na roleta',
-    'Bruna, 26 · perdeu um match',
-    'Carlos, 38 · fez upgrade para Plus',
-    'Tatiana, 27 · acabou de se cadastrar',
-    'Rodrigo, 45 · procurando relacionamento sério',
-    'Juliana, 23 · verificou identidade agora',
-    'Diego, 36 · deu match com alguém',
-    'Natalia, 28 · configurou 52 filtros',
-    'Marcos, 41 · ativo agora',
-    'Renata, 29 · ganhou Boost na roleta',
-    'Rafael, 33 · procurando algo casual',
-    'Giovana, 27 · se cadastrou agora',
-    'Thiago, 44 · ganhou 5 Lupas',
-    'Amanda, 22 · enviou SuperCurtida',
-    'Lucas, 30 · assinou o Essencial',
-    'Camila, 25 · fez upgrade para Black',
-    'Gustavo, 37 · logou pela primeira vez',
-    'Isabela, 31 · verificou identidade',
-    'Bruno, 29 · procurando amizade',
-    'Mariana, 26 · encontrou seu match',
-    'Fernando, 48 · ativo há pouco',
-    'Patricia, 34 · ganhou na roleta',
-    'Daniel, 27 · acabou de curtir alguém',
-    'Luciana, 32 · streak de 7 dias!',
-    'Eduardo, 39 · assinou o Black',
-    'Fernanda, 28 · deu match com alguém',
-    'Henrique, 25 · está online agora',
-    'Leticia, 30 · verificou identidade',
-    'Ricardo, 42 · procurando relacionamento',
-    'Vanessa, 33 · ganhou SuperCurtidas',
-    'Andre, 31 · streak de 14 dias!',
-    'Pedro, 35 · ganhou Boost na roleta',
-    'Beatriz, 24 · se cadastrou agora',
-    'Leonardo, 38 · fez upgrade para Plus',
-    'Carolina, 29 · curtiu 5 perfis hoje',
-    'Marcelo, 45 · ativo agora',
-    'Sabrina, 27 · deu match',
-    'Alex, 32 · streak de 30 dias!',
-    'Priscila, 36 · encontrou conexão',
-    'Roberto, 50 · se cadastrou hoje',
-    'Bianca, 23 · verificou identidade',
-    'Fabricio, 41 · assinou o Plus',
-    'Simone, 35 · procurando algo sério',
-    'Caio, 28 · acabou de ganhar na roleta',
-    'Rebeca, 24 · deu SuperCurtida em alguém',
-  ]
 
   const faqItems = [
     { q: 'Por que não existe um plano gratuito?', a: 'Porque o gratuito atrai quem não sabe o que quer. Aplicativos abertos viram bagunça: perfis falsos, pessoas inativas e perda de tempo. Cobrar um valor acessível (a partir de R$10) cria um filtro imediato. Quem investe para estar aqui, por menor que seja o valor, tem outro nível de intenção. Você percebe a diferença de nível já na primeira mensagem.' },
@@ -439,6 +402,59 @@ export default function Home() {
         .lp-nav-cta { background: var(--accent) !important; color: #fff !important; padding: 10px 22px !important; border-radius: 10px !important; font-weight: 600 !important; }
         .lp-nav-cta:hover { background: #be123c !important; }
 
+        /* ── SCROLL REVEAL SYSTEM ── */
+        @keyframes lpFadeUp   { from { opacity:0; transform:translateY(52px); }  to { opacity:1; transform:translateY(0); } }
+        @keyframes lpFadeLeft { from { opacity:0; transform:translateX(-52px); } to { opacity:1; transform:translateX(0); } }
+        @keyframes lpFadeRight{ from { opacity:0; transform:translateX(52px); }  to { opacity:1; transform:translateX(0); } }
+        @keyframes lpScaleIn  { from { opacity:0; transform:scale(0.84) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
+        @keyframes lpBlurUp   { from { opacity:0; filter:blur(18px); transform:translateY(28px); } to { opacity:1; filter:blur(0); transform:translateY(0); } }
+        @keyframes lpFlipUp   { from { opacity:0; transform:perspective(700px) rotateX(18deg) translateY(32px); } to { opacity:1; transform:perspective(700px) rotateX(0deg) translateY(0); } }
+
+        .lp-anim { opacity: 0; }
+        .lp-anim.lp-visible { animation: lpFadeUp 0.75s cubic-bezier(0.16,1,0.3,1) both; }
+
+        /* Section-specific animation types */
+        .lp-problem-header.lp-anim.lp-visible   { animation: lpFadeLeft 0.75s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-about-logo.lp-anim.lp-visible        { animation: lpFadeLeft 0.8s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-about-text.lp-anim.lp-visible        { animation: lpFadeRight 0.8s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-about-intro-left.lp-anim.lp-visible  { animation: lpFadeLeft 0.8s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-about-intro-right.lp-anim.lp-visible { animation: lpFadeRight 0.8s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-install-left.lp-anim.lp-visible      { animation: lpFadeLeft 0.8s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-install-right.lp-anim.lp-visible     { animation: lpFadeRight 0.8s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-card.lp-anim.lp-visible              { animation: lpScaleIn 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-filter-cat.lp-anim.lp-visible        { animation: lpBlurUp 0.75s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-testi-card.lp-anim.lp-visible        { animation: lpFlipUp 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-about-pillar.lp-anim.lp-visible      { animation: lpScaleIn 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-diff-card:nth-child(1).lp-anim.lp-visible { animation: lpFadeLeft 0.75s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-diff-card:nth-child(3).lp-anim.lp-visible { animation: lpFadeRight 0.75s cubic-bezier(0.16,1,0.3,1) both; }
+
+        /* Stagger delays */
+        .lp-anim.lp-visible:nth-child(2) { animation-delay: 80ms; }
+        .lp-anim.lp-visible:nth-child(3) { animation-delay: 160ms; }
+        .lp-anim.lp-visible:nth-child(4) { animation-delay: 240ms; }
+        .lp-card.lp-anim.lp-visible:nth-child(2) { animation-delay: 120ms; }
+        .lp-card.lp-anim.lp-visible:nth-child(3) { animation-delay: 240ms; }
+        .lp-gamif-card.lp-anim.lp-visible:nth-child(2) { animation-delay: 100ms; }
+        .lp-gamif-card.lp-anim.lp-visible:nth-child(3) { animation-delay: 200ms; }
+        .lp-diff-card.lp-anim.lp-visible:nth-child(2) { animation-delay: 120ms; }
+        .lp-diff-card.lp-anim.lp-visible:nth-child(3) { animation-delay: 240ms; }
+        .lp-testi-card.lp-anim.lp-visible:nth-child(2) { animation-delay: 130ms; }
+        .lp-testi-card.lp-anim.lp-visible:nth-child(3) { animation-delay: 260ms; }
+        .lp-verify-step.lp-anim.lp-visible:nth-child(2) { animation-delay: 80ms; }
+        .lp-verify-step.lp-anim.lp-visible:nth-child(3) { animation-delay: 160ms; }
+        .lp-verify-step.lp-anim.lp-visible:nth-child(4) { animation-delay: 240ms; }
+        .lp-verify-step.lp-anim.lp-visible:nth-child(5) { animation-delay: 320ms; }
+        .lp-verify-step.lp-anim.lp-visible:nth-child(6) { animation-delay: 400ms; }
+        .lp-about-pillar.lp-anim.lp-visible:nth-child(2) { animation-delay: 120ms; }
+        .lp-about-pillar.lp-anim.lp-visible:nth-child(3) { animation-delay: 240ms; }
+        .lp-safety-item.lp-anim.lp-visible:nth-child(2) { animation-delay: 60ms; }
+        .lp-safety-item.lp-anim.lp-visible:nth-child(3) { animation-delay: 120ms; }
+        .lp-safety-item.lp-anim.lp-visible:nth-child(4) { animation-delay: 180ms; }
+        .lp-safety-item.lp-anim.lp-visible:nth-child(5) { animation-delay: 240ms; }
+        .lp-safety-item.lp-anim.lp-visible:nth-child(6) { animation-delay: 300ms; }
+        .lp-safety-item.lp-anim.lp-visible:nth-child(7) { animation-delay: 360ms; }
+        .lp-safety-item.lp-anim.lp-visible:nth-child(8) { animation-delay: 420ms; }
+
         /* ── HERO ── */
         @keyframes lp-fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes lp-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -493,7 +509,7 @@ export default function Home() {
         .lp-phone-info { padding: 12px 14px 10px; }
         .lp-phone-name { font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 700; color: var(--text); }
         .lp-phone-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
-        .lp-phone-tag { background: var(--accent-soft); color: #F43F5E; border-radius: 100px; padding: 3px 9px; font-size: 10px; font-weight: 600; }
+        .lp-phone-tag { background: rgba(16,185,129,0.12); color: #10b981; border-radius: 100px; padding: 3px 9px; font-size: 10px; font-weight: 600; }
         .lp-phone-actions { display: flex; justify-content: center; gap: 14px; padding: 10px 16px 14px; }
         .lp-ph-btn { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: transform 0.15s; }
         .lp-ph-btn:hover { transform: scale(1.1); }
@@ -723,17 +739,37 @@ export default function Home() {
         /* ── FAQ ── */
         /* ── QUEM SOMOS ── */
         .lp-about { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border); }
-        .lp-about-inner { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
-        .lp-about-logo { display: flex; flex-direction: column; align-items: flex-start; gap: 20px; }
-        .lp-about-name-block { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 24px; }
-        .lp-about-name-block .label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 6px; }
-        .lp-about-name-block .val { font-family: var(--font-fraunces), serif; font-size: 22px; font-weight: 700; color: var(--text); }
-        .lp-about-name-block .note { font-size: 12px; color: rgba(248,249,250,0.55); margin-top: 4px; font-weight: 400; }
-        .lp-about-text h2 { font-family: var(--font-fraunces), serif; font-size: clamp(26px, 3vw, 40px); font-weight: 700; letter-spacing: -1px; line-height: 1.15; margin-bottom: 20px; }
-        .lp-about-text h2 em { font-style: italic; color: var(--accent); }
-        .lp-about-text p { font-size: 15px; font-weight: 400; color: rgba(248,249,250,0.70); line-height: 1.8; margin-bottom: 16px; }
-        .lp-about-text p:last-child { margin-bottom: 0; }
-        @media (max-width: 860px) { .lp-about-inner { grid-template-columns: 1fr; gap: 48px; } .lp-about { padding: 72px 24px; } }
+        .lp-about-inner { max-width: 1060px; margin: 0 auto; }
+        .lp-about-intro { display: grid; grid-template-columns: 1fr 1.25fr; gap: 80px; align-items: start; margin-bottom: 64px; }
+        .lp-about-intro-left h2 { font-family: var(--font-fraunces), serif; font-size: clamp(30px, 3.6vw, 52px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.08; margin-bottom: 0; }
+        .lp-about-intro-left h2 em { font-style: italic; color: var(--accent); }
+        .lp-about-intro-right > p { font-size: 16px; font-weight: 400; color: rgba(248,249,250,0.68); line-height: 1.85; margin-bottom: 18px; }
+        .lp-about-intro-right > p:last-child { margin-bottom: 0; }
+        .lp-about-intro-right > p.lp-about-highlight { font-size: 18px; font-weight: 600; color: rgba(248,249,250,0.90); font-style: italic; border-left: 3px solid var(--accent); padding-left: 16px; margin: 24px 0; }
+        .lp-about-pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-bottom: 40px; }
+        .lp-about-pillar { background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; padding: 28px 24px; }
+        .lp-about-pillar-label { font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
+        .lp-about-pillar h4 { font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 10px; line-height: 1.3; }
+        .lp-about-pillar p { font-size: 13.5px; font-weight: 400; color: rgba(248,249,250,0.60); line-height: 1.72; margin: 0; }
+        .lp-about-brand { display: flex; gap: 0; align-items: stretch; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; overflow: hidden; }
+        .lp-about-brand-logo { display: flex; align-items: center; justify-content: center; padding: 32px 40px; border-right: 1px solid var(--border); flex-shrink: 0; }
+        .lp-about-brand-logo img { width: 130px; height: auto; }
+        .lp-about-brand-cards { display: flex; flex: 1; }
+        .lp-about-brand-card { flex: 1; padding: 28px 28px; border-right: 1px solid var(--border); }
+        .lp-about-brand-card:last-child { border-right: none; }
+        .lp-about-brand-card .label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
+        .lp-about-brand-card .val { font-family: var(--font-fraunces), serif; font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .lp-about-brand-card .note { font-size: 12.5px; color: rgba(248,249,250,0.52); font-weight: 400; line-height: 1.6; }
+        @media (max-width: 900px) {
+          .lp-about-intro { grid-template-columns: 1fr; gap: 36px; }
+          .lp-about-pillars { grid-template-columns: 1fr; }
+          .lp-about-brand { flex-direction: column; }
+          .lp-about-brand-logo { border-right: none; border-bottom: 1px solid var(--border); }
+          .lp-about-brand-cards { flex-direction: column; }
+          .lp-about-brand-card { border-right: none; border-bottom: 1px solid var(--border); }
+          .lp-about-brand-card:last-child { border-bottom: none; }
+          .lp-about { padding: 72px 24px; }
+        }
 
         .lp-faq { padding: 100px 56px; background: var(--bg-card); border-top: 1px solid var(--border); }
         .lp-faq-inner { max-width: 760px; margin: 0 auto; text-align: center; }
@@ -1423,7 +1459,6 @@ export default function Home() {
         <section className="lp-install">
           <div className="lp-install-inner">
             <div className="lp-install-left lp-anim">
-              <img src="/logo.png" alt="MeAndYou" style={{ width: 'min(480px, 100%)', height: 'auto', marginBottom: '12px', display: 'block' }} />
               <p className="lp-section-label">App</p>
               <h2>Baixe agora.<br /><em>Sem loja de apps.</em></h2>
               <p>Funciona como um app de verdade — ícone na tela inicial, notificações em tempo real. Sem ocupar espaço da loja, sem burocracia.</p>
@@ -1505,27 +1540,51 @@ export default function Home() {
         {/* ── Quem somos ── */}
         <section className="lp-about">
           <div className="lp-about-inner">
-            <div className="lp-about-logo lp-anim">
-              <img src="/logo.png" alt="MeAndYou" style={{ width: '100%', maxWidth: '320px', height: 'auto' }} />
-              <div className="lp-about-name-block">
-                <div className="label">Nome no app</div>
-                <div className="val">MeAndYou</div>
-                <div className="note">meandyou.com.br · nome técnico e de domínio</div>
+            <div className="lp-about-intro">
+              <div className="lp-about-intro-left lp-anim">
+                <p className="lp-section-label">Quem somos</p>
+                <h2>O mercado parou no tempo.<br /><em>Nós adiantamos o relógio.</em></h2>
               </div>
-              <div className="lp-about-name-block">
-                <div className="label">Identidade visual</div>
-                <div className="val">Me&amp;You</div>
-                <div className="note">logotipo oficial · o &amp; é intencional</div>
+              <div className="lp-about-intro-right lp-anim">
+                <p>Olhe para os aplicativos que você usa hoje. Eles são obsoletos na segurança, ultrapassados nas funções e desenhados para prender você na tela. O mercado transformou a busca por alguém em um videogame sem graça: as pessoas dão like, like, like, dão match, e a conversa simplesmente nunca acontece. Virou vício em validação, não em conexão.</p>
+                <p className="lp-about-highlight">O MeAndYou nasceu para quebrar esse ciclo.</p>
+                <p>Nosso foco é a modernidade e a precisão absoluta. Acreditamos que conexões reais nascem de estilos de vida alinhados, e não de acasos. Se você não suporta quem fuma, você tem o direito de limpar essas pessoas da sua tela com um clique. Se você fuma e quer alguém que acompanhe seu ritmo sem encher o seu saco, você vai encontrar exatamente essa pessoa aqui.</p>
+                <p>Sem máscaras. Sem precisar fingir ou se adaptar para caber na expectativa do outro. Quanto mais filtros você usa, menos julgamento você sofre, e mais rápido o encontro real acontece.</p>
               </div>
             </div>
-            <div className="lp-about-text lp-anim">
-              <p className="lp-section-label">Quem somos</p>
-              <h2>Nascemos de uma<br /><em>pergunta simples.</em></h2>
-              <p>Por que é tão difícil encontrar alguém real no Brasil? Não falta gente — falta conexão. Falta filtro. Falta segurança de saber com quem você está falando antes de marcar um encontro.</p>
-              <p>O MeAndYou surgiu para mudar isso. Um app construído do zero com verificação biométrica obrigatória, mais de 100 filtros reais e videochamada antes do primeiro encontro. Sem perfis falsos. Sem enrolação.</p>
-              <p style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px 20px', fontSize: '13px', color: 'rgba(248,249,250,0.65)', lineHeight: 1.75 }}>
-                <strong style={{ color: 'var(--text)', fontWeight: 600 }}>Sobre o nome:</strong> o app se chama <strong style={{ color: 'var(--text)', fontWeight: 600 }}>MeAndYou</strong> — pensado para ser simples de digitar e lembrar no domínio. O logo usa <strong style={{ color: 'var(--accent)', fontWeight: 600 }}>Me&amp;You</strong> com o &amp; porque é mais elegante visualmente e carrega o mesmo significado: <em>eu e você</em>. É uma escolha de design, não um erro.
-              </p>
+            <div className="lp-about-pillars">
+              <div className="lp-about-pillar lp-anim">
+                <div className="lp-about-pillar-label">Ecossistema</div>
+                <h4>O mais inclusivo do Brasil — e talvez do mundo.</h4>
+                <p>Não importa sua raça, identidade de gênero, religião, se você é PCD, assexual ou qual é a sua orientação. Com mais de 100 filtros, você molda o app em volta de você. Nós nos recusamos a criar "só mais um app". Construímos a primeira plataforma com arquitetura de inclusão total.</p>
+              </div>
+              <div className="lp-about-pillar lp-anim">
+                <div className="lp-about-pillar-label">Muito mais por trás</div>
+                <h4>Há camadas que você só descobre entrando.</h4>
+                <p>Repensamos a experiência de uso. Entrar no app deixou de ser um hábito chato e virou algo recompensador. Para quem busca algo além do convencional: espaços blindados e totalmente discretos onde fetiches, desejos específicos e acordos vivem longe de olhares curiosos.</p>
+              </div>
+              <div className="lp-about-pillar lp-anim">
+                <div className="lp-about-pillar-label">Nossa marca</div>
+                <h4>Simplicidade no acesso, elegância na conexão.</h4>
+                <p>MeAndYou: pensado para ser simples, direto e rápido de digitar no navegador — o caminho mais curto para o seu próximo encontro. Me&amp;You: no logotipo, o &amp; representa o elo perfeito. É a tecnologia unindo, de forma segura e sem julgamentos, o "Eu" e o "Você".</p>
+              </div>
+            </div>
+            <div className="lp-about-brand lp-anim">
+              <div className="lp-about-brand-logo">
+                <img src="/logo.png" alt="MeAndYou" />
+              </div>
+              <div className="lp-about-brand-cards">
+                <div className="lp-about-brand-card">
+                  <div className="label">Nome no app</div>
+                  <div className="val">MeAndYou</div>
+                  <div className="note">meandyou.com.br · nome técnico e de domínio · simples de digitar e lembrar</div>
+                </div>
+                <div className="lp-about-brand-card">
+                  <div className="label">Identidade visual</div>
+                  <div className="val">Me&amp;You</div>
+                  <div className="note">logotipo oficial · o &amp; é intencional — representa o elo entre duas pessoas, não é um erro de grafia</div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
