@@ -2,25 +2,77 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { LayoutDashboard, Users, DollarSign, Flag, ShieldAlert, TrendingUp, LogOut, XCircle, UserCog } from 'lucide-react'
+import { supabase } from '@/app/lib/supabase'
 
-const NAV = [
-  { href: '/admin',            label: 'Dashboard',  icon: LayoutDashboard },
-  { href: '/admin/usuarios',   label: 'Usuários',   icon: Users           },
-  { href: '/admin/financeiro', label: 'Financeiro', icon: DollarSign      },
-  { href: '/admin/denuncias',  label: 'Denúncias',  icon: Flag            },
-  { href: '/admin/seguranca',  label: 'Segurança',  icon: ShieldAlert     },
-  { href: '/admin/marketing',      label: 'Marketing',      icon: TrendingUp },
-  { href: '/admin/cancelamentos',  label: 'Cancelamentos',  icon: XCircle    },
-  { href: '/admin/equipe',         label: 'Equipe',         icon: UserCog    },
+type NavItem = { href: string; label: string; icon: React.ElementType }
+
+const ALL_NAV: NavItem[] = [
+  { href: '/admin',                label: 'Dashboard',      icon: LayoutDashboard },
+  { href: '/admin/usuarios',       label: 'Usuários',       icon: Users           },
+  { href: '/admin/financeiro',     label: 'Financeiro',     icon: DollarSign      },
+  { href: '/admin/denuncias',      label: 'Denúncias',      icon: Flag            },
+  { href: '/admin/seguranca',      label: 'Segurança',      icon: ShieldAlert     },
+  { href: '/admin/marketing',      label: 'Marketing',      icon: TrendingUp      },
+  { href: '/admin/cancelamentos',  label: 'Cancelamentos',  icon: XCircle         },
+  { href: '/admin/equipe',         label: 'Equipe',         icon: UserCog         },
 ]
+
+const STAFF_PERMISSIONS: Record<string, string[]> = {
+  gerente:            ['/admin', '/admin/financeiro', '/admin/usuarios', '/admin/denuncias', '/admin/cancelamentos'],
+  suporte_financeiro: ['/admin', '/admin/financeiro', '/admin/cancelamentos'],
+  suporte_tecnico:    ['/admin', '/admin/usuarios', '/admin/seguranca'],
+  suporte_chat:       ['/admin', '/admin/denuncias', '/admin/cancelamentos'],
+}
+
+const ROLE_LABELS: Record<string, string> = {
+  gerente: 'Gerente',
+  suporte_financeiro: 'Suporte Financeiro',
+  suporte_tecnico: 'Suporte Técnico',
+  suporte_chat: 'Suporte Chat',
+}
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
+  const [nav, setNav] = useState<NavItem[]>(ALL_NAV)
+  const [roleLabel, setRoleLabel] = useState('Admin')
+
+  useEffect(() => {
+    async function loadRole() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      if (profile?.role === 'admin') {
+        setRoleLabel('Admin')
+        setNav(ALL_NAV)
+        return
+      }
+
+      const { data: staff } = await supabase
+        .from('staff_members')
+        .select('role')
+        .eq('user_id', user.id)
+        .eq('active', true)
+        .single()
+
+      if (staff?.role) {
+        const allowed = STAFF_PERMISSIONS[staff.role] ?? []
+        setNav(ALL_NAV.filter(item => allowed.includes(item.href)))
+        setRoleLabel(ROLE_LABELS[staff.role] ?? staff.role)
+      }
+    }
+    loadRole()
+  }, [])
 
   async function handleLogout() {
-    // Limpa cookies manualmente — padrão do projeto
     await fetch('/api/auth/logout', { method: 'POST' })
     router.push('/login')
   }
@@ -32,11 +84,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: '#fff' }}>
             Me<span style={{ color: '#e11d48' }}>And</span>You
           </p>
-          <p style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>Painel Admin</p>
+          <p style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>{roleLabel}</p>
         </div>
 
         <nav style={{ flex: 1, padding: '16px 12px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          {NAV.map(({ href, label, icon: Icon }) => {
+          {nav.map(({ href, label, icon: Icon }) => {
             const active = pathname === href
             return (
               <Link key={href} href={href} style={{

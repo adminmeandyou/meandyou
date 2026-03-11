@@ -42,14 +42,46 @@ export async function proxy(req: NextRequest) {
     if (!user) {
       return NextResponse.redirect(new URL('/login', req.url))
     }
+
     const { data: profile } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', user.id)
       .single()
-    if (profile?.role !== 'admin') {
+
+    // Admin tem acesso total
+    if (profile?.role === 'admin') return res
+
+    // Verificar se é membro da equipe ativo
+    const { data: staff } = await supabase
+      .from('staff_members')
+      .select('role, active')
+      .eq('user_id', user.id)
+      .eq('active', true)
+      .single()
+
+    if (!staff) {
       return NextResponse.redirect(new URL('/busca', req.url))
     }
+
+    // Permissões por cargo — quais rotas cada role pode acessar
+    const STAFF_PERMISSIONS: Record<string, string[]> = {
+      gerente:            ['/admin', '/admin/financeiro', '/admin/usuarios', '/admin/denuncias', '/admin/cancelamentos'],
+      suporte_financeiro: ['/admin', '/admin/financeiro', '/admin/cancelamentos'],
+      suporte_tecnico:    ['/admin', '/admin/usuarios', '/admin/seguranca'],
+      suporte_chat:       ['/admin', '/admin/denuncias', '/admin/cancelamentos'],
+    }
+
+    const allowed = STAFF_PERMISSIONS[staff.role] ?? []
+    const hasAccess = allowed.some(route =>
+      pathname === route || pathname.startsWith(route + '/')
+    )
+
+    if (!hasAccess) {
+      // Redireciona para o dashboard admin, que mostrará apenas o que ele pode ver
+      return NextResponse.redirect(new URL('/admin', req.url))
+    }
+
     return res
   }
   // ─────────────────────────────────────────────────────────────────────────
