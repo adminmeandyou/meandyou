@@ -8,7 +8,7 @@ const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''
 
 function CadastroInner() {
   const searchParams = useSearchParams()
-  const refCode      = searchParams.get('ref') ?? ''
+  const [refCode, setRefCode]           = useState(searchParams.get('ref') ?? '')
 
   const [nomeCompleto, setNomeCompleto] = useState('')
   const [nomeExibicao, setNomeExibicao] = useState('')
@@ -238,6 +238,24 @@ function CadastroInner() {
                   )}
                 </button>
               </div>
+            </div>
+
+            <div>
+              <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>
+                Código de convite <span style={{ fontWeight: '400', color: 'var(--muted-2)' }}>(opcional)</span>
+              </label>
+              <input
+                type="text"
+                placeholder="Ex: ABC123"
+                value={refCode}
+                onChange={(e) => setRefCode(e.target.value.trim().toUpperCase())}
+                style={{ textTransform: 'uppercase' }}
+              />
+              {refCode && (
+                <p style={{ fontSize: '11px', color: 'var(--accent)', marginTop: '4px' }}>
+                  🎁 Você vai ganhar tickets de boas-vindas ao criar sua conta!
+                </p>
+              )}
             </div>
 
             {TURNSTILE_SITE_KEY && (
