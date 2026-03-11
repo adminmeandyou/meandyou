@@ -98,11 +98,11 @@ export async function POST(req: NextRequest) {
     const userId = data.user.id
 
     // 3. Atualizar tabela users com CPF e telefone
-    // ✅ CORREÇÃO: retry com até 3 tentativas aguardando o trigger handle_new_user
-    // O trigger cria a linha em public.users após insert em auth.users. Se ainda não
-    // executou quando chegamos aqui, o update afeta 0 linhas silenciosamente (CPF perdido).
+    // O trigger handle_new_user cria a linha em public.users logo após o insert em auth.users.
+    // Aguardamos até 5 tentativas × 500ms (2,5s). Se ainda assim falhar, fazemos upsert direto
+    // para garantir que o CPF não se perca — o trigger vai ignorar o insert posterior via ON CONFLICT.
     let cpfSalvo = false
-    for (let tentativa = 0; tentativa < 3; tentativa++) {
+    for (let tentativa = 0; tentativa < 5; tentativa++) {
       const { data: updatedUser } = await supabase
         .from('users')
         .update({ phone: telefone, nome_completo: nomeCompleto, cpf })
@@ -110,10 +110,20 @@ export async function POST(req: NextRequest) {
         .select('id')
         .single()
       if (updatedUser) { cpfSalvo = true; break }
-      await new Promise(r => setTimeout(r, 300))
+      await new Promise(r => setTimeout(r, 500))
     }
     if (!cpfSalvo) {
-      console.error('CPF não pôde ser salvo após 3 tentativas para userId:', userId)
+      // Fallback: upsert direto — garante o CPF mesmo se o trigger ainda não criou a linha
+      console.warn('Trigger lento — usando upsert direto para userId:', userId)
+      try {
+        await supabase.from('users').upsert(
+          { id: userId, email, phone: telefone, nome_completo: nomeCompleto, cpf, verified: false, banned: false },
+          { onConflict: 'id' }
+        )
+        cpfSalvo = true
+      } catch (upsertErr) {
+        console.error('Upsert de fallback falhou para userId:', userId, upsertErr)
+      }
     }
 
     // 4. Inicializar saldos zerados
