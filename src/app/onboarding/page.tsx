@@ -137,9 +137,12 @@ export default function OnboardingPage() {
             <div style={{ border: '1px solid var(--border)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text)' }}>Essencial</span>
-                <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent)' }}>Grátis</span>
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent)' }}>R$ 9,97</span>
+                  <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block' }}>/mês</span>
+                </div>
               </div>
-              {['10 curtidas por dia', 'Perfil completo', 'Chat com matches', 'Roleta diária'].map(f => (
+              {['5 curtidas/dia', '1 SuperCurtida/dia', '1 lupa/dia', 'Chat com matches', 'Roleta diária'].map(f => (
                 <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                   <Check size={14} color="var(--accent)" />
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{f}</span>
@@ -153,11 +156,11 @@ export default function OnboardingPage() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text)' }}>Plus</span>
                 <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent)' }}>R$ 29,90</span>
+                  <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent)' }}>R$ 39,97</span>
                   <span style={{ fontSize: '11px', color: 'var(--muted)', display: 'block' }}>/mês</span>
                 </div>
               </div>
-              {['Curtidas ilimitadas', 'Ver quem curtiu você', '5 Super Curtidas/dia', 'Destaque no feed', '10 fotos no perfil'].map(f => (
+              {['30 curtidas/dia', '4 SuperCurtidas/dia', 'Ver quem curtiu você', '1 lupa/dia', 'Destaque no feed'].map(f => (
                 <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                   <Check size={14} color="var(--accent)" />
                   <span style={{ fontSize: '13px', color: 'var(--muted)' }}>{f}</span>
@@ -170,15 +173,14 @@ export default function OnboardingPage() {
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, #c9a84c, #f5d485, #c9a84c)' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '16px', fontWeight: '700', color: '#f5d485', fontFamily: 'var(--font-fraunces)' }}>Camarote</span>
-                  <span style={{ fontSize: '10px', fontWeight: '700', color: '#c9a84c', border: '1px solid #c9a84c', borderRadius: '100px', padding: '1px 8px' }}>BLACK</span>
+                  <span style={{ fontSize: '16px', fontWeight: '700', color: '#f5d485', fontFamily: 'var(--font-fraunces)' }}>Black</span>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '15px', fontWeight: '700', color: '#f5d485' }}>R$ 59,90</span>
+                  <span style={{ fontSize: '15px', fontWeight: '700', color: '#f5d485' }}>R$ 99,97</span>
                   <span style={{ fontSize: '11px', color: '#888', display: 'block' }}>/mês</span>
                 </div>
               </div>
-              {['Tudo do Plus', '10 Super Curtidas/dia', 'Modo Invisível', 'Filtros exclusivos', 'Preferências Camarote'].map(f => (
+              {['Curtidas ilimitadas', '10 SuperCurtidas/dia', '2 lupas/dia', 'Área Backstage', 'Suporte prioritário 24h'].map(f => (
                 <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
                   <Check size={14} color="#c9a84c" />
                   <span style={{ fontSize: '13px', color: '#aaa' }}>{f}</span>

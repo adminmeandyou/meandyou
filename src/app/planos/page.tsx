@@ -11,7 +11,7 @@ const PLANS = [
   {
     id: 'essencial',
     name: 'Essencial',
-    price: 10,
+    price: 9.97,
     icon: Zap,
     color: '#ffffff',
     checkoutUrl: 'https://pay.cakto.com.br/cip6fy9_797209',
@@ -28,7 +28,7 @@ const PLANS = [
   {
     id: 'plus',
     name: 'Plus',
-    price: 39,
+    price: 39.97,
     icon: Star,
     color: '#b8f542',
     checkoutUrl: 'https://pay.cakto.com.br/3arwn9f',
@@ -46,7 +46,7 @@ const PLANS = [
   {
     id: 'black',
     name: 'Black',
-    price: 100,
+    price: 99.97,
     icon: Crown,
     color: '#f5c842',
     checkoutUrl: 'https://pay.cakto.com.br/hftqkrj',
@@ -160,7 +160,7 @@ export default function PlanosPage() {
                   <span className="font-fraunces text-xl text-white">{plan.name}</span>
                 </div>
                 <div className="text-right">
-                  <span className="font-fraunces text-2xl text-white">R$ {plan.price}</span>
+                  <span className="font-fraunces text-2xl text-white">R$ {plan.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
                   <span className="text-white/30 text-xs">/mês</span>
                 </div>
               </div>

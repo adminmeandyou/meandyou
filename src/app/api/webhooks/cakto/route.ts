@@ -21,9 +21,9 @@ const BACKSTAGE_OFFER = 'i73nbfm'
 
 // ── Preços dos planos (para recibo) ───────────────────────────────────────
 const PLAN_PRICES: Record<string, number> = {
-  essencial: 10,
-  plus: 39,
-  black: 100,
+  essencial: 9.97,
+  plus: 39.97,
+  black: 99.97,
 }
 
 // ── Loja avulsa ───────────────────────────────────────────────────────────
@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
           customerEmail,
           nomeDisplay,
           plan,
-          `R$ ${PLAN_PRICES[plan] ?? '—'}/mês`,
+          PLAN_PRICES[plan] != null ? `R$ ${PLAN_PRICES[plan].toLocaleString('pt-BR', { minimumFractionDigits: 2 })}/mês` : '—',
           hoje.toLocaleDateString('pt-BR'),
           vencimento.toLocaleDateString('pt-BR'),
         )
