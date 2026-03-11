@@ -51,6 +51,8 @@ function Verificacao() {
   const piscarContRef = useRef(0)
   const olhosAbertosRef = useRef(true)
   const deteccaoLoopRef = useRef<NodeJS.Timeout | null>(null)
+  // ✅ CORREÇÃO AVISO 13: ref para selfie usado no auto-submit após liveness
+  const selfieFileRef = useRef<File | null>(null)
 
   const videoFrenteRef = useRef<HTMLVideoElement>(null)
   const canvasFrenteRef = useRef<HTMLCanvasElement>(null)
@@ -70,7 +72,31 @@ function Verificacao() {
     const ua = navigator.userAgent.toLowerCase()
     const isEmulator = /bluestacks|nox|memu|ldplayer|gameloop|android.*sdk|sdk.*android/i.test(ua)
     if (isEmulator) return false
-    return /android|iphone|ipad|ipod|mobile/i.test(ua)
+    const uaIsMobile = /android|iphone|ipad|ipod|mobile/i.test(ua)
+    if (!uaIsMobile) return false
+    // ✅ CORREÇÃO: verificar DeviceMotionEvent além do User Agent
+    // DevTools com device emulation (F12) falsifica o UA mas NÃO tem acelerômetro real.
+    // Em desktop com UA falsificado, window.DeviceMotionEvent existe mas é undefined/não-chamável.
+    const hasMotionApi = typeof window.DeviceMotionEvent !== 'undefined'
+    if (!hasMotionApi) return false
+    // Verificar se o TouchEvent nativo está presente (desktops não têm, mesmo com UA mobile)
+    const hasTouchApi = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+    return hasTouchApi
+  }
+
+  const validarCPF = (cpfRaw: string): boolean => {
+    const c = cpfRaw.replace(/\D/g, '')
+    if (c.length !== 11 || /^(\d)\1{10}$/.test(c)) return false
+    let soma = 0
+    for (let i = 0; i < 9; i++) soma += parseInt(c[i]) * (10 - i)
+    let resto = (soma * 10) % 11
+    if (resto === 10 || resto === 11) resto = 0
+    if (resto !== parseInt(c[9])) return false
+    soma = 0
+    for (let i = 0; i < 10; i++) soma += parseInt(c[i]) * (11 - i)
+    resto = (soma * 10) % 11
+    if (resto === 10 || resto === 11) resto = 0
+    return resto === parseInt(c[10])
   }
 
   const formatarCPF = (valor: string) => {
@@ -93,7 +119,10 @@ function Verificacao() {
       await Promise.race([
         new Promise<void>((resolve, reject) => {
           const script = document.createElement('script')
-          script.src = 'https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js'
+          // ✅ CORREÇÃO CRÍTICA: usar @vladmandic/face-api para biblioteca E modelos
+          // Antes: biblioteca era face-api.js@0.22.2 (pacote original) com modelos de
+          // @vladmandic/face-api@1.7.12 (fork incompatível) → manifests e pesos distintos
+          script.src = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js'
           script.onload = async () => {
             const faceapi = (window as any).faceapi
             try {
@@ -128,6 +157,16 @@ function Verificacao() {
       if (deteccaoLoopRef.current) clearInterval(deteccaoLoopRef.current)
     }
   }, [])
+
+  // ✅ CORREÇÃO AVISO 13: auto-submit após liveness concluído
+  // A spec documenta: "API chama POST /api/confirmar-verificacao automaticamente ao final do fluxo"
+  // Usa selfieFileRef para evitar problema de closure stale com o estado selfieFile
+  useEffect(() => {
+    if (livenessOk && selfieFileRef.current) {
+      enviarVerificacao()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [livenessOk])
 
   const pararTodasCameras = () => {
     [streamFrenteRef, streamVersoRef, streamSelfieRef].forEach(ref => {
@@ -420,6 +459,7 @@ function Verificacao() {
       const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' })
       const url = URL.createObjectURL(blob)
       pararCamera('selfie')
+      selfieFileRef.current = file  // sincroniza ref antes de atualizar estado
       setSelfieFile(file)
       setSelfiePreview(url)
       setLivenessOk(true)
@@ -431,16 +471,25 @@ function Verificacao() {
   // ─── Upload e envio ──────────────────────────────────────────────────────────
 
   const uploadArquivo = async (file: File, caminho: string) => {
-    // Bucket documentos é PRIVADO — usar upload autenticado (anon key com sessão ativa)
-    const { error } = await supabase.storage.from('documentos').upload(caminho, file, { upsert: true })
-    if (error) throw new Error('Erro ao fazer upload: ' + error.message)
+    // ✅ CORREÇÃO CRÍTICA: upload via API route com service role
+    // Antes: supabase.storage com anon key sem sessão → RLS bloqueava silenciosamente
+    const form = new FormData()
+    form.append('file', file)
+    form.append('caminho', caminho)
+    form.append('userId', userId)
+    form.append('token', tokenAtual)
+    const res = await fetch('/api/upload-verificacao', { method: 'POST', body: form })
+    if (!res.ok) {
+      const d = await res.json().catch(() => ({}))
+      throw new Error(d.error || 'Erro ao fazer upload')
+    }
     return caminho
   }
 
   const enviarVerificacao = async () => {
     setErroForm('')
     const cpfLimpo = cpf.replace(/\D/g, '')
-    if (cpfLimpo.length !== 11) { setErroForm('CPF inválido.'); return }
+    if (!validarCPF(cpfLimpo)) { setErroForm('CPF inválido. Verifique os dígitos.'); return }
     if (!docFrente) { setErroForm('Anexe ou fotografe a frente do documento.'); return }
     if (tipoDoc !== 'cpf_doc' && !docVerso) { setErroForm('Anexe ou fotografe o verso do documento.'); return }
     if (!selfieFile) { setErroForm('Conclua a verificação de rosto antes de continuar.'); return }
@@ -451,15 +500,13 @@ function Verificacao() {
       if (docVerso) await uploadArquivo(docVerso, `${userId}/verso.jpg`)
       await uploadArquivo(selfieFile, `${userId}/selfie.jpg`)
 
-      // ✅ CORREÇÃO: só atualizar colunas que existem na tabela users (schema da skill)
-      // Colunas existentes em users: id, email, phone, nome_completo, cpf, verified, banned, banned_reason, created_at
-      await supabase.from('users').update({ cpf: cpfLimpo }).eq('id', userId)
-
-      // Chama a API que seta verified = true e atualiza profile_completeness (+15pts)
+      // ✅ CORREÇÃO: CPF salvo via API route com service role (não mais anon key no client)
+      // Antes: supabase.from('users').update({ cpf }) na page → RLS bloqueava sem sessão
+      // Chama a API que seta verified = true, salva CPF e atualiza profile_completeness (+15pts)
       const res = await fetch('/api/confirmar-verificacao', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token: tokenAtual, userId }),
+        body: JSON.stringify({ token: tokenAtual, userId, cpf: cpfLimpo }),
       })
       const data = await res.json()
       if (data.ok) { setStatus('sucesso'); setTimeout(() => router.push('/dashboard'), 3000) }
@@ -473,7 +520,7 @@ function Verificacao() {
   // ─── Componentes visuais ─────────────────────────────────────────────────────
 
   const card = (children: React.ReactNode) => (
-    <div style={{ backgroundColor: 'var(--white)', borderRadius: '24px', padding: '28px', boxShadow: '0 8px 32px rgba(46,196,160,0.1)' }}>{children}</div>
+    <div style={{ backgroundColor: 'var(--white)', borderRadius: '24px', padding: '28px', boxShadow: 'var(--shadow)' }}>{children}</div>
   )
 
   const passos = (passo: number) => (
@@ -660,7 +707,7 @@ function Verificacao() {
 
           {!livnessIniciado && !livenessOk && (
             <>
-              <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid rgba(46,196,160,0.3)', borderRadius: '16px', padding: '16px', marginBottom: '16px', textAlign: 'left' }}>
+              <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '16px', padding: '16px', marginBottom: '16px', textAlign: 'left' }}>
                 <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent-dark)', marginBottom: '10px' }}>🎯 O que vai acontecer:</p>
                 {PASSOS_LIVENESS.map((p, i) => (
                   <p key={i} style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '4px' }}>
@@ -713,7 +760,7 @@ function Verificacao() {
               <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', backgroundColor: '#111', marginBottom: '12px' }}>
                 <video ref={videoSelfieRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '16px', display: cameraSelfieAtiva ? 'block' : 'none' }} />
                 {cameraSelfieAtiva && (
-                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '55%', height: '78%', border: '2px dashed rgba(46,196,160,0.8)', borderRadius: '50%', pointerEvents: 'none' }} />
+                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '55%', height: '78%', border: '2px dashed rgba(225,29,72,0.8)', borderRadius: '50%', pointerEvents: 'none' }} />
                 )}
                 {!cameraSelfieAtiva && (
                   <div style={{ padding: '40px', textAlign: 'center' }}>
@@ -732,28 +779,35 @@ function Verificacao() {
 
           {livenessOk && selfiePreview && (
             <>
-              <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid rgba(46,196,160,0.4)', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
+              <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
                 <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent-dark)' }}>✅ Verificação facial concluída!</p>
-                <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>Todos os movimentos foram confirmados.</p>
+                <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>Enviando automaticamente...</p>
               </div>
               <img src={selfiePreview} alt="selfie" style={{ width: '100%', borderRadius: '16px', marginBottom: '12px', maxHeight: '240px', objectFit: 'cover' }} />
-              <button onClick={reiniciarLiveness} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer', marginBottom: '8px' }}>
-                🔄 Refazer verificação
-              </button>
             </>
           )}
 
-          {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '8px' }}>{erroForm}</p>}
+          {erroForm && (
+            <>
+              <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '8px' }}>{erroForm}</p>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                <button onClick={() => { reiniciarLiveness(); setStatus(tipoDoc === 'cpf_doc' ? 'doc_frente' : 'doc_verso') }}
+                  style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
+                {livenessOk && selfieFile && (
+                  <button onClick={enviarVerificacao} style={{ flex: 2, backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>
+                    Tentar novamente ✓
+                  </button>
+                )}
+              </div>
+            </>
+          )}
 
-          <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-            <button onClick={() => { reiniciarLiveness(); setStatus(tipoDoc === 'cpf_doc' ? 'doc_frente' : 'doc_verso') }}
-              style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
-            {livenessOk && selfieFile && (
-              <button onClick={enviarVerificacao} style={{ flex: 2, backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>
-                Enviar ✓
-              </button>
-            )}
-          </div>
+          {!livenessOk && (
+            <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+              <button onClick={() => { reiniciarLiveness(); setStatus(tipoDoc === 'cpf_doc' ? 'doc_frente' : 'doc_verso') }}
+                style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
+            </div>
+          )}
         </>)}
 
         {status === 'enviando' && <div>

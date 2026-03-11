@@ -8,12 +8,37 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+function validarCPF(cpf: string): boolean {
+  // Remove pontuação
+  const c = cpf.replace(/\D/g, '')
+  if (c.length !== 11) return false
+  // Rejeita sequências iguais (000...000, 111...111 etc.)
+  if (/^(\d)\1{10}$/.test(c)) return false
+  // Valida primeiro dígito verificador
+  let soma = 0
+  for (let i = 0; i < 9; i++) soma += parseInt(c[i]) * (10 - i)
+  let resto = (soma * 10) % 11
+  if (resto === 10 || resto === 11) resto = 0
+  if (resto !== parseInt(c[9])) return false
+  // Valida segundo dígito verificador
+  soma = 0
+  for (let i = 0; i < 10; i++) soma += parseInt(c[i]) * (11 - i)
+  resto = (soma * 10) % 11
+  if (resto === 10 || resto === 11) resto = 0
+  return resto === parseInt(c[10])
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { email, senha, nomeCompleto, nomeExibicao, telefone, cpf, refCode, cfToken } = await req.json()
 
     if (!email || !senha || !nomeCompleto || !nomeExibicao || !telefone || !cpf) {
       return NextResponse.json({ error: 'Preencha todos os campos' }, { status: 400 })
+    }
+
+    // ✅ CORREÇÃO AVISO 15: validar dígito verificador do CPF
+    if (!validarCPF(cpf)) {
+      return NextResponse.json({ error: 'CPF inválido.' }, { status: 400 })
     }
 
     // Verificar Cloudflare Turnstile (se configurado)
@@ -73,11 +98,23 @@ export async function POST(req: NextRequest) {
     const userId = data.user.id
 
     // 3. Atualizar tabela users com CPF e telefone
-    await supabase.from('users').update({
-      phone: telefone,
-      nome_completo: nomeCompleto,
-      cpf,
-    }).eq('id', userId)
+    // ✅ CORREÇÃO: retry com até 3 tentativas aguardando o trigger handle_new_user
+    // O trigger cria a linha em public.users após insert em auth.users. Se ainda não
+    // executou quando chegamos aqui, o update afeta 0 linhas silenciosamente (CPF perdido).
+    let cpfSalvo = false
+    for (let tentativa = 0; tentativa < 3; tentativa++) {
+      const { data: updatedUser } = await supabase
+        .from('users')
+        .update({ phone: telefone, nome_completo: nomeCompleto, cpf })
+        .eq('id', userId)
+        .select('id')
+        .single()
+      if (updatedUser) { cpfSalvo = true; break }
+      await new Promise(r => setTimeout(r, 300))
+    }
+    if (!cpfSalvo) {
+      console.error('CPF não pôde ser salvo após 3 tentativas para userId:', userId)
+    }
 
     // 4. Inicializar saldos zerados
     const saldoResults = await Promise.allSettled([
@@ -106,9 +143,17 @@ export async function POST(req: NextRequest) {
         .single()
 
       if (referrer && referrer.id !== userId) {
-        await supabase.from('profiles')
-          .update({ referred_by: referrer.id })
-          .eq('id', userId)
+        // ✅ CORREÇÃO: retry no update de profiles.referred_by — mesmo race condition do trigger
+        for (let tentativa = 0; tentativa < 3; tentativa++) {
+          const { data: updatedProfile } = await supabase
+            .from('profiles')
+            .update({ referred_by: referrer.id })
+            .eq('id', userId)
+            .select('id')
+            .single()
+          if (updatedProfile) break
+          await new Promise(r => setTimeout(r, 300))
+        }
 
         await supabase.from('referrals').insert({
           referrer_id: referrer.id,

@@ -34,7 +34,7 @@ const PLAN_COLORS: Record<string, { badge: string; border: string; text: string 
 
 const PLAN_FEATURES: Record<string, string[]> = {
   essencial: ['5 curtidas/dia', '1 SuperCurtida/dia', '1 ticket de roleta/dia', 'Verificação de identidade', '1 filtro ativo'],
-  plus:      ['30 curtidas/dia', '5 SuperCurtidas/dia', '2 tickets/dia', '1 Lupa/dia', 'Desfazer curtida (1/dia)', 'Filtros avançados', 'Ver quem curtiu'],
+  plus:      ['30 curtidas/dia', '4 SuperCurtidas/dia', '2 tickets/dia', '1 Lupa/dia', 'Desfazer curtida (1/dia)', 'Filtros avançados', 'Ver quem curtiu'],
   black:     ['Curtidas ilimitadas', '10 SuperCurtidas/dia', '3 tickets/dia', '2 Lupas/dia', 'Boost automático diário', 'Backstage (Sugar e Fetiche)', 'Suporte prioritário 24h'],
 }
 
@@ -115,7 +115,7 @@ export default function MinhaAssinaturaPage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] pb-20">
       {/* Header */}
-      <header className="bg-white border-b border-[var(--border)] px-4 py-4 flex items-center gap-3">
+      <header className="bg-[var(--bg-card)] border-b border-[var(--border)] px-4 py-4 flex items-center gap-3">
         <button onClick={() => router.back()} className="text-[var(--muted)] hover:text-[var(--text)] transition-colors">
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -135,7 +135,7 @@ export default function MinhaAssinaturaPage() {
 
         {/* Plano ativo */}
         {active ? (
-          <div className={`bg-white rounded-2xl border-2 ${PLAN_COLORS[active.plan]?.border ?? 'border-[var(--border)]'} shadow-sm overflow-hidden`}>
+          <div className={`bg-[var(--bg-card)] rounded-2xl border-2 ${PLAN_COLORS[active.plan]?.border ?? 'border-[var(--border)]'} shadow-sm overflow-hidden`}>
             {/* Topo */}
             <div className="px-5 pt-5 pb-4">
               <div className="flex items-start justify-between mb-3">
@@ -193,7 +193,7 @@ export default function MinhaAssinaturaPage() {
           </div>
         ) : (
           /* Sem plano ativo */
-          <div className="bg-white rounded-2xl border border-[var(--border)] p-6 text-center">
+          <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] p-6 text-center">
             <div className="w-14 h-14 rounded-full bg-[var(--accent-light)] flex items-center justify-center mx-auto mb-3">
               <svg className="w-7 h-7 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -209,7 +209,7 @@ export default function MinhaAssinaturaPage() {
 
         {/* Histórico */}
         {history.length > 0 && (
-          <div className="bg-white rounded-2xl border border-[var(--border)] overflow-hidden">
+          <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] overflow-hidden">
             <h3 className="font-semibold text-[var(--text)] px-5 pt-4 pb-2 text-sm">Histórico de assinaturas</h3>
             <div className="divide-y divide-[var(--border)]">
               {history.map(s => (
@@ -233,7 +233,7 @@ export default function MinhaAssinaturaPage() {
         )}
 
         {/* Info LGPD / suporte */}
-        <div className="bg-white rounded-2xl border border-[var(--border)] p-5">
+        <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] p-5">
           <h3 className="font-semibold text-[var(--text)] text-sm mb-2">Precisa de ajuda?</h3>
           <p className="text-xs text-[var(--muted)] mb-3 leading-relaxed">
             Para contestar cobranças, reembolsos ou dúvidas sobre sua assinatura, entre em contato com o suporte. Respondemos em até 24h úteis.
@@ -248,7 +248,7 @@ export default function MinhaAssinaturaPage() {
       {/* Modal de confirmação de cancelamento */}
       {showConfirm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl w-full max-w-sm p-6">
+          <div className="bg-[var(--bg-card)] rounded-2xl w-full max-w-sm p-6">
             <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
               <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
@@ -259,7 +259,7 @@ export default function MinhaAssinaturaPage() {
               Você continuará com acesso ao plano <strong className="text-[var(--text)]">{PLAN_LABELS[active?.plan ?? '']}</strong> até{' '}
               <strong className="text-[var(--text)]">{active ? formatDate(active.ends_at) : ''}</strong>.
             </p>
-            <p className="text-xs text-[var(--muted)] text-center mb-5">Após essa data, sua conta retorna ao plano gratuito.</p>
+            <p className="text-xs text-[var(--muted)] text-center mb-5">Após essa data, você perderá o acesso às funcionalidades do plano. Para voltar a usá-las, será necessário assinar novamente.</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowConfirm(false)}

@@ -18,6 +18,7 @@ const PLANS = [
     features: [
       'Até 10 fotos no perfil',
       '5 curtidas por dia',
+      '1 SuperCurtida/dia',
       '1 Ticket por dia',
       '1 Lupa por dia',
       'Chat com seus matches',
@@ -35,9 +36,9 @@ const PLANS = [
     features: [
       'Até 10 fotos no perfil',
       '30 curtidas por dia',
+      '4 SuperCurtidas/dia',
       '2 Tickets por dia',
       '1 Lupa por dia',
-      'SuperLikes',
       'Destaque na busca',
       '5h de videochamada por dia',
     ],
@@ -68,10 +69,19 @@ export default function PlanosPage() {
   const { user } = useAuth()
   const [currentPlan, setCurrentPlan] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [userEmail, setUserEmail] = useState<string>('')
 
   useEffect(() => {
     if (!user) return
     loadCurrentPlan()
+    // Garante que temos o email do usuário logado
+    if (user.email) {
+      setUserEmail(user.email)
+    } else {
+      supabase.auth.getUser().then(({ data }) => {
+        if (data?.user?.email) setUserEmail(data.user.email)
+      })
+    }
   }, [user])
 
   async function loadCurrentPlan() {
@@ -88,8 +98,11 @@ export default function PlanosPage() {
 
   function handleCheckout(plan: typeof PLANS[0]) {
     if (currentPlan === plan.id) return
-    // Redireciona para o checkout da Cakto — email capturado lá
-    window.open(plan.checkoutUrl, '_blank')
+    const email = userEmail || user?.email || ''
+    const url = email
+      ? `${plan.checkoutUrl}?email=${encodeURIComponent(email)}`
+      : plan.checkoutUrl
+    window.open(url, '_blank')
   }
 
   return (

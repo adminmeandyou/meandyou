@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
-import { sendPlanActivatedEmail } from '@/app/lib/email'
+import { sendPlanActivatedEmail, sendReceiptEmail } from '@/app/lib/email'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,6 +18,13 @@ const OFFER_TO_PLAN: Record<string, string> = {
 
 // ── Backstage ─────────────────────────────────────────────────────────────
 const BACKSTAGE_OFFER = 'i73nbfm'
+
+// ── Preços dos planos (para recibo) ───────────────────────────────────────
+const PLAN_PRICES: Record<string, number> = {
+  essencial: 10,
+  plus: 39,
+  black: 100,
+}
 
 // ── Loja avulsa ───────────────────────────────────────────────────────────
 type StoreItem =
@@ -130,11 +137,17 @@ export async function POST(req: NextRequest) {
     // ── 4. Plano ──────────────────────────────────────────────────────────
     const plan = OFFER_TO_PLAN[offerSlug]
     if (plan) {
-      await supabaseAdmin.rpc('activate_subscription', {
-        p_user_id:        userId,
-        p_plan:           plan,
-        p_cakto_order_id: orderId,
-      })
+      try {
+        await supabaseAdmin.rpc('activate_subscription', {
+          p_user_id:        userId,
+          p_plan:           plan,
+          p_cakto_order_id: orderId,
+        })
+      } catch (err) {
+        console.error('Erro ao ativar assinatura via RPC:', err)
+        return NextResponse.json({ error: 'Erro ao ativar assinatura' }, { status: 500 })
+      }
+
       // Recompensa indicação se houver referral pendente
       try {
         await supabaseAdmin.rpc('reward_referral', { p_referred_id: userId })
@@ -146,6 +159,22 @@ export async function POST(req: NextRequest) {
       const { data: profileData } = await supabaseAdmin.from('profiles').select('name').eq('id', userId).single()
       const nomeDisplay = profileData?.name?.split(' ')[0] ?? 'Usuário'
       await sendPlanActivatedEmail(customerEmail, nomeDisplay, plan)
+
+      try {
+        const hoje = new Date()
+        const vencimento = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+        await sendReceiptEmail(
+          customerEmail,
+          nomeDisplay,
+          plan,
+          `R$ ${PLAN_PRICES[plan] ?? '—'}/mês`,
+          hoje.toLocaleDateString('pt-BR'),
+          vencimento.toLocaleDateString('pt-BR'),
+        )
+      } catch (err) {
+        console.error('Erro ao enviar email de recibo (não bloqueante):', err)
+      }
+
       return NextResponse.json({ success: true })
     }
 

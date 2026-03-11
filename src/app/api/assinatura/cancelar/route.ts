@@ -56,6 +56,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Erro ao cancelar' }, { status: 500 })
     }
 
+    // Cria solicitação de cancelamento para processamento manual no admin
+    try {
+      const { data: subData } = await supabase
+        .from('subscriptions')
+        .select('plan, ends_at')
+        .eq('id', subscription_id)
+        .single()
+
+      await supabase.from('cancellation_requests').insert({
+        user_id: user.id,
+        subscription_id,
+        plan: subData?.plan ?? 'desconhecido',
+        status: 'pending',
+      })
+    } catch (e) {
+      console.error('Erro ao registrar cancelamento:', e)
+    }
+
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('Cancelar assinatura error:', err)

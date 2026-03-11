@@ -14,6 +14,13 @@ export function useAuth() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       setUser(user)
       setLoading(false)
+      if (user) {
+        // fire-and-forget: registra atividade sem bloquear carregamento da sessão
+        supabase.from('profiles')
+          .update({ last_active_at: new Date().toISOString() })
+          .eq('id', user.id)
+          .then(() => {})
+      }
     })
 
     // Ouve mudanças de sessão (login/logout)

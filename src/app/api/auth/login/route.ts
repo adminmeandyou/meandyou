@@ -1,6 +1,7 @@
 // src/app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createServerClient } from '@supabase/ssr'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,13 +32,30 @@ export async function POST(req: NextRequest) {
       }, { status: 429 })
     }
 
-    // 2. Login
+    // 2. Verificar banimento ANTES de criar sessão
+    // ✅ CORREÇÃO: ban check agora ocorre antes de signInWithPassword.
+    // Antes: a sessão já existia no Supabase Auth quando retornávamos 403 para banidos.
+    const { data: userPrecheck } = await supabaseAdmin
+      .from('users')
+      .select('id, banned')
+      .eq('email', email)
+      .single()
+
+    if (userPrecheck?.banned) {
+      await supabaseAdmin.rpc('register_login_attempt', { p_email: email, p_ip: ip, p_success: false })
+      return NextResponse.json({
+        error: 'Sua conta foi suspensa. Entre em contato com o suporte.',
+        banned: true,
+      }, { status: 403 })
+    }
+
+    // 3. Login
     const { data: authData, error: authError } = await supabaseAdmin.auth.signInWithPassword({
       email,
       password,
     })
 
-    // 3. Registrar tentativa
+    // 4. Registrar tentativa
     await supabaseAdmin.rpc('register_login_attempt', {
       p_email: email,
       p_ip: ip,
@@ -56,21 +74,14 @@ export async function POST(req: NextRequest) {
 
     const userId = authData.user.id
 
-    // 4. Verificar banimento
+    // 5. Buscar dados do usuário (verified, etc.) — banned já foi checado acima
     const { data: userRow } = await supabaseAdmin
       .from('users')
-      .select('banned, verified')
+      .select('verified')
       .eq('id', userId)
       .single()
 
-    if (userRow?.banned) {
-      return NextResponse.json({
-        error: 'Sua conta foi suspensa. Entre em contato com o suporte.',
-        banned: true,
-      }, { status: 403 })
-    }
-
-    // 5. Atualizar streak e last_active_at (fire-and-forget — não bloqueia o login)
+    // 6. Atualizar streak e last_active_at (fire-and-forget — não bloqueia o login)
     Promise.all([
       supabaseAdmin.rpc('update_streak', { p_user_id: userId }),
       supabaseAdmin.from('profiles')
@@ -78,30 +89,34 @@ export async function POST(req: NextRequest) {
         .eq('id', userId),
     ]).catch(err => console.error('Erro ao atualizar streak/last_active:', err))
 
-    // 6. Setar cookies de sessão manualmente na resposta
-    // signInWithPassword em API Route NÃO seta cookie automaticamente
+    // 7. Setar cookies de sessão usando createServerClient do @supabase/ssr
+    // ✅ CORREÇÃO CRÍTICA: cookies sb-access-token/sb-refresh-token separados NÃO são
+    // reconhecidos pelo createServerClient do proxy. O formato correto é
+    // sb-[project-ref]-auth-token (JSON com toda a sessão), gerenciado pelo SSR client.
     const response = NextResponse.json({
       success: true,
       user: authData.user,
       verified: userRow?.verified ?? false,
     })
 
-    const { access_token, refresh_token, expires_at } = authData.session
+    const ssrClient = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll: () => [],
+          setAll: (cookiesToSet) => {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options)
+            })
+          },
+        },
+      }
+    )
 
-    response.cookies.set('sb-access-token', access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 7, // 7 dias
-    })
-
-    response.cookies.set('sb-refresh-token', refresh_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
-      maxAge: 60 * 60 * 24 * 30, // 30 dias
+    await ssrClient.auth.setSession({
+      access_token: authData.session.access_token,
+      refresh_token: authData.session.refresh_token,
     })
 
     return response

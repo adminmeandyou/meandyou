@@ -3,11 +3,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 // Rotas protegidas (requer autenticação)
+// ⚠️ /verificacao NÃO está aqui: o link de verificação é aberto no celular do usuário
+// que pode não ter sessão naquele dispositivo. A page /verificacao gerencia sua própria
+// autenticação internamente via token na URL ou via supabase.auth.getUser().
 const PROTECTED_ROUTES = [
   '/busca', '/match', '/matches', '/chat', '/perfil', '/planos', '/dashboard',
   '/conversas', '/loja', '/destaque', '/indicar', '/backstage',
   '/roleta', '/streak', '/onboarding', '/notificacoes', '/suporte',
-  '/ajuda', '/deletar-conta', '/minha-assinatura', '/videochamada', '/verificacao',
+  '/ajuda', '/deletar-conta', '/minha-assinatura', '/videochamada',
 ]
 
 // Rotas públicas (redireciona para /busca se já logado)

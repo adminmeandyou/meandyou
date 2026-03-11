@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, DollarSign, Flag, ShieldAlert, TrendingUp, LogOut } from 'lucide-react'
+import { LayoutDashboard, Users, DollarSign, Flag, ShieldAlert, TrendingUp, LogOut, XCircle, UserCog } from 'lucide-react'
 
 const NAV = [
   { href: '/admin',            label: 'Dashboard',  icon: LayoutDashboard },
@@ -10,7 +10,9 @@ const NAV = [
   { href: '/admin/financeiro', label: 'Financeiro', icon: DollarSign      },
   { href: '/admin/denuncias',  label: 'Denúncias',  icon: Flag            },
   { href: '/admin/seguranca',  label: 'Segurança',  icon: ShieldAlert     },
-  { href: '/admin/marketing',  label: 'Marketing',  icon: TrendingUp      },
+  { href: '/admin/marketing',      label: 'Marketing',      icon: TrendingUp },
+  { href: '/admin/cancelamentos',  label: 'Cancelamentos',  icon: XCircle    },
+  { href: '/admin/equipe',         label: 'Equipe',         icon: UserCog    },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {

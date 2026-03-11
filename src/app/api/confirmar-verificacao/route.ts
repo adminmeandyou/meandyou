@@ -9,7 +9,7 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { token, userId } = await req.json()
+    const { token, userId, cpf } = await req.json()
     if (!token || !userId) {
       return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
     }
@@ -32,19 +32,45 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Token expirado. Solicite um novo link.' }, { status: 400 })
     }
 
-    // 2. Marcar token como usado
-    await supabase
-      .from('verification_tokens')
-      .update({ used: true })
-      .eq('token', token)
+    // ✅ CORREÇÃO ATOMICIDADE: verificar usuário PRIMEIRO, depois marcar token como usado.
+    // Antes: token era marcado 'used' e em seguida users.verified era setado. Se o segundo
+    // falhasse, o usuário ficava preso (token usado + não verificado, sem saída).
+    // Nova ordem: se users.update falhar, o token ainda não está marcado → usuário pode tentar novamente.
 
-    // 3. Marcar usuário como verificado em `users` (nunca em `profiles`)
-    await supabase
+    // 2. Marcar usuário como verificado em `users` (nunca em `profiles`)
+    const { error: verifyError } = await supabase
       .from('users')
       .update({ verified: true })
       .eq('id', userId)
 
-    // 4. Atualizar completude do perfil — verificação vale 15 pontos
+    if (verifyError) {
+      console.error('Erro ao verificar usuário:', verifyError)
+      return NextResponse.json({ error: 'Erro ao verificar usuário. Tente novamente.' }, { status: 500 })
+    }
+
+    // 3. Salvar CPF (se fornecido) — enviado pela page após liveness detection
+    if (cpf && /^\d{11}$/.test(cpf)) {
+      const { error: cpfError } = await supabase
+        .from('users')
+        .update({ cpf })
+        .eq('id', userId)
+      if (cpfError) console.error('Erro ao salvar CPF:', cpfError)
+    }
+
+    // 4. Marcar token como usado (só depois de verified = true ter sido commitado)
+    const { error: tokenMarkError } = await supabase
+      .from('verification_tokens')
+      .update({ used: true })
+      .eq('token', token)
+
+    if (tokenMarkError) {
+      // Rollback: desfaz verificação para o usuário poder tentar de novo com o mesmo token
+      await supabase.from('users').update({ verified: false }).eq('id', userId)
+      console.error('Erro ao marcar token como usado:', tokenMarkError)
+      return NextResponse.json({ error: 'Erro ao confirmar verificação. Tente novamente.' }, { status: 500 })
+    }
+
+    // 5. Atualizar completude do perfil — verificação vale 15 pontos
     // Recalcula somando ao valor atual sem sobrescrever os outros campos
     const { data: profileData } = await supabase
       .from('profiles')
@@ -63,7 +89,7 @@ export async function POST(req: NextRequest) {
         .eq('id', userId)
     }
 
-    // 5. Atualizar score do perfil (verificação aumenta credibilidade)
+    // 6. Atualizar score do perfil (verificação aumenta credibilidade)
     try {
       await supabase.rpc('update_profile_score', { p_user_id: userId })
     } catch (err) {
