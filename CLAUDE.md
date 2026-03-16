@@ -6,7 +6,47 @@ Sempre responda em português do Brasil.
 ## MeAndYou — Referência do Projeto
 
 > **Branch de trabalho:** `design-v2`
-> **Última atualização:** Fase 1 — Correções de Segurança (2026-03-16)
+> **Última atualização:** Fase 2 — Design System e Componentes Base (2026-03-16)
+
+---
+
+### Fase 2 Concluída
+
+#### Tokens registrados no tailwind.config (via `@theme` em globals.css)
+
+| Tipo | Tokens |
+|------|--------|
+| Cores | `brand-primary` (#E11D48), `brand-secondary` (#F43F5E), `brand-bg` (#08090E), `brand-surface` (#0F1117), `brand-surface2` (#13161F), `brand-danger` (#E11D48), `brand-success` (#10b981), `brand-gold` (#F59E0B), `brand-text` (#F8F9FA) |
+| Fontes | `fraunces` (Fraunces serif), `jakarta` (Plus Jakarta Sans) |
+| Border Radius | `input` (12px), `btn` (12px), `card` (16px), `card-sm` (10px), `pill` (100px) |
+| Sombras | `accent`, `card`, `cta` |
+| Spacing | Usa escala padrão Tailwind (base 4px) |
+
+Classes utilitárias adicionadas: `.ui-skeleton`, `.ui-spinner`, `.ui-range-input`
+
+Keyframes: `ui-spin`, `ui-pulse`, `ui-slide-up`, `ui-fade-in`, `ui-toast-in`
+
+#### Componentes criados em `src/components/ui/`
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `Pill` | `src/components/ui/Pill.tsx` | Chip/tag clicável com estados (selected, hover, active, disabled, loading) |
+| `SliderRange` | `src/components/ui/SliderRange.tsx` | Slider duplo de intervalo (idade/distância) |
+| `ToggleSwitch` | `src/components/ui/ToggleSwitch.tsx` | Toggle substituto de checkbox, com label e descrição |
+| `BottomSheet` | `src/components/ui/BottomSheet.tsx` | Painel sobe da base com portal, blur e handle |
+| `Modal` | `src/components/ui/Modal.tsx` | Pop-up centralizado com portal, ESC e backdrop blur |
+| `FAB` | `src/components/ui/FAB.tsx` | Botão de ação flutuante circular (primary/surface) |
+| `SkeletonLoader` | `src/components/ui/SkeletonLoader.tsx` | Silhueta piscante (text/avatar/card/rect) |
+| `EmptyState` | `src/components/ui/EmptyState.tsx` | Ícone + título + descrição + CTA opcional |
+| `Toast` | `src/components/ui/Toast.tsx` | Banner flutuante (success/error/info/warning) auto-dismiss |
+| `BadgePill` | `src/components/ui/BadgePill.tsx` | Tag de raridade: Comum/Incomum/Raro/Lendário |
+| `Accordion` | `src/components/ui/Accordion.tsx` | Sanfona para filtros, suporte a múltiplos abertos |
+| `ChatBubble` | `src/components/ui/ChatBubble.tsx` | Balão enviado/recebido com status (sending/sent/delivered/read) |
+| `SwipeButton` | `src/components/ui/SwipeButton.tsx` | Botão circular da action bar (default/danger/primary/gold/info) |
+| `ProfileCard` | `src/components/ui/ProfileCard.tsx` | Card de swipe 3:4 com fotos navegáveis, verified, tags |
+| `MatchCard` | `src/components/ui/MatchCard.tsx` | Avatar redondo para fila de matches com badge de não lidas |
+
+**Regra de ícones:** `strokeWidth={1.5}` em todos os `lucide-react`. Zero emojis em ações/menus.
 
 ---
 
