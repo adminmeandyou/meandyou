@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Fraunces, Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
+import { AppShell } from '@/components/AppShell'
 
 // ✅ display: 'swap' adicionado — evita texto invisível (FOIT) em mobile/3G
 const fraunces = Fraunces({
@@ -64,7 +65,7 @@ export default function RootLayout({
         }} />
       </head>
       <body className={`${fraunces.variable} ${plusJakarta.variable}`}>
-        {children}
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   )

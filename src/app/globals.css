@@ -265,3 +265,8 @@ input::placeholder {
 .ui-range-input::-moz-range-track {
   background: transparent;
 }
+
+/* ── AppShell — scroll sem barra visível ── */
+#app-main-content::-webkit-scrollbar {
+  display: none;
+}

@@ -6,7 +6,62 @@ Sempre responda em português do Brasil.
 ## MeAndYou — Referência do Projeto
 
 > **Branch de trabalho:** `design-v2`
-> **Última atualização:** Fase 2 — Design System e Componentes Base (2026-03-16)
+> **Última atualização:** Fase 3 — Arquitetura de Layout (2026-03-16)
+
+---
+
+### Fase 3 Concluída
+
+#### Arquitetura de Layout
+
+**Abordagem:** `AppShell` client component inserido no root layout, que detecta a rota via `usePathname()` e renderiza o shell somente para rotas protegidas. Zero arquivos de página movidos ou modificados.
+
+#### Arquivos alterados
+
+| Arquivo | Alteração |
+|---------|-----------|
+| `src/app/layout.tsx` | Importa e envolve `children` com `<AppShell>` |
+| `src/app/globals.css` | Adicionado `#app-main-content::-webkit-scrollbar { display: none }` |
+
+#### Arquivos criados
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `src/components/AppShell.tsx` | Wrapper condicional: renderiza shell apenas para rotas protegidas |
+| `src/components/AppHeader.tsx` | Header mobile: logo + slot de modos (Fase 4) + Bell + Shield |
+| `src/components/AppBottomNav.tsx` | Nav inferior mobile: Chat / Descobrir / Salas (FAB) / Loja / Perfil |
+| `src/components/AppSidebar.tsx` | Sidebar desktop (72px, icon-only): logo MAY + mesma navegação + logout |
+
+#### Estrutura de navegação implementada
+
+**Bottom Nav (mobile, < 768px):**
+| Ícone | Rota |
+|-------|------|
+| MessageCircle | `/conversas` |
+| Compass | `/busca` |
+| Zap (FAB central accent) | `/roleta` |
+| ShoppingBag | `/loja` |
+| User | `/perfil` |
+
+**Sidebar (desktop, >= 768px):**
+- Logo "MAY" no topo → `/dashboard`
+- Mesma navegação em ícones verticais
+- Notificações (Bell) + Segurança (Shield) na base
+
+**Rotas com shell:** `/dashboard`, `/busca`, `/match`, `/matches`, `/chat/*`, `/conversas/*`, `/perfil/*`, `/configuracoes/*`, `/planos`, `/minha-assinatura`, `/loja`, `/destaque`, `/roleta`, `/streak`, `/indicar`, `/notificacoes`, `/backstage`
+
+**Rotas sem shell:** `/` (landing), `/login`, `/cadastro`, `/recuperar-senha`, `/nova-senha`, `/onboarding`, `/verificacao`, `/banido`, `/videochamada/*`, `/deletar-conta`, `/confirmar-email`, `/admin/*`, `/privacidade`, `/termos`, `/ajuda`, etc.
+
+**Layout desktop:**
+- `lg+`: Sidebar (72px) + frame app (max 430px) + painel direito reservado (280-400px, para Fase 4+)
+- `md`: Sidebar (72px) + frame app (max 430px), sem painel direito
+
+**Container mobile-first:** `max-width: 430px, height: 100vh, overflow: hidden, flexDirection: column`
+**Fundo externo:** `radial-gradient(ellipse, rgba(225,29,72,0.09), #08090E)`
+
+#### Slot reservado para Fase 4
+- `AppHeader` aceita prop `modeSelector?: React.ReactNode` (espaço central do header)
+- Painel direito do desktop: `div` vazio aguardando Chat/Matches da Fase 4
 
 ---
 
