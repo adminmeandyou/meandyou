@@ -6,7 +6,46 @@ Sempre responda em português do Brasil.
 ## MeAndYou — Referência do Projeto
 
 > **Branch de trabalho:** `design-v2`
-> **Última atualização:** Fase 6 — Hub de Comunicacao (2026-03-16)
+> **Última atualização:** Fase 7 — Gamificação (2026-03-16)
+
+---
+
+### Fase 7 Concluída
+
+#### Gamificação
+
+#### Arquivos modificados
+
+| Arquivo | O que mudou |
+|---------|-------------|
+| `src/app/perfil/[id]/page.tsx` | StatusPills flutuantes, Vitrine de Emblemas pixel art, Modal Pokédex. Query adicional em `users` para `verified, last_active_at, created_at`. |
+| `src/app/conversas/[id]/page.tsx` | Avaliação anônima pós-chat (botão "Avaliar" aparece após 5+ msgs), Detector de Bolo pós-encontro (banner "O encontro?" após aceitar convite). |
+
+#### Features implementadas
+
+**StatusPills (flutuando no card — `perfil/[id]`):**
+- 4 tipos: "Online agora" (< 5min, verde), "Ativo hoje" (< 24h, amarelo), "Verificado" (vermelho rose), "Novo no app" (< 7 dias, azul)
+- Posição: acima do overlay de nome, bottom-left do hero
+- Dados vindos da tabela `users` (colunas: `verified`, `last_active_at`, `created_at`)
+
+**Vitrine de Emblemas + Modal Pokédex (`perfil/[id]`):**
+- Grid 4 colunas com 8 emblemas definidos localmente (sem tabela no banco)
+- Pixel art SVGs de 8x8 viewBox renderizados em 40x40 com `imageRendering: 'pixelated'`
+- Emblemas: Identidade Verificada (raro), Perfil Completo (raro), Galeria Rica (incomum), Bio Detalhada (incomum), Tags Escolhidas (comum), Match Maker (lendario), Conversador (incomum), Muito Popular (lendario)
+- Emblemas bloqueados mostram cadeado com opacity 0.25
+- Modal Pokédex: pixel art ampliado (scale 1.8), nome, `BadgePill` de raridade, descrição, barra de progresso (para emblemas não desbloqueados)
+
+**Avaliação anônima pós-chat (`conversas/[id]`):**
+- Botão "Avaliar" na action bar, aparece apenas após 5+ mensagens e se não avaliou ainda
+- 4 opções: "Pessoa incrivel!", "Conversa agradavel", "Nao me interessei", "Fui ignorado(a)"
+- Insert silencioso em tabela `match_ratings` (falha silenciosamente se não existir)
+- Estado `ratingDone` via useState (não persiste entre sessões, por design)
+
+**Detector de Bolo (`conversas/[id]`):**
+- Detecta quando usuário enviou "Aceito!" como resposta a um convite de encontro
+- Botão "O encontro?" aparece na action bar com estilo active (accent)
+- 4 opções: "Foi incrivel!", "Foi estranho", "Levei um bolo", "Ainda nao aconteceu"
+- "Levei um bolo" insere em `bolo_reports` (falha silenciosamente se não existir)
 
 ---
 
