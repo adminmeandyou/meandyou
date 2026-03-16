@@ -7,9 +7,10 @@ import { supabase } from '../../lib/supabase'
 import Image from 'next/image'
 import {
   ArrowLeft, MapPin, Heart, Star, X,
-  Eye, Calendar, Ruler, Weight, Crown, ShieldAlert
+  Eye, Calendar, Ruler, Weight, Crown, ShieldAlert, Award
 } from 'lucide-react'
 import { SwipeButton } from '@/components/ui/SwipeButton'
+import { BadgePill } from '@/components/ui/BadgePill'
 
 // ─── Trust Score ──────────────────────────────────────────────────────────────
 
@@ -32,6 +33,249 @@ function getConquistas(profile: any, photos: string[]): { emoji: string; label: 
   if (profile.bio?.length > 100) list.push({ emoji: '✍️', label: 'Bio detalhada' })
   if (profile.highlight_tags?.length > 0) list.push({ emoji: '🏷️', label: 'Tags escolhidas' })
   return list
+}
+
+// ─── Status Pills ─────────────────────────────────────────────────────────────
+
+interface StatusPill { label: string; bg: string; color: string }
+
+function getStatusPills(userRow: any): StatusPill[] {
+  if (!userRow) return []
+  const pills: StatusPill[] = []
+  const now = Date.now()
+  const lastActive = userRow.last_active_at ? new Date(userRow.last_active_at).getTime() : 0
+  const createdAt = userRow.created_at ? new Date(userRow.created_at).getTime() : 0
+  if (lastActive && (now - lastActive) < 5 * 60 * 1000) {
+    pills.push({ label: 'Online agora', bg: 'rgba(16,185,129,0.18)', color: '#10b981' })
+  } else if (lastActive && (now - lastActive) < 24 * 60 * 60 * 1000) {
+    pills.push({ label: 'Ativo hoje', bg: 'rgba(245,158,11,0.18)', color: '#F59E0B' })
+  }
+  if (userRow.verified) {
+    pills.push({ label: 'Verificado', bg: 'rgba(225,29,72,0.18)', color: '#F43F5E' })
+  }
+  if (createdAt && (now - createdAt) < 7 * 24 * 60 * 60 * 1000) {
+    pills.push({ label: 'Novo no app', bg: 'rgba(96,165,250,0.18)', color: '#60a5fa' })
+  }
+  return pills.slice(0, 4)
+}
+
+// ─── Pixel Art SVGs ───────────────────────────────────────────────────────────
+
+function PixelShield({ color }: { color: string }) {
+  return (
+    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
+      <rect x="1" y="0" width="6" height="1" fill={color}/>
+      <rect x="0" y="1" width="8" height="1" fill={color}/>
+      <rect x="0" y="2" width="2" height="3" fill={color}/>
+      <rect x="6" y="2" width="2" height="3" fill={color}/>
+      <rect x="0" y="5" width="8" height="1" fill={color}/>
+      <rect x="1" y="6" width="6" height="1" fill={color}/>
+      <rect x="2" y="7" width="4" height="1" fill={color}/>
+      <rect x="3" y="3" width="1" height="1" fill="rgba(255,255,255,0.6)"/>
+      <rect x="4" y="2" width="1" height="1" fill="rgba(255,255,255,0.6)"/>
+      <rect x="2" y="4" width="1" height="1" fill="rgba(255,255,255,0.6)"/>
+    </svg>
+  )
+}
+
+function PixelCrown({ color }: { color: string }) {
+  return (
+    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
+      <rect x="0" y="0" width="1" height="1" fill={color}/>
+      <rect x="4" y="0" width="1" height="1" fill={color}/>
+      <rect x="7" y="0" width="1" height="1" fill={color}/>
+      <rect x="0" y="1" width="1" height="2" fill={color}/>
+      <rect x="3" y="1" width="2" height="1" fill={color}/>
+      <rect x="7" y="1" width="1" height="2" fill={color}/>
+      <rect x="1" y="2" width="1" height="1" fill={color}/>
+      <rect x="6" y="2" width="1" height="1" fill={color}/>
+      <rect x="0" y="3" width="8" height="1" fill={color}/>
+      <rect x="0" y="4" width="8" height="3" fill={color}/>
+      <rect x="1" y="7" width="6" height="1" fill={color}/>
+    </svg>
+  )
+}
+
+function PixelCamera({ color }: { color: string }) {
+  return (
+    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
+      <rect x="2" y="0" width="1" height="1" fill={color}/>
+      <rect x="3" y="0" width="3" height="1" fill={color}/>
+      <rect x="0" y="1" width="8" height="6" fill={color}/>
+      <rect x="0" y="7" width="8" height="1" fill={color}/>
+      <rect x="2" y="2" width="4" height="4" fill="rgba(0,0,0,0.4)"/>
+      <rect x="3" y="3" width="2" height="2" fill="rgba(255,255,255,0.5)"/>
+    </svg>
+  )
+}
+
+function PixelScroll({ color }: { color: string }) {
+  return (
+    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
+      <rect x="1" y="0" width="6" height="8" fill={color}/>
+      <rect x="0" y="1" width="1" height="6" fill={color}/>
+      <rect x="2" y="2" width="4" height="1" fill="rgba(0,0,0,0.35)"/>
+      <rect x="2" y="4" width="3" height="1" fill="rgba(0,0,0,0.35)"/>
+      <rect x="2" y="6" width="2" height="1" fill="rgba(0,0,0,0.35)"/>
+    </svg>
+  )
+}
+
+function PixelTag({ color }: { color: string }) {
+  return (
+    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
+      <rect x="0" y="0" width="5" height="1" fill={color}/>
+      <rect x="0" y="1" width="7" height="1" fill={color}/>
+      <rect x="0" y="2" width="8" height="1" fill={color}/>
+      <rect x="0" y="3" width="8" height="1" fill={color}/>
+      <rect x="0" y="4" width="8" height="1" fill={color}/>
+      <rect x="0" y="5" width="7" height="1" fill={color}/>
+      <rect x="0" y="6" width="5" height="1" fill={color}/>
+      <rect x="5" y="2" width="1" height="1" fill="rgba(0,0,0,0.45)"/>
+    </svg>
+  )
+}
+
+function PixelHeart({ color }: { color: string }) {
+  return (
+    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
+      <rect x="1" y="0" width="2" height="1" fill={color}/>
+      <rect x="5" y="0" width="2" height="1" fill={color}/>
+      <rect x="0" y="1" width="4" height="2" fill={color}/>
+      <rect x="4" y="1" width="4" height="2" fill={color}/>
+      <rect x="0" y="3" width="8" height="2" fill={color}/>
+      <rect x="1" y="5" width="6" height="1" fill={color}/>
+      <rect x="2" y="6" width="4" height="1" fill={color}/>
+      <rect x="3" y="7" width="2" height="1" fill={color}/>
+    </svg>
+  )
+}
+
+function PixelZap({ color }: { color: string }) {
+  return (
+    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
+      <rect x="3" y="0" width="4" height="1" fill={color}/>
+      <rect x="2" y="1" width="4" height="1" fill={color}/>
+      <rect x="1" y="2" width="4" height="1" fill={color}/>
+      <rect x="2" y="3" width="5" height="1" fill={color}/>
+      <rect x="1" y="4" width="5" height="1" fill={color}/>
+      <rect x="2" y="5" width="4" height="1" fill={color}/>
+      <rect x="1" y="6" width="3" height="1" fill={color}/>
+      <rect x="1" y="7" width="2" height="1" fill={color}/>
+    </svg>
+  )
+}
+
+function PixelStar({ color }: { color: string }) {
+  return (
+    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
+      <rect x="3" y="0" width="2" height="2" fill={color}/>
+      <rect x="0" y="2" width="8" height="2" fill={color}/>
+      <rect x="1" y="4" width="6" height="1" fill={color}/>
+      <rect x="0" y="5" width="3" height="2" fill={color}/>
+      <rect x="5" y="5" width="3" height="2" fill={color}/>
+      <rect x="2" y="7" width="1" height="1" fill={color}/>
+      <rect x="5" y="7" width="1" height="1" fill={color}/>
+    </svg>
+  )
+}
+
+// ─── Emblemas ─────────────────────────────────────────────────────────────────
+
+interface EmblemaDef {
+  id: string
+  name: string
+  raridade: 'comum' | 'incomum' | 'raro' | 'lendario'
+  desc: string
+  desbloqueado: boolean
+  progresso: number
+  total: number
+  pixel: React.ReactNode
+}
+
+function getEmblemas(profile: any, photos: string[], filters: any, userRow: any): EmblemaDef[] {
+  return [
+    {
+      id: 'verificado',
+      name: 'Identidade Verificada',
+      raridade: 'raro',
+      desc: 'Confirmou identidade com selfie biometrica. Perfil 100% autentico.',
+      desbloqueado: !!userRow?.verified,
+      progresso: userRow?.verified ? 1 : 0,
+      total: 1,
+      pixel: <PixelShield color="#a78bfa" />,
+    },
+    {
+      id: 'perfil_completo',
+      name: 'Perfil Completo',
+      raridade: 'raro',
+      desc: 'Preencheu todas as 9 fotos do perfil. Comprometimento real!',
+      desbloqueado: photos.length >= 9,
+      progresso: photos.length,
+      total: 9,
+      pixel: <PixelCrown color="#a78bfa" />,
+    },
+    {
+      id: 'galeria_rica',
+      name: 'Galeria Rica',
+      raridade: 'incomum',
+      desc: 'Tem 5 ou mais fotos no perfil. Mais chances de conexao!',
+      desbloqueado: photos.length >= 5,
+      progresso: photos.length,
+      total: 5,
+      pixel: <PixelCamera color="#60a5fa" />,
+    },
+    {
+      id: 'bio_detalhada',
+      name: 'Bio Detalhada',
+      raridade: 'incomum',
+      desc: 'Escreveu uma bio com mais de 100 caracteres. Se importa em contar a historia.',
+      desbloqueado: (profile?.bio?.length ?? 0) >= 100,
+      progresso: Math.min(profile?.bio?.length ?? 0, 100),
+      total: 100,
+      pixel: <PixelScroll color="#60a5fa" />,
+    },
+    {
+      id: 'tags_escolhidas',
+      name: 'Tags Escolhidas',
+      raridade: 'comum',
+      desc: 'Preencheu as tags de destaque do perfil.',
+      desbloqueado: (profile?.highlight_tags?.length ?? 0) > 0,
+      progresso: profile?.highlight_tags?.length ?? 0,
+      total: 3,
+      pixel: <PixelTag color="rgba(248,249,250,0.70)" />,
+    },
+    {
+      id: 'match_maker',
+      name: 'Match Maker',
+      raridade: 'lendario',
+      desc: 'Conquistou mais de 50 matches. Um verdadeiro iman de conexoes!',
+      desbloqueado: false,
+      progresso: 0,
+      total: 50,
+      pixel: <PixelHeart color="#F59E0B" />,
+    },
+    {
+      id: 'conversador',
+      name: 'Conversador',
+      raridade: 'incomum',
+      desc: 'Manteve conversas ativas por mais de 7 dias.',
+      desbloqueado: false,
+      progresso: 0,
+      total: 7,
+      pixel: <PixelZap color="#60a5fa" />,
+    },
+    {
+      id: 'popular',
+      name: 'Muito Popular',
+      raridade: 'lendario',
+      desc: 'Recebeu mais de 100 curtidas. O perfil fala por si!',
+      desbloqueado: false,
+      progresso: 0,
+      total: 100,
+      pixel: <PixelStar color="#F59E0B" />,
+    },
+  ]
 }
 
 // ─── Componente principal ─────────────────────────────────────────────────────
@@ -58,6 +302,8 @@ export default function VerPerfilPage() {
   const [denunciaTexto, setDenunciaTexto] = useState('')
   const [denunciaEnviando, setDenunciaEnviando] = useState(false)
   const [denunciaEnviado, setDenunciaEnviado] = useState(false)
+  const [userRow, setUserRow] = useState<any>(null)
+  const [selectedBadge, setSelectedBadge] = useState<EmblemaDef | null>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -109,6 +355,14 @@ export default function VerPerfilPage() {
 
     setProfile(profileData)
     setFilters(filtersData)
+
+    // Busca dados de status para StatusPills
+    const { data: userData } = await supabase
+      .from('users')
+      .select('verified, last_active_at, created_at')
+      .eq('id', profileId)
+      .single()
+    setUserRow(userData)
 
     if (userId) {
       const { data: viewerSub } = await supabase
@@ -199,6 +453,8 @@ export default function VerPerfilPage() {
 
   const trustScore = calcTrustScore(profile, photos, filters)
   const conquistas = getConquistas(profile, photos)
+  const statusPills = getStatusPills(userRow)
+  const emblemas = getEmblemas(profile, photos, filters, userRow)
 
   // ─── Render ─────────────────────────────────────────────────────────────────
 
@@ -274,6 +530,18 @@ export default function VerPerfilPage() {
           </>
         )}
 
+        {/* StatusPills flutuantes */}
+        {statusPills.length > 0 && (
+          <div style={{ position: 'absolute', bottom: '106px', left: '16px', zIndex: 10, display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            {statusPills.map((pill, i) => (
+              <span key={i} style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, backgroundColor: pill.bg, color: pill.color, backdropFilter: 'blur(8px)', border: `1px solid ${pill.color}33`, letterSpacing: '0.01em', fontFamily: 'var(--font-jakarta)' }}>
+                {pill.label === 'Online agora' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: pill.color, marginRight: '5px', display: 'inline-block' }} />}
+                {pill.label}
+              </span>
+            ))}
+          </div>
+        )}
+
         {/* Overlay nome na foto */}
         <div style={{ position: 'absolute', bottom: '24px', left: '20px', right: '20px', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
@@ -331,16 +599,39 @@ export default function VerPerfilPage() {
           </div>
         </div>
 
-        {/* Conquistas */}
-        {conquistas.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {conquistas.map((c, i) => (
-              <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '100px', fontSize: '12px', fontWeight: 500, backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(248,249,250,0.70)' }}>
-                {c.emoji} {c.label}
-              </span>
+        {/* Vitrine de Emblemas */}
+        <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '16px 18px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Award size={14} color="rgba(248,249,250,0.50)" strokeWidth={1.5} />
+              <span style={{ fontSize: '12px', color: 'rgba(248,249,250,0.50)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Emblemas</span>
+            </div>
+            <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>{emblemas.filter(e => e.desbloqueado).length}/{emblemas.length}</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+            {emblemas.map((emblema) => (
+              <button
+                key={emblema.id}
+                onClick={() => setSelectedBadge(emblema)}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
+              >
+                <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: emblema.desbloqueado ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${emblema.desbloqueado ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.04)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', transition: 'all 0.15s' }}>
+                  <div style={{ opacity: emblema.desbloqueado ? 1 : 0.20, imageRendering: 'pixelated' }}>
+                    {emblema.pixel}
+                  </div>
+                  {!emblema.desbloqueado && (
+                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,9,14,0.55)' }}>
+                      <span style={{ fontSize: '16px', opacity: 0.4 }}>🔒</span>
+                    </div>
+                  )}
+                </div>
+                <span style={{ fontSize: '9px', color: emblema.desbloqueado ? 'rgba(248,249,250,0.60)' : 'rgba(248,249,250,0.25)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                  {emblema.name}
+                </span>
+              </button>
             ))}
           </div>
-        )}
+        </div>
 
         {/* Stats rapidos */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
@@ -379,6 +670,71 @@ export default function VerPerfilPage() {
         <SwipeButton variant="info" size="md" onClick={() => handleSwipe('superlike')} icon={<Star size={20} strokeWidth={1.5} />} />
         <SwipeButton variant="primary" size="lg" onClick={() => handleSwipe('like')} icon={<Heart size={26} strokeWidth={1.5} />} />
       </div>
+
+      {/* ── Modal Pokédex ── */}
+      {selectedBadge && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.88)', backdropFilter: 'blur(8px)', padding: '24px' }}
+          onClick={() => setSelectedBadge(null)}
+        >
+          <div
+            style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '20px', padding: '28px 24px', maxWidth: '340px', width: '100%' }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Pixel art grande + fundo */}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '16px', backgroundColor: selectedBadge.desbloqueado ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+                <div style={{ opacity: selectedBadge.desbloqueado ? 1 : 0.25, transform: 'scale(1.8)', imageRendering: 'pixelated' }}>
+                  {selectedBadge.pixel}
+                </div>
+                {!selectedBadge.desbloqueado && (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,9,14,0.65)' }}>
+                    <span style={{ fontSize: '28px', opacity: 0.5 }}>🔒</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Nome + raridade */}
+            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
+              <h3 style={{ color: '#F8F9FA', fontFamily: 'var(--font-fraunces)', fontSize: '20px', fontWeight: 700, margin: '0 0 8px' }}>
+                {selectedBadge.name}
+              </h3>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center' }}>
+                <BadgePill rarity={selectedBadge.raridade} />
+                {selectedBadge.desbloqueado && (
+                  <span style={{ fontSize: '11px', color: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '100px', padding: '2px 8px', fontWeight: 600 }}>Desbloqueado</span>
+                )}
+              </div>
+            </div>
+
+            {/* Descricao */}
+            <p style={{ color: 'rgba(248,249,250,0.55)', fontSize: '14px', lineHeight: 1.65, textAlign: 'center', margin: '0 0 20px' }}>
+              {selectedBadge.desc}
+            </p>
+
+            {/* Progresso */}
+            {!selectedBadge.desbloqueado && selectedBadge.total > 1 && (
+              <div style={{ marginBottom: '20px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.35)', fontWeight: 500 }}>Progresso</span>
+                  <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.50)', fontWeight: 600 }}>{selectedBadge.progresso}/{selectedBadge.total}</span>
+                </div>
+                <div style={{ height: '4px', borderRadius: '100px', backgroundColor: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${Math.min((selectedBadge.progresso / selectedBadge.total) * 100, 100)}%`, borderRadius: '100px', backgroundColor: 'var(--accent)', transition: 'width 0.4s ease' }} />
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={() => setSelectedBadge(null)}
+              style={{ width: '100%', padding: '12px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.07)', color: '#F8F9FA', fontSize: '14px', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+            >
+              Fechar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Modal de Emergencia ── */}
       {emergencyModal && (

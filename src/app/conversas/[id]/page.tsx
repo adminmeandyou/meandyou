@@ -8,7 +8,7 @@ import Link from 'next/link'
 import {
   ArrowLeft, Send, Video, ShieldAlert,
   Loader2, AlertCircle, Lock, Mic,
-  Sparkles, CalendarPlus, Zap, X, CalendarCheck
+  Sparkles, CalendarPlus, Zap, X, CalendarCheck, Star, Coffee
 } from 'lucide-react'
 import { ChatBubble } from '@/components/ui/ChatBubble'
 
@@ -62,6 +62,13 @@ export default function ChatPage() {
   const [conviteText, setConviteText] = useState('')
   const [shake, setShake] = useState(false)
   const [pendingConvite, setPendingConvite] = useState<string | null>(null)
+
+  // Gamificacao Fase 7
+  const [showRatingModal, setShowRatingModal] = useState(false)
+  const [ratingDone, setRatingDone] = useState(false)
+  const [showBoloModal, setShowBoloModal] = useState(false)
+  const [boloDone, setBoloDone] = useState(false)
+  const [boloOportunidade, setBoloOportunidade] = useState(false)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -209,6 +216,12 @@ export default function ChatPage() {
     const meuIdx = messages.findIndex(m => m.id === ultimo.id)
     const houveResposta = messages.slice(meuIdx + 1).some(m => m.sender_id === userId)
     setPendingConvite(houveResposta ? null : ultimo.content.slice(CONVITE_PREFIX.length))
+
+    // Detector de Bolo: verifica se houve convite + "Aceito!" como resposta minha
+    if (!boloDone) {
+      const aceitei = messages.some(m => m.sender_id === userId && m.content === 'Aceito!')
+      if (aceitei) setBoloOportunidade(true)
+    }
   }, [messages, userId])
 
   function scrollToBottom() {
@@ -288,6 +301,36 @@ export default function ChatPage() {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
+    }
+  }
+
+  async function handleRating(opcao: string) {
+    setRatingDone(true)
+    setShowRatingModal(false)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      // Tentativa silenciosa — tabela match_ratings pode nao existir ainda
+      await supabase.from('match_ratings').insert({
+        match_id: matchId,
+        rater_id: userId,
+        rated_id: otherUser?.id,
+        rating: opcao,
+      })
+    } catch { /* silencioso */ }
+  }
+
+  async function handleBolo(opcao: string) {
+    setBoloDone(true)
+    setShowBoloModal(false)
+    setBoloOportunidade(false)
+    if (opcao === 'bolo') {
+      try {
+        await supabase.from('bolo_reports').insert({
+          match_id: matchId,
+          reporter_id: userId,
+          reported_id: otherUser?.id,
+        })
+      } catch { /* silencioso */ }
     }
   }
 
@@ -669,6 +712,23 @@ export default function ChatPage() {
               onClick={handleNudge}
               accent
             />
+            {/* Avaliar — so aparece apos 5+ msgs e nao avaliou ainda */}
+            {messages.length >= 5 && !ratingDone && (
+              <ActionBtn
+                icon={<Star size={14} strokeWidth={1.5} />}
+                label="Avaliar"
+                onClick={() => setShowRatingModal(true)}
+              />
+            )}
+            {/* Bolo — so aparece se aceitou encontro */}
+            {boloOportunidade && !boloDone && (
+              <ActionBtn
+                icon={<Coffee size={14} strokeWidth={1.5} />}
+                label="O encontro?"
+                onClick={() => setShowBoloModal(true)}
+                active
+              />
+            )}
           </div>
 
           {/* Input + send */}
@@ -731,6 +791,86 @@ export default function ChatPage() {
             </button>
           </div>
         </div>
+
+        {/* ── Modal Avaliacao Anonima ── */}
+        {showRatingModal && (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(8px)' }}
+            onClick={() => setShowRatingModal(false)}
+          >
+            <div
+              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px 24px 0 0', padding: '28px 24px 40px', width: '100%', maxWidth: 480 }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: 0 }}>Como foi a conversa?</h3>
+                <button onClick={() => setShowRatingModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                  <X size={18} color="var(--muted)" strokeWidth={1.5} />
+                </button>
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliacao anonima — {otherUser?.name} nao saberá quem avaliou.</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { id: 'incrivel', emoji: '✨', label: 'Pessoa incrivel!', color: '#10b981' },
+                  { id: 'agradavel', emoji: '😊', label: 'Conversa agradavel', color: '#60a5fa' },
+                  { id: 'nao_interessei', emoji: '😐', label: 'Nao me interessei', color: 'rgba(248,249,250,0.45)' },
+                  { id: 'ignorado', emoji: '😶', label: 'Fui ignorado(a)', color: '#F43F5E' },
+                ].map(op => (
+                  <button
+                    key={op.id}
+                    onClick={() => handleRating(op.id)}
+                    style={{ width: '100%', padding: '14px 16px', borderRadius: 14, border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', color: 'var(--text)', fontSize: 15, fontWeight: 500, textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'var(--font-jakarta)', transition: 'all 0.15s' }}
+                  >
+                    <span style={{ fontSize: 20 }}>{op.emoji}</span>
+                    <span style={{ color: op.color }}>{op.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Modal Detector de Bolo ── */}
+        {showBoloModal && (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(8px)', padding: 20 }}
+            onClick={() => setShowBoloModal(false)}
+          >
+            <div
+              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: '28px 24px', maxWidth: 360, width: '100%' }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ textAlign: 'center', marginBottom: 20 }}>
+                <div style={{ fontSize: 40, marginBottom: 10 }}>☕</div>
+                <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>O encontro aconteceu?</h3>
+                <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: 0, lineHeight: 1.55 }}>Voce aceitou um convite de encontro. Nos conte como foi!</p>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {[
+                  { id: 'incrivel', emoji: '🥰', label: 'Foi incrivel!' },
+                  { id: 'estranho', emoji: '😅', label: 'Foi estranho' },
+                  { id: 'bolo', emoji: '😤', label: 'Levei um bolo' },
+                  { id: 'ainda_nao', emoji: '⏳', label: 'Ainda nao aconteceu' },
+                ].map(op => (
+                  <button
+                    key={op.id}
+                    onClick={() => handleBolo(op.id)}
+                    style={{ width: '100%', padding: '13px 16px', borderRadius: 14, border: op.id === 'bolo' ? '1px solid rgba(225,29,72,0.30)' : '1px solid var(--border)', backgroundColor: op.id === 'bolo' ? 'rgba(225,29,72,0.07)' : 'rgba(255,255,255,0.04)', color: op.id === 'bolo' ? 'var(--accent)' : 'var(--text)', fontSize: 14, fontWeight: 500, textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'var(--font-jakarta)', transition: 'all 0.15s' }}
+                  >
+                    <span style={{ fontSize: 18 }}>{op.emoji}</span>
+                    <span>{op.label}</span>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setShowBoloModal(false)}
+                style={{ width: '100%', marginTop: 12, padding: '10px', background: 'none', border: 'none', color: 'var(--muted-2)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+              >
+                Perguntar depois
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* ── Modal de Emergência ── */}
         {emergencyModal && (
