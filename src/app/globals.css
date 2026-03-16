@@ -54,6 +54,11 @@
   --font-jakarta: 'Plus Jakarta Sans', sans-serif;
 }
 
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+
 * {
   margin: 0;
   padding: 0;

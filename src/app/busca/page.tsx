@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '@/app/lib/supabase'
+import { PaywallCard } from '@/components/PaywallCard'
 import {
   SlidersHorizontal, X, Heart, Star, AlertCircle,
   Loader2, Lock, Check, MapPin, RotateCcw, Zap, Undo2,
@@ -828,43 +829,14 @@ export default function BuscaPage() {
             <span style={{ fontSize: 13 }}>Carregando pessoas perto de você...</span>
           </div>
         ) : limitReached ? (
-          /* Limite de curtidas */
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, padding: '0 32px', textAlign: 'center' }}>
-            <span style={{ fontSize: 52 }}>💤</span>
-            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 24, color: 'var(--text)', margin: 0 }}>Curtidas esgotadas</h2>
-            <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
-              Você usou todas as {likeLimit} curtidas de hoje. Volte amanhã ou faça upgrade.
-            </p>
-            <div
-              style={{
-                padding: '16px 24px',
-                borderRadius: 20,
-                backgroundColor: 'var(--bg-card)',
-                border: '1px solid var(--border)',
-                textAlign: 'center',
-                width: '100%',
-              }}
-            >
-              <p style={{ fontSize: 11, color: 'var(--muted-2)', marginBottom: 4 }}>Renova em</p>
-              <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 32, color: 'var(--accent)', letterSpacing: 2 }}>{countdown}</p>
-            </div>
-            <Link
-              href="/planos"
-              style={{
-                display: 'block',
-                width: '100%',
-                padding: '14px 0',
-                borderRadius: 14,
-                backgroundColor: 'var(--accent)',
-                color: '#fff',
-                fontWeight: 600,
-                fontSize: 14,
-                textAlign: 'center',
-                textDecoration: 'none',
-              }}
-            >
-              Ver planos
-            </Link>
+          /* Limite de curtidas — PaywallCard com countdown */
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 24px', gap: 16 }}>
+            <PaywallCard
+              title="Curtidas esgotadas"
+              description={`Voce usou todas as ${likeLimit} curtidas de hoje. Volte amanha ou faca upgrade para curtir mais.`}
+              resetAt={(() => { const d = new Date(); d.setHours(24, 0, 0, 0); return d })()}
+              ctaLabel="Ver planos"
+            />
             <button
               onClick={() => setLimitReached(false)}
               style={{ background: 'none', border: 'none', color: 'var(--muted-2)', fontSize: 12, cursor: 'pointer' }}

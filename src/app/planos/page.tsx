@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { Check, Zap, Star, Crown } from 'lucide-react'
-
-// ─── Configuração dos planos ──────────────────────────────────────────────────
+import { Check, Zap, Star, Crown, ArrowLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 const PLANS = [
   {
@@ -16,13 +15,13 @@ const PLANS = [
     color: '#ffffff',
     checkoutUrl: 'https://pay.cakto.com.br/cip6fy9_797209',
     features: [
-      'Até 10 fotos no perfil',
+      'Ate 10 fotos no perfil',
       '5 curtidas por dia',
       '1 SuperCurtida/dia',
-      '1 Ticket por dia',
+      '1 Ticket de roleta/dia',
       '1 Lupa por dia',
       'Chat com seus matches',
-      '1h de videochamada por dia',
+      '1h de videochamada/dia',
     ],
   },
   {
@@ -33,14 +32,17 @@ const PLANS = [
     color: '#b8f542',
     checkoutUrl: 'https://pay.cakto.com.br/3arwn9f',
     highlight: true,
+    badge: 'Melhor Custo-Beneficio',
     features: [
-      'Até 10 fotos no perfil',
+      'Ate 10 fotos no perfil',
       '30 curtidas por dia',
       '4 SuperCurtidas/dia',
-      '2 Tickets por dia',
+      '2 Tickets de roleta/dia',
       '1 Lupa por dia',
+      'Ver quem curtiu voce',
+      'Desfazer curtida (1/dia)',
       'Destaque na busca',
-      '5h de videochamada por dia',
+      '5h de videochamada/dia',
     ],
   },
   {
@@ -48,25 +50,25 @@ const PLANS = [
     name: 'Black',
     price: 99.97,
     icon: Crown,
-    color: '#f5c842',
+    color: '#F59E0B',
     checkoutUrl: 'https://pay.cakto.com.br/hftqkrj',
     features: [
-      'Até 10 fotos no perfil',
+      'Ate 10 fotos no perfil',
       'Curtidas ilimitadas',
-      '10 SuperLikes por dia',
-      '3 Tickets por dia',
+      '10 SuperCurtidas/dia',
+      '3 Tickets de roleta/dia',
       '2 Lupas por dia',
-      'Boosts (máx. 2 simultâneos)',
+      'Boosts (max. 2 simultaneos)',
       'Filtros Sugar e Fetiche',
-      '10h de videochamada por dia',
+      'Area Backstage exclusiva',
+      '10h de videochamada/dia',
     ],
   },
 ]
 
-// ─── Página principal ─────────────────────────────────────────────────────────
-
 export default function PlanosPage() {
   const { user } = useAuth()
+  const router = useRouter()
   const [currentPlan, setCurrentPlan] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [userEmail, setUserEmail] = useState<string>('')
@@ -74,7 +76,6 @@ export default function PlanosPage() {
   useEffect(() => {
     if (!user) return
     loadCurrentPlan()
-    // Garante que temos o email do usuário logado
     if (user.email) {
       setUserEmail(user.email)
     } else {
@@ -91,7 +92,6 @@ export default function PlanosPage() {
       .eq('user_id', user!.id)
       .eq('status', 'active')
       .single()
-
     setCurrentPlan(data?.plan ?? null)
     setLoading(false)
   }
@@ -106,70 +106,92 @@ export default function PlanosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta px-4 py-10">
+    <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-12">
 
       {/* Header */}
-      <div className="text-center mb-10">
-        <h1 className="font-fraunces text-4xl text-white mb-3">
-          Escolha seu <span className="italic text-[#b8f542]">plano</span>
-        </h1>
-        <p className="text-white/40 text-sm max-w-xs mx-auto">
-          Todos os planos incluem verificação biométrica e perfis 100% reais
+      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
+        <button
+          onClick={() => router.back()}
+          className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"
+        >
+          <ArrowLeft size={18} className="text-white/60" />
+        </button>
+        <div>
+          <h1 className="font-fraunces text-xl text-white leading-tight">Planos</h1>
+          <p className="text-white/30 text-xs">Escolha o seu</p>
+        </div>
+      </header>
+
+      {/* Título */}
+      <div className="text-center px-6 pt-8 pb-6">
+        <h2 className="font-fraunces text-3xl text-white leading-tight">
+          Encontre quem <span className="italic text-[#b8f542]">combina</span> com voce
+        </h2>
+        <p className="text-white/35 text-sm mt-2 max-w-xs mx-auto">
+          Todos os planos incluem verificacao biometrica e perfis 100% reais
         </p>
       </div>
 
-      {/* Cards */}
-      <div className="flex flex-col gap-4 max-w-sm mx-auto">
+      {/* Cards — scroll horizontal com snap */}
+      <div
+        className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-5 pb-4"
+        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+      >
         {PLANS.map((plan) => {
           const Icon = plan.icon
           const isActive = currentPlan === plan.id
-          const isHighlight = plan.highlight
+          const isHighlight = !!plan.highlight
 
           return (
             <div
               key={plan.id}
-              className={`relative rounded-3xl border p-6 transition ${
+              className={`relative flex-shrink-0 w-[272px] snap-center rounded-3xl border p-5 flex flex-col transition ${
                 isHighlight
                   ? 'bg-[#b8f542]/5 border-[#b8f542]/30'
                   : 'bg-white/3 border-white/8'
               } ${isActive ? 'ring-2 ring-[#b8f542]' : ''}`}
             >
-              {/* Badge mais popular */}
+              {/* Badge "Melhor Custo-Benefício" */}
               {isHighlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-[#b8f542] text-black text-xs font-bold">
-                  Mais popular
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap px-4 py-1 rounded-full bg-[#b8f542] text-black text-[11px] font-bold">
+                  {plan.badge}
                 </div>
               )}
 
-              {/* Plano ativo */}
+              {/* Badge "Plano atual" */}
               {isActive && (
-                <div className="absolute -top-3 right-4 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-xs">
+                <div className="absolute -top-3.5 right-4 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-[11px]">
                   Plano atual
                 </div>
               )}
 
-              {/* Topo */}
-              <div className="flex items-center justify-between mb-5">
-                <div className="flex items-center gap-3">
+              {/* Topo: ícone + nome + preço */}
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2.5">
                   <div
-                    className="w-10 h-10 rounded-2xl flex items-center justify-center"
-                    style={{ backgroundColor: `${plan.color}15` }}
+                    className="w-9 h-9 rounded-xl flex items-center justify-center"
+                    style={{ backgroundColor: `${plan.color}18` }}
                   >
-                    <Icon size={20} style={{ color: plan.color }} />
+                    <Icon size={18} style={{ color: plan.color }} />
                   </div>
-                  <span className="font-fraunces text-xl text-white">{plan.name}</span>
+                  <span className="font-fraunces text-lg text-white">{plan.name}</span>
                 </div>
                 <div className="text-right">
-                  <span className="font-fraunces text-2xl text-white">R$ {plan.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</span>
-                  <span className="text-white/30 text-xs">/mês</span>
+                  <span className="font-fraunces text-xl text-white">
+                    R$ {plan.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                  </span>
+                  <div className="text-white/30 text-[11px]">/mes</div>
                 </div>
               </div>
 
+              {/* Divisor */}
+              <div className="h-px bg-white/6 mb-4" />
+
               {/* Features */}
-              <ul className="space-y-2.5 mb-6">
+              <ul className="space-y-2.5 flex-1 mb-5">
                 {plan.features.map((feat) => (
-                  <li key={feat} className="flex items-center gap-2.5 text-sm text-white/70">
-                    <Check size={14} style={{ color: plan.color }} className="shrink-0" />
+                  <li key={feat} className="flex items-start gap-2 text-sm text-white/65">
+                    <Check size={13} style={{ color: plan.color }} className="shrink-0 mt-0.5" />
                     {feat}
                   </li>
                 ))}
@@ -184,7 +206,9 @@ export default function PlanosPage() {
                     ? 'bg-white/5 text-white/30 cursor-default'
                     : isHighlight
                     ? 'bg-[#b8f542] text-black hover:bg-[#a8e030]'
-                    : 'bg-white/8 text-white hover:bg-white/12 border border-white/10'
+                    : plan.id === 'black'
+                    ? 'bg-[#F59E0B]/10 border border-[#F59E0B]/30 text-[#F59E0B] hover:bg-[#F59E0B]/20'
+                    : 'bg-white/8 text-white border border-white/10 hover:bg-white/12'
                 }`}
               >
                 {isActive ? 'Ativo' : `Assinar ${plan.name}`}
@@ -192,11 +216,58 @@ export default function PlanosPage() {
             </div>
           )
         })}
+
+        {/* Spacer final para o último card não colar na borda */}
+        <div className="flex-shrink-0 w-1" />
+      </div>
+
+      {/* Indicador de scroll */}
+      <div className="flex justify-center gap-1.5 mt-1 mb-6">
+        {PLANS.map((p) => (
+          <div
+            key={p.id}
+            className={`h-1 rounded-full transition-all ${
+              p.highlight ? 'w-5 bg-[#b8f542]' : 'w-2 bg-white/20'
+            }`}
+          />
+        ))}
+      </div>
+
+      {/* Comparativo rápido */}
+      <div className="px-5 mb-6">
+        <div className="rounded-2xl border border-white/6 bg-white/3 overflow-hidden">
+          <div className="grid grid-cols-4 text-center text-[11px] border-b border-white/6">
+            <div className="py-3 px-2 text-white/30 font-medium">Feature</div>
+            {PLANS.map((p) => (
+              <div key={p.id} className="py-3 px-1 font-semibold" style={{ color: p.color }}>
+                {p.name}
+              </div>
+            ))}
+          </div>
+          {[
+            { label: 'Curtidas',      values: ['5/dia', '30/dia', 'Ilimitadas'] },
+            { label: 'SuperCurtidas', values: ['1/dia', '4/dia', '10/dia'] },
+            { label: 'Lupas',         values: ['1/dia', '1/dia', '2/dia'] },
+            { label: 'Tickets',       values: ['1/dia', '2/dia', '3/dia'] },
+            { label: 'Video',         values: ['1h/dia', '5h/dia', '10h/dia'] },
+            { label: 'Quem curtiu',   values: ['—', '✓', '✓'] },
+            { label: 'Backstage',     values: ['—', '—', '✓'] },
+          ].map((row, i) => (
+            <div key={row.label} className={`grid grid-cols-4 text-center text-[11px] ${i % 2 === 0 ? '' : 'bg-white/[0.02]'}`}>
+              <div className="py-2.5 px-2 text-white/40 text-left">{row.label}</div>
+              {row.values.map((v, j) => (
+                <div key={j} className="py-2.5 px-1 text-white/60">
+                  {v}
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Rodapé */}
-      <p className="text-center text-white/20 text-xs mt-8">
-        Pagamento seguro via PIX ou cartão · Cancele quando quiser
+      <p className="text-center text-white/20 text-xs px-5">
+        Pagamento seguro via PIX ou cartao · Cancele quando quiser
       </p>
     </div>
   )
