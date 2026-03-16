@@ -10,6 +10,11 @@ export default function Login() {
   const [erro, setErro]           = useState('')
   const [verSenha, setVerSenha]   = useState(false)
 
+  // 2FA
+  const [etapa2fa, setEtapa2fa]   = useState(false)
+  const [tempToken, setTempToken] = useState('')
+  const [codigo2fa, setCodigo2fa] = useState('')
+
   const handleLogin = async () => {
     if (!email || !senha) {
       setErro('Preencha todos os campos')
@@ -33,9 +38,35 @@ export default function Login() {
         return
       }
 
+      // 2FA exigido
+      if (data.requires_2fa) {
+        setTempToken(data.temp_token)
+        setEtapa2fa(true)
+        return
+      }
+
       // Hard redirect garante que o middleware leia os cookies recém-setados
       window.location.href = '/busca'
 
+    } catch {
+      setErro('Erro de conexão. Tente novamente.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handle2FA = async () => {
+    if (codigo2fa.length < 6) { setErro('Digite o código de 6 dígitos'); return }
+    setLoading(true); setErro('')
+    try {
+      const res = await fetch('/api/auth/2fa/verificar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ temp_token: tempToken, codigo: codigo2fa }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setErro(data.error || 'Código inválido'); return }
+      window.location.href = '/busca'
     } catch {
       setErro('Erro de conexão. Tente novamente.')
     } finally {
@@ -74,6 +105,36 @@ export default function Login() {
           boxShadow: 'var(--shadow)',
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+            {/* ─── ETAPA 2FA ─── */}
+            {etapa2fa && (
+              <>
+                <div style={{ textAlign: 'center' }}>
+                  <p style={{ color: 'var(--text)', fontWeight: 600, fontSize: '16px', margin: '0 0 8px' }}>Verificação em dois fatores</p>
+                  <p style={{ color: 'var(--muted)', fontSize: '14px', margin: 0 }}>Abra seu app autenticador e insira o código.</p>
+                </div>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={codigo2fa}
+                  onChange={e => setCodigo2fa(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  onKeyDown={e => e.key === 'Enter' && handle2FA()}
+                  placeholder="000000"
+                  autoFocus
+                  style={{ fontSize: '28px', textAlign: 'center', letterSpacing: '8px', padding: '16px' }}
+                />
+                {erro && <p style={{ color: 'var(--red)', fontSize: '14px', textAlign: 'center' }}>{erro}</p>}
+                <button className="btn-primary" onClick={handle2FA} disabled={loading || codigo2fa.length < 6} style={{ opacity: (loading || codigo2fa.length < 6) ? 0.6 : 1 }}>
+                  {loading ? 'Verificando...' : 'Confirmar'}
+                </button>
+                <button type="button" onClick={() => { setEtapa2fa(false); setErro(''); setCodigo2fa('') }} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', fontSize: '14px' }}>
+                  Voltar
+                </button>
+              </>
+            )}
+
+            {/* ─── FORMULÁRIO NORMAL ─── */}
+            {!etapa2fa && <>
 
             <div>
               <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>
@@ -157,6 +218,8 @@ export default function Login() {
                 Criar conta
               </Link>
             </p>
+
+            </>}
 
           </div>
         </div>

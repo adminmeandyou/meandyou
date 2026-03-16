@@ -137,6 +137,38 @@ export default function Privacidade() {
           </a>.
         </Section>
 
+        {/* Acao de exclusao de dados */}
+        <div style={{
+          backgroundColor: 'var(--bg-card)',
+          border: '1px solid rgba(239,68,68,0.25)',
+          borderRadius: '12px',
+          padding: '24px',
+          marginBottom: '40px',
+        }}>
+          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '18px', fontWeight: 700, color: 'var(--text)', marginBottom: '8px' }}>
+            Excluir minha conta e dados
+          </h2>
+          <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '16px' }}>
+            Voce pode solicitar a exclusao permanente da sua conta e de todos os seus dados pessoais a qualquer momento, em conformidade com a LGPD. Apos a exclusao, voce receberá um comprovante por email.
+          </p>
+          <Link
+            href="/deletar-conta"
+            style={{
+              display: 'inline-block',
+              backgroundColor: 'rgba(239,68,68,0.1)',
+              color: '#f87171',
+              padding: '10px 20px',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              fontWeight: 600,
+              fontSize: '14px',
+              border: '1px solid rgba(239,68,68,0.25)',
+            }}
+          >
+            Solicitar exclusao de dados
+          </Link>
+        </div>
+
       </main>
 
       {/* Footer simples */}
