@@ -6,7 +6,40 @@ Sempre responda em português do Brasil.
 ## MeAndYou — Referência do Projeto
 
 > **Branch de trabalho:** `design-v2`
-> **Última atualização:** Fase 9 — Loja e Monetização (2026-03-16)
+> **Última atualização:** Fase 8 — Segurança Encontros (2026-03-16)
+
+---
+
+### Fase 8 Concluída
+
+#### Segurança Encontros
+
+#### Arquivo modificado
+
+| Arquivo | O que mudou |
+|---------|-------------|
+| `src/app/conversas/[id]/page.tsx` | Registro privado, check-in bloqueante e Central de Segurança |
+
+#### Features implementadas
+
+**Registro Privado (botão MapPin no action bar):**
+- Modal com campos: Com quem (prefixado), Local, Data, Hora
+- Salvo em `localStorage` chave `meandyou_meetings` (privado, sem backend)
+- Confirmação visual com check verde
+
+**Check-in Pós-Encontro (modal bloqueante):**
+- Detecta automaticamente no carregamento da página
+- Condição: `meeting.date + 2h < now AND !checkedIn`
+- SEM botão X, SEM fechar no backdrop — usuário obrigado a escolher
+- "Estou bem" → marca `checkedIn: true` no localStorage
+- "Preciso de ajuda — 190" → `tel:190` direto
+
+**Central de Segurança (BottomSheet no botão Shield do header):**
+- Botão ShieldAlert substituído por Shield que abre o sheet
+- Denunciar → abre `ReportModal` existente
+- Desfazer Match → confirmação inline → `matches.update({status:'blocked'})` + redirect
+- Modo Invisível → mostra status ativo/data expiry + link `/loja`
+- Ligar 190 → `tel:190` direto no sheet
 
 ---
 
