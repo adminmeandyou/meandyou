@@ -8,9 +8,11 @@ import Link from 'next/link'
 import {
   ArrowLeft, Send, Video, ShieldAlert,
   Loader2, AlertCircle, Lock, Mic,
-  Sparkles, CalendarPlus, Zap, X, CalendarCheck, Star, Coffee
+  Sparkles, CalendarPlus, Zap, X, CalendarCheck, Star, Coffee,
+  MapPin, Shield, HeartCrack, Ghost, Phone, CheckCircle2
 } from 'lucide-react'
 import { ChatBubble } from '@/components/ui/ChatBubble'
+import { ReportModal } from '@/components/ReportModal'
 
 interface Message {
   id: string
@@ -62,6 +64,23 @@ export default function ChatPage() {
   const [conviteText, setConviteText] = useState('')
   const [shake, setShake] = useState(false)
   const [pendingConvite, setPendingConvite] = useState<string | null>(null)
+
+  // ── Fase 8: Segurança Encontros ──────────────────────────────────────────────
+  // Registro privado
+  const [showMeetingModal, setShowMeetingModal] = useState(false)
+  const [meetingLocal, setMeetingLocal]         = useState('')
+  const [meetingDateVal, setMeetingDateVal]     = useState('')
+  const [meetingTimeVal, setMeetingTimeVal]     = useState('')
+  const [meetingSaved, setMeetingSaved]         = useState(false)
+  // Check-in pós-encontro (bloqueante)
+  const [checkinMeeting, setCheckinMeeting] = useState<{ id: string; local: string; date: string } | null>(null)
+  // Central de segurança
+  const [showSecuritySheet, setShowSecuritySheet] = useState(false)
+  const [unmatchConfirm, setUnmatchConfirm]       = useState(false)
+  const [unmatchDone, setUnmatchDone]             = useState(false)
+  const [ghostModeUntil, setGhostModeUntil]       = useState<string | null>(null)
+  const [showReport, setShowReport]               = useState(false)
+  // ─────────────────────────────────────────────────────────────────────────────
 
   // Gamificacao Fase 7
   const [showRatingModal, setShowRatingModal] = useState(false)
@@ -172,6 +191,24 @@ export default function ChatPage() {
         scrollToBottom()
       })
       .subscribe()
+
+    // Fase 8: busca ghost mode para exibir na Central de Segurança
+    const { data: ghostData } = await supabase
+      .from('profiles')
+      .select('ghost_mode_until')
+      .eq('id', uid)
+      .single()
+    setGhostModeUntil(ghostData?.ghost_mode_until ?? null)
+
+    // Fase 8: check-in pós-encontro — verifica localStorage
+    try {
+      const records: any[] = JSON.parse(localStorage.getItem('meandyou_meetings') ?? '[]')
+      const pending = records.find(
+        (r) => r.matchId === matchId && !r.checkedIn &&
+               new Date(r.date).getTime() + 2 * 60 * 60 * 1000 < Date.now()
+      )
+      if (pending) setCheckinMeeting({ id: pending.id, local: pending.local, date: pending.date })
+    } catch { /* localStorage indisponível */ }
 
     setLoading(false)
     scrollToBottom()
@@ -334,6 +371,55 @@ export default function ChatPage() {
     }
   }
 
+  // ── Fase 8: handlers ─────────────────────────────────────────────────────────
+
+  function handleSaveMeeting() {
+    if (!meetingLocal.trim() || !meetingDateVal || !meetingTimeVal) return
+    const record = {
+      id: String(Date.now()),
+      matchId,
+      matchName: otherUser?.name ?? 'Match',
+      local: meetingLocal.trim(),
+      date: `${meetingDateVal}T${meetingTimeVal}`,
+      checkedIn: false,
+    }
+    try {
+      const existing: any[] = JSON.parse(localStorage.getItem('meandyou_meetings') ?? '[]')
+      localStorage.setItem('meandyou_meetings', JSON.stringify([...existing, record]))
+    } catch { /* ignore */ }
+    setMeetingSaved(true)
+    setTimeout(() => {
+      setShowMeetingModal(false)
+      setMeetingSaved(false)
+      setMeetingLocal('')
+      setMeetingDateVal('')
+      setMeetingTimeVal('')
+    }, 1500)
+  }
+
+  function handleCheckinBem() {
+    if (!checkinMeeting) return
+    try {
+      const records: any[] = JSON.parse(localStorage.getItem('meandyou_meetings') ?? '[]')
+      localStorage.setItem('meandyou_meetings', JSON.stringify(
+        records.map((r) => r.id === checkinMeeting.id ? { ...r, checkedIn: true } : r)
+      ))
+    } catch { /* ignore */ }
+    setCheckinMeeting(null)
+  }
+
+  async function handleUnmatch() {
+    try {
+      await supabase
+        .from('matches')
+        .update({ status: 'blocked' })
+        .eq('id', matchId)
+    } catch { /* ignore */ }
+    router.push('/conversas')
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+
   function formatMsgTime(dateStr: string): string {
     return new Date(dateStr).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
   }
@@ -490,17 +576,17 @@ export default function ChatPage() {
             <Video size={15} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
           </button>
 
-          {/* Botão de emergência oculto */}
+          {/* Central de Segurança */}
           <button
-            onClick={() => setEmergencyModal(true)}
+            onClick={() => setShowSecuritySheet(true)}
             style={{
               width: 36, height: 36, borderRadius: '50%',
               background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
             }}
-            title="Emergencia"
+            title="Seguranca"
           >
-            <ShieldAlert size={15} color="rgba(248,249,250,0.20)" strokeWidth={1.5} />
+            <Shield size={15} color="rgba(248,249,250,0.25)" strokeWidth={1.5} />
           </button>
         </header>
 
@@ -705,6 +791,12 @@ export default function ChatPage() {
               onClick={() => { setShowIcebreakers(false); setShowConvite(v => !v) }}
               active={showConvite}
             />
+            {/* Registrar encontro */}
+            <ActionBtn
+              icon={<MapPin size={14} strokeWidth={1.5} />}
+              label="Registrar"
+              onClick={() => setShowMeetingModal(true)}
+            />
             {/* Nudge */}
             <ActionBtn
               icon={<Zap size={14} strokeWidth={1.5} />}
@@ -870,6 +962,154 @@ export default function ChatPage() {
               </button>
             </div>
           </div>
+        )}
+
+        {/* ── Modal Registro Privado ── */}
+        {showMeetingModal && (
+          <div style={{ position:'fixed',inset:0,zIndex:60,display:'flex',alignItems:'flex-end',justifyContent:'center',background:'rgba(0,0,0,0.80)',backdropFilter:'blur(8px)' }} onClick={() => setShowMeetingModal(false)}>
+            <div style={{ background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:'24px 24px 0 0',padding:'24px 20px 40px',width:'100%',maxWidth:480 }} onClick={e => e.stopPropagation()}>
+              <div style={{ width:40,height:4,borderRadius:4,background:'rgba(255,255,255,0.15)',margin:'0 auto 20px' }} />
+              <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20 }}>
+                <div style={{ display:'flex',alignItems:'center',gap:8 }}>
+                  <MapPin size={16} color="var(--accent)" strokeWidth={1.5} />
+                  <span style={{ fontFamily:'var(--font-fraunces)',fontSize:18,color:'var(--text)' }}>Registrar encontro</span>
+                </div>
+                <button onClick={() => setShowMeetingModal(false)} style={{ background:'none',border:'none',cursor:'pointer',padding:4 }}><X size={16} color="var(--muted)" /></button>
+              </div>
+              {meetingSaved ? (
+                <div style={{ textAlign:'center',padding:'20px 0' }}>
+                  <CheckCircle2 size={40} color="#10b981" style={{ margin:'0 auto 12px' }} />
+                  <p style={{ color:'var(--text)',fontSize:14,fontWeight:600 }}>Encontro registrado!</p>
+                  <p style={{ color:'var(--muted-2)',fontSize:12,marginTop:4 }}>Faremos um check-in com voce depois.</p>
+                </div>
+              ) : (
+                <div style={{ display:'flex',flexDirection:'column',gap:12 }}>
+                  <div>
+                    <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Com quem</label>
+                    <input value={otherUser?.name ?? ''} readOnly style={{ width:'100%',background:'rgba(255,255,255,0.04)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--muted)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Local *</label>
+                    <input value={meetingLocal} onChange={e => setMeetingLocal(e.target.value)} placeholder="Ex: Cafe Central, Shopping Norte..." autoFocus style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
+                  </div>
+                  <div style={{ display:'flex',gap:10 }}>
+                    <div style={{ flex:1 }}>
+                      <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Data *</label>
+                      <input type="date" value={meetingDateVal} onChange={e => setMeetingDateVal(e.target.value)} style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none',colorScheme:'dark' }} />
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Hora *</label>
+                      <input type="time" value={meetingTimeVal} onChange={e => setMeetingTimeVal(e.target.value)} style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none',colorScheme:'dark' }} />
+                    </div>
+                  </div>
+                  <p style={{ fontSize:11,color:'var(--muted-2)',lineHeight:1.5,margin:0 }}>Este registro fica somente no seu dispositivo. Faremos um check-in 2h apos o horario marcado.</p>
+                  <button onClick={handleSaveMeeting} disabled={!meetingLocal.trim()||!meetingDateVal||!meetingTimeVal} style={{ width:'100%',padding:'13px 0',borderRadius:12,background:meetingLocal.trim()&&meetingDateVal&&meetingTimeVal?'var(--accent)':'rgba(255,255,255,0.08)',border:'none',color:meetingLocal.trim()&&meetingDateVal&&meetingTimeVal?'#fff':'var(--muted)',fontFamily:'var(--font-jakarta)',fontSize:14,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8 }}>
+                    <MapPin size={14} />
+                    Salvar registro
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ── Modal Check-in Pós-Encontro (BLOQUEANTE) ── */}
+        {checkinMeeting && (
+          <div style={{ position:'fixed',inset:0,zIndex:70,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,0.90)',backdropFilter:'blur(12px)',padding:20 }}>
+            <div style={{ background:'var(--bg-card)',border:'1px solid rgba(225,29,72,0.30)',borderRadius:24,padding:'32px 24px',maxWidth:340,width:'100%',textAlign:'center' }}>
+              <div style={{ fontSize:48,marginBottom:16 }}>🔔</div>
+              <h3 style={{ fontFamily:'var(--font-fraunces)',fontSize:22,color:'var(--text)',margin:'0 0 8px' }}>Check-in de seguranca</h3>
+              <p style={{ fontSize:13,color:'var(--muted)',margin:'0 0 6px',lineHeight:1.55 }}>Voce tinha um encontro com <strong style={{ color:'rgba(248,249,250,0.75)' }}>{otherUser?.name}</strong></p>
+              <p style={{ fontSize:12,color:'var(--muted-2)',margin:'0 0 28px' }}>📍 {checkinMeeting.local} · {new Date(checkinMeeting.date).toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
+              <p style={{ fontSize:14,color:'var(--text)',fontWeight:600,margin:'0 0 20px' }}>Como voce esta?</p>
+              <div style={{ display:'flex',flexDirection:'column',gap:10 }}>
+                <button onClick={handleCheckinBem} style={{ width:'100%',padding:'15px 0',borderRadius:14,background:'#10b981',border:'none',color:'#fff',fontFamily:'var(--font-jakarta)',fontSize:15,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:10 }}>
+                  <CheckCircle2 size={18} />
+                  Estou bem
+                </button>
+                <a href="tel:190" style={{ width:'100%',padding:'15px 0',borderRadius:14,background:'var(--accent)',border:'none',color:'#fff',fontFamily:'var(--font-jakarta)',fontSize:15,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:10,textDecoration:'none' }}>
+                  <Phone size={18} />
+                  Preciso de ajuda — 190
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── Central de Segurança (BottomSheet) ── */}
+        {showSecuritySheet && (
+          <div style={{ position:'fixed',inset:0,zIndex:60,display:'flex',alignItems:'flex-end',justifyContent:'center',background:'rgba(0,0,0,0.75)',backdropFilter:'blur(8px)' }} onClick={() => { setShowSecuritySheet(false); setUnmatchConfirm(false) }}>
+            <div style={{ background:'var(--bg-card2)',border:'1px solid var(--border)',borderRadius:'24px 24px 0 0',padding:'20px 20px 40px',width:'100%',maxWidth:480 }} onClick={e => e.stopPropagation()}>
+              <div style={{ width:40,height:4,borderRadius:4,background:'rgba(255,255,255,0.15)',margin:'0 auto 18px' }} />
+              <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18 }}>
+                <div style={{ display:'flex',alignItems:'center',gap:8 }}>
+                  <Shield size={16} color="rgba(248,249,250,0.60)" strokeWidth={1.5} />
+                  <span style={{ fontFamily:'var(--font-fraunces)',fontSize:18,color:'var(--text)' }}>Central de seguranca</span>
+                </div>
+                <button onClick={() => { setShowSecuritySheet(false); setUnmatchConfirm(false) }} style={{ background:'none',border:'none',cursor:'pointer',padding:4 }}><X size={16} color="var(--muted)" /></button>
+              </div>
+              <div style={{ display:'flex',flexDirection:'column',gap:3 }}>
+                {/* Denunciar */}
+                <button onClick={() => { setShowSecuritySheet(false); setShowReport(true) }} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'14px 16px',borderRadius:16,background:'rgba(255,255,255,0.04)',border:'1px solid var(--border)',cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>
+                  <div style={{ width:40,height:40,borderRadius:12,background:'rgba(239,68,68,0.12)',border:'1px solid rgba(239,68,68,0.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><ShieldAlert size={18} color="#ef4444" strokeWidth={1.5} /></div>
+                  <div style={{ textAlign:'left' }}>
+                    <p style={{ fontSize:14,fontWeight:600,color:'var(--text)',margin:0 }}>Denunciar {otherUser?.name}</p>
+                    <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>Perfil falso, assedio, golpe...</p>
+                  </div>
+                </button>
+                {/* Desfazer match */}
+                {unmatchConfirm ? (
+                  <div style={{ padding:'14px 16px',borderRadius:16,background:'rgba(225,29,72,0.08)',border:'1px solid rgba(225,29,72,0.25)' }}>
+                    <p style={{ fontSize:13,color:'var(--text)',margin:'0 0 12px',textAlign:'center' }}>Tem certeza? O chat sera encerrado.</p>
+                    <div style={{ display:'flex',gap:8 }}>
+                      <button onClick={() => setUnmatchConfirm(false)} style={{ flex:1,padding:'10px',borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',color:'var(--muted)',fontSize:13,cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>Cancelar</button>
+                      <button onClick={handleUnmatch} style={{ flex:1,padding:'10px',borderRadius:12,background:'var(--accent)',border:'none',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>Desfazer</button>
+                    </div>
+                  </div>
+                ) : (
+                  <button onClick={() => setUnmatchConfirm(true)} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'14px 16px',borderRadius:16,background:'rgba(255,255,255,0.04)',border:'1px solid var(--border)',cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>
+                    <div style={{ width:40,height:40,borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><HeartCrack size={18} color="rgba(248,249,250,0.45)" strokeWidth={1.5} /></div>
+                    <div style={{ textAlign:'left' }}>
+                      <p style={{ fontSize:14,fontWeight:600,color:'var(--text)',margin:0 }}>Desfazer match</p>
+                      <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>Encerrar conversa e remover match</p>
+                    </div>
+                  </button>
+                )}
+                {/* Modo Invisível */}
+                <button onClick={() => { setShowSecuritySheet(false); router.push('/loja') }} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'14px 16px',borderRadius:16,background:'rgba(255,255,255,0.04)',border:'1px solid var(--border)',cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>
+                  <div style={{ width:40,height:40,borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><Ghost size={18} color="rgba(248,249,250,0.45)" strokeWidth={1.5} /></div>
+                  <div style={{ textAlign:'left',flex:1 }}>
+                    <p style={{ fontSize:14,fontWeight:600,color:'var(--text)',margin:0 }}>Modo Invisivel</p>
+                    <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>
+                      {ghostModeUntil && new Date(ghostModeUntil) > new Date()
+                        ? `Ativo ate ${new Date(ghostModeUntil).toLocaleDateString('pt-BR')}`
+                        : 'Some das buscas temporariamente'}
+                    </p>
+                  </div>
+                  {ghostModeUntil && new Date(ghostModeUntil) > new Date() && (
+                    <span style={{ fontSize:11,color:'#b8f542',background:'rgba(184,245,66,0.12)',border:'1px solid rgba(184,245,66,0.25)',padding:'2px 8px',borderRadius:100 }}>Ativo</span>
+                  )}
+                </button>
+                {/* Emergência */}
+                <a href="tel:190" style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'14px 16px',borderRadius:16,background:'rgba(225,29,72,0.06)',border:'1px solid rgba(225,29,72,0.20)',textDecoration:'none' }}>
+                  <div style={{ width:40,height:40,borderRadius:12,background:'rgba(225,29,72,0.12)',border:'1px solid rgba(225,29,72,0.30)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><Phone size={18} color="#F43F5E" strokeWidth={1.5} /></div>
+                  <div style={{ textAlign:'left' }}>
+                    <p style={{ fontSize:14,fontWeight:600,color:'#F43F5E',margin:0 }}>Ligar 190</p>
+                    <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>Policia Militar — emergencia real</p>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ── ReportModal ── */}
+        {showReport && otherUser && (
+          <ReportModal
+            reportedId={otherUser.id}
+            reportedName={otherUser.name}
+            onClose={() => setShowReport(false)}
+          />
         )}
 
         {/* ── Modal de Emergência ── */}
