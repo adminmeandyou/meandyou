@@ -1,20 +1,28 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '@/app/lib/supabase'
 import {
   SlidersHorizontal, X, Heart, Star, AlertCircle,
-  Loader2, Lock, ChevronDown, ChevronUp, Check,
-  MapPin, RotateCcw
+  Loader2, Lock, Check, MapPin, RotateCcw, Zap, Undo2,
+  ChevronDown, ChevronUp, Users, Info,
 } from 'lucide-react'
+import { BottomSheet } from '@/components/ui/BottomSheet'
+import { Pill } from '@/components/ui/Pill'
+import { SliderRange } from '@/components/ui/SliderRange'
+import { SwipeButton } from '@/components/ui/SwipeButton'
+import { useAppHeader } from '@/contexts/AppHeaderContext'
+
+// ─── Types ──────────────────────────────────────────────────────────────────
 
 interface Profile {
   id: string
   name: string
   age?: number
   photo_best?: string
+  photos?: string[]
   city?: string
   bio?: string
   distance_km?: number
@@ -27,6 +35,10 @@ interface FiltersState {
   search_gender: string
   [key: string]: boolean | number | string
 }
+
+type ViewMode = 'discovery' | 'search' | 'rooms'
+
+// ─── Constants ───────────────────────────────────────────────────────────────
 
 const DEFAULT_FILTERS: FiltersState = {
   search_max_distance_km: 40,
@@ -223,11 +235,14 @@ const FILTER_CATEGORIES = [
   },
 ]
 
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+
 function getLikeLimit(plan: string) {
   if (plan === 'black') return Infinity
   if (plan === 'plus') return 30
   return 5
 }
+
 function getSuperlikeLimit(plan: string) {
   if (plan === 'black') return 10
   if (plan === 'plus') return 5
@@ -251,7 +266,252 @@ function useCountdown() {
   return timeLeft
 }
 
+// ─── Mode Selector (injetado no AppHeader) ───────────────────────────────────
+
+function ModeSelectorTabs({
+  viewMode,
+  onChange,
+  onFilterClick,
+}: {
+  viewMode: ViewMode
+  onChange: (m: ViewMode) => void
+  onFilterClick: () => void
+}) {
+  const tabs: { id: ViewMode; label: string }[] = [
+    { id: 'discovery', label: 'Descobrir' },
+    { id: 'search', label: 'Busca' },
+    { id: 'rooms', label: 'Salas' },
+  ]
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+      <div
+        style={{
+          display: 'flex',
+          backgroundColor: 'rgba(255,255,255,0.05)',
+          borderRadius: 100,
+          padding: 3,
+          gap: 2,
+          border: '1px solid rgba(255,255,255,0.07)',
+        }}
+      >
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onChange(tab.id)}
+            style={{
+              padding: '4px 13px',
+              borderRadius: 100,
+              border: 'none',
+              fontSize: 13,
+              fontWeight: 500,
+              fontFamily: 'var(--font-jakarta)',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              backgroundColor: viewMode === tab.id ? 'var(--accent)' : 'transparent',
+              color: viewMode === tab.id ? '#fff' : 'var(--muted)',
+            }}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      <button
+        onClick={onFilterClick}
+        title="Filtros"
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: 8,
+          border: '1px solid rgba(255,255,255,0.10)',
+          backgroundColor: 'transparent',
+          color: 'var(--muted)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'pointer',
+          flexShrink: 0,
+        }}
+      >
+        <SlidersHorizontal size={14} strokeWidth={1.5} />
+      </button>
+    </div>
+  )
+}
+
+// ─── Placeholder: Salas Sociais ───────────────────────────────────────────────
+
+const MOCK_ROOMS = [
+  { id: '1', title: 'Noite de Pagode', desc: 'Quem curte uma roda de pagode?', count: 12, emoji: '🎵' },
+  { id: '2', title: 'Geeks & Gamers', desc: 'Para quem joga e ama tecnologia', count: 8, emoji: '🎮' },
+  { id: '3', title: 'Trilhas e Aventuras', desc: 'Apaixonados por natureza', count: 23, emoji: '🏕️' },
+  { id: '4', title: 'Cinema & Séries', desc: 'Discussões sem spoiler (ou com)', count: 17, emoji: '🎬' },
+]
+
+function RoomsPlaceholder() {
+  return (
+    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
+      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <Users size={16} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+        <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)' }}>
+          Salas Sociais
+        </span>
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            padding: '2px 8px',
+            borderRadius: 100,
+            backgroundColor: 'rgba(225,29,72,0.12)',
+            color: 'var(--accent)',
+            border: '1px solid rgba(225,29,72,0.25)',
+          }}
+        >
+          Em breve
+        </span>
+      </div>
+
+      <p style={{ fontSize: 13, color: 'var(--muted)', fontFamily: 'var(--font-jakarta)', marginBottom: 20, lineHeight: 1.5 }}>
+        Entre em salas temáticas e converse com pessoas que compartilham os mesmos interesses.
+      </p>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {MOCK_ROOMS.map((room) => (
+          <div
+            key={room.id}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 14,
+              padding: '14px 16px',
+              borderRadius: 16,
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              opacity: 0.7,
+              cursor: 'not-allowed',
+            }}
+          >
+            <div
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 14,
+                backgroundColor: 'rgba(225,29,72,0.10)',
+                border: '1px solid rgba(225,29,72,0.20)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 22,
+                flexShrink: 0,
+              }}
+            >
+              {room.emoji}
+            </div>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>
+                {room.title}
+              </p>
+              <p style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.4 }}>{room.desc}</p>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+              <div
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  backgroundColor: 'rgba(16,185,129,0.6)',
+                }}
+              />
+              <span style={{ fontSize: 12, color: 'var(--muted)' }}>{room.count}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+// ─── Busca Avancada: grid de perfis ──────────────────────────────────────────
+
+function SearchGrid({ deck }: { deck: Profile[] }) {
+  if (!deck.length) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, padding: 24 }}>
+        <span style={{ fontSize: 40 }}>🔍</span>
+        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Nenhum perfil</p>
+        <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>Ajuste os filtros para ver mais pessoas</p>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      style={{
+        padding: '12px 12px 20px',
+        overflowY: 'auto',
+        height: '100%',
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 10,
+        alignContent: 'start',
+      }}
+    >
+      {deck.map((profile) => (
+        <Link
+          key={profile.id}
+          href={`/perfil/${profile.id}`}
+          style={{ textDecoration: 'none' }}
+        >
+          <div
+            style={{
+              borderRadius: 16,
+              overflow: 'hidden',
+              backgroundColor: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              aspectRatio: '3/4',
+              position: 'relative',
+            }}
+          >
+            {profile.photo_best ? (
+              <Image
+                src={profile.photo_best}
+                alt={profile.name}
+                fill
+                className="object-cover"
+                sizes="200px"
+              />
+            ) : (
+              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, color: 'rgba(255,255,255,0.1)' }}>?</div>
+            )}
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                background: 'linear-gradient(to top, rgba(8,9,14,0.95) 0%, rgba(8,9,14,0.2) 50%, transparent 100%)',
+              }}
+            />
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 10px 8px' }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 13, color: '#fff', lineHeight: 1.2 }}>
+                {profile.name}{profile.age ? `, ${profile.age}` : ''}
+              </p>
+              {profile.city && (
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 3 }}>
+                  <MapPin size={9} /> {profile.city}
+                </p>
+              )}
+            </div>
+          </div>
+        </Link>
+      ))}
+    </div>
+  )
+}
+
+// ─── Página principal ─────────────────────────────────────────────────────────
+
 export default function BuscaPage() {
+  // ── State (preservado da versão anterior) ─────────────────────────────────
   const [userId, setUserId] = useState<string | null>(null)
   const [userPlan, setUserPlan] = useState('essencial')
   const [filtersConfigured, setFiltersConfigured] = useState(false)
@@ -266,6 +526,7 @@ export default function BuscaPage() {
   const [error, setError] = useState('')
   const [likesUsed, setLikesUsed] = useState(0)
   const [superlikesUsed, setSuperlikesUsed] = useState(0)
+  const [superlikesAvulso, setSuperlikesAvulso] = useState(0)
   const [limitReached, setLimitReached] = useState(false)
   const [swipeDir, setSwipeDir] = useState<'left' | 'right' | 'up' | null>(null)
   const [isDragging, setIsDragging] = useState(false)
@@ -273,13 +534,44 @@ export default function BuscaPage() {
   const [dragY, setDragY] = useState(0)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradeReason, setUpgradeReason] = useState<'superlike' | 'fetiche'>('superlike')
-  const countdown = useCountdown()
+  const [matchResult, setMatchResult] = useState<{ name: string; photo?: string } | null>(null)
+
+  // ── Novos states (Fase 4) ─────────────────────────────────────────────────
+  const [viewMode, setViewMode] = useState<ViewMode>('discovery')
+  const [photoIdx, setPhotoIdx] = useState(0)
+
+  // ── Refs ──────────────────────────────────────────────────────────────────
   const dragStartX = useRef(0)
   const dragStartY = useRef(0)
+  const hasDragged = useRef(false)
+  const cardRef = useRef<HTMLDivElement>(null)
 
+  const countdown = useCountdown()
   const likeLimit = getLikeLimit(userPlan)
-  const superlikeLimit = getSuperlikeLimit(userPlan)
+  const superlikeLimit = getSuperlikeLimit(userPlan) + superlikesAvulso
   const currentProfile = deck[currentIdx] ?? null
+
+  // ── Injeção do modeSelector no AppHeader ──────────────────────────────────
+  const { setModeSelector } = useAppHeader()
+
+  useEffect(() => {
+    setModeSelector(
+      <ModeSelectorTabs
+        viewMode={viewMode}
+        onChange={setViewMode}
+        onFilterClick={() => setShowFilters(true)}
+      />
+    )
+  }, [viewMode, setModeSelector])
+
+  useEffect(() => {
+    return () => setModeSelector(null)
+  }, [setModeSelector])
+
+  // Reset photoIdx quando o card muda
+  useEffect(() => { setPhotoIdx(0) }, [currentIdx])
+
+  // ── Init ──────────────────────────────────────────────────────────────────
 
   useEffect(() => { init() }, [])
 
@@ -294,6 +586,18 @@ export default function BuscaPage() {
       ])
       const plan = profileRes.data?.plan ?? 'essencial'
       setUserPlan(plan)
+
+      const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
+      const [todayLikesRes, avulsoRes] = await Promise.all([
+        supabase.from('likes').select('is_superlike').eq('user_id', user.id).gte('created_at', todayStart.toISOString()),
+        supabase.from('user_superlikes').select('amount').eq('user_id', user.id).single(),
+      ])
+      if (todayLikesRes.data) {
+        setLikesUsed(todayLikesRes.data.filter(l => !l.is_superlike).length)
+        setSuperlikesUsed(todayLikesRes.data.filter(l => l.is_superlike).length)
+      }
+      setSuperlikesAvulso(avulsoRes.data?.amount ?? 0)
+
       if (filtersRes.data?.search_saved) {
         const merged = { ...DEFAULT_FILTERS, ...filtersRes.data }
         setLocalFilters(merged)
@@ -323,14 +627,14 @@ export default function BuscaPage() {
     try {
       const id = uid ?? userId
       const loc = await requestLocation()
+      if (loc && id) {
+        await supabase.from('profiles').update({ lat: loc.lat, lng: loc.lng }).eq('id', id)
+      }
       const { data } = await supabase.rpc('search_profiles', {
-        p_user_id: id,
-        p_lat: loc?.lat ?? null,
-        p_lng: loc?.lng ?? null,
-        p_max_distance_km: filters.search_max_distance_km,
-        p_min_age: filters.search_min_age,
-        p_max_age: filters.search_max_age >= 99 ? 120 : filters.search_max_age,
-        p_gender: filters.search_gender,
+        current_user_id: id,
+        max_distance_km: filters.search_max_distance_km,
+        min_age:         filters.search_min_age,
+        max_age:         filters.search_max_age >= 99 ? 120 : filters.search_max_age,
       })
       setDeck(data ?? [])
       setCurrentIdx(0)
@@ -338,16 +642,44 @@ export default function BuscaPage() {
     finally { setLoadingDeck(false) }
   }
 
+  // ── Drag / Swipe handlers ─────────────────────────────────────────────────
+
   function onDragStart(clientX: number, clientY: number) {
-    dragStartX.current = clientX; dragStartY.current = clientY; setIsDragging(true)
+    dragStartX.current = clientX
+    dragStartY.current = clientY
+    hasDragged.current = false
+    setIsDragging(true)
   }
+
   function onDragMove(clientX: number, clientY: number) {
     if (!isDragging) return
-    setDragX(clientX - dragStartX.current); setDragY(clientY - dragStartY.current)
+    const dx = clientX - dragStartX.current
+    const dy = clientY - dragStartY.current
+    if (Math.abs(dx) > 8 || Math.abs(dy) > 8) hasDragged.current = true
+    setDragX(dx)
+    setDragY(dy)
   }
-  function onDragEnd() {
+
+  function handlePhotoTap(clientX: number) {
+    if (!cardRef.current) return
+    const rect = cardRef.current.getBoundingClientRect()
+    const photos = currentProfile?.photos?.length
+      ? currentProfile.photos
+      : currentProfile?.photo_best ? [currentProfile.photo_best] : []
+    if (photos.length <= 1) return
+    const midX = rect.left + rect.width / 2
+    if (clientX < midX) setPhotoIdx(i => Math.max(0, i - 1))
+    else setPhotoIdx(i => Math.min(photos.length - 1, i + 1))
+  }
+
+  function onDragEnd(endClientX?: number) {
     if (!isDragging) return
     setIsDragging(false)
+    if (!hasDragged.current && endClientX !== undefined) {
+      handlePhotoTap(endClientX)
+      setDragX(0); setDragY(0)
+      return
+    }
     const threshold = 100
     if (dragX > threshold) triggerSwipe('right')
     else if (dragX < -threshold) triggerSwipe('left')
@@ -365,19 +697,41 @@ export default function BuscaPage() {
     }
     setSwipeDir(dir)
     const profileId = currentProfile.id
+    const savedProfile = { name: currentProfile.name, photo: currentProfile.photo_best }
     setTimeout(async () => {
       setSwipeDir(null); setDragX(0); setDragY(0)
       setCurrentIdx(i => i + 1)
       if (dir === 'right') setLikesUsed(v => v + 1)
       if (dir === 'up') setSuperlikesUsed(v => v + 1)
       try {
-        await supabase.rpc('process_swipe', {
-          p_from: userId, p_to: profileId,
-          p_type: dir === 'right' ? 'like' : dir === 'up' ? 'superlike' : 'dislike',
+        if (dir === 'left') return
+        const { data } = await supabase.rpc('process_like', {
+          p_user_id:      userId,
+          p_target_id:    profileId,
+          p_is_superlike: dir === 'up',
         })
-      } catch {}
+        if (data?.is_match) {
+          setMatchResult(savedProfile)
+          supabase.auth.getSession().then(({ data: s }) => {
+            const token = s.session?.access_token
+            if (token) {
+              fetch('/api/matches/notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ fromUserId: userId, toUserId: profileId }),
+              }).catch(() => {})
+            }
+          })
+        }
+      } catch (err) {
+        console.error('Erro ao processar swipe:', err)
+        setError('Falha ao registrar ação. Verifique sua conexão.')
+        setTimeout(() => setError(''), 4000)
+      }
     }, 350)
   }
+
+  // ── Filter handlers ───────────────────────────────────────────────────────
 
   function validateRequired(): boolean {
     for (const cat of FILTER_CATEGORIES.filter(c => c.required)) {
@@ -409,7 +763,8 @@ export default function BuscaPage() {
     setLocalFilters(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
-  const ageLabel = (v: number) => v >= 60 ? '60+' : `${v}`
+  // ── Computed swipe values ─────────────────────────────────────────────────
+
   const cardRotation = isDragging ? dragX * 0.08 : swipeDir === 'left' ? -25 : swipeDir === 'right' ? 25 : 0
   const cardX = isDragging ? dragX : swipeDir ? (swipeDir === 'left' ? -700 : swipeDir === 'right' ? 700 : 0) : 0
   const cardY = isDragging ? dragY : swipeDir === 'up' ? -700 : 0
@@ -417,314 +772,832 @@ export default function BuscaPage() {
   const showPassIndicator = isDragging && dragX < -40
   const showSuperIndicator = isDragging && dragY < -40
 
+  // ── Foto atual do card ────────────────────────────────────────────────────
+
+  const photos = currentProfile?.photos?.length
+    ? currentProfile.photos
+    : currentProfile?.photo_best ? [currentProfile.photo_best] : []
+  const currentPhoto = photos[photoIdx] ?? photos[0]
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+
   return (
-    <div className="min-h-screen bg-[#0e0b14] text-white font-jakarta flex flex-col">
-
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-4 py-3 flex items-center justify-between shrink-0">
-        <h1 className="font-fraunces text-xl">
-          <span className="italic text-[#b8f542]">Me</span>AndYou
-        </h1>
-        <div className="flex items-center gap-3">
-          {filtersConfigured && likeLimit !== Infinity && (
-            <span className="text-xs text-white/30">{likesUsed}/{likeLimit} curtidas</span>
-          )}
-          <button onClick={() => setShowFilters(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-xs transition">
-            <SlidersHorizontal size={13} /> Filtros
-          </button>
-        </div>
-      </header>
-
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        overflow: 'hidden',
+        position: 'relative',
+        fontFamily: 'var(--font-jakarta)',
+        color: 'var(--text)',
+      }}
+    >
+      {/* Banner de erro */}
       {error && (
-        <div className="mx-4 mt-3 p-3 rounded-xl bg-red-500/10 border border-red-500/20 flex gap-2 text-sm text-red-300">
-          <AlertCircle size={16} className="shrink-0 mt-0.5" /><span>{error}</span>
+        <div
+          style={{
+            margin: '8px 12px 0',
+            padding: '10px 14px',
+            borderRadius: 12,
+            backgroundColor: 'rgba(225,29,72,0.10)',
+            border: '1px solid rgba(225,29,72,0.25)',
+            display: 'flex',
+            gap: 8,
+            alignItems: 'flex-start',
+            fontSize: 13,
+            color: '#f87171',
+            flexShrink: 0,
+          }}
+        >
+          <AlertCircle size={15} style={{ flexShrink: 0, marginTop: 1 }} />
+          <span>{error}</span>
         </div>
       )}
 
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-4">
-        {loadingDeck ? (
-          <div className="flex flex-col items-center gap-3 text-white/30">
-            <Loader2 size={28} className="animate-spin" />
-            <span className="text-sm">Carregando pessoas perto de você…</span>
+      {/* Conteúdo principal */}
+      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        {viewMode === 'rooms' ? (
+          <RoomsPlaceholder />
+        ) : viewMode === 'search' ? (
+          <SearchGrid deck={deck} />
+        ) : loadingDeck ? (
+          /* Loading */
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, color: 'var(--muted)' }}>
+            <Loader2 size={28} style={{ animation: 'ui-spin 1s linear infinite' }} />
+            <span style={{ fontSize: 13 }}>Carregando pessoas perto de você...</span>
           </div>
         ) : limitReached ? (
-          <div className="flex flex-col items-center gap-4 text-center max-w-xs px-2">
-            <div className="text-5xl">😴</div>
-            <h2 className="font-fraunces text-2xl">Curtidas esgotadas</h2>
-            <p className="text-white/50 text-sm">Você usou todas as {likeLimit} curtidas de hoje. Volte amanhã ou faça upgrade.</p>
-            <div className="px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-center w-full">
-              <p className="text-xs text-white/30 mb-1">Renova em</p>
-              <p className="font-fraunces text-3xl text-[#b8f542]">{countdown}</p>
+          /* Limite de curtidas */
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, padding: '0 32px', textAlign: 'center' }}>
+            <span style={{ fontSize: 52 }}>💤</span>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 24, color: 'var(--text)', margin: 0 }}>Curtidas esgotadas</h2>
+            <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
+              Você usou todas as {likeLimit} curtidas de hoje. Volte amanhã ou faça upgrade.
+            </p>
+            <div
+              style={{
+                padding: '16px 24px',
+                borderRadius: 20,
+                backgroundColor: 'var(--bg-card)',
+                border: '1px solid var(--border)',
+                textAlign: 'center',
+                width: '100%',
+              }}
+            >
+              <p style={{ fontSize: 11, color: 'var(--muted-2)', marginBottom: 4 }}>Renova em</p>
+              <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 32, color: 'var(--accent)', letterSpacing: 2 }}>{countdown}</p>
             </div>
-            <Link href="/planos" className="w-full py-3.5 rounded-2xl bg-[#b8f542] text-black font-semibold text-sm text-center block">
+            <Link
+              href="/planos"
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '14px 0',
+                borderRadius: 14,
+                backgroundColor: 'var(--accent)',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: 14,
+                textAlign: 'center',
+                textDecoration: 'none',
+              }}
+            >
               Ver planos
             </Link>
-            <button onClick={() => setLimitReached(false)} className="text-white/30 text-xs">Continuar sem curtir</button>
+            <button
+              onClick={() => setLimitReached(false)}
+              style={{ background: 'none', border: 'none', color: 'var(--muted-2)', fontSize: 12, cursor: 'pointer' }}
+            >
+              Continuar sem curtir
+            </button>
           </div>
         ) : !currentProfile ? (
-          <div className="flex flex-col items-center gap-4 text-center max-w-xs px-2">
-            <div className="text-5xl">🌍</div>
-            <h2 className="font-fraunces text-xl">Você viu todo mundo!</h2>
-            <p className="text-white/50 text-sm">Nenhum perfil com esses filtros. Tente aumentar o raio ou ajustar os filtros.</p>
-            <button onClick={() => setShowFilters(true)} className="w-full py-3.5 rounded-2xl bg-[#b8f542] text-black font-semibold text-sm">Editar filtros</button>
-            <button onClick={() => loadDeck(localFilters)} className="flex items-center gap-2 text-white/40 text-sm hover:text-white/60">
-              <RotateCcw size={14} /> Recarregar
+          /* Sem perfis */
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, padding: '0 32px', textAlign: 'center' }}>
+            <span style={{ fontSize: 52 }}>🌍</span>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: 0 }}>Você viu todo mundo!</h2>
+            <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
+              Nenhum perfil com esses filtros. Tente aumentar o raio ou ajustar os filtros.
+            </p>
+            <button
+              onClick={() => setShowFilters(true)}
+              style={{
+                width: '100%',
+                padding: '14px 0',
+                borderRadius: 14,
+                backgroundColor: 'var(--accent)',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: 14,
+                border: 'none',
+                cursor: 'pointer',
+              }}
+            >
+              Editar filtros
+            </button>
+            <button
+              onClick={() => loadDeck(localFilters)}
+              style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+            >
+              <RotateCcw size={13} /> Recarregar
             </button>
           </div>
         ) : (
-          <div className="w-full max-w-sm flex flex-col items-center gap-5">
-            <div className="relative w-full" style={{ height: 'min(68vh, 500px)' }}>
+          /* Swipe view */
+          <div
+            style={{
+              flex: 1,
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              padding: '12px 12px 8px',
+              gap: 10,
+              minHeight: 0,
+              overflow: 'hidden',
+            }}
+          >
+            {/* Contador */}
+            {likeLimit !== Infinity && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>
+                  ⭐ {superlikesUsed}/{superlikeLimit}
+                </span>
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.10)' }}>·</span>
+                <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>
+                  ❤️ {likesUsed}/{likeLimit}
+                </span>
+              </div>
+            )}
 
+            {/* Stack de cards */}
+            <div style={{ flex: 1, width: '100%', position: 'relative', minHeight: 0 }}>
+
+              {/* Card de trás */}
               {deck[currentIdx + 1] && (
-                <div className="absolute inset-0 rounded-3xl overflow-hidden scale-95 opacity-50 pointer-events-none">
-                  {deck[currentIdx + 1].photo_best
-                    ? <Image src={deck[currentIdx + 1].photo_best!} alt="" fill className="object-cover" sizes="400px" />
-                    : <div className="absolute inset-0 bg-white/5" />
-                  }
+                <div
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    borderRadius: 24,
+                    overflow: 'hidden',
+                    transform: 'scale(0.94) translateY(14px)',
+                    opacity: 0.55,
+                    pointerEvents: 'none',
+                  }}
+                >
+                  {deck[currentIdx + 1].photo_best ? (
+                    <Image
+                      src={deck[currentIdx + 1].photo_best!}
+                      alt=""
+                      fill
+                      className="object-cover"
+                      sizes="400px"
+                    />
+                  ) : (
+                    <div style={{ position: 'absolute', inset: 0, backgroundColor: 'var(--bg-card2)' }} />
+                  )}
                 </div>
               )}
 
+              {/* Card principal — arrastável */}
               <div
-                className="absolute inset-0 rounded-3xl overflow-hidden shadow-2xl cursor-grab active:cursor-grabbing select-none"
+                ref={cardRef}
                 style={{
+                  position: 'absolute',
+                  inset: 0,
+                  borderRadius: 24,
+                  overflow: 'hidden',
+                  boxShadow: '0 20px 60px rgba(0,0,0,0.55)',
+                  cursor: isDragging ? 'grabbing' : 'grab',
+                  userSelect: 'none',
                   transform: `translateX(${cardX}px) translateY(${cardY}px) rotate(${cardRotation}deg)`,
                   transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
                   willChange: 'transform',
                 }}
                 onMouseDown={(e) => onDragStart(e.clientX, e.clientY)}
                 onMouseMove={(e) => onDragMove(e.clientX, e.clientY)}
-                onMouseUp={onDragEnd}
-                onMouseLeave={onDragEnd}
+                onMouseUp={(e) => onDragEnd(e.clientX)}
+                onMouseLeave={() => onDragEnd()}
                 onTouchStart={(e) => { e.preventDefault(); onDragStart(e.touches[0].clientX, e.touches[0].clientY) }}
                 onTouchMove={(e) => { e.preventDefault(); onDragMove(e.touches[0].clientX, e.touches[0].clientY) }}
-                onTouchEnd={onDragEnd}
+                onTouchEnd={(e) => { e.preventDefault(); onDragEnd(e.changedTouches[0]?.clientX) }}
               >
-                {currentProfile.photo_best
-                  ? <Image src={currentProfile.photo_best} alt={currentProfile.name} fill className="object-cover pointer-events-none" sizes="(max-width: 640px) 100vw, 400px" draggable={false} priority />
-                  : <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-white/5 flex items-center justify-center text-white/20 text-6xl">?</div>
-                }
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent pointer-events-none" />
+                {/* Foto */}
+                {currentPhoto ? (
+                  <Image
+                    src={currentPhoto}
+                    alt={currentProfile.name}
+                    fill
+                    className="object-cover pointer-events-none"
+                    sizes="(max-width: 640px) 100vw, 400px"
+                    draggable={false}
+                    priority
+                  />
+                ) : (
+                  <div
+                    style={{
+                      position: 'absolute', inset: 0,
+                      background: 'linear-gradient(160deg,#1a0a14 0%,#3d1530 50%,#2a0e24 100%)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 64, color: 'rgba(255,255,255,0.12)',
+                    }}
+                  >?</div>
+                )}
 
+                {/* Barra de progresso de fotos */}
+                {photos.length > 0 && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: 12,
+                      left: 12,
+                      right: 12,
+                      display: 'flex',
+                      gap: 4,
+                      zIndex: 10,
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    {photos.map((_, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          flex: 1,
+                          height: 3,
+                          borderRadius: 100,
+                          backgroundColor: i <= photoIdx ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.30)',
+                          transition: 'background-color 0.2s',
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {/* Gradiente overlay */}
+                <div
+                  style={{
+                    position: 'absolute', inset: 0,
+                    background: 'linear-gradient(to top, rgba(8,9,14,0.95) 0%, rgba(8,9,14,0.35) 40%, transparent 70%)',
+                    pointerEvents: 'none',
+                  }}
+                />
+
+                {/* Carimbo LIKE */}
                 {showLikeIndicator && (
-                  <div className="absolute top-8 left-6 border-4 border-green-400 rounded-xl px-4 py-2 rotate-[-12deg] opacity-90">
-                    <span className="text-green-400 font-black text-xl tracking-wide">CURTIR ❤️</span>
-                  </div>
-                )}
-                {showPassIndicator && (
-                  <div className="absolute top-8 right-6 border-4 border-red-400 rounded-xl px-4 py-2 rotate-[12deg] opacity-90">
-                    <span className="text-red-400 font-black text-xl tracking-wide">PASSAR ✕</span>
-                  </div>
-                )}
-                {showSuperIndicator && (
-                  <div className="absolute top-8 left-1/2 -translate-x-1/2 border-4 border-blue-400 rounded-xl px-4 py-2 opacity-90">
-                    <span className="text-blue-400 font-black text-xl tracking-wide">SUPER ⭐</span>
+                  <div
+                    style={{
+                      position: 'absolute', top: 52, left: 18,
+                      border: '3px solid rgba(16,185,129,0.90)',
+                      borderRadius: 10, padding: '6px 14px',
+                      transform: 'rotate(-14deg)',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    <span style={{ color: '#10b981', fontWeight: 800, fontSize: 20, letterSpacing: 2 }}>CURTIR</span>
                   </div>
                 )}
 
-                <div className="absolute bottom-0 left-0 right-0 p-5 pointer-events-none">
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <h2 className="font-fraunces text-2xl font-bold drop-shadow">
-                        {currentProfile.name}{currentProfile.age ? `, ${currentProfile.age}` : ''}
+                {/* Carimbo NOPE */}
+                {showPassIndicator && (
+                  <div
+                    style={{
+                      position: 'absolute', top: 52, right: 18,
+                      border: '3px solid rgba(225,29,72,0.90)',
+                      borderRadius: 10, padding: '6px 14px',
+                      transform: 'rotate(14deg)',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    <span style={{ color: '#E11D48', fontWeight: 800, fontSize: 20, letterSpacing: 2 }}>NOPE</span>
+                  </div>
+                )}
+
+                {/* Carimbo SUPER */}
+                {showSuperIndicator && (
+                  <div
+                    style={{
+                      position: 'absolute', top: 52, left: '50%', transform: 'translateX(-50%)',
+                      border: '3px solid rgba(96,165,250,0.90)',
+                      borderRadius: 10, padding: '6px 14px',
+                      pointerEvents: 'none',
+                    }}
+                  >
+                    <span style={{ color: '#60a5fa', fontWeight: 800, fontSize: 20, letterSpacing: 2 }}>SUPER</span>
+                  </div>
+                )}
+
+                {/* Info do perfil */}
+                <div
+                  style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0,
+                    padding: '0 18px 18px',
+                    pointerEvents: 'none',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', gap: 8 }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <h2
+                        style={{
+                          fontFamily: 'var(--font-fraunces)',
+                          fontSize: 26,
+                          fontWeight: 700,
+                          color: '#fff',
+                          margin: 0,
+                          lineHeight: 1.1,
+                          textShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                        }}
+                      >
+                        {currentProfile.name}
+                        {currentProfile.age && (
+                          <span style={{ fontWeight: 400, opacity: 0.85 }}>, {currentProfile.age}</span>
+                        )}
                       </h2>
                       {(currentProfile.city || currentProfile.distance_km !== undefined) && (
-                        <p className="flex items-center gap-1 text-white/70 text-sm mt-0.5">
-                          <MapPin size={11} />
-                          {currentProfile.city && `${currentProfile.city} · `}
+                        <p
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 4,
+                            fontSize: 13, color: 'rgba(255,255,255,0.70)',
+                            margin: '4px 0 0',
+                          }}
+                        >
+                          <MapPin size={11} strokeWidth={1.5} />
+                          {currentProfile.city && `${currentProfile.city}`}
+                          {currentProfile.city && currentProfile.distance_km !== undefined && ' · '}
                           {currentProfile.distance_km !== undefined
                             ? currentProfile.distance_km < 1 ? 'menos de 1 km' : `${currentProfile.distance_km} km`
                             : ''}
                         </p>
                       )}
                       {currentProfile.bio && (
-                        <p className="text-white/60 text-xs mt-1.5 line-clamp-2 max-w-[260px]">{currentProfile.bio}</p>
+                        <p
+                          style={{
+                            fontSize: 12, color: 'rgba(255,255,255,0.55)',
+                            margin: '6px 0 0', lineHeight: 1.45,
+                            display: '-webkit-box', WebkitLineClamp: 2,
+                            WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                          }}
+                        >
+                          {currentProfile.bio}
+                        </p>
                       )}
                     </div>
-                    <Link href={`/perfil/${currentProfile.id}`}
-                      onClick={e => e.stopPropagation()}
-                      className="pointer-events-auto shrink-0 w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center backdrop-blur text-sm font-bold ml-2">
-                      +
+
+                    {/* Botão ver perfil */}
+                    <Link
+                      href={`/perfil/${currentProfile.id}`}
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        pointerEvents: 'all',
+                        flexShrink: 0,
+                        width: 36,
+                        height: 36,
+                        borderRadius: '50%',
+                        backgroundColor: 'rgba(255,255,255,0.18)',
+                        backdropFilter: 'blur(8px)',
+                        border: '1px solid rgba(255,255,255,0.25)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        textDecoration: 'none',
+                        color: '#fff',
+                      }}
+                    >
+                      <Info size={15} strokeWidth={1.5} />
                     </Link>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-5">
-              <button onClick={() => triggerSwipe('left')}
-                className="w-14 h-14 rounded-full bg-white/5 border border-white/10 hover:bg-red-500/20 hover:border-red-500/40 flex items-center justify-center transition active:scale-90">
-                <X size={22} className="text-red-400" />
-              </button>
-              <button onClick={() => triggerSwipe('up')}
-                className="w-12 h-12 rounded-full bg-white/5 border border-white/10 hover:bg-blue-500/20 hover:border-blue-500/40 flex items-center justify-center transition active:scale-90"
-                title={`SuperCurtida (${superlikesUsed}/${superlikeLimit})`}>
-                <Star size={18} className="text-blue-400" />
-              </button>
-              <button onClick={() => triggerSwipe('right')}
-                className="w-14 h-14 rounded-full bg-white/5 border border-white/10 hover:bg-green-500/20 hover:border-green-500/40 flex items-center justify-center transition active:scale-90">
-                <Heart size={22} className="text-green-400" />
-              </button>
-            </div>
+            {/* Action bar */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 12,
+                flexShrink: 0,
+                padding: '4px 0 6px',
+              }}
+            >
+              {/* Voltar */}
+              <SwipeButton
+                variant="default"
+                size="sm"
+                icon={<Undo2 size={18} strokeWidth={1.5} />}
+                label="Voltar"
+                onClick={() => setCurrentIdx(i => Math.max(0, i - 1))}
+                disabled={currentIdx === 0}
+              />
 
-            <p className="text-xs text-white/20">
-              ⭐ {superlikesUsed}/{superlikeLimit} supercurtidas hoje
-              {likeLimit !== Infinity && ` · ❤️ ${likesUsed}/${likeLimit} curtidas`}
-            </p>
+              {/* Dislike */}
+              <SwipeButton
+                variant="danger"
+                size="lg"
+                icon={<X size={26} strokeWidth={1.5} />}
+                label="Não curtir"
+                onClick={() => triggerSwipe('left')}
+              />
+
+              {/* Super Like */}
+              <SwipeButton
+                variant="info"
+                size="md"
+                icon={<Star size={20} strokeWidth={1.5} />}
+                label={`Super Curtida (${superlikesUsed}/${superlikeLimit})`}
+                onClick={() => triggerSwipe('up')}
+              />
+
+              {/* Like */}
+              <SwipeButton
+                variant="primary"
+                size="lg"
+                icon={<Heart size={26} strokeWidth={1.5} />}
+                label="Curtir"
+                onClick={() => triggerSwipe('right')}
+              />
+
+              {/* Boost */}
+              <SwipeButton
+                variant="gold"
+                size="sm"
+                icon={<Zap size={18} strokeWidth={1.5} />}
+                label="Boost"
+                onClick={() => { setUpgradeReason('superlike'); setShowUpgradeModal(true) }}
+              />
+            </div>
           </div>
         )}
-      </main>
+      </div>
 
-      {showFilters && (
-        <div className="fixed inset-0 z-50 flex items-end">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={() => filtersConfigured ? setShowFilters(false) : undefined} />
-          <div className="relative w-full bg-[#141020] rounded-t-3xl border-t border-white/10 z-10 flex flex-col max-h-[92vh]">
-            <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mt-4 mb-2 shrink-0" />
-            <div className="px-6 pb-3 flex items-center justify-between shrink-0">
-              <div>
-                <h2 className="font-fraunces text-xl">{filtersConfigured ? 'Editar filtros' : 'O que você busca?'}</h2>
-                {!filtersConfigured && <p className="text-xs text-white/40 mt-0.5">Configure uma vez, edite quando quiser</p>}
-              </div>
-              {filtersConfigured && <button onClick={() => setShowFilters(false)}><X size={20} className="text-white/40" /></button>}
+      {/* ─── BottomSheet de filtros ─────────────────────────────────────────── */}
+      <BottomSheet
+        isOpen={showFilters}
+        onClose={filtersConfigured ? () => setShowFilters(false) : () => {}}
+        title={filtersConfigured ? 'Editar filtros' : undefined}
+      >
+        {/* Header manual para o primeiro acesso (não configurado) */}
+        {!filtersConfigured && (
+          <div style={{ marginBottom: 20 }}>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: '0 0 4px' }}>
+              O que você busca?
+            </h2>
+            <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>Configure uma vez, edite quando quiser</p>
+          </div>
+        )}
+
+        {/* Erro de validação */}
+        {requiredError && (
+          <div
+            style={{
+              marginBottom: 14,
+              padding: '10px 14px',
+              borderRadius: 12,
+              backgroundColor: 'rgba(225,29,72,0.08)',
+              border: '1px solid rgba(225,29,72,0.25)',
+              fontSize: 12,
+              color: '#f87171',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+            }}
+          >
+            <AlertCircle size={13} style={{ flexShrink: 0 }} />
+            {requiredError}
+          </div>
+        )}
+
+        {/* Localização e Idade */}
+        <div
+          style={{
+            padding: '14px 16px',
+            borderRadius: 16,
+            backgroundColor: 'var(--bg-card2)',
+            border: '1px solid var(--border)',
+            marginBottom: 10,
+          }}
+        >
+          <p style={{ fontSize: 11, fontWeight: 600, letterSpacing: '0.08em', color: 'var(--muted-2)', textTransform: 'uppercase', marginBottom: 14 }}>
+            Localização e idade
+          </p>
+
+          {/* Distância */}
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
+              <span style={{ fontSize: 13, color: 'var(--muted)' }}>Distância máxima</span>
+              <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent)' }}>
+                {localFilters.search_max_distance_km} km
+              </span>
             </div>
+            <input
+              type="range" min={5} max={300} step={5}
+              value={localFilters.search_max_distance_km as number}
+              onChange={(e) => setLocalFilters(p => ({ ...p, search_max_distance_km: Number(e.target.value) }))}
+              className="ui-range-input"
+              style={{ width: '100%' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--muted-2)', marginTop: 4 }}>
+              <span>5 km</span><span>300 km</span>
+            </div>
+          </div>
 
-            {requiredError && (
-              <div className="mx-6 mb-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-300 flex items-center gap-2 shrink-0">
-                <AlertCircle size={14} />{requiredError}
+          {/* Faixa de idade */}
+          <SliderRange
+            min={18}
+            max={60}
+            step={1}
+            label="Faixa de idade"
+            unit=" anos"
+            value={[
+              Math.min(localFilters.search_min_age as number, 60),
+              Math.min(localFilters.search_max_age as number, 60),
+            ]}
+            onChange={([minA, maxA]) => setLocalFilters(p => ({
+              ...p,
+              search_min_age: minA,
+              search_max_age: maxA >= 60 ? 99 : maxA,
+            }))}
+          />
+          <p style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 6, textAlign: 'right' }}>
+            {(localFilters.search_max_age as number) >= 59 ? 'até 60+ anos' : ''}
+          </p>
+
+          {/* Gênero */}
+          <div style={{ marginTop: 16 }}>
+            <span style={{ fontSize: 13, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Gênero</span>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {GENDER_OPTIONS.map((opt) => (
+                <Pill
+                  key={opt.value}
+                  size="sm"
+                  selected={localFilters.search_gender === opt.value}
+                  onClick={() => setLocalFilters(p => ({ ...p, search_gender: opt.value }))}
+                >
+                  {opt.label}
+                </Pill>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Categorias de filtros */}
+        {FILTER_CATEGORIES.map((cat) => {
+          const isLocked = cat.locked && userPlan !== 'black'
+          const isOpen = openCategories[cat.id]
+          const activeCount = cat.groups.flatMap(g => g.options).filter(o => localFilters[o.key]).length
+          const hasSelection = cat.groups.flatMap(g => g.options).some(o => localFilters[o.key])
+
+          return (
+            <div
+              key={cat.id}
+              style={{
+                marginBottom: 6,
+                borderRadius: 14,
+                border: `1px solid ${cat.required && !hasSelection && !filtersConfigured ? 'rgba(234,179,8,0.35)' : 'var(--border)'}`,
+                overflow: 'hidden',
+              }}
+            >
+              {/* Header da categoria */}
+              <button
+                onClick={() => isLocked
+                  ? (setUpgradeReason('fetiche'), setShowUpgradeModal(true))
+                  : setOpenCategories(p => ({ ...p, [cat.id]: !p[cat.id] }))
+                }
+                style={{
+                  width: '100%',
+                  padding: '12px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  backgroundColor: 'rgba(255,255,255,0.03)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  gap: 8,
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', textAlign: 'left' }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>
+                    {cat.label}
+                  </span>
+                  {cat.required && !hasSelection && (
+                    <span style={{ fontSize: 11, color: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.10)', padding: '2px 8px', borderRadius: 100 }}>
+                      obrigatório
+                    </span>
+                  )}
+                  {activeCount > 0 && (
+                    <span style={{ fontSize: 11, color: 'var(--accent)', backgroundColor: 'rgba(225,29,72,0.12)', padding: '2px 8px', borderRadius: 100 }}>
+                      {activeCount}
+                    </span>
+                  )}
+                  {isLocked && (
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.10)', padding: '2px 8px', borderRadius: 100 }}>
+                      <Lock size={9} /> Black
+                    </span>
+                  )}
+                </div>
+                {!isLocked && (
+                  isOpen
+                    ? <ChevronUp size={14} style={{ color: 'var(--muted-2)', flexShrink: 0 }} />
+                    : <ChevronDown size={14} style={{ color: 'var(--muted-2)', flexShrink: 0 }} />
+                )}
+              </button>
+
+              {/* Opções expandidas */}
+              {isOpen && !isLocked && (
+                <div style={{ padding: '10px 14px 14px', backgroundColor: 'rgba(8,9,14,0.50)' }}>
+                  {cat.groups.map((group) => (
+                    <div key={group.label} style={{ marginBottom: 14 }}>
+                      <p style={{ fontSize: 11, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+                        {group.label}
+                      </p>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                        {group.options.map((opt) => (
+                          <Pill
+                            key={opt.key}
+                            size="sm"
+                            selected={!!localFilters[opt.key]}
+                            onClick={() => toggleBool(opt.key)}
+                            icon={localFilters[opt.key] ? <Check size={11} strokeWidth={2} /> : undefined}
+                          >
+                            {opt.label}
+                          </Pill>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        })}
+
+        <p style={{ fontSize: 12, color: 'var(--muted-2)', textAlign: 'center', margin: '8px 0 20px' }}>
+          Categorias sem seleção = aceita qualquer pessoa
+        </p>
+
+        {/* Botão salvar — sticky no bottom do BottomSheet */}
+        <div
+          style={{
+            position: 'sticky',
+            bottom: 0,
+            margin: '0 -20px -32px',
+            padding: '14px 20px 24px',
+            backgroundColor: 'var(--bg-card)',
+            borderTop: '1px solid var(--border)',
+          }}
+        >
+          <button
+            onClick={handleSaveAndSearch}
+            disabled={saving}
+            style={{
+              width: '100%',
+              padding: '14px 0',
+              borderRadius: 14,
+              backgroundColor: 'var(--accent)',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: 15,
+              border: 'none',
+              cursor: saving ? 'default' : 'pointer',
+              opacity: saving ? 0.6 : 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              transition: 'opacity 0.15s',
+            }}
+          >
+            {saving && <Loader2 size={17} style={{ animation: 'ui-spin 1s linear infinite' }} />}
+            {filtersConfigured ? 'Salvar e buscar' : 'Pronto, vamos la!'}
+          </button>
+        </div>
+      </BottomSheet>
+
+      {/* ─── Modal de Match ──────────────────────────────────────────────────── */}
+      {matchResult && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
+          <div
+            onClick={() => setMatchResult(null)}
+            style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(6px)' }}
+          />
+          <div
+            style={{
+              position: 'relative',
+              backgroundColor: 'var(--bg-card)',
+              borderRadius: 28,
+              padding: '32px 24px',
+              border: '1px solid rgba(225,29,72,0.30)',
+              maxWidth: 360,
+              width: '100%',
+              textAlign: 'center',
+              boxShadow: '0 32px 80px rgba(0,0,0,0.6)',
+            }}
+          >
+            <div style={{ fontSize: 52, marginBottom: 16 }}>💘</div>
+            {matchResult.photo && (
+              <div
+                style={{
+                  width: 88, height: 88,
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  margin: '0 auto 16px',
+                  border: '3px solid var(--accent)',
+                  boxShadow: '0 0 0 4px rgba(225,29,72,0.20)',
+                }}
+              >
+                <Image src={matchResult.photo} alt={matchResult.name} width={88} height={88} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
               </div>
             )}
-
-            <div className="overflow-y-auto flex-1 px-6 pb-4">
-              <div className="mb-4 p-4 rounded-2xl bg-white/5 border border-white/10">
-                <h3 className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-4">📍 Localização e idade</h3>
-                <div className="mb-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-white/70">Distância máxima</span>
-                    <span className="text-[#b8f542] font-semibold text-sm">{localFilters.search_max_distance_km} km</span>
-                  </div>
-                  <input type="range" min={5} max={300} step={5}
-                    value={localFilters.search_max_distance_km as number}
-                    onChange={(e) => setLocalFilters(p => ({ ...p, search_max_distance_km: Number(e.target.value) }))}
-                    className="w-full accent-[#b8f542]" />
-                  <div className="flex justify-between text-xs text-white/20 mt-1"><span>5 km</span><span>300 km</span></div>
-                </div>
-                <div className="mb-5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-white/70">Faixa de idade</span>
-                    <span className="text-[#b8f542] font-semibold text-sm">
-                      {ageLabel(localFilters.search_min_age as number)} – {ageLabel(localFilters.search_max_age as number)} anos
-                    </span>
-                  </div>
-                  <div className="flex gap-3">
-                    <div className="flex-1">
-                      <label className="text-xs text-white/30 mb-1 block">Mínima</label>
-                      <select value={localFilters.search_min_age as number}
-                        onChange={(e) => setLocalFilters(p => ({ ...p, search_min_age: Number(e.target.value) }))}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                        {Array.from({ length: 43 }, (_, i) => i + 18).map(a => <option key={a} value={a}>{a} anos</option>)}
-                      </select>
-                    </div>
-                    <div className="flex-1">
-                      <label className="text-xs text-white/30 mb-1 block">Máxima</label>
-                      <select value={localFilters.search_max_age as number}
-                        onChange={(e) => setLocalFilters(p => ({ ...p, search_max_age: Number(e.target.value) }))}
-                        className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white outline-none">
-                        {Array.from({ length: 42 }, (_, i) => i + 18).map(a => (
-                          <option key={a} value={a >= 60 ? 99 : a}>{a >= 60 ? '60+ anos' : `${a} anos`}</option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <span className="text-sm text-white/70 block mb-2">Gênero</span>
-                  <div className="flex flex-wrap gap-2">
-                    {GENDER_OPTIONS.map(opt => (
-                      <button key={opt.value}
-                        onClick={() => setLocalFilters(p => ({ ...p, search_gender: opt.value }))}
-                        className={`px-3 py-1.5 rounded-full text-sm border transition ${localFilters.search_gender === opt.value ? 'bg-[#b8f542] text-black border-[#b8f542] font-medium' : 'bg-white/5 border-white/10 text-white/70'}`}>
-                        {opt.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {FILTER_CATEGORIES.map((cat) => {
-                const isLocked = cat.locked && userPlan !== 'black'
-                const isOpen = openCategories[cat.id]
-                const activeCount = cat.groups.flatMap(g => g.options).filter(o => localFilters[o.key]).length
-                const hasSelection = cat.groups.flatMap(g => g.options).some(o => localFilters[o.key])
-
-                return (
-                  <div key={cat.id} className={`mb-2 rounded-2xl border overflow-hidden ${cat.required && !hasSelection && !filtersConfigured ? 'border-yellow-500/40' : 'border-white/10'}`}>
-                    <button
-                      onClick={() => isLocked ? (setUpgradeReason('fetiche'), setShowUpgradeModal(true)) : setOpenCategories(p => ({ ...p, [cat.id]: !p[cat.id] }))}
-                      className="w-full px-4 py-3.5 flex items-center justify-between bg-white/5 hover:bg-white/8 transition">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-medium">{cat.label}</span>
-                        {cat.required && !hasSelection && <span className="text-xs text-yellow-400 bg-yellow-400/10 px-2 py-0.5 rounded-full">obrigatório</span>}
-                        {activeCount > 0 && <span className="px-2 py-0.5 rounded-full bg-[#b8f542]/20 text-[#b8f542] text-xs">{activeCount}</span>}
-                        {isLocked && <span className="flex items-center gap-1 text-yellow-400 text-xs bg-yellow-400/10 px-2 py-0.5 rounded-full"><Lock size={9} /> Black</span>}
-                      </div>
-                      {!isLocked && (isOpen ? <ChevronUp size={15} className="text-white/30 shrink-0" /> : <ChevronDown size={15} className="text-white/30 shrink-0" />)}
-                    </button>
-                    {isOpen && !isLocked && (
-                      <div className="px-4 pb-4 pt-3 bg-[#0e0b14]/60">
-                        {cat.groups.map((group) => (
-                          <div key={group.label} className="mb-4">
-                            <p className="text-xs text-white/30 uppercase tracking-widest mb-2">{group.label}</p>
-                            <div className="flex flex-wrap gap-2">
-                              {group.options.map((opt) => {
-                                const active = !!localFilters[opt.key]
-                                return (
-                                  <button key={opt.key} onClick={() => toggleBool(opt.key)}
-                                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm border transition ${active ? 'bg-[#b8f542] text-black border-[#b8f542] font-medium' : 'bg-white/5 border-white/10 text-white/60 hover:border-white/30'}`}>
-                                    {active && <Check size={11} />}{opt.label}
-                                  </button>
-                                )
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-              <p className="text-xs text-white/20 text-center mt-3 mb-4">
-                Categorias sem seleção = aceita qualquer pessoa nessa categoria
-              </p>
-            </div>
-
-            <div className="px-6 py-4 border-t border-white/10 bg-[#141020] shrink-0">
-              <button onClick={handleSaveAndSearch} disabled={saving}
-                className="w-full py-4 rounded-2xl bg-[#b8f542] text-black font-semibold text-base hover:bg-[#a8e030] transition disabled:opacity-60 flex items-center justify-center gap-2">
-                {saving && <Loader2 size={18} className="animate-spin" />}
-                {filtersConfigured ? 'Salvar e buscar' : 'Pronto, vamos lá! 🚀'}
-              </button>
-            </div>
+            <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 30, color: 'var(--text)', margin: '0 0 8px' }}>
+              E um Match!
+            </h3>
+            <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 24px', lineHeight: 1.5 }}>
+              Voce e <strong style={{ color: 'var(--text)' }}>{matchResult.name}</strong> se curtiram mutuamente.
+            </p>
+            <Link
+              href="/matches"
+              onClick={() => setMatchResult(null)}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '14px 0',
+                borderRadius: 14,
+                backgroundColor: 'var(--accent)',
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: 14,
+                textDecoration: 'none',
+                marginBottom: 10,
+              }}
+            >
+              Ver matches
+            </Link>
+            <button
+              onClick={() => setMatchResult(null)}
+              style={{ background: 'none', border: 'none', color: 'var(--muted-2)', fontSize: 13, cursor: 'pointer' }}
+            >
+              Continuar buscando
+            </button>
           </div>
         </div>
       )}
 
+      {/* ─── Modal de Upgrade ────────────────────────────────────────────────── */}
       {showUpgradeModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center px-6">
-          <div className="absolute inset-0 bg-black/70" onClick={() => setShowUpgradeModal(false)} />
-          <div className="relative bg-[#1a1428] rounded-3xl p-6 border border-yellow-500/30 max-w-sm w-full text-center">
-            <div className="text-4xl mb-3">{upgradeReason === 'superlike' ? '⭐' : '🔞'}</div>
-            <h3 className="font-fraunces text-xl mb-2">
-              {upgradeReason === 'superlike' ? 'SuperCurtidas esgotadas' : <>Exclusivo <span className="text-yellow-400">Black</span></>}
+        <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
+          <div
+            onClick={() => setShowUpgradeModal(false)}
+            style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.70)', backdropFilter: 'blur(4px)' }}
+          />
+          <div
+            style={{
+              position: 'relative',
+              backgroundColor: 'var(--bg-card)',
+              borderRadius: 24,
+              padding: '28px 22px',
+              border: '1px solid rgba(245,158,11,0.30)',
+              maxWidth: 340,
+              width: '100%',
+              textAlign: 'center',
+            }}
+          >
+            <div style={{ fontSize: 44, marginBottom: 12 }}>
+              {upgradeReason === 'superlike' ? '⭐' : '🔞'}
+            </div>
+            <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>
+              {upgradeReason === 'superlike' ? 'SuperCurtidas esgotadas' : <>Exclusivo <span style={{ color: '#F59E0B' }}>Black</span></>}
             </h3>
-            <p className="text-white/60 text-sm mb-5">
+            <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 22px', lineHeight: 1.5 }}>
               {upgradeReason === 'superlike'
-                ? `Você usou todas as ${superlikeLimit} SuperCurtidas de hoje. Faça upgrade para enviar mais.`
-                : 'Filtros de Fetiche, BDSM e Sugar são exclusivos do plano Black. Faça upgrade para desbloquear.'}
+                ? userPlan === 'essencial'
+                  ? 'Voce esgotou suas SuperCurtidas. Faca upgrade ou compre mais na loja.'
+                  : 'Voce esgotou suas SuperCurtidas de hoje e seu saldo avulso. Compre mais na loja ou aguarde amanha.'
+                : 'Filtros de Fetiche, BDSM e Sugar sao exclusivos do plano Black.'}
             </p>
-            <Link href="/planos" className="block w-full py-3.5 rounded-2xl bg-yellow-400 text-black font-semibold text-sm mb-3">
-              Ver plano Black
+            <Link
+              href={upgradeReason === 'superlike' && userPlan !== 'essencial' ? '/loja' : '/planos'}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '14px 0',
+                borderRadius: 14,
+                backgroundColor: '#F59E0B',
+                color: '#000',
+                fontWeight: 700,
+                fontSize: 14,
+                textDecoration: 'none',
+                marginBottom: 10,
+              }}
+            >
+              {upgradeReason === 'superlike' && userPlan !== 'essencial' ? 'Ir para a loja' : 'Ver planos'}
             </Link>
-            <button onClick={() => setShowUpgradeModal(false)} className="text-white/30 text-sm">Agora não</button>
+            <button
+              onClick={() => setShowUpgradeModal(false)}
+              style={{ background: 'none', border: 'none', color: 'var(--muted-2)', fontSize: 13, cursor: 'pointer' }}
+            >
+              Agora nao
+            </button>
           </div>
         </div>
       )}

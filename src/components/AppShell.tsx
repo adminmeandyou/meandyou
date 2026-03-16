@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { AppHeader } from './AppHeader'
 import { AppBottomNav } from './AppBottomNav'
 import { AppSidebar } from './AppSidebar'
+import { AppHeaderProvider, useAppHeader } from '@/contexts/AppHeaderContext'
 
 /**
  * Rotas que recebem o shell do app (header + bottom nav + sidebar).
@@ -35,6 +36,12 @@ function usesShell(pathname: string): boolean {
   )
 }
 
+/** Lê o modeSelector do contexto e passa para o AppHeader */
+function AppHeaderConnected() {
+  const { modeSelector } = useAppHeader()
+  return <AppHeader modeSelector={modeSelector} />
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const shell = usesShell(pathname)
@@ -43,89 +50,91 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (!shell) return <>{children}</>
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background:
-          'radial-gradient(ellipse 140% 70% at 20% -5%, rgba(225,29,72,0.09) 0%, #08090E 55%)',
-        display: 'flex',
-        overflow: 'hidden',
-      }}
-    >
-      {/* Sidebar — visível apenas em md+ */}
-      <AppSidebar />
-
-      {/* Coluna central: frame do app */}
+    <AppHeaderProvider>
       <div
         style={{
-          flex: '1 1 0',
+          minHeight: '100vh',
+          background:
+            'radial-gradient(ellipse 140% 70% at 20% -5%, rgba(225,29,72,0.09) 0%, #08090E 55%)',
           display: 'flex',
-          justifyContent: 'center',
-          minWidth: 0,
+          overflow: 'hidden',
         }}
       >
+        {/* Sidebar — visível apenas em md+ */}
+        <AppSidebar />
+
+        {/* Coluna central: frame do app */}
         <div
           style={{
-            width: '100%',
-            maxWidth: 430,
-            height: '100vh',
-            position: 'relative',
-            backgroundColor: 'var(--bg)',
+            flex: '1 1 0',
             display: 'flex',
-            flexDirection: 'column',
-            overflow: 'hidden',
+            justifyContent: 'center',
+            minWidth: 0,
           }}
         >
-          {/* Header — visível apenas em mobile (< md) */}
-          <div className="block md:hidden">
-            <AppHeader />
-          </div>
-
-          {/* Área de conteúdo — scroll interno */}
-          <main
-            id="app-main-content"
+          <div
             style={{
-              flex: 1,
-              overflowY: 'auto',
-              overflowX: 'hidden',
-              minHeight: 0,
-              WebkitOverflowScrolling: 'touch',
-              scrollbarWidth: 'none',
+              width: '100%',
+              maxWidth: 430,
+              height: '100vh',
+              position: 'relative',
+              backgroundColor: 'var(--bg)',
+              display: 'flex',
+              flexDirection: 'column',
+              overflow: 'hidden',
             }}
           >
-            {children}
-          </main>
+            {/* Header — visível apenas em mobile (< md) */}
+            <div className="block md:hidden">
+              <AppHeaderConnected />
+            </div>
 
-          {/* Bottom Nav — visível apenas em mobile (< md) */}
-          <div className="block md:hidden">
-            <AppBottomNav />
+            {/* Área de conteúdo — scroll interno */}
+            <main
+              id="app-main-content"
+              style={{
+                flex: 1,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                minHeight: 0,
+                WebkitOverflowScrolling: 'touch',
+                scrollbarWidth: 'none',
+              }}
+            >
+              {children}
+            </main>
+
+            {/* Bottom Nav — visível apenas em mobile (< md) */}
+            <div className="block md:hidden">
+              <AppBottomNav />
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Painel direito — reservado para Chat/Matches em lg+ */}
-      <div
-        className="hidden lg:flex"
-        style={{
-          flex: '1 1 0',
-          minWidth: 280,
-          maxWidth: 400,
-          borderLeft: '1px solid var(--border)',
-          backgroundColor: 'var(--bg-card)',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        {/* Placeholder — será preenchido na Fase 4+ */}
-        <span
+        {/* Painel direito — reservado para Chat/Matches em lg+ */}
+        <div
+          className="hidden lg:flex"
           style={{
-            fontSize: 13,
-            color: 'var(--muted-2)',
-            fontFamily: 'var(--font-jakarta)',
+            flex: '1 1 0',
+            minWidth: 280,
+            maxWidth: 400,
+            borderLeft: '1px solid var(--border)',
+            backgroundColor: 'var(--bg-card)',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
-        />
+        >
+          {/* Placeholder — será preenchido na Fase 4+ */}
+          <span
+            style={{
+              fontSize: 13,
+              color: 'var(--muted-2)',
+              fontFamily: 'var(--font-jakarta)',
+            }}
+          />
+        </div>
       </div>
-    </div>
+    </AppHeaderProvider>
   )
 }

@@ -6,7 +6,68 @@ Sempre responda em português do Brasil.
 ## MeAndYou — Referência do Projeto
 
 > **Branch de trabalho:** `design-v2`
-> **Última atualização:** Fase 3 — Arquitetura de Layout (2026-03-16)
+> **Última atualização:** Fase 4 — Tela Principal de Swipe (2026-03-16)
+
+---
+
+### Fase 4 Concluída
+
+#### Tela Principal de Swipe — `/busca`
+
+**Arquivo principal:** `src/app/busca/page.tsx` (reescrita visual completa — TODA lógica preservada)
+
+#### Arquivos criados
+
+| Arquivo | Descrição |
+|---------|-----------|
+| `src/contexts/AppHeaderContext.tsx` | Contexto que permite páginas injetarem conteúdo no slot `modeSelector` do AppHeader |
+
+#### Arquivos modificados
+
+| Arquivo | O que mudou |
+|---------|-------------|
+| `src/components/AppShell.tsx` | Envolvido com `AppHeaderProvider`; usa `AppHeaderConnected` (lê modeSelector do contexto) em vez de `<AppHeader />` direto |
+| `src/app/busca/page.tsx` | Reescrita visual completa — veja detalhes abaixo |
+
+#### Como o seletor de modos funciona
+
+1. `AppHeaderContext` expõe `setModeSelector(node: ReactNode)` via hook `useAppHeader()`
+2. `AppShell` envolve tudo com `AppHeaderProvider` e usa `AppHeaderConnected` para ler do contexto e repassar ao `AppHeader`
+3. A página `/busca` chama `setModeSelector(<ModeSelectorTabs .../>)` em `useEffect` sempre que `viewMode` muda
+4. Ao desmontar, a página limpa o slot com `setModeSelector(null)`
+5. O componente `ModeSelectorTabs` inclui as 3 tabs + ícone de filtros — tudo injetado no centro do `AppHeader`
+
+#### Modos de visualização (`viewMode`)
+
+| Modo | UI | Rota |
+|------|----|----|
+| `discovery` | Cards de swipe empilhados + Action Bar | padrão |
+| `search` | Grid 2 colunas com perfis do deck atual | clica na tab "Busca" |
+| `rooms` | Cards de salas temáticas (placeholder "Em breve") | clica na tab "Salas" |
+
+#### Componentes da Fase 2 utilizados
+
+| Componente | Uso |
+|-----------|-----|
+| `BottomSheet` | Painel de filtros (substitui painel inline anterior) |
+| `Pill` | Seleção de gênero e opções de cada categoria de filtro |
+| `SliderRange` | Faixa de idade nos filtros (dual handle) |
+| `SwipeButton` | Action bar: Undo(default/sm), Dislike(danger/lg), SuperLike(info/md), Like(primary/lg), Boost(gold/sm) |
+
+#### Funcionalidades visuais novas
+
+- **Barra de progresso de fotos** no topo do card (suporta `photos[]`, fallback para `photo_best`)
+- **Toque lateral** no card = navega entre fotos (tap < 8px de movimento)
+- **Cards empilhados**: card de trás visível com `scale(0.94)` e `opacity: 0.55`
+- **Carimbos** CURTIR (verde), NOPE (vermelho brand), SUPER (azul) ao arrastar
+- **Gradiente overlay** dark na base do card com nome/idade/cidade/bio/botão de perfil
+- **Filtros em BottomSheet** com Pill, SliderRange e accordion próprio (preserva `openCategories` state)
+- **Botão salvar** sticky no bottom do BottomSheet (via `position: sticky; bottom: 0`)
+- **Todos os modais** (Match, Upgrade) reestilizados com paleta v2
+
+#### Lógica preservada (intacta)
+
+Todos os states, hooks, funções de API, validação de filtros, triggerSwipe, matchResult, upgradeModal, countdown e contadores de likes/superlikes permanecem exatamente como estavam.
 
 ---
 
