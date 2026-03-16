@@ -110,7 +110,7 @@ function calcCompletude(profileData: ProfileData | null, filtersData: any): numb
   const fotos = fotoSlots.filter(s => (profileData as any)?.[s]).length
   total += 9; pts += fotos
   total += 1; if (profileData?.bio && profileData.bio.length >= 30) pts += 1
-  total += 1; if (profileData?.highlight_tags?.length > 0) pts += 1
+  total += 1; if ((profileData?.highlight_tags?.length ?? 0) > 0) pts += 1
   total += 1; if (filtersData) pts += 1
   return Math.round((pts / total) * 100)
 }

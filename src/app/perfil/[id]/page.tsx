@@ -375,15 +375,9 @@ export default function VerPerfilPage() {
 
       {/* ── Action bar fixa (sticky FABs) ── */}
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.07)', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', zIndex: 30 }}>
-        <SwipeButton variant="danger" size="lg" onClick={() => handleSwipe('dislike')}>
-          <X size={26} strokeWidth={1.5} />
-        </SwipeButton>
-        <SwipeButton variant="info" size="md" onClick={() => handleSwipe('superlike')}>
-          <Star size={20} strokeWidth={1.5} />
-        </SwipeButton>
-        <SwipeButton variant="primary" size="lg" onClick={() => handleSwipe('like')}>
-          <Heart size={26} strokeWidth={1.5} />
-        </SwipeButton>
+        <SwipeButton variant="danger" size="lg" onClick={() => handleSwipe('dislike')} icon={<X size={26} strokeWidth={1.5} />} />
+        <SwipeButton variant="info" size="md" onClick={() => handleSwipe('superlike')} icon={<Star size={20} strokeWidth={1.5} />} />
+        <SwipeButton variant="primary" size="lg" onClick={() => handleSwipe('like')} icon={<Heart size={26} strokeWidth={1.5} />} />
       </div>
 
       {/* ── Modal de Emergencia ── */}
