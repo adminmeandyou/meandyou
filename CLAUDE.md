@@ -6,7 +6,39 @@ Sempre responda em português do Brasil.
 ## MeAndYou — Referência do Projeto
 
 > **Branch de trabalho:** `design-v2`
-> **Última atualização:** Fase 4 — Tela Principal de Swipe (2026-03-16)
+> **Última atualização:** Fase 5 — Perfil (2026-03-16)
+
+---
+
+### Fase 5 Concluída
+
+#### Perfil — visualização e edição
+
+#### Arquivos modificados
+
+| Arquivo | O que mudou |
+|---------|-------------|
+| `src/app/perfil/[id]/page.tsx` | Reescrita visual completa — paleta v2, Trust Score, Conquistas, Sticky FABs com SwipeButton |
+| `src/app/configuracoes/editar-perfil/page.tsx` | Reescrita visual completa — paleta v2, barra de conclusão, Foto Inteligente, pílulas de bio |
+
+#### perfil/[id] — visualização
+
+- **Barra de progresso de fotos** (thin segments no topo do hero)
+- **Trust Score** calculado localmente: fotos (8pts cada, máx 48) + bio >30 chars (20pts) + highlight_tags (12pts) + filters presente (10pts) + 5+ fotos (10pts) = máx 100. Exibe barra com fill `var(--accent)`.
+- **Conquistas** calculadas localmente: "Perfil completo" (9 fotos), "Galeria rica" (5+), "Bio detalhada" (bio >100), "Tags escolhidas"
+- **Stats grid 2-col** com paleta v2
+- **TagSection** com pills usando paleta v2
+- **Sticky FABs** usando `SwipeButton` da Fase 2 (danger/info/primary)
+- Modais emergência e denúncia com paleta v2
+- Toda lógica de swipe, RPC, distância, planos preservada
+
+#### editar-perfil — edição
+
+- **Barra de conclusão** no topo: calcula % com fotos (9 slots), bio, highlight_tags, filters. Fill `var(--accent)`.
+- **Foto Inteligente**: botão pill que auto-seleciona primeiro slot com foto como `photo_best`. Aparece só com 2+ fotos.
+- **Pílulas de sugestão de bio**: 9 sugestões clicáveis que appendam texto à bio (máx 300 chars)
+- `Acordeao`, `TagChip`, `BotaoSalvar`, `BloqueioAviso` reestilizados com paleta v2
+- Toda lógica de rate-limit (6h tags, 7d campos), upload via `/api/moderar-foto`, save no Supabase preservada
 
 ---
 
