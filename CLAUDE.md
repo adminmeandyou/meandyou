@@ -6,7 +6,59 @@ Sempre responda em português do Brasil.
 ## MeAndYou — Referência do Projeto
 
 > **Branch de trabalho:** `design-v2`
-> **Última atualização:** Fase 7 — Gamificação (2026-03-16)
+> **Última atualização:** Fase 9 — Loja e Monetização (2026-03-16)
+
+---
+
+### Fase 9 Concluída
+
+#### Loja e Monetização
+
+#### Arquivos criados
+
+| Arquivo | O que faz |
+|---------|-----------|
+| `src/components/PaywallCard.tsx` | Card de bloqueio reutilizável com cronômetro de reset e botão de upgrade para /planos |
+| `src/components/StoreBottomSheet.tsx` | Bottom sheet de microtransações com 3 pacotes por tipo de item (superlike, boost, lupa, rewind, ghost) |
+| `src/app/curtidas/page.tsx` | Página "Quem curtiu você" — grid blur pesado + PaywallCard para Essencial; grid real com Like Back para Plus/Black |
+
+#### Arquivos modificados
+
+| Arquivo | O que mudou |
+|---------|-------------|
+| `src/app/planos/page.tsx` | Cards horizontais com scroll snap; badge "Melhor Custo-Beneficio" no Plus; tabela comparativa rápida |
+| `src/app/loja/page.tsx` | Vitrine redesenhada: uma linha por categoria com botão "Comprar" que abre StoreBottomSheet |
+| `src/app/busca/page.tsx` | Tela "curtidas esgotadas" substituída pelo PaywallCard com countdown até meia-noite |
+| `src/proxy.ts` | `/curtidas` adicionado às rotas protegidas |
+| `src/app/globals.css` | Keyframe `slideUp` para animação do bottom sheet |
+
+#### Features implementadas
+
+**PaywallCard (`src/components/PaywallCard.tsx`):**
+- Ícone de cadeado vermelho, título, descrição
+- Cronômetro countdown até `resetAt` (ex: meia-noite para curtidas)
+- Botão "Fazer upgrade" → `/planos`
+- Reutilizável em qualquer página
+
+**StoreBottomSheet (`src/components/StoreBottomSheet.tsx`):**
+- Slide up animado com `@keyframes slideUp`
+- 5 tipos: `superlike | boost | lupa | rewind | ghost`
+- 3 pacotes por tipo com destaque "Popular" no meio
+- Todos os URLs Cakto preservados
+- Fecha no backdrop, no X ou no Escape
+
+**Planos — cards horizontais:**
+- Container `overflow-x-auto snap-x snap-mandatory`
+- Cada card: 272px de largura, snap-center
+- Plus badge: "Melhor Custo-Beneficio" (era "Mais popular")
+- Black com borda dourada
+- Tabela comparativa 4 colunas ao final
+
+**Quem Curtiu Você (`/curtidas`):**
+- Essencial: 6 silhuetas borradas (blur 16px) + overlay opaco + PaywallCard
+- Plus/Black: grid 3 colunas com foto real, badge ⭐ p/ superlike, botão "Curtir" que chama `process_swipe`
+- Query: `likes` WHERE `to_user = userId` → join com `public_profiles`
+- Estado `likedBack` por ID para feedback visual imediato
 
 ---
 
