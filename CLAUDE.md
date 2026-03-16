@@ -6,7 +6,54 @@ Sempre responda em português do Brasil.
 ## MeAndYou — Referência do Projeto
 
 > **Branch de trabalho:** `design-v2`
-> **Última atualização:** Fase 5 — Perfil (2026-03-16)
+> **Última atualização:** Fase 6 — Hub de Comunicacao (2026-03-16)
+
+---
+
+### Fase 6 Concluída
+
+#### Hub de Comunicacao
+
+#### Arquivos criados
+
+| Arquivo | Descricao |
+|---------|-----------|
+| `src/components/MatchModal.tsx` | Tela "Deu Match!" — overlay full-screen com animacoes de entrada das fotos, particulas, CTA "Enviar mensagem" + "Continuar explorando". Importar em `busca/page.tsx` quando houver match. Props: `matchId`, `myPhoto`, `otherPhoto`, `otherName`, `onClose`, `onStartChat`. Haptics (`navigator.vibrate`) no mount. |
+
+#### Arquivos modificados
+
+| Arquivo | O que mudou |
+|---------|-------------|
+| `src/app/matches/page.tsx` | Reescrita visual completa — paleta v2. Toggle Ativos/Arquivados. Carrossel horizontal snap para novos matches (cards 130px, avatar 76px). Badges de expiracao calculados por horas desde match: "Novo" (<2h), "Expira hoje" (22-36h), "Ultimo dia" (36-48h). Lista de conversas abaixo do carrossel. Toda logica RPC preservada. |
+| `src/app/conversas/page.tsx` | Reescrita visual completa — paleta v2. Toggle Ativos/Arquivados (Arquivados = empty state, sem DB change). Badge de nao lidas vermelho. Toda logica Realtime + RPC `get_my_conversations` preservada. |
+| `src/app/conversas/[id]/page.tsx` | Reescrita visual + features novas. Usa `ChatBubble` da Fase 2 para mensagens normais. Barra de acoes: Mic (placeholder), Quebra-gelo, Convite Encontro, Nudge. Toda logica Realtime + rate limit + marcarComoLidas preservada. |
+
+#### Features novas no chat
+
+**Quebra-gelo:**
+- Botao na action bar abre painel com 6 sugestoes clicaveis
+- Clicar preenche o textarea (usuario ainda pode editar antes de enviar)
+
+**Convite Encontro:**
+- Botao abre painel inline com input de texto
+- Enviado como mensagem com prefixo `__CONVITE__:texto`
+- Renderizado como card interativo com header vermelho e pills de resposta rapida: "Aceito!", "Nao posso", "Em breve", "Me conta mais!"
+- Banner amarelo/vermelho aparece no topo do chat quando ha convite recebido nao respondido (banner tem botao "Aceito!" direto)
+
+**Nudge:**
+- Enviado como mensagem `__NUDGE__`
+- Trigger: `navigator.vibrate([200,100,200])` no sender E no receiver (via Realtime)
+- Receiver: shake animation CSS (`nudge-shake` keyframe) na area de mensagens
+- Renderizado como separador centrado: "[Nome] deu um nudge!" com icone Zap
+
+**Formatos especiais de mensagem:**
+| Token | Formato | Renderizacao |
+|-------|---------|--------------|
+| Nudge | `__NUDGE__` | Separador centrado com icone Zap |
+| Convite | `__CONVITE__:texto` | Card com header + pills de resposta |
+| Normal | qualquer outro | `ChatBubble` da Fase 2 |
+
+**Observacao:** erro de TypeScript pre-existente em `configuracoes/editar-perfil/page.tsx:113` (Fase 5) nao relacionado a Fase 6.
 
 ---
 

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
-import { MessageCircle, Heart, Search, Loader2, Clock } from 'lucide-react'
+import { MessageCircle, Heart, Search, Loader2, Clock, Archive } from 'lucide-react'
 
 type Match = {
   match_id: string
@@ -15,11 +15,18 @@ type Match = {
   city: string | null
   state: string | null
   matched_at: string
-  // última mensagem (se houver conversa)
   last_message: string | null
   last_message_at: string | null
   unread_count: number
   conversation_id: string | null
+}
+
+function getExpiryInfo(matchedAt: string): { label: string; urgent: boolean } | null {
+  const hours = (Date.now() - new Date(matchedAt).getTime()) / 3600000
+  if (hours < 2) return { label: 'Novo', urgent: false }
+  if (hours > 22 && hours <= 36) return { label: 'Expira hoje', urgent: true }
+  if (hours > 36 && hours <= 48) return { label: 'Ultimo dia', urgent: true }
+  return null
 }
 
 export default function MatchesPage() {
@@ -27,7 +34,7 @@ export default function MatchesPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
-  const [aba, setAba] = useState<'novos' | 'conversas'>('novos')
+  const [aba, setAba] = useState<'ativos' | 'arquivados'>('ativos')
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -40,12 +47,7 @@ export default function MatchesPage() {
   async function loadMatches(uid: string) {
     setLoading(true)
     try {
-      // Busca matches: curtidas mútuas entre from_user e to_user
-      // ✅ usa from_user/to_user (não user_id) conforme regra da tabela likes
-      const { data, error } = await supabase.rpc('get_my_matches', {
-        p_user_id: uid,
-      })
-
+      const { data, error } = await supabase.rpc('get_my_matches', { p_user_id: uid })
       if (error) throw error
       setMatches(data || [])
     } catch {
@@ -54,11 +56,10 @@ export default function MatchesPage() {
     setLoading(false)
   }
 
-  // Separa matches sem conversa (novos) dos que já têm conversa
   const matchesNovos = matches.filter(m => !m.conversation_id)
-  const matchesComConversa = matches.filter(m => !!m.conversation_id)
+  const matchesComConversa = matches
+    .filter(m => !!m.conversation_id)
     .sort((a, b) => {
-      // Ordena por última mensagem mais recente
       const dateA = a.last_message_at ? new Date(a.last_message_at).getTime() : new Date(a.matched_at).getTime()
       const dateB = b.last_message_at ? new Date(b.last_message_at).getTime() : new Date(b.matched_at).getTime()
       return dateB - dateA
@@ -81,145 +82,173 @@ export default function MatchesPage() {
 
   async function iniciarConversa(matchId: string, otherUserId: string) {
     if (!userId) return
-    // Cria ou busca conversa existente via RPC
     const { data, error } = await supabase.rpc('get_or_create_conversation', {
       p_user_a: userId,
       p_user_b: otherUserId,
       p_match_id: matchId,
     })
-    if (!error && data) {
-      router.push(`/conversas/${data}`)
-    }
+    if (!error && data) router.push(`/conversas/${data}`)
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] text-white font-jakarta pb-24">
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: 96 }}>
 
-      {/* ── Header ── */}
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-4 py-4">
-        <div className="flex items-center justify-between mb-4">
-          <h1 className="font-fraunces text-2xl">
-            Matches
+      {/* Header */}
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 30,
+        background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid var(--border)',
+        padding: '16px 20px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 26, color: 'var(--text)', margin: 0 }}>
+              Matches
+            </h1>
             {totalUnread > 0 && (
-              <span className="ml-2 text-sm font-normal text-[#b8f542]">{totalUnread} não lidas</span>
+              <span style={{
+                minWidth: 22, height: 22, borderRadius: 100,
+                background: 'var(--accent)', color: '#fff',
+                fontSize: 11, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px',
+              }}>
+                {totalUnread > 9 ? '9+' : totalUnread}
+              </span>
             )}
-          </h1>
-          {loading && <Loader2 size={18} className="animate-spin text-white/30" />}
+          </div>
+          {loading && <Loader2 size={18} color="rgba(248,249,250,0.3)" className="animate-spin" />}
         </div>
 
-        {/* Abas */}
-        <div className="flex gap-2">
-          <button
-            onClick={() => setAba('novos')}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm border transition ${
-              aba === 'novos'
-                ? 'bg-[#b8f542] text-black border-[#b8f542] font-semibold'
-                : 'bg-white/5 border-white/10 text-white/60'
-            }`}
-          >
-            <Heart size={13} />
-            Novos
-            {matchesNovos.length > 0 && (
-              <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${aba === 'novos' ? 'bg-black/20' : 'bg-[#b8f542] text-black'}`}>
-                {matchesNovos.length}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setAba('conversas')}
-            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm border transition ${
-              aba === 'conversas'
-                ? 'bg-[#b8f542] text-black border-[#b8f542] font-semibold'
-                : 'bg-white/5 border-white/10 text-white/60'
-            }`}
-          >
-            <MessageCircle size={13} />
-            Conversas
-            {totalUnread > 0 && (
-              <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full ${aba === 'conversas' ? 'bg-black/20' : 'bg-[#b8f542] text-black'}`}>
-                {totalUnread}
-              </span>
-            )}
-          </button>
+        {/* Tabs Ativos / Arquivados */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {([
+            { key: 'ativos' as const, label: 'Ativos', Icon: Heart, count: matches.length },
+            { key: 'arquivados' as const, label: 'Arquivados', Icon: Archive, count: 0 },
+          ]).map(({ key, label, Icon, count }) => (
+            <button
+              key={key}
+              onClick={() => setAba(key)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '7px 16px', borderRadius: 100,
+                border: aba === key ? '1px solid var(--accent)' : '1px solid var(--border)',
+                background: aba === key ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
+                color: aba === key ? '#fff' : 'rgba(248,249,250,0.50)',
+                fontFamily: 'var(--font-jakarta)', fontSize: 13, fontWeight: aba === key ? 700 : 400,
+                cursor: 'pointer',
+              }}
+            >
+              <Icon size={13} />
+              {label}
+              {count > 0 && (
+                <span style={{
+                  fontSize: 11, fontWeight: 700, padding: '1px 6px', borderRadius: 100,
+                  background: aba === key ? 'rgba(0,0,0,0.2)' : 'var(--accent)', color: '#fff',
+                }}>
+                  {count}
+                </span>
+              )}
+            </button>
+          ))}
         </div>
       </header>
 
-      {/* ── Conteúdo ── */}
-      <main className="px-4 pt-4">
-
+      <main style={{ padding: '20px 0 0' }}>
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-3 text-white/30">
-            <Loader2 size={28} className="animate-spin" />
-            <span className="text-sm">Carregando seus matches…</span>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 96, gap: 12 }}>
+            <Loader2 size={28} color="rgba(248,249,250,0.3)" className="animate-spin" />
+            <span style={{ fontSize: 14, color: 'rgba(248,249,250,0.3)' }}>Carregando seus matches…</span>
           </div>
-        ) : matches.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 gap-4 text-white/30">
-            <Heart size={40} className="opacity-30" />
-            <div className="text-center">
-              <p className="text-base font-medium text-white/50">Nenhum match ainda</p>
-              <p className="text-sm mt-1 max-w-[220px]">Continue curtindo! Quando alguém curtir de volta, aparece aqui.</p>
+
+        ) : aba === 'arquivados' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 80, gap: 16, padding: '80px 20px' }}>
+            <Archive size={44} color="rgba(248,249,250,0.12)" />
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(248,249,250,0.50)', margin: '0 0 4px' }}>Nenhum arquivado</p>
+              <p style={{ fontSize: 13, maxWidth: 220, color: 'rgba(248,249,250,0.3)', margin: 0 }}>
+                Voce pode arquivar conversas para organizar seus matches.
+              </p>
             </div>
-            <Link href="/busca" className="mt-2 flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#b8f542] text-black text-sm font-semibold">
-              <Search size={14} /> Explorar perfis
+          </div>
+
+        ) : matches.length === 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 20px', gap: 16 }}>
+            <Heart size={44} color="rgba(248,249,250,0.12)" />
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 16, fontWeight: 500, color: 'rgba(248,249,250,0.50)', margin: '0 0 6px' }}>Nenhum match ainda</p>
+              <p style={{ fontSize: 13, maxWidth: 220, color: 'rgba(248,249,250,0.3)', margin: '0 0 16px', lineHeight: 1.5 }}>
+                Continue curtindo! Quando alguem curtir de volta, aparece aqui.
+              </p>
+            </div>
+            <Link
+              href="/busca"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '12px 24px', borderRadius: 12,
+                background: 'var(--accent)', color: '#fff',
+                fontFamily: 'var(--font-jakarta)', fontSize: 14, fontWeight: 700,
+                textDecoration: 'none', boxShadow: '0 4px 24px rgba(225,29,72,0.35)',
+              }}
+            >
+              <Search size={15} /> Explorar perfis
             </Link>
           </div>
+
         ) : (
           <>
-            {/* ── ABA NOVOS ── */}
-            {aba === 'novos' && (
-              <>
-                {matchesNovos.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 gap-3 text-white/30">
-                    <Heart size={32} />
-                    <p className="text-sm text-center max-w-[200px]">
-                      Nenhum match novo. Todos já têm conversa em andamento!
-                    </p>
+            {/* Carrossel de novos matches */}
+            {matchesNovos.length > 0 && (
+              <div style={{ marginBottom: 28 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', marginBottom: 14 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <Heart size={14} color="var(--accent)" fill="var(--accent)" />
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(248,249,250,0.50)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      Novos matches
+                    </span>
                   </div>
-                ) : (
-                  <>
-                    <p className="text-xs text-white/30 mb-4 uppercase tracking-widest">
-                      {matchesNovos.length} novo{matchesNovos.length !== 1 ? 's' : ''} match{matchesNovos.length !== 1 ? 'es' : ''}
-                    </p>
-                    <div className="grid grid-cols-2 gap-3">
-                      {matchesNovos.map((match) => (
-                        <NovoMatchCard
-                          key={match.match_id}
-                          match={match}
-                          onIniciarConversa={() => iniciarConversa(match.match_id, match.other_user_id)}
-                          formatTempo={formatTempo}
-                        />
-                      ))}
-                    </div>
-                  </>
-                )}
-              </>
+                  <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>{matchesNovos.length}</span>
+                </div>
+                <div style={{
+                  display: 'flex', gap: 12,
+                  overflowX: 'auto', paddingLeft: 20, paddingRight: 20,
+                  scrollSnapType: 'x mandatory',
+                  WebkitOverflowScrolling: 'touch',
+                  scrollbarWidth: 'none',
+                }}>
+                  {matchesNovos.map(match => (
+                    <NovoMatchCard
+                      key={match.match_id}
+                      match={match}
+                      onIniciarConversa={() => iniciarConversa(match.match_id, match.other_user_id)}
+                      formatTempo={formatTempo}
+                    />
+                  ))}
+                </div>
+              </div>
             )}
 
-            {/* ── ABA CONVERSAS ── */}
-            {aba === 'conversas' && (
-              <>
-                {matchesComConversa.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center py-16 gap-3 text-white/30">
-                    <MessageCircle size={32} />
-                    <p className="text-sm text-center max-w-[200px]">
-                      Nenhuma conversa ainda. Inicie uma conversa com seus matches!
-                    </p>
-                    <button onClick={() => setAba('novos')} className="text-[#b8f542] text-xs underline mt-1">
-                      Ver matches novos
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-1">
-                    {matchesComConversa.map((match) => (
-                      <ConversaItem
-                        key={match.match_id}
-                        match={match}
-                        formatTempo={formatTempo}
-                      />
-                    ))}
-                  </div>
-                )}
-              </>
+            {/* Lista de conversas */}
+            {matchesComConversa.length > 0 && (
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 20px', marginBottom: 12 }}>
+                  <MessageCircle size={14} color="rgba(248,249,250,0.4)" />
+                  <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(248,249,250,0.40)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                    Conversas
+                  </span>
+                </div>
+                {matchesComConversa.map(match => (
+                  <ConversaItem key={match.match_id} match={match} formatTempo={formatTempo} />
+                ))}
+              </div>
+            )}
+
+            {matchesNovos.length === 0 && matchesComConversa.length === 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px 20px', gap: 12 }}>
+                <Heart size={32} color="rgba(248,249,250,0.12)" />
+                <p style={{ fontSize: 14, textAlign: 'center', maxWidth: 200, color: 'rgba(248,249,250,0.3)' }}>
+                  Todos os matches expiraram. Continue curtindo!
+                </p>
+              </div>
             )}
           </>
         )}
@@ -228,7 +257,7 @@ export default function MatchesPage() {
   )
 }
 
-// ─── Cards de novo match ──────────────────────────────────────────────────────
+// ─── Card do carrossel ────────────────────────────────────────────────────────
 
 function NovoMatchCard({
   match,
@@ -239,86 +268,125 @@ function NovoMatchCard({
   onIniciarConversa: () => void
   formatTempo: (d: string | null) => string
 }) {
+  const expiry = getExpiryInfo(match.matched_at)
+
   return (
-    <div className="relative rounded-2xl overflow-hidden bg-white/5 border border-white/5 aspect-[3/4]">
-      {/* Foto */}
-      {match.photo_best ? (
-        <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="50vw" />
-      ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-[#b8f542]/10 to-transparent flex items-center justify-center text-5xl text-white/20">?</div>
+    <button
+      onClick={onIniciarConversa}
+      style={{
+        scrollSnapAlign: 'start', flexShrink: 0, width: 130,
+        background: 'var(--bg-card)', border: '1px solid var(--border)',
+        borderRadius: 16, padding: '14px 12px',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+        cursor: 'pointer', position: 'relative', textAlign: 'center',
+      }}
+    >
+      {expiry && (
+        <span style={{
+          position: 'absolute', top: 10, right: 10,
+          fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 100,
+          background: expiry.urgent ? 'rgba(225,29,72,0.20)' : 'rgba(225,29,72,0.10)',
+          color: expiry.urgent ? '#F43F5E' : 'var(--accent)',
+          border: `1px solid ${expiry.urgent ? 'rgba(225,29,72,0.35)' : 'var(--accent-border)'}`,
+        }}>
+          {expiry.label}
+        </span>
       )}
 
-      {/* Gradiente */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-
-      {/* Badge novo match */}
-      <div className="absolute top-3 left-3">
-        <span className="flex items-center gap-1 px-2 py-1 rounded-full bg-[#b8f542] text-black text-[10px] font-bold">
-          <Heart size={9} fill="black" /> Match!
-        </span>
+      <div style={{
+        width: 76, height: 76, borderRadius: '50%',
+        overflow: 'hidden', position: 'relative',
+        border: '2px solid var(--accent-border)',
+        boxShadow: '0 4px 16px rgba(225,29,72,0.18)',
+      }}>
+        {match.photo_best ? (
+          <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="76px" />
+        ) : (
+          <div style={{ width: '100%', height: '100%', background: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 24 }}>{match.name[0]}</span>
+          </div>
+        )}
       </div>
 
-      {/* Tempo */}
-      <div className="absolute top-3 right-3">
-        <span className="flex items-center gap-1 text-white/40 text-[10px]">
-          <Clock size={9} /> {formatTempo(match.matched_at)}
-        </span>
+      <div style={{ width: '100%' }}>
+        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          {match.name}
+        </p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+          <Clock size={9} color="rgba(248,249,250,0.3)" />
+          <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.30)' }}>{formatTempo(match.matched_at)}</span>
+        </div>
       </div>
 
-      {/* Info + botão */}
-      <div className="absolute bottom-0 left-0 right-0 p-3">
-        <p className="font-fraunces font-semibold text-sm leading-tight mb-2">{match.name}</p>
-        <button
-          onClick={onIniciarConversa}
-          className="w-full py-2 rounded-xl bg-[#b8f542] text-black text-xs font-bold flex items-center justify-center gap-1.5"
-        >
-          <MessageCircle size={12} /> Iniciar conversa
-        </button>
+      <div style={{
+        width: '100%', padding: '7px 0', borderRadius: 10, background: 'var(--accent)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+      }}>
+        <MessageCircle size={11} color="#fff" />
+        <span style={{ fontSize: 11, fontWeight: 700, color: '#fff' }}>Conversar</span>
       </div>
-    </div>
+    </button>
   )
 }
 
 // ─── Item de conversa ─────────────────────────────────────────────────────────
 
-function ConversaItem({
-  match,
-  formatTempo,
-}: {
-  match: Match
-  formatTempo: (d: string | null) => string
-}) {
+function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: string | null) => string }) {
   return (
     <Link
       href={`/conversas/${match.conversation_id}`}
-      className="flex items-center gap-3 px-3 py-3 rounded-2xl hover:bg-white/5 transition"
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14,
+        padding: '12px 20px', borderBottom: '1px solid var(--border-soft)',
+        textDecoration: 'none',
+      }}
     >
-      {/* Avatar */}
-      <div className="relative w-14 h-14 rounded-full overflow-hidden bg-white/10 flex-shrink-0">
-        {match.photo_best ? (
-          <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="56px" />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-white/30 text-xl">?</div>
-        )}
-        {/* Indicador de não lidas */}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: '50%',
+          overflow: 'hidden', position: 'relative',
+          background: 'var(--bg-card2)', border: '1px solid var(--border)',
+        }}>
+          {match.photo_best ? (
+            <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="56px" />
+          ) : (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{match.name[0]}</span>
+            </div>
+          )}
+        </div>
         {match.unread_count > 0 && (
-          <div className="absolute top-0 right-0 w-4 h-4 rounded-full bg-[#b8f542] border-2 border-[#0e0b14] flex items-center justify-center">
-            <span className="text-[8px] font-bold text-black">{match.unread_count > 9 ? '9+' : match.unread_count}</span>
+          <div style={{
+            position: 'absolute', top: -2, right: -2,
+            minWidth: 18, height: 18, borderRadius: 100,
+            background: 'var(--accent)', border: '2px solid var(--bg)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px',
+          }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>
+              {match.unread_count > 9 ? '9+' : match.unread_count}
+            </span>
           </div>
         )}
       </div>
 
-      {/* Texto */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-0.5">
-          <p className={`text-sm font-semibold truncate ${match.unread_count > 0 ? 'text-white' : 'text-white/80'}`}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+          <p style={{
+            fontSize: 14, fontWeight: match.unread_count > 0 ? 700 : 500,
+            color: match.unread_count > 0 ? 'var(--text)' : 'rgba(248,249,250,0.80)',
+            margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
             {match.name}
           </p>
-          <span className="text-xs text-white/30 flex-shrink-0 ml-2">
+          <span style={{ fontSize: 12, color: 'rgba(248,249,250,0.30)', flexShrink: 0, marginLeft: 8 }}>
             {formatTempo(match.last_message_at || match.matched_at)}
           </span>
         </div>
-        <p className={`text-xs truncate ${match.unread_count > 0 ? 'text-white/70' : 'text-white/40'}`}>
+        <p style={{
+          fontSize: 13, margin: 0,
+          color: match.unread_count > 0 ? 'rgba(248,249,250,0.65)' : 'rgba(248,249,250,0.35)',
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>
           {match.last_message || 'Iniciar conversa…'}
         </p>
       </div>

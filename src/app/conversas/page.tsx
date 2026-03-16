@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
-import { MessageCircle, Loader2, Search, ArrowLeft } from 'lucide-react'
+import { MessageCircle, Loader2, Search, Archive } from 'lucide-react'
 
 interface Conversation {
   matchId: string
@@ -27,6 +27,7 @@ export default function ConversasPage() {
   const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
+  const [aba, setAba] = useState<'ativos' | 'arquivados'>('ativos')
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -68,7 +69,7 @@ export default function ConversasPage() {
       const convs: Conversation[] = (data || []).map((row: any) => ({
         matchId: row.match_id,
         otherUserId: row.other_user_id,
-        otherName: row.other_name ?? 'Usuário',
+        otherName: row.other_name ?? 'Usuario',
         otherPhoto: row.other_photo ?? null,
         lastMessage: row.last_message ?? null,
         lastMessageAt: row.last_message_at ?? null,
@@ -98,62 +99,119 @@ export default function ConversasPage() {
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0)
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta">
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'var(--font-jakarta)' }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <h1 className="font-fraunces text-2xl text-white">Mensagens</h1>
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 30,
+        background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid var(--border)',
+        padding: '16px 20px',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 26, color: 'var(--text)', margin: 0 }}>
+              Mensagens
+            </h1>
             {totalUnread > 0 && (
-              <span className="w-5 h-5 rounded-full bg-[#b8f542] text-black text-xs font-bold flex items-center justify-center">
+              <span style={{
+                minWidth: 22, height: 22, borderRadius: 100,
+                background: 'var(--accent)', color: '#fff',
+                fontSize: 11, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px',
+              }}>
                 {totalUnread > 9 ? '9+' : totalUnread}
               </span>
             )}
           </div>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"
-          >
-            <ArrowLeft size={18} className="text-white/60" />
-          </button>
+          {loading && <Loader2 size={16} color="rgba(248,249,250,0.3)" className="animate-spin" />}
         </div>
 
         {/* Busca */}
-        <div className="relative">
-          <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/30" />
+        <div style={{ position: 'relative', marginBottom: 14 }}>
+          <Search size={14} color="rgba(248,249,250,0.3)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
           <input
             type="text"
             placeholder="Buscar conversa..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-9 pr-4 py-2.5 text-sm text-white placeholder-white/30 outline-none focus:border-[#b8f542]/40 transition"
+            style={{
+              width: '100%', background: 'rgba(255,255,255,0.05)',
+              border: '1px solid var(--border)', borderRadius: 12,
+              paddingLeft: 36, paddingRight: 16, paddingTop: 10, paddingBottom: 10,
+              fontSize: 14, color: 'var(--text)', outline: 'none', boxSizing: 'border-box',
+              fontFamily: 'var(--font-jakarta)',
+            }}
           />
+        </div>
+
+        {/* Tabs Ativos / Arquivados */}
+        <div style={{ display: 'flex', gap: 8 }}>
+          {([
+            { key: 'ativos' as const, label: 'Ativos', Icon: MessageCircle },
+            { key: 'arquivados' as const, label: 'Arquivados', Icon: Archive },
+          ]).map(({ key, label, Icon }) => (
+            <button
+              key={key}
+              onClick={() => setAba(key)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 14px', borderRadius: 100,
+                border: aba === key ? '1px solid var(--accent)' : '1px solid var(--border)',
+                background: aba === key ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
+                color: aba === key ? '#fff' : 'rgba(248,249,250,0.50)',
+                fontFamily: 'var(--font-jakarta)', fontSize: 13, fontWeight: aba === key ? 700 : 400,
+                cursor: 'pointer',
+              }}
+            >
+              <Icon size={12} />
+              {label}
+            </button>
+          ))}
         </div>
       </header>
 
       {/* Lista */}
-      <main className="pb-24">
-        {loading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 size={24} className="animate-spin text-white/30" />
+      <main style={{ paddingBottom: 96 }}>
+        {aba === 'arquivados' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 20px', gap: 16 }}>
+            <Archive size={44} color="rgba(248,249,250,0.12)" />
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(248,249,250,0.50)', margin: '0 0 4px' }}>Nenhuma arquivada</p>
+              <p style={{ fontSize: 13, maxWidth: 220, color: 'rgba(248,249,250,0.3)', margin: 0 }}>
+                Voce pode arquivar conversas para organizar sua caixa de entrada.
+              </p>
+            </div>
+          </div>
+        ) : loading ? (
+          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 80 }}>
+            <Loader2 size={24} color="rgba(248,249,250,0.3)" className="animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-3 text-white/30">
-            <MessageCircle size={36} />
-            <p className="text-sm text-center max-w-[220px]">
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 20px', gap: 14 }}>
+            <MessageCircle size={36} color="rgba(248,249,250,0.15)" />
+            <p style={{ fontSize: 14, textAlign: 'center', maxWidth: 220, color: 'rgba(248,249,250,0.3)', margin: 0 }}>
               {searchTerm
                 ? 'Nenhuma conversa encontrada.'
-                : 'Você ainda não tem conversas. Faça um match para começar!'}
+                : 'Voce ainda nao tem conversas. Faca um match para comecar!'}
             </p>
             {!searchTerm && (
-              <Link href="/busca" className="mt-2 text-[#b8f542] text-xs underline">
+              <Link
+                href="/busca"
+                style={{
+                  marginTop: 8, fontSize: 13, fontWeight: 600,
+                  color: 'var(--accent)', textDecoration: 'none',
+                  padding: '8px 20px', borderRadius: 100,
+                  border: '1px solid var(--accent-border)',
+                  background: 'var(--accent-soft)',
+                }}
+              >
                 Explorar pessoas
               </Link>
             )}
           </div>
         ) : (
-          <div className="divide-y divide-white/5">
+          <div>
             {filtered.map((conv) => (
               <ConversationItem
                 key={conv.matchId}
@@ -183,11 +241,19 @@ function ConversationItem({
     // ✅ CORREÇÃO: rota correta é /conversas/[id], não /chat/[id]
     <Link
       href={`/conversas/${conv.matchId}`}
-      className="w-full flex items-center gap-4 px-5 py-4 hover:bg-white/[0.03] transition text-left"
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14,
+        padding: '12px 20px', borderBottom: '1px solid var(--border-soft)',
+        textDecoration: 'none',
+      }}
     >
       {/* Avatar */}
-      <div className="relative shrink-0">
-        <div className="w-14 h-14 rounded-full overflow-hidden bg-white/5 border border-white/10">
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: '50%',
+          overflow: 'hidden', position: 'relative',
+          background: 'var(--bg-card2)', border: '1px solid var(--border)',
+        }}>
           {conv.otherPhoto ? (
             <Image
               src={conv.otherPhoto}
@@ -197,34 +263,51 @@ function ConversationItem({
               className="object-cover w-full h-full"
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center text-white/30 font-fraunces text-xl">
-              {conv.otherName[0]}
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>
+                {conv.otherName[0]}
+              </span>
             </div>
           )}
         </div>
-        {/* Badge de não lidas */}
+        {/* Badge de nao lidas */}
         {conv.unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full bg-[#b8f542] text-black text-xs font-bold flex items-center justify-center">
-            {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
-          </span>
+          <div style={{
+            position: 'absolute', top: -2, right: -2,
+            minWidth: 18, height: 18, borderRadius: 100,
+            background: 'var(--accent)', border: '2px solid var(--bg)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px',
+          }}>
+            <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>
+              {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
+            </span>
+          </div>
         )}
       </div>
 
       {/* Info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center justify-between mb-0.5">
-          <p className={`text-sm font-semibold truncate ${conv.unreadCount > 0 ? 'text-white' : 'text-white/80'}`}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+          <p style={{
+            fontSize: 14, fontWeight: conv.unreadCount > 0 ? 700 : 500,
+            color: conv.unreadCount > 0 ? 'var(--text)' : 'rgba(248,249,250,0.80)',
+            margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          }}>
             {conv.otherName}
           </p>
           {conv.lastMessageAt && (
-            <span className="text-white/30 text-xs shrink-0 ml-2">
+            <span style={{ fontSize: 12, color: 'rgba(248,249,250,0.30)', flexShrink: 0, marginLeft: 8 }}>
               {formatTime(conv.lastMessageAt)}
             </span>
           )}
         </div>
-        <p className={`text-xs truncate ${conv.unreadCount > 0 ? 'text-white/60' : 'text-white/30'}`}>
+        <p style={{
+          fontSize: 13, margin: 0,
+          color: conv.unreadCount > 0 ? 'rgba(248,249,250,0.65)' : 'rgba(248,249,250,0.35)',
+          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        }}>
           {conv.lastMessage
-            ? `${isMyMessage ? 'Você: ' : ''}${conv.lastMessage}`
+            ? `${isMyMessage ? 'Voce: ' : ''}${conv.lastMessage}`
             : 'Nenhuma mensagem ainda'}
         </p>
       </div>

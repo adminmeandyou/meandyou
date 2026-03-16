@@ -1,14 +1,16 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  ArrowLeft, Send, Video, MoreVertical,
-  Loader2, AlertCircle, Lock, ShieldAlert
+  ArrowLeft, Send, Video, ShieldAlert,
+  Loader2, AlertCircle, Lock, Mic,
+  Sparkles, CalendarPlus, Zap, X, CalendarCheck
 } from 'lucide-react'
+import { ChatBubble } from '@/components/ui/ChatBubble'
 
 interface Message {
   id: string
@@ -27,7 +29,17 @@ interface OtherUser {
 }
 
 const MAX_CHARS = 500
-// Rate limit: 5 msgs sem resposta (controlado no useChat hook, aqui só mostra UI)
+const CONVITE_PREFIX = '__CONVITE__:'
+const NUDGE_TOKEN = '__NUDGE__'
+
+const ICEBREAKERS = [
+  'Qual o melhor lugar que voce ja visitou?',
+  'Se pudesse viajar agora, para onde iria?',
+  'O que voce faria num sabado perfeito?',
+  'Series ou filmes? Qual recomenda?',
+  'Qual superpoder voce escolheria?',
+  'Cafe da manha ou jantar romantico?',
+]
 
 export default function ChatPage() {
   const params = useParams()
@@ -44,8 +56,16 @@ export default function ChatPage() {
   const [rateLimited, setRateLimited] = useState(false)
   const [emergencyModal, setEmergencyModal] = useState(false)
 
+  // Novas features
+  const [showIcebreakers, setShowIcebreakers] = useState(false)
+  const [showConvite, setShowConvite] = useState(false)
+  const [conviteText, setConviteText] = useState('')
+  const [shake, setShake] = useState(false)
+  const [pendingConvite, setPendingConvite] = useState<string | null>(null)
+
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -53,6 +73,11 @@ export default function ChatPage() {
       setUserId(user.id)
       initChat(user.id)
     })
+
+    return () => {
+      channelRef.current?.unsubscribe()
+      channelRef.current = null
+    }
   }, [matchId])
 
   async function initChat(uid: string) {
@@ -89,7 +114,7 @@ export default function ChatPage() {
 
     setOtherUser({
       id: otherId,
-      name: profile?.name ?? 'Usuário',
+      name: profile?.name ?? 'Usuario',
       photo_best: profile?.photo_best ?? null,
       // ✅ verified fica em users, não profiles
       verified: userRow?.verified ?? false,
@@ -101,8 +126,11 @@ export default function ChatPage() {
     // Marca mensagens recebidas como lidas
     await marcarComoLidas(uid)
 
+    // Detecta convite pendente não respondido
+    detectPendingConvite(uid)
+
     // Realtime: escuta novas mensagens deste match
-    const channel = supabase
+    channelRef.current = supabase
       .channel(`chat-${matchId}`)
       .on('postgres_changes', {
         event: 'INSERT',
@@ -111,7 +139,22 @@ export default function ChatPage() {
         filter: `match_id=eq.${matchId}`,
       }, async (payload) => {
         const newMsg = payload.new as Message
-        setMessages(prev => [...prev, newMsg])
+        setMessages(prev => {
+          // Detecta convite recebido e atualiza banner
+          if (newMsg.sender_id !== uid && newMsg.content.startsWith(CONVITE_PREFIX)) {
+            const text = newMsg.content.slice(CONVITE_PREFIX.length)
+            setPendingConvite(text)
+          }
+          // Nudge recebido: haptics + shake
+          if (newMsg.sender_id !== uid && newMsg.content === NUDGE_TOKEN) {
+            if (typeof navigator !== 'undefined' && navigator.vibrate) {
+              navigator.vibrate([200, 100, 200])
+            }
+            setShake(true)
+            setTimeout(() => setShake(false), 700)
+          }
+          return [...prev, newMsg]
+        })
         // Se a mensagem é do outro, marca como lida automaticamente
         if (newMsg.sender_id !== uid) {
           await supabase
@@ -125,8 +168,6 @@ export default function ChatPage() {
 
     setLoading(false)
     scrollToBottom()
-
-    return () => { supabase.removeChannel(channel) }
   }
 
   async function loadMessages(uid: string) {
@@ -150,6 +191,26 @@ export default function ChatPage() {
       .eq('read', false)
   }
 
+  function detectPendingConvite(uid: string) {
+    // Detecta se há convite recebido sem resposta (busca nas mensagens carregadas)
+    // Será chamado após loadMessages, portanto precisamos passar mensagens como param ou usar state
+    // Solução: chamado depois de loadMessages via useEffect em messages
+  }
+
+  // Detecta convite pendente toda vez que messages mudar
+  useEffect(() => {
+    if (!userId || messages.length === 0) return
+    // Busca último convite recebido (não meu)
+    const convites = messages
+      .filter(m => m.sender_id !== userId && m.content.startsWith(CONVITE_PREFIX))
+    if (convites.length === 0) { setPendingConvite(null); return }
+    const ultimo = convites[convites.length - 1]
+    // Verifica se já foi respondido (alguma mensagem minha depois do convite)
+    const meuIdx = messages.findIndex(m => m.id === ultimo.id)
+    const houveResposta = messages.slice(meuIdx + 1).some(m => m.sender_id === userId)
+    setPendingConvite(houveResposta ? null : ultimo.content.slice(CONVITE_PREFIX.length))
+  }, [messages, userId])
+
   function scrollToBottom() {
     setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -159,20 +220,45 @@ export default function ChatPage() {
   // ✅ Rate limit local: 5 msgs seguidas sem resposta bloqueiam envio
   function checkRateLimit(): boolean {
     if (!userId) return false
-    const minhas = messages.filter(m => m.sender_id === userId)
     const ultimas = [...messages].reverse()
     let seguidas = 0
     for (const m of ultimas) {
       if (m.sender_id === userId) seguidas++
-      else break // houve resposta do outro — reseta contagem
+      else break
     }
     return seguidas >= 5
+  }
+
+  // Função base de envio — usada por handleSend e ações especiais
+  async function sendMessage(content: string) {
+    if (!content || !userId || sending) return
+    setSending(true)
+    setError('')
+    setRateLimited(false)
+
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/chat/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token ?? ''}`,
+      },
+      body: JSON.stringify({ matchId, content }),
+    })
+
+    if (!res.ok) {
+      const json = await res.json()
+      setError(json.error ?? 'Erro ao enviar mensagem. Tente novamente.')
+    }
+
+    setSending(false)
+    scrollToBottom()
   }
 
   async function handleSend() {
     const texto = input.trim()
     if (!texto || !userId || sending) return
-    if (texto.length > MAX_CHARS) { setError(`Máximo ${MAX_CHARS} caracteres.`); return }
+    if (texto.length > MAX_CHARS) { setError(`Maximo ${MAX_CHARS} caracteres.`); return }
 
     if (checkRateLimit()) {
       setRateLimited(true)
@@ -180,29 +266,22 @@ export default function ChatPage() {
       return
     }
 
-    setSending(true)
-    setError('')
-    setRateLimited(false)
     setInput('')
-
-    const { error: sendErr } = await supabase
-      .from('messages')
-      .insert({
-        match_id: matchId,
-        sender_id: userId,
-        content: texto,
-        // ✅ read começa false — o outro ainda não leu
-        read: false,
-      })
-
-    if (sendErr) {
-      setError('Erro ao enviar mensagem. Tente novamente.')
-      setInput(texto) // restaura o texto se falhar
-    }
-
-    setSending(false)
+    await sendMessage(texto)
     inputRef.current?.focus()
-    scrollToBottom()
+  }
+
+  async function handleNudge() {
+    if (navigator.vibrate) navigator.vibrate([100, 50, 150])
+    await sendMessage(NUDGE_TOKEN)
+  }
+
+  async function handleSendConvite() {
+    const texto = conviteText.trim()
+    if (!texto) return
+    await sendMessage(`${CONVITE_PREFIX}${texto}`)
+    setShowConvite(false)
+    setConviteText('')
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -210,6 +289,10 @@ export default function ChatPage() {
       e.preventDefault()
       handleSend()
     }
+  }
+
+  function formatMsgTime(dateStr: string): string {
+    return new Date(dateStr).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
   }
 
   // Agrupa mensagens por data
@@ -222,6 +305,48 @@ export default function ChatPage() {
     return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })
   }
 
+  // Renderiza uma mensagem (normal, nudge ou convite)
+  function renderMsg(msg: Message, isMe: boolean) {
+    // Nudge
+    if (msg.content === NUDGE_TOKEN) {
+      return (
+        <div key={msg.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '12px 0', gap: 8 }}>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+          <span style={{ fontSize: 12, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
+            <Zap size={12} color="var(--accent)" />
+            {isMe ? 'Voce deu um nudge!' : `${otherUser?.name} deu um nudge!`}
+          </span>
+          <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+        </div>
+      )
+    }
+
+    // Convite encontro
+    if (msg.content.startsWith(CONVITE_PREFIX)) {
+      const texto = msg.content.slice(CONVITE_PREFIX.length)
+      return (
+        <ConviteCard
+          key={msg.id}
+          text={texto}
+          isMe={isMe}
+          time={formatMsgTime(msg.created_at)}
+          onReply={(r) => sendMessage(r)}
+        />
+      )
+    }
+
+    // Mensagem normal — usa ChatBubble da Fase 2
+    return (
+      <ChatBubble
+        key={msg.id}
+        message={msg.content}
+        direction={isMe ? 'sent' : 'received'}
+        time={formatMsgTime(msg.created_at)}
+        status={isMe ? (msg.read ? 'read' : 'delivered') : undefined}
+      />
+    )
+  }
+
   // Renderiza mensagens com separadores de data
   function renderMessages() {
     const items: React.ReactNode[] = []
@@ -232,39 +357,16 @@ export default function ChatPage() {
       if (dateLabel !== lastDate) {
         lastDate = dateLabel
         items.push(
-          <div key={`date-${msg.id}`} className="flex items-center gap-3 my-4">
-            <div className="flex-1 h-px bg-white/10" />
-            <span className="text-xs text-white/30 px-2">{dateLabel}</span>
-            <div className="flex-1 h-px bg-white/10" />
+          <div key={`date-${msg.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '16px 0 8px' }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+            <span style={{ fontSize: 11, color: 'var(--muted-2)', padding: '0 8px', whiteSpace: 'nowrap' }}>{dateLabel}</span>
+            <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           </div>
         )
       }
 
       const isMe = msg.sender_id === userId
-      items.push(
-        <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'} mb-1`}>
-          <div
-            className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-              isMe
-                ? 'bg-[#b8f542] text-black rounded-br-sm'
-                : 'bg-white/10 text-white rounded-bl-sm'
-            }`}
-          >
-            <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-            <div className={`flex items-center justify-end gap-1 mt-0.5 ${isMe ? 'text-black/40' : 'text-white/30'}`}>
-              <span className="text-[10px]">
-                {new Date(msg.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
-              </span>
-              {/* ✅ checkmark de lido — só para minhas mensagens */}
-              {isMe && (
-                <span className={`text-[10px] ${msg.read ? 'text-blue-400' : ''}`}>
-                  {msg.read ? '✓✓' : '✓'}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-      )
+      items.push(renderMsg(msg, isMe))
     })
 
     return items
@@ -272,176 +374,497 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0e0b14] flex items-center justify-center">
-        <Loader2 size={28} className="animate-spin text-white/30" />
+      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader2 size={28} color="rgba(248,249,250,0.3)" className="animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="h-screen bg-[#0e0b14] flex flex-col font-jakarta">
+    <>
+      <style>{`
+        @keyframes nudge-shake {
+          0%, 100% { transform: translateX(0); }
+          15%       { transform: translateX(-6px); }
+          30%       { transform: translateX(6px); }
+          45%       { transform: translateX(-5px); }
+          60%       { transform: translateX(5px); }
+          75%       { transform: translateX(-3px); }
+          90%       { transform: translateX(3px); }
+        }
+        .chat-shake { animation: nudge-shake 0.65s ease; }
+      `}</style>
 
-      {/* ── Header ── */}
-      <header className="shrink-0 bg-[#0e0b14]/95 backdrop-blur border-b border-white/5 px-4 py-3 flex items-center gap-3 z-10">
-        <button onClick={() => router.push('/conversas')} className="w-9 h-9 flex items-center justify-center">
-          <ArrowLeft size={20} className="text-white/60" />
-        </button>
+      <div style={{ height: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', position: 'relative' }}>
 
-        {/* Avatar clicável → perfil */}
-        <Link href={`/perfil/${otherUser?.id}`} className="flex items-center gap-3 flex-1 min-w-0">
-          <div className="relative w-10 h-10 rounded-full overflow-hidden bg-white/10 flex-shrink-0">
-            {otherUser?.photo_best ? (
-              <Image src={otherUser.photo_best} alt={otherUser.name} fill className="object-cover" sizes="40px" />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-white/30 font-fraunces">
-                {otherUser?.name[0]}
-              </div>
-            )}
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-white truncate">
-              {otherUser?.name}
-              {otherUser?.verified && (
-                <span className="ml-1.5 text-[#b8f542] text-xs">✓</span>
-              )}
-            </p>
-            <p className="text-xs text-white/30">Toque para ver perfil</p>
-          </div>
-        </Link>
-
-        {/* Botão de videochamada */}
-        <button
-          onClick={() => router.push(`/videochamada/${matchId}`)}
-          className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-[#b8f542]/10 hover:border-[#b8f542]/30 transition"
-          title="Iniciar videochamada"
-        >
-          <Video size={16} className="text-white/60" />
-        </button>
-
-        {/* Botão de emergência oculto */}
-        <button
-          onClick={() => setEmergencyModal(true)}
-          className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/10 hover:border-red-500/30 transition"
-          title="Emergência"
-        >
-          <ShieldAlert size={16} className="text-white/20 hover:text-red-400" />
-        </button>
-
-        <button className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-          <MoreVertical size={16} className="text-white/60" />
-        </button>
-      </header>
-
-      {/* ── Modal de Emergência ── */}
-      {emergencyModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-          onClick={() => setEmergencyModal(false)}
-        >
-          <div
-            className="bg-[#1a0a0a] border border-red-500/30 rounded-2xl p-6 max-w-sm w-full text-center shadow-2xl"
-            onClick={e => e.stopPropagation()}
+        {/* ── Header ── */}
+        <header style={{
+          flexShrink: 0,
+          background: 'rgba(8,9,14,0.95)', backdropFilter: 'blur(16px)',
+          borderBottom: '1px solid var(--border)',
+          padding: '12px 16px',
+          display: 'flex', alignItems: 'center', gap: 12, zIndex: 10,
+        }}>
+          <button
+            onClick={() => router.push('/conversas')}
+            style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer' }}
           >
-            <div className="w-14 h-14 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center mx-auto mb-4">
-              <ShieldAlert size={28} className="text-red-400" />
+            <ArrowLeft size={20} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
+          </button>
+
+          {/* Avatar clicável → perfil */}
+          <Link href={`/perfil/${otherUser?.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, textDecoration: 'none' }}>
+            <div style={{ position: 'relative', width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', flexShrink: 0, border: '1px solid var(--border)' }}>
+              {otherUser?.photo_best ? (
+                <Image src={otherUser.photo_best} alt={otherUser.name} fill className="object-cover" sizes="40px" />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 16 }}>{otherUser?.name[0]}</span>
+                </div>
+              )}
             </div>
-            <h3 className="text-white font-fraunces text-xl font-bold mb-2">Você está em perigo?</h3>
-            <p className="text-white/50 text-sm mb-6 leading-relaxed">
-              Esta ação ligará imediatamente para a <strong className="text-white/70">Polícia Militar (190)</strong>. Use apenas em situações de risco real.
+            <div style={{ minWidth: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {otherUser?.name}
+                {otherUser?.verified && (
+                  <span style={{ marginLeft: 6, fontSize: 12, color: 'var(--accent)' }}>✓</span>
+                )}
+              </p>
+              <p style={{ fontSize: 11, color: 'var(--muted-2)', margin: 0 }}>Toque para ver perfil</p>
+            </div>
+          </Link>
+
+          {/* Botão de videochamada */}
+          <button
+            onClick={() => router.push(`/videochamada/${matchId}`)}
+            style={{
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            }}
+            title="Videochamada"
+          >
+            <Video size={15} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
+          </button>
+
+          {/* Botão de emergência oculto */}
+          <button
+            onClick={() => setEmergencyModal(true)}
+            style={{
+              width: 36, height: 36, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            }}
+            title="Emergencia"
+          >
+            <ShieldAlert size={15} color="rgba(248,249,250,0.20)" strokeWidth={1.5} />
+          </button>
+        </header>
+
+        {/* ── Banner convite pendente ── */}
+        {pendingConvite && (
+          <div style={{
+            flexShrink: 0,
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '10px 16px',
+            background: 'rgba(225,29,72,0.10)',
+            borderBottom: '1px solid var(--accent-border)',
+          }}>
+            <CalendarCheck size={15} color="var(--accent)" strokeWidth={1.5} />
+            <p style={{ flex: 1, fontSize: 13, color: 'var(--accent)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              Convite: {pendingConvite}
             </p>
-            <a
-              href="tel:190"
-              className="block w-full py-3.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-base transition mb-3"
-            >
-              Ligar 190 agora
-            </a>
             <button
-              onClick={() => setEmergencyModal(false)}
-              className="block w-full py-3 text-white/30 text-sm hover:text-white/60 transition"
+              onClick={() => sendMessage('Aceito!')}
+              style={{
+                padding: '4px 12px', borderRadius: 100,
+                background: 'var(--accent)', border: 'none',
+                fontSize: 12, fontWeight: 700, color: '#fff', cursor: 'pointer',
+              }}
             >
-              Cancelar
+              Aceito!
+            </button>
+            <button
+              onClick={() => setPendingConvite(null)}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            >
+              <X size={14} color="var(--muted)" />
+            </button>
+          </div>
+        )}
+
+        {/* ── Aviso de privacidade ── */}
+        <div style={{
+          flexShrink: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+          padding: '6px 0',
+          color: 'var(--muted-2)', fontSize: 11,
+        }}>
+          <Lock size={9} strokeWidth={1.5} />
+          Conversa privada — respeite os limites
+        </div>
+
+        {/* ── Mensagens ── */}
+        <div
+          className={shake ? 'chat-shake' : ''}
+          style={{ flex: 1, overflowY: 'auto', padding: '4px 16px 8px' }}
+        >
+          {messages.length === 0 ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, color: 'var(--muted-2)' }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', position: 'relative' }}>
+                {otherUser?.photo_best && (
+                  <Image src={otherUser.photo_best} alt="" fill className="object-cover" sizes="64px" />
+                )}
+              </div>
+              <p style={{ fontSize: 14, textAlign: 'center', margin: 0 }}>
+                Voces fizeram um match!<br />
+                <span style={{ fontSize: 12, color: 'var(--muted-2)' }}>Seja o(a) primeiro(a) a dizer ola.</span>
+              </p>
+            </div>
+          ) : (
+            <>
+              {renderMessages()}
+            </>
+          )}
+          <div ref={bottomRef} />
+        </div>
+
+        {/* ── Erro / rate limit ── */}
+        {(error || rateLimited) && (
+          <div style={{
+            flexShrink: 0, margin: '0 16px 8px',
+            padding: '8px 12px', borderRadius: 12,
+            background: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)',
+            display: 'flex', alignItems: 'center', gap: 8,
+          }}>
+            <AlertCircle size={14} color="#F43F5E" />
+            <p style={{ fontSize: 12, color: '#F43F5E', margin: 0 }}>
+              {error || 'Aguarde uma resposta antes de enviar mais mensagens.'}
+            </p>
+          </div>
+        )}
+
+        {/* ── Painel Quebra-gelo ── */}
+        {showIcebreakers && (
+          <div style={{
+            flexShrink: 0, margin: '0 16px 8px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderRadius: 16, padding: '14px 12px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <Sparkles size={14} color="var(--accent)" strokeWidth={1.5} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Quebra-gelo</span>
+              </div>
+              <button onClick={() => setShowIcebreakers(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                <X size={14} color="var(--muted)" />
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {ICEBREAKERS.map((q, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setInput(q); setShowIcebreakers(false); inputRef.current?.focus() }}
+                  style={{
+                    padding: '7px 12px', borderRadius: 100,
+                    border: '1px solid var(--border)',
+                    background: 'rgba(255,255,255,0.04)',
+                    color: 'var(--muted)', fontSize: 12,
+                    cursor: 'pointer', textAlign: 'left',
+                    fontFamily: 'var(--font-jakarta)',
+                  }}
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Painel Convite Encontro ── */}
+        {showConvite && (
+          <div style={{
+            flexShrink: 0, margin: '0 16px 8px',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
+            borderRadius: 16, padding: '14px 12px',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <CalendarPlus size={14} color="var(--accent)" strokeWidth={1.5} />
+                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Convite de Encontro</span>
+              </div>
+              <button onClick={() => setShowConvite(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                <X size={14} color="var(--muted)" />
+              </button>
+            </div>
+            <input
+              type="text"
+              value={conviteText}
+              onChange={e => setConviteText(e.target.value)}
+              placeholder="Ex: Tomar um cafe sabado, 14h?"
+              maxLength={200}
+              autoFocus
+              style={{
+                width: '100%', background: 'rgba(255,255,255,0.05)',
+                border: '1px solid var(--border)', borderRadius: 12,
+                padding: '10px 14px', fontSize: 14, color: 'var(--text)',
+                outline: 'none', boxSizing: 'border-box',
+                fontFamily: 'var(--font-jakarta)', marginBottom: 10,
+              }}
+              onKeyDown={e => { if (e.key === 'Enter') handleSendConvite() }}
+            />
+            <button
+              onClick={handleSendConvite}
+              disabled={!conviteText.trim() || sending}
+              style={{
+                width: '100%', padding: '11px 0', borderRadius: 12,
+                background: conviteText.trim() ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
+                border: 'none', cursor: conviteText.trim() ? 'pointer' : 'default',
+                color: conviteText.trim() ? '#fff' : 'var(--muted)',
+                fontFamily: 'var(--font-jakarta)', fontSize: 14, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              }}
+            >
+              <CalendarPlus size={14} />
+              Enviar convite
+            </button>
+          </div>
+        )}
+
+        {/* ── Barra de entrada ── */}
+        <div style={{
+          flexShrink: 0,
+          background: 'rgba(8,9,14,0.95)', backdropFilter: 'blur(16px)',
+          borderTop: '1px solid var(--border)',
+          padding: '10px 16px',
+        }}>
+          {/* Botões de ações rápidas */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+            {/* Mic */}
+            <ActionBtn
+              icon={<Mic size={14} strokeWidth={1.5} />}
+              label="Audio"
+              onClick={() => setError('Audio em breve')}
+            />
+            {/* Quebra-gelo */}
+            <ActionBtn
+              icon={<Sparkles size={14} strokeWidth={1.5} />}
+              label="Quebra-gelo"
+              onClick={() => { setShowConvite(false); setShowIcebreakers(v => !v) }}
+              active={showIcebreakers}
+            />
+            {/* Convite */}
+            <ActionBtn
+              icon={<CalendarPlus size={14} strokeWidth={1.5} />}
+              label="Encontro"
+              onClick={() => { setShowIcebreakers(false); setShowConvite(v => !v) }}
+              active={showConvite}
+            />
+            {/* Nudge */}
+            <ActionBtn
+              icon={<Zap size={14} strokeWidth={1.5} />}
+              label="Nudge"
+              onClick={handleNudge}
+              accent
+            />
+          </div>
+
+          {/* Input + send */}
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <textarea
+                ref={inputRef}
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value)
+                  if (error) setError('')
+                  if (rateLimited) setRateLimited(false)
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder="Escreva uma mensagem..."
+                maxLength={MAX_CHARS}
+                rows={1}
+                style={{
+                  width: '100%',
+                  background: 'rgba(255,255,255,0.06)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 14, padding: '11px 14px',
+                  fontSize: 14, color: 'var(--text)',
+                  outline: 'none', resize: 'none', overflow: 'hidden',
+                  maxHeight: 120, boxSizing: 'border-box',
+                  fontFamily: 'var(--font-jakarta)',
+                }}
+                onInput={(e) => {
+                  const el = e.currentTarget
+                  el.style.height = 'auto'
+                  el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+                }}
+              />
+              {input.length > MAX_CHARS * 0.8 && (
+                <span style={{
+                  position: 'absolute', bottom: 8, right: 12,
+                  fontSize: 10,
+                  color: input.length >= MAX_CHARS ? '#F43F5E' : 'var(--muted-2)',
+                }}>
+                  {input.length}/{MAX_CHARS}
+                </span>
+              )}
+            </div>
+            <button
+              onClick={handleSend}
+              disabled={!input.trim() || sending || input.length > MAX_CHARS}
+              style={{
+                width: 44, height: 44, borderRadius: '50%',
+                background: input.trim() ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
+                border: 'none', cursor: input.trim() ? 'pointer' : 'default',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0, transition: 'background 0.2s',
+                boxShadow: input.trim() ? '0 4px 16px rgba(225,29,72,0.30)' : 'none',
+              }}
+            >
+              {sending
+                ? <Loader2 size={18} color="#fff" className="animate-spin" />
+                : <Send size={18} color={input.trim() ? '#fff' : 'var(--muted)'} strokeWidth={1.5} />
+              }
             </button>
           </div>
         </div>
-      )}
 
-      {/* ── Aviso de privacidade ── */}
-      <div className="shrink-0 flex items-center justify-center gap-1.5 py-2 text-white/20 text-[11px]">
-        <Lock size={10} />
-        Conversa privada — respeite os limites
-      </div>
-
-      {/* ── Mensagens ── */}
-      <div className="flex-1 overflow-y-auto px-4 py-2">
-        {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-white/20">
-            <div className="w-16 h-16 rounded-full overflow-hidden bg-white/5 relative">
-              {otherUser?.photo_best && (
-                <Image src={otherUser.photo_best} alt="" fill className="object-cover" sizes="64px" />
-              )}
-            </div>
-            <p className="text-sm text-center">
-              Vocês fizeram um match! 🎉<br />
-              <span className="text-xs text-white/20">Seja o(a) primeiro(a) a dizer olá.</span>
-            </p>
-          </div>
-        ) : (
-          <>
-            {renderMessages()}
-          </>
-        )}
-        <div ref={bottomRef} />
-      </div>
-
-      {/* ── Erro / rate limit ── */}
-      {(error || rateLimited) && (
-        <div className="shrink-0 mx-4 mb-2 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/20 flex items-center gap-2">
-          <AlertCircle size={14} className="text-red-400 shrink-0" />
-          <p className="text-xs text-red-300">{error || 'Aguarde uma resposta antes de enviar mais mensagens.'}</p>
-        </div>
-      )}
-
-      {/* ── Input ── */}
-      <div className="shrink-0 bg-[#0e0b14]/95 backdrop-blur border-t border-white/5 px-4 py-3">
-        <div className="flex items-end gap-3">
-          <div className="flex-1 relative">
-            <textarea
-              ref={inputRef}
-              value={input}
-              onChange={(e) => {
-                setInput(e.target.value)
-                if (error) setError('')
-                if (rateLimited) setRateLimited(false)
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder="Escreva uma mensagem..."
-              maxLength={MAX_CHARS}
-              rows={1}
-              className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-[#b8f542]/40 transition resize-none overflow-hidden"
-              style={{ maxHeight: '120px' }}
-              onInput={(e) => {
-                const el = e.currentTarget
-                el.style.height = 'auto'
-                el.style.height = Math.min(el.scrollHeight, 120) + 'px'
-              }}
-            />
-            {input.length > MAX_CHARS * 0.8 && (
-              <span className={`absolute bottom-2 right-3 text-[10px] ${input.length >= MAX_CHARS ? 'text-red-400' : 'text-white/30'}`}>
-                {input.length}/{MAX_CHARS}
-              </span>
-            )}
-          </div>
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || sending || input.length > MAX_CHARS}
-            className="w-11 h-11 rounded-full bg-[#b8f542] flex items-center justify-center flex-shrink-0 disabled:opacity-40 transition active:scale-90"
+        {/* ── Modal de Emergência ── */}
+        {emergencyModal && (
+          <div
+            style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(8px)', padding: 20 }}
+            onClick={() => setEmergencyModal(false)}
           >
-            {sending
-              ? <Loader2 size={18} className="animate-spin text-black" />
-              : <Send size={18} className="text-black" />
-            }
-          </button>
+            <div
+              style={{ background: 'var(--bg-card)', border: '1px solid rgba(225,29,72,0.30)', borderRadius: 20, padding: '28px 24px', maxWidth: 340, width: '100%', textAlign: 'center' }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(225,29,72,0.12)', border: '1px solid rgba(225,29,72,0.30)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                <ShieldAlert size={26} color="#F43F5E" strokeWidth={1.5} />
+              </div>
+              <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: '0 0 8px' }}>Voce esta em perigo?</h3>
+              <p style={{ color: 'var(--muted)', fontSize: 14, margin: '0 0 24px', lineHeight: 1.55 }}>
+                Esta acao ligara imediatamente para a <strong style={{ color: 'rgba(248,249,250,0.70)' }}>Policia Militar (190)</strong>. Use apenas em situacoes de risco real.
+              </p>
+              <a
+                href="tel:190"
+                style={{
+                  display: 'block', width: '100%', padding: '14px 0',
+                  borderRadius: 12, background: '#E11D48',
+                  color: '#fff', fontFamily: 'var(--font-jakarta)',
+                  fontSize: 16, fontWeight: 700, textDecoration: 'none', marginBottom: 10,
+                }}
+              >
+                Ligar 190 agora
+              </a>
+              <button
+                onClick={() => setEmergencyModal(false)}
+                style={{ display: 'block', width: '100%', padding: '12px 0', color: 'var(--muted)', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
+  )
+}
+
+// ─── Botão de ação rápida ─────────────────────────────────────────────────────
+
+function ActionBtn({
+  icon, label, onClick, active = false, accent = false,
+}: {
+  icon: React.ReactNode
+  label: string
+  onClick: () => void
+  active?: boolean
+  accent?: boolean
+}) {
+  return (
+    <button
+      onClick={onClick}
+      title={label}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 5,
+        padding: '6px 12px', borderRadius: 100,
+        border: active || accent ? '1px solid var(--accent-border)' : '1px solid var(--border)',
+        background: active || accent ? 'var(--accent-soft)' : 'rgba(255,255,255,0.04)',
+        color: active || accent ? 'var(--accent)' : 'var(--muted)',
+        fontSize: 12, fontFamily: 'var(--font-jakarta)',
+        cursor: 'pointer',
+      }}
+    >
+      {icon}
+      <span>{label}</span>
+    </button>
+  )
+}
+
+// ─── Card de Convite Encontro ─────────────────────────────────────────────────
+
+const RESPOSTAS_RAPIDAS = ['Aceito!', 'Nao posso', 'Em breve', 'Me conta mais!']
+
+function ConviteCard({
+  text, isMe, time, onReply,
+}: {
+  text: string
+  isMe: boolean
+  time: string
+  onReply: (r: string) => void
+}) {
+  return (
+    <div style={{
+      display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start',
+      marginBottom: 8,
+    }}>
+      <div style={{
+        maxWidth: '80%',
+        background: isMe ? 'var(--accent-soft)' : 'var(--bg-card)',
+        border: `1px solid ${isMe ? 'var(--accent-border)' : 'var(--border)'}`,
+        borderRadius: isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+        overflow: 'hidden',
+      }}>
+        {/* Header do card */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 8,
+          padding: '10px 14px 8px',
+          borderBottom: `1px solid ${isMe ? 'var(--accent-border)' : 'var(--border)'}`,
+        }}>
+          <CalendarPlus size={14} color="var(--accent)" strokeWidth={1.5} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>Convite de Encontro</span>
         </div>
+
+        {/* Texto da proposta */}
+        <div style={{ padding: '10px 14px' }}>
+          <p style={{ fontSize: 14, color: 'var(--text)', margin: '0 0 10px', lineHeight: 1.45 }}>{text}</p>
+          <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>{time}</span>
+        </div>
+
+        {/* Respostas rapidas — so para quem recebeu */}
+        {!isMe && (
+          <div style={{ padding: '0 14px 12px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+            {RESPOSTAS_RAPIDAS.map((r) => (
+              <button
+                key={r}
+                onClick={() => onReply(r)}
+                style={{
+                  padding: '5px 12px', borderRadius: 100,
+                  border: '1px solid var(--border)',
+                  background: 'rgba(255,255,255,0.05)',
+                  color: 'var(--text)', fontSize: 12,
+                  cursor: 'pointer', fontFamily: 'var(--font-jakarta)',
+                }}
+              >
+                {r}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
