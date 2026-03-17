@@ -6,7 +6,36 @@ Sempre responda em português do Brasil.
 ## MeAndYou — Referência do Projeto
 
 > **Branch de trabalho:** `design-v2`
-> **Última atualização:** Fase 10 — Onboarding (2026-03-16)
+> **Última atualização:** Fase 11 — Configuracoes (2026-03-16)
+
+---
+
+### Fase 11 Concluída
+
+#### Configuracoes — Card Lists, ToggleSwitches, Privacidade, Notificações
+
+#### Arquivos modificados
+
+| Arquivo | O que mudou |
+|---------|-------------|
+| `src/app/configuracoes/page.tsx` | Reescrito: 7 seções com CardSection, LinkRow (ícone+label+sub+badge+chevron), ToggleRow (ícone+toggle), logout via /api/auth/logout |
+| `src/proxy.ts` | `/configuracoes` adicionado a PROTECTED_ROUTES |
+
+#### Detalhes de implementação
+
+**Seções (CardSection):** Conta · Privacidade · Notificações · Sessões · Suporte · Legal · Zona de risco
+
+**ToggleSwitches implementados:**
+- `show_last_active` (Privacidade) → `profiles.show_last_active` — salva imediatamente no Supabase com rollback em caso de erro
+- `notifications_email` (Notificações) → `profiles.notifications_email` — mesmo padrão
+- Push notifications → `Notification.requestPermission()` — sem persistência no banco (estado do browser)
+
+**LinkRow com badges:**
+- Minha assinatura: badge colorido com nome do plano (Essencial/Plus/Black)
+- 2FA: badge verde "Ativo" ou âmbar "Inativo" — lê `users.totp_enabled`
+- Modo invisível: badge cinza "Na loja" → aponta para /loja
+
+**Preservado:** lógica das sub-páginas 2fa, sessoes, alterar-email intacta
 
 ---
 
