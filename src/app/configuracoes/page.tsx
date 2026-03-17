@@ -161,6 +161,7 @@ export default function ConfiguracoesPage() {
   }
 
   async function toggleLastActive() {
+    if (!userId) return
     haptics.tap()
     setSavingLastActive(true)
     const novo = !showLastActive
@@ -177,6 +178,7 @@ export default function ConfiguracoesPage() {
   }
 
   async function toggleNotifEmail() {
+    if (!userId) return
     haptics.tap()
     setSavingNotifEmail(true)
     const novo = !notifEmail

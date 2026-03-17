@@ -97,7 +97,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               style={{
                 flex: 1,
                 overflowY: 'auto',
-                overflowX: 'hidden',
+                overflowX: 'clip',
                 minHeight: 0,
                 WebkitOverflowScrolling: 'touch',
                 scrollbarWidth: 'none',

@@ -39,19 +39,21 @@ export async function POST(req: NextRequest) {
     const [fromAuthRes, toAuthRes, fromProfileRes, toProfileRes] = await Promise.all([
       supabaseAdmin.auth.admin.getUserById(fromUserId),
       supabaseAdmin.auth.admin.getUserById(toUserId),
-      supabaseAdmin.from('profiles').select('name').eq('id', fromUserId).single(),
-      supabaseAdmin.from('profiles').select('name').eq('id', toUserId).single(),
+      supabaseAdmin.from('profiles').select('name, notifications_email').eq('id', fromUserId).single(),
+      supabaseAdmin.from('profiles').select('name, notifications_email').eq('id', toUserId).single(),
     ])
 
     const fromEmail = fromAuthRes.data.user?.email
     const toEmail   = toAuthRes.data.user?.email
     const fromName  = fromProfileRes.data?.name ?? 'Alguém'
     const toName    = toProfileRes.data?.name   ?? 'Alguém'
+    const fromWantsEmail = fromProfileRes.data?.notifications_email !== false
+    const toWantsEmail   = toProfileRes.data?.notifications_email !== false
 
-    // E-mails para ambos
+    // E-mails apenas para quem tem notifications_email ativado
     await Promise.allSettled([
-      fromEmail ? sendNewMatchEmail(fromEmail, fromName, toName) : Promise.resolve(),
-      toEmail   ? sendNewMatchEmail(toEmail,   toName,  fromName) : Promise.resolve(),
+      fromEmail && fromWantsEmail ? sendNewMatchEmail(fromEmail, fromName, toName) : Promise.resolve(),
+      toEmail   && toWantsEmail   ? sendNewMatchEmail(toEmail,   toName,  fromName) : Promise.resolve(),
     ])
 
     // Push + notificação no banco para ambos

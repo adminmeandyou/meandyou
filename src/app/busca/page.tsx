@@ -1452,7 +1452,7 @@ export default function BuscaPage() {
               </span>
             </div>
             {/* Container position:relative é obrigatório para ui-range-input funcionar corretamente */}
-            <div style={{ position: 'relative', height: 22, display: 'flex', alignItems: 'center' }}>
+            <div style={{ position: 'relative', height: 22, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', left: 0, right: 0, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.08)' }} />
               <div style={{
                 position: 'absolute', left: 0, height: 4, borderRadius: 100,
