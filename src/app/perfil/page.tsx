@@ -88,6 +88,8 @@ export default function Perfil() {
   const [previews, setPreviews] = useState<string[]>(Array(10).fill(''))
   const [fotoPrincipal, setFotoPrincipal] = useState(0)
   const [verificandoFoto, setVerificandoFoto] = useState<number | null>(null)
+  const [fotoErrors, setFotoErrors] = useState<Record<number, string>>({})
+  const [verificandoFotos, setVerificandoFotos] = useState(false)
 
   // ETAPA 1 - Básico
   const [nome, setNome] = useState('')
@@ -208,47 +210,26 @@ export default function Perfil() {
     setLista(lista.includes(valor) ? lista.filter(i => i !== valor) : [...lista, valor])
   }
 
-  const handleFoto = async (index: number, file: File | null) => {
+  const handleFoto = (index: number, file: File | null) => {
     if (!file) return
     if (file.size > 5 * 1024 * 1024) { setErro('Foto muito grande. Máximo 5MB.'); return }
     const duplicada = fotos.some((f, i) => f && i !== index && f.name === file.name && f.size === file.size)
     if (duplicada) { setErro('Esta foto já foi adicionada.'); return }
 
     const previewLocal = URL.createObjectURL(file)
-    const novosPreviewsTemp = [...previews]; novosPreviewsTemp[index] = previewLocal; setPreviews(novosPreviewsTemp)
-    setVerificandoFoto(index)
-    setErro('')
 
-    try {
-      const formData = new FormData()
-      formData.append('foto', file)
-      formData.append('index', String(index))
-      const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch('/api/moderar-foto', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}` },
-        body: formData,
-      })
-      const data = await res.json()
+    const novasFotos = [...fotos]; novasFotos[index] = file; setFotos(novasFotos)
+    const novasUrls = [...fotosUrls]; novasUrls[index] = previewLocal; setFotosUrls(novasUrls)
+    const novosPreviews = [...previews]; novosPreviews[index] = previewLocal; setPreviews(novosPreviews)
 
-      if (!data.aprovado) {
-        const novosPreviewsRej = [...previews]; novosPreviewsRej[index] = ''; setPreviews(novosPreviewsRej)
-        setErro(data.motivo || 'Foto recusada. Use fotos com roupas.')
-        setVerificandoFoto(null)
-        return
-      }
-
-      // Salva o File (para detecção de duplicatas) e a URL retornada pelo servidor
-      const novasFotos = [...fotos]; novasFotos[index] = file; setFotos(novasFotos)
-      const novasUrls = [...fotosUrls]; novasUrls[index] = data.url; setFotosUrls(novasUrls)
-      const novosPreviews = [...previews]; novosPreviews[index] = data.url; setPreviews(novosPreviews)
-      setErro('')
-    } catch {
-      // Falha de rede — limpa a foto, não salva sem moderação/upload server-side
-      const novosPreviewsErr = [...previews]; novosPreviewsErr[index] = ''; setPreviews(novosPreviewsErr)
-      setErro('Falha de conexão ao verificar a foto. Tente novamente.')
+    // Limpa erro específico da foto caso exista
+    if (fotoErrors[index]) {
+      const novosErros = { ...fotoErrors }
+      delete novosErros[index]
+      setFotoErrors(novosErros)
     }
-    setVerificandoFoto(null)
+
+    setErro('')
   }
 
   const removerFoto = (index: number) => {
@@ -333,12 +314,58 @@ export default function Perfil() {
 
     try {
       if (etapa === 0) {
+        // Moderação em lote de todas as fotos antes de salvar
+        setVerificandoFotos(true)
+        const newFotoErrors: Record<number, string> = {}
+        const { data: { session } } = await supabase.auth.getSession()
+        const novasUrls = [...fotosUrls]
+        const novosPreviews = [...previews]
+
+        for (let i = 0; i < fotos.length; i++) {
+          const file = fotos[i]
+          if (!file) continue
+
+          const formData = new FormData()
+          formData.append('foto', file)
+          formData.append('index', String(i))
+
+          try {
+            const res = await fetch('/api/moderar-foto', {
+              method: 'POST',
+              headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}` },
+              body: formData,
+            })
+            const data = await res.json()
+
+            if (!data.aprovado) {
+              newFotoErrors[i] = data.motivo || 'Foto recusada.'
+            } else {
+              novasUrls[i] = data.url
+              novosPreviews[i] = data.url
+            }
+          } catch {
+            newFotoErrors[i] = 'Falha de conexão. Tente novamente.'
+          }
+        }
+
+        setVerificandoFotos(false)
+
+        if (Object.keys(newFotoErrors).length > 0) {
+          setFotoErrors(newFotoErrors)
+          setSalvando(false)
+          return
+        }
+
+        setFotoErrors({})
+        setFotosUrls(novasUrls)
+        setPreviews(novosPreviews)
+
         // URLs já foram geradas server-side em /api/moderar-foto
         const fotoSlots = ['photo_face', 'photo_body', 'photo_side', 'photo_back', 'photo_extra1', 'photo_extra2', 'photo_extra3', 'photo_extra4', 'photo_extra5']
         const update: Record<string, string | null> = {}
-        fotoSlots.forEach((slot, i) => { update[slot] = fotosUrls[i] ?? null })
+        fotoSlots.forEach((slot, i) => { update[slot] = novasUrls[i] ?? null })
         // photo_best é determinado pelo fotoPrincipal, não por um slot fixo
-        update['photo_best'] = fotosUrls[fotoPrincipal] ?? fotosUrls[0] ?? null
+        update['photo_best'] = novasUrls[fotoPrincipal] ?? novasUrls[0] ?? null
         await supabase.from('profiles').upsert({ id: userId, ...update })
       }
 
@@ -769,42 +796,45 @@ export default function Perfil() {
             <div style={{ backgroundColor: '#fff3cd', border: '1px solid #ffc107', borderRadius: '12px', padding: '12px 16px', marginBottom: '20px' }}>
               <p style={{ fontSize: '12px', color: '#856404', fontWeight: '600' }}>⚠️ Não são permitidas fotos sem roupa ou semirroupa.</p>
             </div>
-            {verificandoFoto !== null && (
+            {verificandoFotos && (
               <div style={{ backgroundColor: '#f0f9ff', border: '1px solid #bae0fd', borderRadius: '12px', padding: '12px 16px', marginBottom: '16px' }}>
-                <p style={{ fontSize: '13px', color: '#0369a1', fontWeight: '600' }}>🔍 Verificando foto {verificandoFoto + 1}... aguarde</p>
+                <p style={{ fontSize: '13px', color: '#0369a1', fontWeight: '600' }}>Verificando suas fotos... aguarde</p>
               </div>
             )}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', marginBottom: '24px' }}>
               {Array(10).fill(null).map((_, i) => (
-                <div key={i} style={{ position: 'relative', aspectRatio: '1', borderRadius: '16px', overflow: 'hidden', border: `2px dashed ${previews[i] ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: previews[i] ? 'transparent' : 'var(--white)', cursor: 'pointer' }}>
-                  {previews[i] ? (
-                    <>
-                      <img src={previews[i]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: verificandoFoto === i ? 0.5 : 1 }} />
-                      {verificandoFoto === i && (
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.6)' }}>
-                          <span style={{ fontSize: '20px' }}>🔍</span>
-                        </div>
-                      )}
-                      {verificandoFoto !== i && (
-                        <>
-                          <button onClick={() => removerFoto(i)} style={{ position: 'absolute', top: '4px', right: '4px', backgroundColor: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                            <X size={12} color="#fff" />
-                          </button>
-                          <button onClick={() => setFotoPrincipal(i)} style={{ position: 'absolute', bottom: '4px', right: '4px', backgroundColor: fotoPrincipal === i ? 'var(--accent)' : 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
-                            <Star size={12} color="#fff" />
-                          </button>
-                          {fotoPrincipal === i && <div style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: 'var(--accent)', borderRadius: '100px', padding: '2px 8px', fontSize: '9px', fontWeight: '700', color: '#fff' }}>Principal</div>}
-                        </>
-                      )}
-                    </>
-                  ) : (
-                    <label style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: verificandoFoto !== null ? 'not-allowed' : 'pointer', gap: '4px', padding: '8px' }}>
-                      <input type="file" accept="image/*" style={{ display: 'none' }} disabled={verificandoFoto !== null} onChange={e => handleFoto(i, e.target.files?.[0] || null)} />
-                      <Camera size={20} color="var(--muted)" />
-                      <span style={{ fontSize: '9px', color: i < 5 ? 'var(--accent)' : 'var(--muted)', fontWeight: '700', textAlign: 'center', lineHeight: '1.3' }}>
-                        {i < 5 ? fotoLabels[i] : 'Foto livre'}
-                      </span>
-                    </label>
+                <div key={i}>
+                  <div style={{ position: 'relative', aspectRatio: '1', borderRadius: '16px', overflow: 'hidden', border: `2px dashed ${fotoErrors[i] ? '#E11D48' : previews[i] ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: previews[i] ? 'transparent' : 'var(--white)', cursor: 'pointer' }}>
+                    {previews[i] ? (
+                      <>
+                        <img src={previews[i]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        <button onClick={() => removerFoto(i)} style={{ position: 'absolute', top: '4px', right: '4px', backgroundColor: 'rgba(0,0,0,0.6)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                          <X size={12} color="#fff" />
+                        </button>
+                        <button onClick={() => setFotoPrincipal(i)} style={{ position: 'absolute', bottom: '4px', right: '4px', backgroundColor: fotoPrincipal === i ? 'var(--accent)' : 'rgba(0,0,0,0.5)', border: 'none', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                          <Star size={12} color="#fff" />
+                        </button>
+                        {fotoPrincipal === i && <div style={{ position: 'absolute', top: '4px', left: '4px', backgroundColor: 'var(--accent)', borderRadius: '100px', padding: '2px 8px', fontSize: '9px', fontWeight: '700', color: '#fff' }}>Principal</div>}
+                        {fotoErrors[i] && (
+                          <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(225,29,72,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <X size={24} color="#fff" strokeWidth={3} />
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <label style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', gap: '4px', padding: '8px' }}>
+                        <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleFoto(i, e.target.files?.[0] || null)} />
+                        <Camera size={20} color="var(--muted)" />
+                        <span style={{ fontSize: '9px', color: i < 5 ? 'var(--accent)' : 'var(--muted)', fontWeight: '700', textAlign: 'center', lineHeight: '1.3' }}>
+                          {i < 5 ? fotoLabels[i] : 'Foto livre'}
+                        </span>
+                      </label>
+                    )}
+                  </div>
+                  {fotoErrors[i] && (
+                    <p style={{ fontSize: '10px', color: '#E11D48', fontWeight: '600', marginTop: '4px', lineHeight: '1.3', textAlign: 'center' }}>
+                      Foto {i + 1}: {fotoErrors[i]}
+                    </p>
                   )}
                 </div>
               ))}
@@ -1103,8 +1133,8 @@ export default function Perfil() {
               <ChevronLeft size={18} /> Voltar
             </button>
           )}
-          <button onClick={salvarEtapa} disabled={salvando || verificandoFoto !== null} style={{ flex: 2, padding: '14px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '15px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: (salvando || verificandoFoto !== null) ? 0.6 : 1, boxShadow: '0 8px 24px rgba(46,196,160,0.3)' }}>
-            {salvando ? 'Salvando...' : verificandoFoto !== null ? 'Verificando foto...' : etapa === 6 ? 'Concluir perfil' : 'Continuar'} {!salvando && verificandoFoto === null && <ChevronRight size={18} />}
+          <button onClick={salvarEtapa} disabled={salvando || verificandoFotos} style={{ flex: 2, padding: '14px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '15px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: (salvando || verificandoFotos) ? 0.6 : 1, boxShadow: '0 8px 24px rgba(46,196,160,0.3)' }}>
+            {verificandoFotos ? 'Verificando fotos...' : salvando ? 'Salvando...' : etapa === 6 ? 'Concluir perfil' : 'Continuar'} {!salvando && !verificandoFotos && <ChevronRight size={18} />}
           </button>
         </div>
 
