@@ -14,6 +14,7 @@ import {
 import { ChatBubble } from '@/components/ui/ChatBubble'
 import { ReportModal } from '@/components/ReportModal'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
+import { useToast } from '@/components/Toast'
 
 interface Message {
   id: string
@@ -50,6 +51,7 @@ export default function ChatPage() {
   const params = useParams()
   const matchId = params.id as string
   const router = useRouter()
+  const toast = useToast()
 
   const [userId, setUserId] = useState<string | null>(null)
   const [otherUser, setOtherUser] = useState<OtherUser | null>(null)
@@ -331,6 +333,17 @@ export default function ChatPage() {
   }
 
   async function handleNudge() {
+    const nudgeKey = `nudge_last_${matchId}`
+    const last = localStorage.getItem(nudgeKey)
+    if (last) {
+      const diff = Date.now() - parseInt(last)
+      if (diff < 60 * 60 * 1000) {
+        const mins = Math.ceil((60 * 60 * 1000 - diff) / 60000)
+        toast.info(`Aguarde ${mins} min para dar outro nudge`)
+        return
+      }
+    }
+    localStorage.setItem(nudgeKey, Date.now().toString())
     if (navigator.vibrate) navigator.vibrate([100, 50, 150])
     await sendMessage(NUDGE_TOKEN)
   }

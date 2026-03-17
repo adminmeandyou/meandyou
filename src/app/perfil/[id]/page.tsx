@@ -209,6 +209,7 @@ export default function VerPerfilPage() {
   const [userRow, setUserRow] = useState<any>(null)
   const [selectedBadge, setSelectedBadge] = useState<EmblemaDef | null>(null)
   const [dbBadges, setDbBadges] = useState<{ badge_id: string; earned_at: string; badges: { name: string; description: string; icon: string; rarity: string } }[]>([])
+  const [ratings, setRatings] = useState<{ total: number; positive: number } | null>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -275,6 +276,19 @@ export default function VerPerfilPage() {
       .select('badge_id, earned_at, badges(name, description, icon, rarity)')
       .eq('user_id', profileId)
     setDbBadges((badgesData as any) ?? [])
+
+    // Carrega avaliações recebidas (anônimas)
+    const { data: ratingsData } = await supabase
+      .from('match_ratings')
+      .select('rating')
+      .eq('rated_id', profileId)
+    if (ratingsData && ratingsData.length >= 3) {
+      const total = ratingsData.length
+      const positive = ratingsData.filter(r =>
+        r.rating === 'Pessoa incrivel!' || r.rating === 'Conversa agradavel'
+      ).length
+      setRatings({ total, positive })
+    }
 
     if (userId) {
       const { data: viewerSub } = await supabase
@@ -537,6 +551,30 @@ export default function VerPerfilPage() {
             <div style={{ height: '100%', width: `${trustScore}%`, borderRadius: '100px', backgroundColor: 'var(--accent)', transition: 'width 0.6s ease' }} />
           </div>
         </div>
+
+        {/* Avaliações anônimas */}
+        {ratings && (
+          <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '16px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <span style={{ fontSize: '12px', color: 'rgba(248,249,250,0.50)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Avaliações dos matches</span>
+              <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>{ratings.total} {ratings.total === 1 ? 'avaliação' : 'avaliações'}</span>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <div style={{ flex: 1, backgroundColor: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
+                <p style={{ fontSize: '18px', fontWeight: 700, color: '#10b981', margin: '0 0 2px' }}>
+                  {Math.round((ratings.positive / ratings.total) * 100)}%
+                </p>
+                <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>boas conversas</p>
+              </div>
+              <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
+                <p style={{ fontSize: '18px', fontWeight: 700, color: '#F8F9FA', margin: '0 0 2px' }}>
+                  {ratings.total}
+                </p>
+                <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>avaliações</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Vitrine de Emblemas */}
         <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '16px 18px' }}>

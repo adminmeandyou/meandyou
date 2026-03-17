@@ -41,7 +41,7 @@ interface FiltersState {
   [key: string]: boolean | number | string
 }
 
-type ViewMode = 'discovery' | 'search' | 'rooms'
+type ViewMode = 'discovery' | 'search' | 'rooms' | 'daily'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
@@ -285,6 +285,7 @@ function ModeSelectorTabs({
   const tabs: { id: ViewMode; label: string }[] = [
     { id: 'discovery', label: 'Descobrir' },
     { id: 'search', label: 'Busca' },
+    { id: 'daily', label: 'Match do Dia' },
     { id: 'rooms', label: 'Salas' },
   ]
 
@@ -341,6 +342,159 @@ function ModeSelectorTabs({
       >
         <SlidersHorizontal size={14} strokeWidth={1.5} />
       </button>
+    </div>
+  )
+}
+
+// ─── Match do Dia ─────────────────────────────────────────────────────────────
+
+function DailyMatchView({ userId, localFilters }: { userId: string | null; localFilters: FiltersState }) {
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [loading, setLoading] = useState(true)
+  const [liked, setLiked] = useState<Record<string, boolean>>({})
+  const [passed, setPassed] = useState<Record<string, boolean>>({})
+  const toast = useToast()
+  const haptics = useHaptics()
+
+  useEffect(() => {
+    if (!userId) return
+    loadDaily()
+  }, [userId])
+
+  async function loadDaily() {
+    setLoading(true)
+    const today = new Date().toISOString().slice(0, 10)
+    const cacheKey = `daily_match_${userId}_${today}`
+    const cached = localStorage.getItem(cacheKey)
+    if (cached) {
+      try { setProfiles(JSON.parse(cached)); setLoading(false); return } catch {}
+    }
+    try {
+      const { data } = await supabase.rpc('search_profiles', {
+        current_user_id: userId,
+        max_distance_km: localFilters.search_max_distance_km,
+        min_age:         localFilters.search_min_age,
+        max_age:         localFilters.search_max_age >= 60 ? 120 : localFilters.search_max_age,
+      })
+      const daily = (data ?? []).slice(0, 5) as Profile[]
+      setProfiles(daily)
+      localStorage.setItem(cacheKey, JSON.stringify(daily))
+    } catch {}
+    setLoading(false)
+  }
+
+  async function handleLike(profile: Profile) {
+    if (!userId) return
+    setLiked(prev => ({ ...prev, [profile.id]: true }))
+    haptics.medium()
+    try {
+      await supabase.rpc('process_like', {
+        p_user_id: userId, p_target_id: profile.id, p_is_superlike: false,
+      })
+      toast.success('Curtida enviada!')
+    } catch {
+      toast.error('Falha ao curtir. Tente novamente.')
+    }
+  }
+
+  function handlePass(profileId: string) {
+    setPassed(prev => ({ ...prev, [profileId]: true }))
+    haptics.tap()
+  }
+
+  const active = profiles.filter(p => !liked[p.id] && !passed[p.id])
+  const todayLabel = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+        <Loader2 size={24} style={{ color: 'var(--accent)', animation: 'spin 1s linear infinite' }} />
+      </div>
+    )
+  }
+
+  if (!profiles.length) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, padding: 24, textAlign: 'center' }}>
+        <Search size={40} color="rgba(255,255,255,0.20)" strokeWidth={1} />
+        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Sem matches hoje</p>
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Ajuste seus filtros para ver sugestões</p>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ padding: '16px 16px 20px', overflowY: 'auto', height: '100%' }}>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <Heart size={15} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+          <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)' }}>Match do Dia</span>
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'capitalize' }}>{todayLabel}</p>
+        <p style={{ fontSize: 12, color: 'var(--muted-2)', marginTop: 4 }}>
+          {active.length > 0
+            ? `${active.length} sugestão${active.length !== 1 ? 'ões' : ''} selecionada${active.length !== 1 ? 's' : ''} para você hoje`
+            : 'Voce já agiu em todas as sugestões de hoje!'}
+        </p>
+      </div>
+
+      {active.length === 0 && (
+        <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '24px 20px', textAlign: 'center' }}>
+          <p style={{ fontSize: 15, color: 'var(--text)', fontWeight: 600, marginBottom: 8 }}>Volte amanha!</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)' }}>Novas sugestões aparecem todo dia às 00:00.</p>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {active.map((profile) => {
+          const photos = profile.photos?.length ? profile.photos : profile.photo_best ? [profile.photo_best] : []
+          const photo = photos[0]
+          return (
+            <div
+              key={profile.id}
+              style={{
+                backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)',
+                borderRadius: 16, overflow: 'hidden',
+                display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px',
+              }}
+            >
+              <div style={{ width: 64, height: 64, borderRadius: 12, overflow: 'hidden', flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.05)' }}>
+                {photo ? (
+                  <Image src={photo} alt={profile.name} width={64} height={64} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Heart size={20} color="rgba(255,255,255,0.20)" strokeWidth={1} />
+                  </div>
+                )}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 15, color: 'var(--text)', marginBottom: 2 }}>
+                  {profile.name}{profile.age ? `, ${profile.age}` : ''}
+                </p>
+                {profile.city && (
+                  <p style={{ fontSize: 12, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <MapPin size={10} strokeWidth={1.5} /> {profile.city}
+                  </p>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+                <button
+                  onClick={() => handleLike(profile)}
+                  style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(16,185,129,0.30)', backgroundColor: 'rgba(16,185,129,0.10)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                >
+                  <Heart size={16} strokeWidth={2} />
+                </button>
+                <button
+                  onClick={() => handlePass(profile.id)}
+                  style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'transparent', color: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                >
+                  <X size={16} strokeWidth={2} />
+                </button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
     </div>
   )
 }
@@ -826,6 +980,8 @@ export default function BuscaPage() {
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         {viewMode === 'rooms' ? (
           <RoomsPlaceholder />
+        ) : viewMode === 'daily' ? (
+          <DailyMatchView userId={userId} localFilters={localFilters} />
         ) : viewMode === 'search' ? (
           <SearchGrid deck={deck} />
         ) : loadingDeck ? (
