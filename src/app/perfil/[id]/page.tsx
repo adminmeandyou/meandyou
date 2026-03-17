@@ -17,15 +17,15 @@ import { useHaptics } from '@/hooks/useHaptics'
 // ─── Status temporário ────────────────────────────────────────────────────────
 
 const STATUS_TEMP_LABELS: Record<string, string> = {
-  querendo_sair: '🍻 Querendo sair',
-  cafe:          '☕ Café e conversa',
-  praia:         '🏖 Praia',
-  academia:      '🏋️ Academia',
-  cinema:        '🎬 Cinema',
-  estudando:     '📚 Estudando',
-  turistando:    '🧳 Turistando',
-  bar:           '🥂 No bar',
-  'rolê':        '📍 Procurando rolê',
+  querendo_sair: 'Querendo sair',
+  cafe:          'Café e conversa',
+  praia:         'Praia',
+  academia:      'Academia',
+  cinema:        'Cinema',
+  estudando:     'Estudando',
+  turistando:    'Turistando',
+  bar:           'No bar',
+  'rolê':        'Procurando rolê',
 }
 
 // ─── Trust Score ──────────────────────────────────────────────────────────────

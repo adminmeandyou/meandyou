@@ -4,31 +4,33 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Flame, Ticket, Star, Zap, Search, RotateCcw, Gift, Lock, CheckCircle, Loader2 } from 'lucide-react'
+import {
+  ArrowLeft, Flame, Ticket, Star, Zap, Search, RotateCcw, Ghost,
+  Lock, CheckCircle, Loader2, Crown, AlertTriangle, TrendingUp, Sprout, Dumbbell,
+} from 'lucide-react'
 
-// Ícone e cor por tipo de prêmio
-const REWARD_CONFIG: Record<string, { emoji: string; color: string; bg: string; border: string; label: string }> = {
-  ticket:        { emoji: '🎟️', color: 'text-yellow-400',  bg: 'bg-yellow-500/10',  border: 'border-yellow-500/30',  label: 'Ticket' },
-  supercurtida:  { emoji: '⭐',  color: 'text-pink-400',    bg: 'bg-pink-500/10',    border: 'border-pink-500/30',    label: 'SuperLike' },
-  boost:         { emoji: '⚡',  color: 'text-[#b8f542]',  bg: 'bg-[#b8f542]/10',  border: 'border-[#b8f542]/30',   label: 'Boost' },
-  lupa:          { emoji: '🔍',  color: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/30',    label: 'Lupa' },
-  rewind:        { emoji: '↩️',  color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/30',  label: 'Desfazer' },
-  invisivel_1d:  { emoji: '👻',  color: 'text-gray-300',   bg: 'bg-gray-500/10',   border: 'border-gray-500/30',    label: 'Invisível 1 dia' },
-  plan_plus_1d:  { emoji: '💎',  color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/30',  label: '1 dia Plus' },
-  plan_black_1d: { emoji: '🖤',  color: 'text-white',      bg: 'bg-white/10',      border: 'border-white/30',       label: '1 dia Black' },
+const REWARD_CONFIG: Record<string, {
+  color: string; bg: string; border: string; label: string; icon: React.ReactNode
+}> = {
+  ticket:        { color: '#eab308', bg: 'rgba(234,179,8,0.10)',   border: 'rgba(234,179,8,0.30)',   label: 'Ticket',          icon: <Ticket size={18} strokeWidth={1.5} /> },
+  supercurtida:  { color: '#ec4899', bg: 'rgba(236,72,153,0.10)',  border: 'rgba(236,72,153,0.30)',  label: 'SuperLike',       icon: <Star size={18} strokeWidth={1.5} /> },
+  boost:         { color: '#b8f542', bg: 'rgba(184,245,66,0.10)',  border: 'rgba(184,245,66,0.30)',  label: 'Boost',           icon: <Zap size={18} strokeWidth={1.5} /> },
+  lupa:          { color: '#3b82f6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.30)',  label: 'Lupa',            icon: <Search size={18} strokeWidth={1.5} /> },
+  rewind:        { color: '#a855f7', bg: 'rgba(168,85,247,0.10)',  border: 'rgba(168,85,247,0.30)',  label: 'Desfazer',        icon: <RotateCcw size={18} strokeWidth={1.5} /> },
+  invisivel_1d:  { color: '#9ca3af', bg: 'rgba(156,163,175,0.10)', border: 'rgba(156,163,175,0.30)', label: 'Invisível 1 dia', icon: <Ghost size={18} strokeWidth={1.5} /> },
+  plan_plus_1d:  { color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)',  border: 'rgba(139,92,246,0.40)',  label: '1 dia Plus',      icon: <Crown size={18} strokeWidth={1.5} /> },
+  plan_black_1d: { color: '#F8F9FA', bg: 'rgba(255,255,255,0.10)', border: 'rgba(255,255,255,0.30)', label: '1 dia Black',     icon: <Crown size={18} strokeWidth={1.5} /> },
 }
 
-type CalendarEntry = {
-  day_number: number
-  reward_type: string
-  reward_amount: number
-  claimed: boolean
-}
+type CalendarEntry = { day_number: number; reward_type: string; reward_amount: number; claimed: boolean }
+type StreakData = { current_streak: number; longest_streak: number; last_login_date: string | null }
 
-type StreakData = {
-  current_streak: number
-  longest_streak: number
-  last_login_date: string | null
+function getPhaseInfo(day: number): { label: string; color: string; icon: React.ReactNode } {
+  if (day >= 30) return { label: 'Lendário',  color: '#f97316', icon: <Flame size={13} strokeWidth={1.5} /> }
+  if (day >= 21) return { label: 'Dedicado',  color: '#8b5cf6', icon: <Dumbbell size={13} strokeWidth={1.5} /> }
+  if (day >= 14) return { label: 'Em forma',  color: '#b8f542', icon: <Zap size={13} strokeWidth={1.5} /> }
+  if (day >= 7)  return { label: 'Crescendo', color: '#3b82f6', icon: <TrendingUp size={13} strokeWidth={1.5} /> }
+  return { label: 'Iniciante', color: 'rgba(248,249,250,0.40)', icon: <Sprout size={13} strokeWidth={1.5} /> }
 }
 
 export default function StreakPage() {
@@ -41,27 +43,14 @@ export default function StreakPage() {
   const [claiming, setClaiming] = useState<number | null>(null)
   const [claimMsg, setClaimMsg] = useState<{ day: number; text: string } | null>(null)
 
-  useEffect(() => {
-    if (!user) return
-    loadData()
-  }, [user])
+  useEffect(() => { if (!user) return; loadData() }, [user])
 
   async function loadData() {
     setLoading(true)
-
     const [{ data: st }, { data: cal }] = await Promise.all([
-      supabase
-        .from('daily_streaks')
-        .select('current_streak, longest_streak, last_login_date')
-        .eq('user_id', user!.id)
-        .single(),
-      supabase
-        .from('streak_calendar')
-        .select('day_number, reward_type, reward_amount, claimed')
-        .eq('user_id', user!.id)
-        .order('day_number', { ascending: true }),
+      supabase.from('daily_streaks').select('current_streak, longest_streak, last_login_date').eq('user_id', user!.id).single(),
+      supabase.from('streak_calendar').select('day_number, reward_type, reward_amount, claimed').eq('user_id', user!.id).order('day_number', { ascending: true }),
     ])
-
     setStreak(st ?? { current_streak: 0, longest_streak: 0, last_login_date: null })
     setCalendar(cal ?? [])
     setLoading(false)
@@ -69,125 +58,91 @@ export default function StreakPage() {
 
   async function handleClaim(dayNumber: number) {
     setClaiming(dayNumber)
-    const { data, error } = await supabase.rpc('claim_streak_reward', {
-      p_user_id: user!.id,
-      p_day_number: dayNumber,
-    })
-
+    const { data, error } = await supabase.rpc('claim_streak_reward', { p_user_id: user!.id, p_day_number: dayNumber })
     if (error || !data?.success) {
-      const reason = data?.reason ?? 'erro'
-      const msgs: Record<string, string> = {
-        already_claimed: 'Já resgatado hoje.',
-        not_reached: 'Dia ainda não alcançado.',
-        streak_reset: 'Seu streak foi resetado.',
-      }
-      setClaimMsg({ day: dayNumber, text: msgs[reason] ?? 'Não foi possível resgatar.' })
+      const msgs: Record<string, string> = { already_claimed: 'Já resgatado hoje.', not_reached: 'Dia ainda não alcançado.', streak_reset: 'Seu streak foi resetado.' }
+      setClaimMsg({ day: dayNumber, text: msgs[data?.reason ?? ''] ?? 'Não foi possível resgatar.' })
     } else {
-      // Marca como claimed localmente
-      setCalendar((prev) =>
-        prev.map((e) => (e.day_number === dayNumber ? { ...e, claimed: true } : e))
-      )
+      setCalendar((prev) => prev.map((e) => (e.day_number === dayNumber ? { ...e, claimed: true } : e)))
       const entry = calendar.find((e) => e.day_number === dayNumber)
       if (entry) {
         const cfg = REWARD_CONFIG[entry.reward_type]
-        setClaimMsg({
-          day: dayNumber,
-          text: `+${entry.reward_amount} ${cfg?.label ?? entry.reward_type} adicionado!`,
-        })
+        setClaimMsg({ day: dayNumber, text: `+${entry.reward_amount} ${cfg?.label ?? entry.reward_type} adicionado!` })
       }
     }
-
     setClaiming(null)
     setTimeout(() => setClaimMsg(null), 3000)
   }
 
-  // Dia atual do streak (1-based)
   const currentDay = streak?.current_streak ?? 0
-
-  // Verifica se o usuário pode resgatar o dia (alcançou e não resgatou ainda)
-  function canClaim(entry: CalendarEntry) {
-    return entry.day_number <= currentDay && !entry.claimed
-  }
-
-  // Fases de streak para exibir badge
-  function getPhaseLabel(day: number) {
-    if (day >= 30) return { label: '🔥 Lendário', color: 'text-orange-400' }
-    if (day >= 21) return { label: '💪 Dedicado', color: 'text-violet-400' }
-    if (day >= 14) return { label: '⚡ Em forma', color: 'text-[#b8f542]' }
-    if (day >= 7)  return { label: '📈 Crescendo', color: 'text-blue-400' }
-    return { label: '🌱 Iniciante', color: 'text-white/40' }
-  }
-
-  const phase = getPhaseLabel(currentDay)
+  function canClaim(entry: CalendarEntry) { return entry.day_number <= currentDay && !entry.claimed }
+  const phase = getPhaseInfo(currentDay)
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-24">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-          <ArrowLeft size={18} className="text-white/60" />
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button onClick={() => router.back()} style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+          <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
-        <div className="flex-1">
-          <h1 className="font-fraunces text-xl text-white">Sequência diária</h1>
-          <p className="text-white/30 text-xs">Entre todo dia e ganhe prêmios</p>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>Sequência diária</h1>
+          <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Entre todo dia e ganhe prêmios</p>
         </div>
-        {/* Streak atual */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20">
-          <Flame size={12} className="text-orange-400" />
-          <span className="text-orange-400 text-xs font-bold">{loading ? '…' : currentDay} dias</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '100px', backgroundColor: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.25)', flexShrink: 0 }}>
+          <Flame size={13} color="#f97316" strokeWidth={1.5} />
+          <span style={{ fontSize: '13px', color: '#f97316', fontWeight: 700 }}>{loading ? '…' : currentDay} dias</span>
         </div>
       </header>
 
       {loading ? (
-        <div className="flex justify-center items-center py-32">
-          <Loader2 size={28} className="animate-spin text-white/20" />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '80px 0' }}>
+          <Loader2 size={28} color="rgba(255,255,255,0.20)" strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} />
         </div>
       ) : (
-        <div className="px-5 pt-5 space-y-6">
+        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
           {/* Card de streak */}
-          <div className="rounded-2xl p-5 bg-orange-500/5 border border-orange-500/20">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-                <Flame size={32} className="text-orange-400" />
+          <div style={{ borderRadius: '16px', padding: '20px', backgroundColor: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.20)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Flame size={32} color="#f97316" strokeWidth={1.5} />
               </div>
-              <div className="flex-1">
-                <p className={`text-xs font-semibold mb-0.5 ${phase.color}`}>{phase.label}</p>
-                <p className="font-fraunces text-3xl text-white">{currentDay} <span className="text-base text-white/40">dias seguidos</span></p>
-                <p className="text-white/30 text-xs mt-0.5">Recorde pessoal: {streak?.longest_streak ?? 0} dias</p>
+              <div style={{ flex: 1 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
+                  <span style={{ color: phase.color }}>{phase.icon}</span>
+                  <span style={{ fontSize: '12px', fontWeight: 600, color: phase.color }}>{phase.label}</span>
+                </div>
+                <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>
+                  {currentDay} <span style={{ fontSize: '14px', color: 'var(--muted)', fontFamily: 'var(--font-jakarta)', fontWeight: 400 }}>dias seguidos</span>
+                </p>
+                <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '4px 0 0' }}>Recorde pessoal: {streak?.longest_streak ?? 0} dias</p>
               </div>
             </div>
-
-            {/* Aviso de reset */}
             {currentDay > 0 && (
-              <div className="mt-3 pt-3 border-t border-orange-500/10 text-center">
-                <p className="text-white/30 text-xs">
-                  ⚠️ Fique mais de 7 dias sem entrar e o streak reseta para 0
-                </p>
+              <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(249,115,22,0.10)', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
+                <AlertTriangle size={12} color="rgba(248,249,250,0.30)" strokeWidth={1.5} />
+                <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0 }}>Fique mais de 7 dias sem entrar e o streak reseta para 0</p>
               </div>
             )}
           </div>
 
           {/* Mensagem de feedback */}
           {claimMsg && (
-            <div className="rounded-xl p-3 bg-[#b8f542]/10 border border-[#b8f542]/30 text-[#b8f542] text-sm text-center font-semibold">
+            <div style={{ borderRadius: '12px', padding: '12px 16px', backgroundColor: 'rgba(184,245,66,0.10)', border: '1px solid rgba(184,245,66,0.30)', color: '#b8f542', fontSize: '14px', textAlign: 'center', fontWeight: 600 }}>
               {claimMsg.text}
             </div>
           )}
 
           {/* Calendário */}
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-3">
-              Calendário do mês — 1 prêmio por dia
-            </h2>
+            <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '10px' }}>Calendário do mês — 1 prêmio por dia</p>
 
             {calendar.length === 0 ? (
-              <div className="text-center py-10 text-white/20 text-sm">
-                Calendário do mês ainda não gerado. Volte em breve!
-              </div>
+              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--muted)', fontSize: '14px' }}>Calendário do mês ainda não gerado. Volte em breve!</div>
             ) : (
-              <div className="grid grid-cols-4 gap-2">
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
                 {calendar.map((entry) => {
                   const cfg = REWARD_CONFIG[entry.reward_type] ?? REWARD_CONFIG['ticket']
                   const reached = entry.day_number <= currentDay
@@ -197,46 +152,38 @@ export default function StreakPage() {
                   return (
                     <div
                       key={entry.day_number}
-                      className={`relative rounded-2xl p-3 border flex flex-col items-center gap-1.5 transition
-                        ${entry.claimed
-                          ? 'bg-white/3 border-white/5 opacity-50'
-                          : claimable
-                            ? `${cfg.bg} ${cfg.border} cursor-pointer hover:opacity-90`
-                            : reached
-                              ? 'bg-white/5 border-white/10'
-                              : 'bg-white/2 border-white/5 opacity-40'
-                        }`}
                       onClick={() => claimable && !isClaiming && handleClaim(entry.day_number)}
+                      style={{
+                        position: 'relative', borderRadius: '14px', padding: '12px 8px',
+                        border: `1px solid ${claimable ? cfg.border : reached ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.05)'}`,
+                        backgroundColor: entry.claimed ? 'rgba(255,255,255,0.03)' : claimable ? cfg.bg : reached ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                        opacity: entry.claimed ? 0.5 : (!reached && !claimable) ? 0.4 : 1,
+                        cursor: claimable ? 'pointer' : 'default', transition: 'opacity 0.15s',
+                      }}
                     >
-                      {/* Número do dia */}
-                      <span className="text-white/30 text-xs font-bold">Dia {entry.day_number}</span>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>Dia {entry.day_number}</span>
 
-                      {/* Emoji do prêmio */}
                       {entry.claimed ? (
-                        <CheckCircle size={20} className="text-white/30" />
+                        <CheckCircle size={20} color="rgba(255,255,255,0.30)" strokeWidth={1.5} />
                       ) : reached ? (
-                        <span className="text-2xl">{cfg.emoji}</span>
+                        <div style={{ color: cfg.color, display: 'flex' }}>{cfg.icon}</div>
                       ) : (
-                        <Lock size={18} className="text-white/20" />
+                        <Lock size={16} color="rgba(255,255,255,0.20)" strokeWidth={1.5} />
                       )}
 
-                      {/* Quantidade */}
                       {!entry.claimed && (
-                        <span className={`text-xs font-bold ${reached ? cfg.color : 'text-white/20'}`}>
-                          {entry.reward_amount}x
-                        </span>
+                        <span style={{ fontSize: '11px', fontWeight: 700, color: reached ? cfg.color : 'rgba(255,255,255,0.20)' }}>{entry.reward_amount}x</span>
                       )}
 
-                      {/* Loader ao resgatar */}
-                      {isClaiming && (
-                        <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-black/50">
-                          <Loader2 size={16} className="animate-spin text-white" />
-                        </div>
-                      )}
-
-                      {/* Badge "Resgatar" */}
                       {claimable && !isClaiming && (
-                        <span className={`text-xs font-bold ${cfg.color}`}>Resgatar</span>
+                        <span style={{ fontSize: '10px', fontWeight: 700, color: cfg.color }}>Resgatar</span>
+                      )}
+
+                      {isClaiming && (
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', backgroundColor: 'rgba(0,0,0,0.50)' }}>
+                          <Loader2 size={16} color="#fff" strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} />
+                        </div>
                       )}
                     </div>
                   )
@@ -246,35 +193,34 @@ export default function StreakPage() {
           </div>
 
           {/* Legenda de fases */}
-          <div className="rounded-2xl p-4 bg-white/3 border border-white/8 space-y-2">
-            <p className="text-white/30 text-xs font-semibold uppercase tracking-widest mb-2">Prêmios por fase</p>
+          <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+            <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '10px' }}>Prêmios por fase</p>
             {[
-              { range: 'Dias 1–6',   desc: 'Tickets (maioria), item básico ocasional',        color: 'text-white/40' },
-              { range: 'Dias 7–13',  desc: 'Mais tickets, primeiros itens especiais',         color: 'text-blue-400' },
-              { range: 'Dias 14–20', desc: 'Itens médios com mais frequência',                color: 'text-[#b8f542]' },
-              { range: 'Dias 21–29', desc: 'Itens bons aparecem',                             color: 'text-violet-400' },
-              { range: 'Dias 30–60', desc: 'Prêmios máximos (até 10 itens do mesmo tipo)',    color: 'text-orange-400' },
+              { range: 'Dias 1–6',   desc: 'Tickets (maioria), item básico ocasional',      color: 'rgba(248,249,250,0.40)' },
+              { range: 'Dias 7–13',  desc: 'Mais tickets, primeiros itens especiais',       color: '#3b82f6' },
+              { range: 'Dias 14–20', desc: 'Itens médios com mais frequência',              color: '#b8f542' },
+              { range: 'Dias 21–29', desc: 'Itens bons aparecem',                           color: '#8b5cf6' },
+              { range: 'Dias 30–60', desc: 'Prêmios máximos (até 10 itens do mesmo tipo)', color: '#f97316' },
             ].map((f) => (
-              <div key={f.range} className="flex gap-3 items-start">
-                <span className={`text-xs font-bold w-20 shrink-0 ${f.color}`}>{f.range}</span>
-                <span className="text-white/30 text-xs">{f.desc}</span>
+              <div key={f.range} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 700, color: f.color, minWidth: '72px', flexShrink: 0 }}>{f.range}</span>
+                <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{f.desc}</span>
               </div>
             ))}
           </div>
 
           {/* CTA roleta */}
-          <div className="rounded-2xl p-4 bg-yellow-500/5 border border-yellow-500/20 flex items-center gap-3">
-            <Ticket size={24} className="text-yellow-400 shrink-0" />
-            <div className="flex-1">
-              <p className="text-white/70 text-sm">Use seus tickets na roleta para ganhar ainda mais prêmios!</p>
-            </div>
-            <a href="/roleta" className="px-3 py-2 rounded-xl bg-yellow-500/20 text-yellow-400 text-xs font-bold hover:bg-yellow-500/30 transition whitespace-nowrap">
+          <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'rgba(234,179,8,0.05)', border: '1px solid rgba(234,179,8,0.20)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Ticket size={24} color="#eab308" strokeWidth={1.5} style={{ flexShrink: 0 }} />
+            <p style={{ fontSize: '13px', color: 'var(--muted)', flex: 1, margin: 0 }}>Use seus tickets na roleta para ganhar ainda mais prêmios!</p>
+            <a href="/roleta" style={{ padding: '8px 14px', borderRadius: '12px', backgroundColor: 'rgba(234,179,8,0.20)', color: '#eab308', fontSize: '12px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', fontFamily: 'var(--font-jakarta)' }}>
               Ir à roleta
             </a>
           </div>
 
         </div>
       )}
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

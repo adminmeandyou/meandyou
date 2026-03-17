@@ -513,7 +513,7 @@ export default function ChatPage() {
       try {
         const data = JSON.parse(msg.content.slice('__MEETING__:'.length))
         const linhas = [
-          data.local && `📍 ${data.local}`,
+          data.local && data.local,
           (data.date && data.time) && `🗓 ${new Date(`${data.date}T${data.time}`).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`,
           data.texto,
         ].filter(Boolean).join('\n')
@@ -1021,17 +1021,16 @@ export default function ChatPage() {
               <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliacao anonima — {otherUser?.name} nao saberá quem avaliou.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { id: 'incrivel', emoji: '✨', label: 'Pessoa incrivel!', color: '#10b981' },
-                  { id: 'agradavel', emoji: '😊', label: 'Conversa agradavel', color: '#60a5fa' },
-                  { id: 'nao_interessei', emoji: '😐', label: 'Nao me interessei', color: 'rgba(248,249,250,0.45)' },
-                  { id: 'ignorado', emoji: '😶', label: 'Fui ignorado(a)', color: '#F43F5E' },
+                  { id: 'incrivel', label: 'Pessoa incrivel!', color: '#10b981' },
+                  { id: 'agradavel', label: 'Conversa agradavel', color: '#60a5fa' },
+                  { id: 'nao_interessei', label: 'Nao me interessei', color: 'rgba(248,249,250,0.45)' },
+                  { id: 'ignorado', label: 'Fui ignorado(a)', color: '#F43F5E' },
                 ].map(op => (
                   <button
                     key={op.id}
                     onClick={() => handleRating(op.id)}
                     style={{ width: '100%', padding: '14px 16px', borderRadius: 14, border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', color: 'var(--text)', fontSize: 15, fontWeight: 500, textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'var(--font-jakarta)', transition: 'all 0.15s' }}
                   >
-                    <span style={{ fontSize: 20 }}>{op.emoji}</span>
                     <span style={{ color: op.color }}>{op.label}</span>
                   </button>
                 ))}
@@ -1051,24 +1050,22 @@ export default function ChatPage() {
               onClick={e => e.stopPropagation()}
             >
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                <div style={{ fontSize: 40, marginBottom: 10 }}>☕</div>
                 <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>O encontro aconteceu?</h3>
                 <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: 0, lineHeight: 1.55 }}>Voce aceitou um convite de encontro. Nos conte como foi!</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { id: 'incrivel', emoji: '🥰', label: 'Foi incrivel!' },
-                  { id: 'estranho', emoji: '😅', label: 'Foi estranho' },
-                  { id: 'bolo', emoji: '😤', label: 'Levei um bolo' },
-                  { id: 'ainda_nao', emoji: '⏳', label: 'Ainda nao aconteceu' },
+                  { id: 'incrivel', label: 'Foi incrivel!' },
+                  { id: 'estranho', label: 'Foi estranho' },
+                  { id: 'bolo', label: 'Levei um bolo' },
+                  { id: 'ainda_nao', label: 'Ainda nao aconteceu' },
                 ].map(op => (
                   <button
                     key={op.id}
                     onClick={() => handleBolo(op.id)}
-                    style={{ width: '100%', padding: '13px 16px', borderRadius: 14, border: op.id === 'bolo' ? '1px solid rgba(225,29,72,0.30)' : '1px solid var(--border)', backgroundColor: op.id === 'bolo' ? 'rgba(225,29,72,0.07)' : 'rgba(255,255,255,0.04)', color: op.id === 'bolo' ? 'var(--accent)' : 'var(--text)', fontSize: 14, fontWeight: 500, textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'var(--font-jakarta)', transition: 'all 0.15s' }}
+                    style={{ width: '100%', padding: '13px 16px', borderRadius: 14, border: op.id === 'bolo' ? '1px solid rgba(225,29,72,0.30)' : '1px solid var(--border)', backgroundColor: op.id === 'bolo' ? 'rgba(225,29,72,0.07)' : 'rgba(255,255,255,0.04)', color: op.id === 'bolo' ? 'var(--accent)' : 'var(--text)', fontSize: 14, fontWeight: 500, textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.15s' }}
                   >
-                    <span style={{ fontSize: 18 }}>{op.emoji}</span>
-                    <span>{op.label}</span>
+                    {op.label}
                   </button>
                 ))}
               </div>
@@ -1138,7 +1135,7 @@ export default function ChatPage() {
               <div style={{ fontSize:48,marginBottom:16 }}>🔔</div>
               <h3 style={{ fontFamily:'var(--font-fraunces)',fontSize:22,color:'var(--text)',margin:'0 0 8px' }}>Check-in de seguranca</h3>
               <p style={{ fontSize:13,color:'var(--muted)',margin:'0 0 6px',lineHeight:1.55 }}>Voce tinha um encontro com <strong style={{ color:'rgba(248,249,250,0.75)' }}>{otherUser?.name}</strong></p>
-              <p style={{ fontSize:12,color:'var(--muted-2)',margin:'0 0 28px' }}>📍 {checkinMeeting.local} · {new Date(checkinMeeting.date).toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
+              <p style={{ fontSize:12,color:'var(--muted-2)',margin:'0 0 28px' }}>{checkinMeeting.local} · {new Date(checkinMeeting.date).toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
               <p style={{ fontSize:14,color:'var(--text)',fontWeight:600,margin:'0 0 20px' }}>Como voce esta?</p>
               <div style={{ display:'flex',flexDirection:'column',gap:10 }}>
                 <button onClick={handleCheckinBem} style={{ width:'100%',padding:'15px 0',borderRadius:14,background:'#10b981',border:'none',color:'#fff',fontFamily:'var(--font-jakarta)',fontSize:15,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:10 }}>

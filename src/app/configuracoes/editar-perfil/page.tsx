@@ -1244,15 +1244,15 @@ function BloqueioAviso({ horas, dias }: { horas?: number; dias?: number }) {
 // ─── Status Temporário ────────────────────────────────────────────────────────
 
 const STATUS_OPCOES = [
-  { id: 'querendo_sair',  label: 'Querendo sair',   icon: '🍻' },
-  { id: 'cafe',           label: 'Café e conversa', icon: '☕' },
-  { id: 'praia',          label: 'Praia',            icon: '🏖' },
-  { id: 'academia',       label: 'Academia',         icon: '🏋️' },
-  { id: 'cinema',         label: 'Cinema',           icon: '🎬' },
-  { id: 'estudando',      label: 'Estudando',        icon: '📚' },
-  { id: 'turistando',     label: 'Turistando',       icon: '🧳' },
-  { id: 'bar',            label: 'No bar',           icon: '🥂' },
-  { id: 'rolê',           label: 'Procurando rolê',  icon: '📍' },
+  { id: 'querendo_sair',  label: 'Querendo sair'   },
+  { id: 'cafe',           label: 'Café e conversa' },
+  { id: 'praia',          label: 'Praia'           },
+  { id: 'academia',       label: 'Academia'        },
+  { id: 'cinema',         label: 'Cinema'          },
+  { id: 'estudando',      label: 'Estudando'       },
+  { id: 'turistando',     label: 'Turistando'      },
+  { id: 'bar',            label: 'No bar'          },
+  { id: 'rolê',           label: 'Procurando rolê' },
 ]
 
 const DURACAO_OPCOES = [
@@ -1319,7 +1319,7 @@ function StatusTempSection({
           background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.20)',
         }}>
           <span style={{ color: '#F43F5E', fontSize: 13, fontWeight: 600 }}>
-            Status ativo: {STATUS_OPCOES.find(s => s.id === statusAtual)?.icon} {STATUS_OPCOES.find(s => s.id === statusAtual)?.label}
+            Status ativo: {STATUS_OPCOES.find(s => s.id === statusAtual)?.label}
           </span>
           <button
             onClick={remover}
@@ -1346,7 +1346,6 @@ function StatusTempSection({
               cursor: 'pointer', transition: 'all 0.15s',
             }}
           >
-            <span>{opcao.icon}</span>
             <span>{opcao.label}</span>
           </button>
         ))}

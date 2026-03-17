@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { supabase } from '@/app/lib/supabase'
 import { PaywallCard } from '@/components/PaywallCard'
 import {
-  SlidersHorizontal, X, Heart, Star, AlertCircle,
+  SlidersHorizontal, X, Heart, Star, Search, AlertCircle,
   Loader2, Lock, Check, MapPin, RotateCcw, Zap, Undo2,
   ChevronDown, ChevronUp, Users, Info,
   Target, IdCard, Sparkles, Wind, Eye, Palette, Music, Home, Briefcase,
@@ -348,10 +348,10 @@ function ModeSelectorTabs({
 // ─── Placeholder: Salas Sociais ───────────────────────────────────────────────
 
 const MOCK_ROOMS = [
-  { id: '1', title: 'Noite de Pagode', desc: 'Quem curte uma roda de pagode?', count: 12, emoji: '🎵' },
-  { id: '2', title: 'Geeks & Gamers', desc: 'Para quem joga e ama tecnologia', count: 8, emoji: '🎮' },
-  { id: '3', title: 'Trilhas e Aventuras', desc: 'Apaixonados por natureza', count: 23, emoji: '🏕️' },
-  { id: '4', title: 'Cinema & Séries', desc: 'Discussões sem spoiler (ou com)', count: 17, emoji: '🎬' },
+  { id: '1', title: 'Noite de Pagode', desc: 'Quem curte uma roda de pagode?', count: 12 },
+  { id: '2', title: 'Geeks & Gamers', desc: 'Para quem joga e ama tecnologia', count: 8 },
+  { id: '3', title: 'Trilhas e Aventuras', desc: 'Apaixonados por natureza', count: 23 },
+  { id: '4', title: 'Cinema & Séries', desc: 'Discussões sem spoiler (ou com)', count: 17 },
 ]
 
 function RoomsPlaceholder() {
@@ -411,7 +411,7 @@ function RoomsPlaceholder() {
                 flexShrink: 0,
               }}
             >
-              {room.emoji}
+              <Users size={20} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>
@@ -443,7 +443,7 @@ function SearchGrid({ deck }: { deck: Profile[] }) {
   if (!deck.length) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, padding: 24 }}>
-        <span style={{ fontSize: 40 }}>🔍</span>
+        <Search size={40} color="rgba(255,255,255,0.20)" strokeWidth={1} />
         <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Nenhum perfil</p>
         <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>Ajuste os filtros para ver mais pessoas</p>
       </div>
@@ -902,11 +902,11 @@ export default function BuscaPage() {
             {likeLimit !== Infinity && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>
-                  ⭐ {superlikesUsed}/{superlikeLimit}
+                  <Star size={10} strokeWidth={1.5} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 2 }} />{superlikesUsed}/{superlikeLimit}
                 </span>
                 <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.10)' }}>·</span>
                 <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>
-                  ❤️ {likesUsed}/{likeLimit}
+                  <Heart size={10} strokeWidth={1.5} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 2 }} />{likesUsed}/{likeLimit}
                 </span>
               </div>
             )}

@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
 import { SkeletonLine, SkeletonAvatar, skeletonCss } from '@/components/Skeleton'
+import { Search, MessageCircle, Star, Dices, ShieldCheck } from 'lucide-react'
 
 export default function Dashboard() {
   const router = useRouter()
@@ -77,22 +78,23 @@ export default function Dashboard() {
         <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '32px', color: 'var(--text)', marginBottom: '8px' }}>
           MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
         </h1>
-        <p style={{ color: 'var(--muted)', marginBottom: '8px' }}>Olá, <strong style={{ color: 'var(--text)' }}>{nome}</strong>! 👋</p>
+        <p style={{ color: 'var(--muted)', marginBottom: '8px' }}>Olá, <strong style={{ color: 'var(--text)' }}>{nome}</strong>!</p>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'var(--accent-light)', borderRadius: '100px', padding: '6px 14px', marginBottom: '32px' }}>
-          <span style={{ fontSize: '12px' }}>✅</span>
-          <span style={{ fontSize: '13px', color: 'var(--accent-dark)', fontWeight: '600' }}>Identidade verificada</span>
+          <ShieldCheck size={13} color="var(--accent)" strokeWidth={1.5} />
+          <span style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: '600' }}>Identidade verificada</span>
         </div>
 
         {/* Atalhos principais */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
           {[
-            { label: '🔍 Buscar', rota: '/busca' },
-            { label: '💬 Conversas', rota: '/conversas' },
-            { label: '⭐ Destaque', rota: '/destaque' },
-            { label: '🎰 Roleta', rota: '/roleta' },
-          ].map(({ label, rota }) => (
+            { label: 'Buscar',      rota: '/busca',      icon: <Search size={18} strokeWidth={1.5} /> },
+            { label: 'Conversas',   rota: '/conversas',  icon: <MessageCircle size={18} strokeWidth={1.5} /> },
+            { label: 'Destaque',    rota: '/destaque',   icon: <Star size={18} strokeWidth={1.5} /> },
+            { label: 'Roleta',      rota: '/roleta',     icon: <Dices size={18} strokeWidth={1.5} /> },
+          ].map(({ label, rota, icon }) => (
             <button key={rota} onClick={() => router.push(rota)}
-              style={{ backgroundColor: 'var(--white)', border: '1.5px solid var(--border)', borderRadius: '16px', padding: '20px 12px', fontSize: '14px', fontWeight: '600', color: 'var(--text)', cursor: 'pointer', boxShadow: '0 2px 8px rgba(46,196,160,0.06)' }}>
+              style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px 12px', fontSize: '14px', fontWeight: '600', color: 'var(--text)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              <span style={{ color: 'var(--accent)' }}>{icon}</span>
               {label}
             </button>
           ))}

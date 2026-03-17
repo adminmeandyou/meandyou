@@ -10,21 +10,20 @@ import { ArrowLeft, Ticket, Loader2, Star, Zap, Search, RotateCcw, Gift, Crown }
 // Mapeamento visual dos tipos de prêmio
 const PRIZE_CONFIG: Record<string, {
   label: string
-  emoji: string
   color: string
   bg: string
   border: string
   icon: React.ReactNode
   rarity?: string
 }> = {
-  ticket:        { label: 'Ticket',           emoji: '🎟️', color: '#eab308', bg: 'rgba(234,179,8,0.10)',    border: 'rgba(234,179,8,0.30)',    icon: <Ticket size={20} strokeWidth={1.5} /> },
-  supercurtida:  { label: 'SuperLike',        emoji: '⭐',  color: '#ec4899', bg: 'rgba(236,72,153,0.10)',   border: 'rgba(236,72,153,0.30)',   icon: <Star size={20} strokeWidth={1.5} /> },
-  boost:         { label: 'Boost',            emoji: '⚡',  color: '#b8f542', bg: 'rgba(184,245,66,0.10)',   border: 'rgba(184,245,66,0.30)',   icon: <Zap size={20} strokeWidth={1.5} /> },
-  lupa:          { label: 'Lupa',             emoji: '🔍',  color: '#3b82f6', bg: 'rgba(59,130,246,0.10)',   border: 'rgba(59,130,246,0.30)',   icon: <Search size={20} strokeWidth={1.5} /> },
-  rewind:        { label: 'Desfazer',         emoji: '↩️',  color: '#a855f7', bg: 'rgba(168,85,247,0.10)',   border: 'rgba(168,85,247,0.30)',   icon: <RotateCcw size={20} strokeWidth={1.5} /> },
-  invisivel_1d:  { label: 'Invisível 1 dia',  emoji: '👻',  color: '#9ca3af', bg: 'rgba(156,163,175,0.10)',  border: 'rgba(156,163,175,0.30)',  icon: <Gift size={20} strokeWidth={1.5} /> },
-  plan_plus_1d:  { label: '1 dia Plus',       emoji: '💎',  color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)',   border: 'rgba(139,92,246,0.40)',   icon: <Crown size={20} strokeWidth={1.5} />, rarity: 'Raro' },
-  plan_black_1d: { label: '1 dia Black',      emoji: '🖤',  color: '#F8F9FA', bg: 'rgba(255,255,255,0.10)',  border: 'rgba(255,255,255,0.30)',  icon: <Crown size={20} strokeWidth={1.5} />, rarity: 'Lendário' },
+  ticket:        { label: 'Ticket',           color: '#eab308', bg: 'rgba(234,179,8,0.10)',    border: 'rgba(234,179,8,0.30)',    icon: <Ticket size={20} strokeWidth={1.5} /> },
+  supercurtida:  { label: 'SuperLike',        color: '#ec4899', bg: 'rgba(236,72,153,0.10)',   border: 'rgba(236,72,153,0.30)',   icon: <Star size={20} strokeWidth={1.5} /> },
+  boost:         { label: 'Boost',            color: '#b8f542', bg: 'rgba(184,245,66,0.10)',   border: 'rgba(184,245,66,0.30)',   icon: <Zap size={20} strokeWidth={1.5} /> },
+  lupa:          { label: 'Lupa',             color: '#3b82f6', bg: 'rgba(59,130,246,0.10)',   border: 'rgba(59,130,246,0.30)',   icon: <Search size={20} strokeWidth={1.5} /> },
+  rewind:        { label: 'Desfazer',         color: '#a855f7', bg: 'rgba(168,85,247,0.10)',   border: 'rgba(168,85,247,0.30)',   icon: <RotateCcw size={20} strokeWidth={1.5} /> },
+  invisivel_1d:  { label: 'Invisível 1 dia',  color: '#9ca3af', bg: 'rgba(156,163,175,0.10)',  border: 'rgba(156,163,175,0.30)',  icon: <Gift size={20} strokeWidth={1.5} /> },
+  plan_plus_1d:  { label: '1 dia Plus',       color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)',   border: 'rgba(139,92,246,0.40)',   icon: <Crown size={20} strokeWidth={1.5} />, rarity: 'Raro' },
+  plan_black_1d: { label: '1 dia Black',      color: '#F8F9FA', bg: 'rgba(255,255,255,0.10)',  border: 'rgba(255,255,255,0.30)',  icon: <Crown size={20} strokeWidth={1.5} />, rarity: 'Lendário' },
 }
 
 // Segmentos visuais da roleta (ordem na roda)
@@ -304,7 +303,7 @@ export default function RoletaPage() {
           const config = PRIZE_CONFIG[result.reward_type] ?? PRIZE_CONFIG['ticket']
           return (
             <div style={{ borderRadius: '16px', padding: '20px', border: `1px solid ${config.border}`, backgroundColor: config.bg, display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <span style={{ fontSize: '36px', lineHeight: 1 }}>{config.emoji}</span>
+              <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: config.bg, border: `1px solid ${config.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: config.color, flexShrink: 0 }}>{config.icon}</div>
               <div style={{ flex: 1 }}>
                 {config.rarity && (
                   <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: config.color, display: 'block', marginBottom: '4px' }}>
@@ -326,7 +325,7 @@ export default function RoletaPage() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {Object.entries(PRIZE_CONFIG).map(([type, cfg]) => (
               <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', border: `1px solid ${cfg.border}`, backgroundColor: cfg.bg }}>
-                <span style={{ fontSize: '18px', lineHeight: 1 }}>{cfg.emoji}</span>
+                <div style={{ color: cfg.color, display: 'flex' }}>{cfg.icon}</div>
                 <span style={{ fontSize: '14px', fontWeight: 600, color: cfg.color, flex: 1 }}>{cfg.label}</span>
                 {cfg.rarity && (
                   <span style={{ fontSize: '11px', fontWeight: 700, color: cfg.color, backgroundColor: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: '100px', padding: '2px 10px' }}>
@@ -347,7 +346,7 @@ export default function RoletaPage() {
                 const cfg = PRIZE_CONFIG[h.reward_type] ?? PRIZE_CONFIG['ticket']
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
-                    <span style={{ fontSize: '16px', lineHeight: 1 }}>{cfg.emoji}</span>
+                    <div style={{ color: cfg.color, display: 'flex' }}>{cfg.icon}</div>
                     <span style={{ fontSize: '13px', color: 'var(--muted)', flex: 1 }}>{formatPrize(h.reward_type, h.reward_amount)}</span>
                     <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>
                       {new Date(h.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
