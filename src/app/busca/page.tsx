@@ -9,6 +9,7 @@ import {
   SlidersHorizontal, X, Heart, Star, AlertCircle,
   Loader2, Lock, Check, MapPin, RotateCcw, Zap, Undo2,
   ChevronDown, ChevronUp, Users, Info,
+  Target, IdCard, Sparkles, Wind, Eye, Palette, Music, Home, Briefcase,
 } from 'lucide-react'
 import { SkeletonCard, skeletonCss } from '@/components/Skeleton'
 import { useToast } from '@/components/Toast'
@@ -47,7 +48,7 @@ type ViewMode = 'discovery' | 'search' | 'rooms'
 const DEFAULT_FILTERS: FiltersState = {
   search_max_distance_km: 40,
   search_min_age: 18,
-  search_max_age: 99,
+  search_max_age: 60,
   search_gender: 'all',
 }
 
@@ -63,7 +64,7 @@ const GENDER_OPTIONS = [
 
 const FILTER_CATEGORIES = [
   {
-    id: 'objetivos', label: '🎯 O que busca', locked: false, required: true,
+    id: 'objetivos', label: 'O que busca', icon: Target, locked: false, required: true,
     groups: [{ label: 'Objetivos', options: [
       { key: 'obj_serious', label: 'Relacionamento sério' },
       { key: 'obj_casual', label: 'Relacionamento casual' },
@@ -75,7 +76,7 @@ const FILTER_CATEGORIES = [
     ]}]
   },
   {
-    id: 'orientacao', label: '🪪 Identidade', locked: false, required: true,
+    id: 'orientacao', label: 'Identidade', icon: IdCard, locked: false, required: true,
     groups: [
       { label: 'Orientação sexual aceita', options: [
         { key: 'sex_hetero', label: 'Heterossexual' }, { key: 'sex_homo', label: 'Homossexual' },
@@ -92,7 +93,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'religiao', label: '🙏 Religião', locked: false, required: true,
+    id: 'religiao', label: 'Religião', icon: Sparkles, locked: false, required: true,
     groups: [{ label: 'Religião aceita', options: [
       { key: 'rel_evangelical', label: 'Evangélico(a)' }, { key: 'rel_catholic', label: 'Católico(a)' },
       { key: 'rel_spiritist', label: 'Espírita' }, { key: 'rel_umbanda', label: 'Umbanda' },
@@ -103,7 +104,7 @@ const FILTER_CATEGORIES = [
     ]}]
   },
   {
-    id: 'vicios', label: '🚬 Vícios', locked: false, required: true,
+    id: 'vicios', label: 'Vícios', icon: Wind, locked: false, required: true,
     groups: [
       { label: 'Fumo', options: [
         { key: 'smoke_yes', label: 'Fuma' }, { key: 'smoke_occasionally', label: 'Ocasionalmente' },
@@ -116,7 +117,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'aparencia', label: '👁️ Aparência', locked: false, required: false,
+    id: 'aparencia', label: 'Aparência', icon: Eye, locked: false, required: false,
     groups: [
       { label: 'Cor dos olhos', options: [
         { key: 'eye_black', label: 'Pretos' }, { key: 'eye_brown', label: 'Castanhos' },
@@ -156,7 +157,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'estilo', label: '🎭 Estilo de vida', locked: false, required: false,
+    id: 'estilo', label: 'Estilo de vida', icon: Palette, locked: false, required: false,
     groups: [
       { label: 'Rotina', options: [
         { key: 'routine_gym', label: 'Academia' }, { key: 'routine_sports', label: 'Esportes' },
@@ -179,7 +180,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'hobbies', label: '🎮 Hobbies e música', locked: false, required: false,
+    id: 'hobbies', label: 'Hobbies e música', icon: Music, locked: false, required: false,
     groups: [
       { label: 'Hobbies', options: [
         { key: 'hob_gamer', label: 'Gamer' }, { key: 'hob_reader', label: 'Leitor(a)' },
@@ -199,7 +200,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'familia', label: '👨‍👩‍👧 Família', locked: false, required: false,
+    id: 'familia', label: 'Família', icon: Home, locked: false, required: false,
     groups: [
       { label: 'Filhos', options: [
         { key: 'kids_has', label: 'Tem filhos' }, { key: 'kids_no', label: 'Não tem filhos' },
@@ -214,7 +215,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'profissional', label: '💼 Profissional', locked: false, required: false,
+    id: 'profissional', label: 'Profissional', icon: Briefcase, locked: false, required: false,
     groups: [
       { label: 'Escolaridade', options: [
         { key: 'edu_highschool', label: 'Ensino médio' }, { key: 'edu_college_incomplete', label: 'Superior incompleto' },
@@ -230,7 +231,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'fetiche', label: '🔞 Fetiche & Sugar', locked: true, required: false,
+    id: 'fetiche', label: 'Fetiche & Sugar', icon: Lock, locked: true, required: false,
     groups: [{ label: 'Dinâmicas', options: [
       { key: 'disc_throuple', label: 'Trisal' }, { key: 'disc_swing', label: 'Swing' },
       { key: 'disc_polyamory', label: 'Poliamor' }, { key: 'disc_bdsm', label: 'BDSM' },
@@ -640,7 +641,7 @@ export default function BuscaPage() {
         current_user_id: id,
         max_distance_km: filters.search_max_distance_km,
         min_age:         filters.search_min_age,
-        max_age:         filters.search_max_age >= 99 ? 120 : filters.search_max_age,
+        max_age:         filters.search_max_age >= 60 ? 120 : filters.search_max_age,
       })
       setDeck(data ?? [])
       setCurrentIdx(0)
@@ -1227,6 +1228,13 @@ export default function BuscaPage() {
           </div>
         )}
 
+        {/* Mensagem de contexto do filtro */}
+        {filtersConfigured && (
+          <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.40)', margin: '0 0 16px' }}>
+            Configure o perfil da pessoa que você está buscando
+          </p>
+        )}
+
         {/* Erro de validação */}
         {requiredError && (
           <div
@@ -1271,14 +1279,14 @@ export default function BuscaPage() {
               </span>
             </div>
             <input
-              type="range" min={5} max={300} step={5}
+              type="range" min={5} max={150} step={5}
               value={localFilters.search_max_distance_km as number}
               onChange={(e) => setLocalFilters(p => ({ ...p, search_max_distance_km: Number(e.target.value) }))}
               className="ui-range-input"
               style={{ width: '100%' }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--muted-2)', marginTop: 4 }}>
-              <span>5 km</span><span>300 km</span>
+              <span>5 km</span><span>150 km</span>
             </div>
           </div>
 
@@ -1296,12 +1304,10 @@ export default function BuscaPage() {
             onChange={([minA, maxA]) => setLocalFilters(p => ({
               ...p,
               search_min_age: minA,
-              search_max_age: maxA >= 60 ? 99 : maxA,
+              search_max_age: maxA,
             }))}
+            formatMax={(v) => v >= 60 ? '60+' : String(v)}
           />
-          <p style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 6, textAlign: 'right' }}>
-            {(localFilters.search_max_age as number) >= 59 ? 'até 60+ anos' : ''}
-          </p>
 
           {/* Gênero */}
           <div style={{ marginTop: 16 }}>
@@ -1357,9 +1363,12 @@ export default function BuscaPage() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', textAlign: 'left' }}>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>
-                    {cat.label}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <cat.icon size={14} strokeWidth={1.5} style={{ color: 'var(--muted)', flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>
+                      {cat.label}
+                    </span>
+                  </div>
                   {cat.required && !hasSelection && (
                     <span style={{ fontSize: 11, color: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.10)', padding: '2px 8px', borderRadius: 100 }}>
                       obrigatório
@@ -1528,25 +1537,51 @@ export default function BuscaPage() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
           <div
             onClick={() => setShowUpgradeModal(false)}
-            style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.70)', backdropFilter: 'blur(4px)' }}
+            style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}
           />
           <div
             style={{
               position: 'relative',
               backgroundColor: 'var(--bg-card)',
-              borderRadius: 24,
+              borderRadius: 16,
               padding: '28px 22px',
-              border: '1px solid rgba(245,158,11,0.30)',
+              border: '1px solid var(--border)',
               maxWidth: 340,
               width: '100%',
               textAlign: 'center',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.55)',
             }}
           >
-            <div style={{ fontSize: 44, marginBottom: 12 }}>
-              {upgradeReason === 'superlike' ? '⭐' : '🔞'}
+            <button
+              onClick={() => setShowUpgradeModal(false)}
+              style={{
+                position: 'absolute', top: 14, right: 14,
+                width: 28, height: 28, borderRadius: '50%',
+                border: '1px solid var(--border)',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                color: 'var(--muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <X size={13} strokeWidth={2} />
+            </button>
+            <div
+              style={{
+                width: 52, height: 52, borderRadius: '50%',
+                backgroundColor: 'rgba(225,29,72,0.12)',
+                border: '1px solid rgba(225,29,72,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}
+            >
+              {upgradeReason === 'superlike'
+                ? <Star size={22} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+                : <Lock size={22} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+              }
             </div>
             <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>
-              {upgradeReason === 'superlike' ? 'SuperCurtidas esgotadas' : <>Exclusivo <span style={{ color: '#F59E0B' }}>Black</span></>}
+              {upgradeReason === 'superlike' ? 'SuperCurtidas esgotadas' : 'Exclusivo Black'}
             </h3>
             <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 22px', lineHeight: 1.5 }}>
               {upgradeReason === 'superlike'
@@ -1561,10 +1596,10 @@ export default function BuscaPage() {
                 display: 'block',
                 width: '100%',
                 padding: '14px 0',
-                borderRadius: 14,
-                backgroundColor: '#F59E0B',
-                color: '#000',
-                fontWeight: 700,
+                borderRadius: 12,
+                backgroundColor: 'var(--accent)',
+                color: '#fff',
+                fontWeight: 600,
                 fontSize: 14,
                 textDecoration: 'none',
                 marginBottom: 10,
