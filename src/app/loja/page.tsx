@@ -156,7 +156,7 @@ function PurchaseSheet({
   onClose: () => void
   loading: boolean
 }) {
-  const discount = getPlanDiscount(plan)
+  const discount = 0
   const canAfford = fichas >= price
 
   return (
