@@ -32,7 +32,7 @@ function base(content: string, previewText = '') {
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
         <tr><td align="center" style="padding-bottom:28px;">
           <a href="${APP_URL}" style="text-decoration:none;">
-            <span style="font-size:28px;font-weight:800;color:#E11D48;letter-spacing:-0.5px;">Me</span><span style="font-size:28px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">AndYou</span>
+            <span style="font-size:28px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">MeAnd</span><span style="font-size:28px;font-weight:800;color:#E11D48;letter-spacing:-0.5px;">You</span>
           </a>
         </td></tr>
         <tr><td style="background:#0F1117;border-radius:16px;padding:36px 36px 28px;border:1px solid rgba(225,29,72,0.20);">
