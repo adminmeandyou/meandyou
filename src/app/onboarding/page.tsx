@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import { Heart, Search, Star, Zap, Shield, ChevronRight, Check, MapPin, Bell } from 'lucide-react'
 
-const PASSOS = ['Bem-vindo', 'Como funciona', 'Planos', 'Permissoes', 'Pronto']
+const PASSOS = ['Bem-vindo', 'Como funciona', 'Permissoes', 'Pronto']
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -103,7 +103,7 @@ export default function OnboardingPage() {
               {nome ? `Ola, ${nome.split(' ')[0]}!` : 'Bem-vindo(a)!'}
             </h1>
             <p style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: '1.7', marginBottom: '32px' }}>
-              Voce acaba de entrar no <strong style={{ color: 'var(--text)' }}>MeAndYou</strong> — onde conexoes reais acontecem. Diferente dos outros apps, aqui a compatibilidade vai muito alem de uma foto.
+              Voce acaba de entrar no <strong style={{ color: 'var(--text)' }}>MeAnd<span style={{ color: 'var(--accent)' }}>You</span></strong> — onde conexoes reais acontecem. Diferente dos outros apps, aqui a compatibilidade vai muito alem de uma foto.
             </p>
             <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '20px', padding: '20px', marginBottom: '32px', textAlign: 'left' }}>
               <p style={{ fontSize: '14px', color: 'var(--accent)', fontWeight: '700', marginBottom: '12px' }}>O que nos diferencia:</p>
@@ -146,58 +146,8 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* ── PASSO 2: Planos ── */}
+        {/* ── PASSO 2: Permissões (Soft Ask) ── */}
         {passo === 2 && (
-          <div style={{ width: '100%' }}>
-            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '26px', color: 'var(--text)', marginBottom: '8px', textAlign: 'center' }}>Planos disponíveis</h2>
-            <p style={{ fontSize: '14px', color: 'var(--muted)', textAlign: 'center', marginBottom: '24px' }}>Comece grátis. Evolua quando quiser.</p>
-
-            <div style={{ border: '1px solid var(--border)', borderRadius: '20px', padding: '20px', marginBottom: '12px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text)' }}>Essencial</span>
-                <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent)' }}>R$ 9,97<span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: '400' }}>/mês</span></span>
-              </div>
-              {['5 curtidas/dia', '1 SuperCurtida/dia', '1 lupa/dia', 'Chat com matches', 'Roleta diária'].map(f => (
-                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <Check size={14} color="var(--accent)" /><span style={{ fontSize: '13px', color: 'var(--muted)' }}>{f}</span>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ border: '2px solid var(--accent)', borderRadius: '20px', padding: '20px', marginBottom: '12px', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: '-10px', left: '20px', backgroundColor: 'var(--accent)', borderRadius: '100px', padding: '2px 12px', fontSize: '11px', fontWeight: '700', color: '#fff' }}>MAIS POPULAR</div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text)' }}>Plus</span>
-                <span style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent)' }}>R$ 39,97<span style={{ fontSize: '11px', color: 'var(--muted)', fontWeight: '400' }}>/mês</span></span>
-              </div>
-              {['30 curtidas/dia', '4 SuperCurtidas/dia', 'Ver quem curtiu você', '1 lupa/dia', 'Destaque no feed'].map(f => (
-                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <Check size={14} color="var(--accent)" /><span style={{ fontSize: '13px', color: 'var(--muted)' }}>{f}</span>
-                </div>
-              ))}
-            </div>
-
-            <div style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)', border: '1px solid #c9a84c', borderRadius: '20px', padding: '20px', position: 'relative', overflow: 'hidden' }}>
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '2px', background: 'linear-gradient(90deg, #c9a84c, #f5d485, #c9a84c)' }} />
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontSize: '16px', fontWeight: '700', color: '#f5d485', fontFamily: 'var(--font-fraunces)' }}>Black</span>
-                <span style={{ fontSize: '15px', fontWeight: '700', color: '#f5d485' }}>R$ 99,97<span style={{ fontSize: '11px', color: '#888', fontWeight: '400' }}>/mês</span></span>
-              </div>
-              {['Curtidas ilimitadas', '10 SuperCurtidas/dia', '2 lupas/dia', 'Área Backstage', 'Suporte prioritário 24h'].map(f => (
-                <div key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                  <Check size={14} color="#c9a84c" /><span style={{ fontSize: '13px', color: '#aaa' }}>{f}</span>
-                </div>
-              ))}
-            </div>
-
-            <p style={{ fontSize: '12px', color: 'var(--muted)', textAlign: 'center', marginTop: '16px' }}>
-              Você pode assinar a qualquer momento em <strong>Loja → Planos</strong>
-            </p>
-          </div>
-        )}
-
-        {/* ── PASSO 3: Permissões (Soft Ask) ── */}
-        {passo === 3 && (
           <div style={{ textAlign: 'center', width: '100%' }}>
             <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
               <Shield size={36} color="var(--accent)" />
@@ -247,8 +197,8 @@ export default function OnboardingPage() {
           </div>
         )}
 
-        {/* ── PASSO 4: Pronto ── */}
-        {passo === 4 && (
+        {/* ── PASSO 3: Pronto ── */}
+        {passo === 3 && (
           <div style={{ textAlign: 'center', width: '100%' }}>
             <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
               <Star size={36} color="var(--accent)" fill="var(--accent)" />
@@ -266,8 +216,8 @@ export default function OnboardingPage() {
             </div>
 
             <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '16px', padding: '16px', marginBottom: '32px', textAlign: 'left' }}>
-              <p style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: '700', marginBottom: '8px' }}>Voce vai preencher:</p>
-              {['7 etapas de perfil (leva ~5 minutos)', 'Suas fotos (5 obrigatorias + 5 livres)', 'Aparencia, personalidade e valores', 'O que voce busca na plataforma'].map((item, i) => (
+              <p style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: '700', marginBottom: '8px' }}>Vai preencher:</p>
+              {['Suas fotos', 'Aparencia e personalidade', 'Valores e estilo de vida', 'O que voce busca'].map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: i < 3 ? '6px' : 0 }}>
                   <Check size={14} color="var(--accent)" />
                   <span style={{ fontSize: '13px', color: 'var(--text)' }}>{item}</span>
@@ -293,14 +243,14 @@ export default function OnboardingPage() {
           </button>
         )}
 
-        {passo === 3 && (
+        {passo === 2 && (
           <button onClick={() => setPasso(passo + 1)}
             style={{ width: '100%', padding: '12px', marginTop: '12px', borderRadius: '100px', border: 'none', backgroundColor: 'transparent', color: 'var(--muted)', fontFamily: 'var(--font-jakarta)', fontSize: '14px', cursor: 'pointer' }}>
             Talvez depois
           </button>
         )}
 
-        {passo > 0 && passo !== 3 && (
+        {passo > 0 && passo !== 2 && (
           <button onClick={() => setPasso(passo - 1)}
             style={{ width: '100%', padding: '12px', marginTop: '10px', borderRadius: '100px', border: 'none', backgroundColor: 'transparent', color: 'var(--muted)', fontFamily: 'var(--font-jakarta)', fontSize: '14px', cursor: 'pointer' }}>
             Voltar

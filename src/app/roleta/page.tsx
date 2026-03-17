@@ -249,7 +249,7 @@ export default function RoletaPage() {
           {/* Ponteiro */}
           <div className="relative">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 z-10 w-0 h-0"
-              style={{ borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '18px solid #b8f542' }} />
+              style={{ borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '18px solid #E11D48' }} />
             <canvas
               ref={canvasRef}
               width={260}
@@ -263,7 +263,7 @@ export default function RoletaPage() {
             onClick={handleSpin}
             disabled={!canSpin}
             className="w-full max-w-xs py-4 rounded-2xl font-bold text-base transition-all
-              bg-[#b8f542] text-black hover:bg-[#a8e030] active:scale-95
+              bg-[#E11D48] text-white hover:bg-[#be123c] active:scale-95
               disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
           >
             {spinning ? (
@@ -353,7 +353,7 @@ export default function RoletaPage() {
             <a href="/indicar" className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/60 text-xs hover:bg-white/10 transition">
               Indicar amigos (+3 tickets)
             </a>
-            <a href="/streak" className="px-4 py-2 rounded-xl bg-[#b8f542]/10 border border-[#b8f542]/30 text-[#b8f542] text-xs hover:bg-[#b8f542]/20 transition">
+            <a href="/streak" className="px-4 py-2 rounded-xl bg-[#E11D48]/10 border border-[#E11D48]/30 text-[#E11D48] text-xs hover:bg-[#E11D48]/20 transition">
               Ganhar via streak
             </a>
           </div>
