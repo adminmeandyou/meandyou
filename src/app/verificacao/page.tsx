@@ -3,18 +3,28 @@
 import { useEffect, useState, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
+import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown, EyeOff, ScanFace, Camera, FolderOpen, RefreshCw, Check, AlertCircle, Lightbulb } from 'lucide-react'
 
 type Status = 'loading' | 'desktop' | 'aguardando' | 'dados' | 'doc_frente' | 'doc_verso' | 'selfie' | 'enviando' | 'sucesso' | 'erro' | 'expirado' | 'usado'
 type ModoCaptura = 'escolha' | 'camera' | 'arquivo'
 
 const PASSOS_LIVENESS = [
-  { id: 'frente',   instrucao: 'Olhe para a câmera',         emoji: '😐' },
-  { id: 'direita',  instrucao: 'Vire o rosto para a direita', emoji: '➡️' },
-  { id: 'esquerda', instrucao: 'Vire o rosto para a esquerda', emoji: '⬅️' },
-  { id: 'cima',     instrucao: 'Levante o queixo',            emoji: '⬆️' },
-  { id: 'baixo',    instrucao: 'Abaixe o queixo',             emoji: '⬇️' },
-  { id: 'piscar',   instrucao: 'Pisque duas vezes',           emoji: '😉' },
+  { id: 'frente',   instrucao: 'Olhe para a câmera'          },
+  { id: 'direita',  instrucao: 'Vire o rosto para a direita' },
+  { id: 'esquerda', instrucao: 'Vire o rosto para a esquerda'},
+  { id: 'cima',     instrucao: 'Levante o queixo'            },
+  { id: 'baixo',    instrucao: 'Abaixe o queixo'             },
+  { id: 'piscar',   instrucao: 'Pisque duas vezes'           },
 ]
+
+const LIVENESS_ICON: Record<string, React.ReactNode> = {
+  frente:   <ScanFace   size={40} strokeWidth={1.5} />,
+  direita:  <ArrowRight size={40} strokeWidth={1.5} />,
+  esquerda: <ArrowLeft  size={40} strokeWidth={1.5} />,
+  cima:     <ArrowUp    size={40} strokeWidth={1.5} />,
+  baixo:    <ArrowDown  size={40} strokeWidth={1.5} />,
+  piscar:   <EyeOff     size={40} strokeWidth={1.5} />,
+}
 
 function Verificacao() {
   const searchParams = useSearchParams()
@@ -67,6 +77,32 @@ function Verificacao() {
   const [cameraFrenteAtiva, setCameraFrenteAtiva] = useState(false)
   const [cameraVersoAtiva, setCameraVersoAtiva] = useState(false)
   const [cameraSelfieAtiva, setCameraSelfieAtiva] = useState(false)
+
+  // Verifica nitidez da imagem usando variância de gradiente (Laplacian approximation)
+  // Retorna true se a imagem está nítida o suficiente
+  const verificarNitidez = (canvas: HTMLCanvasElement): boolean => {
+    try {
+      const ctx = canvas.getContext('2d')
+      if (!ctx) return true
+      const { width, height } = canvas
+      // Amostra a região central (evita bordas que podem ser pretas)
+      const sx = Math.floor(width * 0.1), sy = Math.floor(height * 0.1)
+      const sw = Math.floor(width * 0.8), sh = Math.floor(height * 0.8)
+      const data = ctx.getImageData(sx, sy, sw, sh).data
+      let sumSq = 0, count = 0
+      // Variância de diferenças horizontais entre pixels (aprox. Laplacian)
+      for (let i = 0; i < data.length - 4; i += 20) {
+        const g1 = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114
+        const g2 = data[i + 4] * 0.299 + data[i + 5] * 0.587 + data[i + 6] * 0.114
+        const diff = g1 - g2
+        sumSq += diff * diff
+        count++
+      }
+      return count > 0 ? (sumSq / count) > 40 : true
+    } catch {
+      return true // em caso de erro, não bloqueia
+    }
+  }
 
   const isMobile = () => {
     if (typeof window === 'undefined') return false
@@ -309,12 +345,14 @@ function Verificacao() {
     canvas.getContext('2d')?.drawImage(video, 0, 0)
     canvas.toBlob((blob) => {
       if (!blob) return
+      const nitida = verificarNitidez(canvas)
       const file = new File([blob], `${tipo}.jpg`, { type: 'image/jpeg' })
       const url = URL.createObjectURL(blob)
       pararCamera(tipo)
       if (tipo === 'frente') { setDocFrente(file); setDocFrentePreview(url); setModoFrente('arquivo') }
       else if (tipo === 'verso') { setDocVerso(file); setDocVersoPreview(url); setModoVerso('arquivo') }
       else { setSelfieFile(file); setSelfiePreview(url) }
+      if (!nitida) setErroForm('A foto pode estar borrada. Se a imagem não estiver nítida, tire outra foto.')
     }, 'image/jpeg', 0.92)
   }
 
@@ -583,9 +621,12 @@ function Verificacao() {
   )
 
   const dicas = (textos: string[]) => (
-    <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fcd34d', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', textAlign: 'left' }}>
-      <p style={{ fontSize: '12px', fontWeight: '700', color: '#92400e', marginBottom: '6px' }}>💡 Dicas para uma boa foto:</p>
-      {textos.map((t, i) => <p key={i} style={{ fontSize: '12px', color: '#78350f', marginBottom: '2px' }}>• {t}</p>)}
+    <div style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', textAlign: 'left' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+        <Lightbulb size={13} color="var(--gold)" strokeWidth={2} />
+        <p style={{ fontSize: '12px', fontWeight: '700', color: 'var(--gold)', margin: 0 }}>Dicas para uma boa foto:</p>
+      </div>
+      {textos.map((t, i) => <p key={i} style={{ fontSize: '12px', color: 'var(--muted)', marginBottom: '2px' }}>• {t}</p>)}
     </div>
   )
 
@@ -603,14 +644,18 @@ function Verificacao() {
       <div style={{ display: 'flex', gap: '10px' }}>
         <button onClick={() => { setModo('camera'); setTimeout(() => iniciarCamera(tipo), 100) }}
           style={{ flex: 1, border: '2px solid var(--accent)', borderRadius: '16px', padding: '16px 8px', backgroundColor: 'var(--accent-light)', cursor: 'pointer' }}>
-          <div style={{ fontSize: '28px' }}>📷</div>
-          <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent-dark)', marginTop: '6px' }}>Fotografar agora</p>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '6px' }}>
+            <Camera size={28} color="var(--accent)" strokeWidth={1.5} />
+          </div>
+          <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent)', marginTop: '0' }}>Fotografar agora</p>
           <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>Usar câmera do celular</p>
         </button>
         <button onClick={() => setModo('arquivo')}
-          style={{ flex: 1, border: '2px solid var(--border)', borderRadius: '16px', padding: '16px 8px', backgroundColor: 'var(--white)', cursor: 'pointer' }}>
-          <div style={{ fontSize: '28px' }}>📁</div>
-          <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginTop: '6px' }}>Anexar arquivo</p>
+          style={{ flex: 1, border: '2px solid var(--border)', borderRadius: '16px', padding: '16px 8px', backgroundColor: 'var(--bg-card2)', cursor: 'pointer' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '6px' }}>
+            <FolderOpen size={28} color="var(--muted)" strokeWidth={1.5} />
+          </div>
+          <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginTop: '0' }}>Anexar arquivo</p>
           <p style={{ fontSize: '11px', color: 'var(--muted)', marginTop: '2px' }}>JPG, PNG ou PDF</p>
         </button>
       </div>
@@ -632,7 +677,7 @@ function Verificacao() {
         <canvas ref={canvasRef} style={{ display: 'none' }} />
         <div style={{ display: 'flex', gap: '8px' }}>
           <button onClick={() => { pararCamera(tipo); setModo('escolha') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Cancelar</button>
-          {cameraAtiva && <button onClick={() => tirarFoto(tipo)} style={{ flex: 2, backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>📸 Fotografar</button>}
+          {cameraAtiva && <button onClick={() => tirarFoto(tipo)} style={{ flex: 2, backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><Camera size={16} /> Fotografar</button>}
         </div>
       </div>
     )
@@ -643,20 +688,20 @@ function Verificacao() {
           <img src={preview} alt="documento" style={{ width: '100%', borderRadius: '12px', marginBottom: '12px', maxHeight: '180px', objectFit: 'cover' }} />
         ) : arquivo?.type === 'application/pdf' ? (
           <div style={{ border: '2px solid var(--accent)', borderRadius: '12px', padding: '16px', marginBottom: '12px', backgroundColor: 'var(--accent-light)' }}>
-            <div style={{ fontSize: '32px' }}>📄</div>
-            <p style={{ color: 'var(--accent-dark)', fontWeight: '600', fontSize: '13px', marginTop: '4px' }}>{arquivo.name}</p>
+            <FolderOpen size={32} color="var(--accent)" strokeWidth={1.5} />
+            <p style={{ color: 'var(--accent)', fontWeight: '600', fontSize: '13px', marginTop: '4px' }}>{arquivo.name}</p>
           </div>
         ) : (
           <label style={{ display: 'block', border: '2px dashed var(--border)', borderRadius: '16px', padding: '24px', cursor: 'pointer', textAlign: 'center' }}>
             <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleArquivo(e.target.files[0], tipo)} />
-            <div style={{ fontSize: '36px' }}>📎</div>
+            <FolderOpen size={36} color="var(--muted)" strokeWidth={1.5} />
             <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '8px' }}>Toque para selecionar arquivo<br /><span style={{ fontSize: '11px' }}>JPG, PNG, WEBP ou PDF — máx. 10MB</span></p>
           </label>
         )}
         {arquivo && (
           <label style={{ display: 'block', textAlign: 'center', cursor: 'pointer' }}>
             <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleArquivo(e.target.files[0], tipo)} />
-            <span style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: '600' }}>🔄 Trocar arquivo</span>
+            <span style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><RefreshCw size={13} /> Trocar arquivo</span>
           </label>
         )}
         <button onClick={() => setModo('escolha')} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '10px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer', marginTop: '8px' }}>← Voltar às opções</button>
@@ -672,10 +717,10 @@ function Verificacao() {
           MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
         </h1>
 
-        {status === 'loading' && <div><div style={{ fontSize: '48px', marginBottom: '16px' }}>⏳</div><p style={{ color: 'var(--muted)', fontSize: '15px' }}>Verificando...</p></div>}
+        {status === 'loading' && <div><div style={{ width: '40px', height: '40px', border: '3px solid var(--border)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} /><p style={{ color: 'var(--muted)', fontSize: '15px' }}>Verificando...</p></div>}
 
         {status === 'desktop' && card(<>
-          <div style={{ fontSize: '56px', marginBottom: '16px' }}>📱</div>
+          <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><ScanFace size={32} color="var(--accent)" strokeWidth={1.5} /></div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Use o celular</h2>
           <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7' }}>
             A verificação só pode ser feita pelo celular.<br /><br />
@@ -684,14 +729,14 @@ function Verificacao() {
         </>)}
 
         {status === 'aguardando' && card(<>
-          <div style={{ fontSize: '56px', marginBottom: '16px' }}>📧</div>
+          <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><Check size={28} color="var(--accent)" strokeWidth={2} /></div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Verifique seu email</h2>
           {emailEnviado
             ? <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>Enviamos um link para o seu email. <strong style={{ color: 'var(--text)' }}>Abra no celular</strong> para concluir.<br /><br />O link expira em <strong style={{ color: 'var(--accent)' }}>30 minutos</strong>.</p>
             : <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '24px' }}>Enviando o link de verificação...</p>
           }
           <div style={{ backgroundColor: 'var(--accent-light)', borderRadius: '12px', padding: '14px', marginBottom: '20px' }}>
-            <p style={{ fontSize: '13px', color: 'var(--accent-dark)', fontWeight: '600' }}>📱 Abra o link no celular</p>
+            <p style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: '600' }}>Abra o link no celular</p>
             <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>A selfie ao vivo só funciona no celular.</p>
           </div>
           {erroEmail && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '12px', fontWeight: '600' }}>{erroEmail}</p>}
@@ -705,13 +750,13 @@ function Verificacao() {
           <div style={{ textAlign: 'left', marginBottom: '16px' }}>
             <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>CPF</label>
             <input type="tel" placeholder="000.000.000-00" value={cpf} onChange={e => setCpf(formatarCPF(e.target.value))}
-              style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1.5px solid var(--border)', fontSize: '15px', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box' }} />
+              style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1.5px solid var(--border)', fontSize: '15px', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box', backgroundColor: 'var(--bg-card2)', color: 'var(--text)' }} />
           </div>
           <div style={{ textAlign: 'left' }}>
             <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--muted)', display: 'block', marginBottom: '8px' }}>Tipo de documento</label>
             <div style={{ display: 'flex', gap: '8px' }}>
               {(['rg', 'cnh', 'cpf_doc'] as const).map(tipo => (
-                <button key={tipo} onClick={() => setTipoDoc(tipo)} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: `2px solid ${tipoDoc === tipo ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: tipoDoc === tipo ? 'var(--accent-light)' : 'var(--white)', color: tipoDoc === tipo ? 'var(--accent-dark)' : 'var(--muted)', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>
+                <button key={tipo} onClick={() => setTipoDoc(tipo)} style={{ flex: 1, padding: '10px', borderRadius: '12px', border: `2px solid ${tipoDoc === tipo ? 'var(--accent)' : 'var(--border)'}`, backgroundColor: tipoDoc === tipo ? 'var(--accent-light)' : 'var(--bg-card2)', color: tipoDoc === tipo ? 'var(--accent)' : 'var(--muted)', fontWeight: '600', fontSize: '13px', cursor: 'pointer' }}>
                   {tipo === 'rg' ? 'RG' : tipo === 'cnh' ? 'CNH' : 'CPF'}
                 </button>
               ))}
@@ -759,16 +804,22 @@ function Verificacao() {
 
           {!livnessIniciado && !livenessOk && (
             <>
-              <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '16px', padding: '16px', marginBottom: '16px', textAlign: 'left' }}>
-                <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--accent-dark)', marginBottom: '10px' }}>🎯 O que vai acontecer:</p>
-                {PASSOS_LIVENESS.map((p, i) => (
-                  <p key={i} style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '4px' }}>
-                    {p.emoji} {p.instrucao}
-                  </p>
-                ))}
+              <div style={{ backgroundColor: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '16px', marginBottom: '16px', textAlign: 'left' }}>
+                <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginBottom: '12px' }}>O que vai acontecer:</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  {PASSOS_LIVENESS.map((p, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '10px', backgroundColor: 'var(--bg-card)' }}>
+                      <div style={{ color: 'var(--accent)', flexShrink: 0, transform: 'scale(0.5)', transformOrigin: 'center', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{LIVENESS_ICON[p.id]}</div>
+                      <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0, lineHeight: '1.3' }}>{p.instrucao}</p>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div style={{ backgroundColor: '#fffbeb', border: '1px solid #fcd34d', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', textAlign: 'left' }}>
-                <p style={{ fontSize: '12px', color: '#78350f' }}>💡 Boa iluminação, rosto descoberto, fundo neutro.</p>
+              <div style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', textAlign: 'left' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Lightbulb size={13} color="var(--gold)" strokeWidth={2} />
+                  <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Boa iluminação, rosto descoberto, fundo neutro.</p>
+                </div>
               </div>
               {feedbackLiveness && (
                 <p style={{ fontSize: '13px', color: 'var(--red)', marginBottom: '12px' }}>{feedbackLiveness}</p>
@@ -787,25 +838,34 @@ function Verificacao() {
 
           {livnessIniciado && !livenessOk && (
             <>
-              <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', justifyContent: 'center' }}>
-                {PASSOS_LIVENESS.map((p, i) => (
-                  <div key={i} title={p.instrucao} style={{
-                    width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '16px',
-                    backgroundColor: passosConcluidos[i] ? 'var(--accent)' : i === passoAtual ? 'var(--accent-light)' : 'var(--border)',
-                    border: i === passoAtual ? '2px solid var(--accent)' : '2px solid transparent',
-                    transition: 'all 0.3s'
-                  }}>
-                    {passosConcluidos[i] ? '✓' : p.emoji}
-                  </div>
+              {/* Progresso: bolinhas pequenas */}
+              <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', justifyContent: 'center', alignItems: 'center' }}>
+                {PASSOS_LIVENESS.map((_, i) => (
+                  <div key={i} style={{
+                    width: passosConcluidos[i] ? '8px' : i === passoAtual ? '20px' : '8px',
+                    height: '8px', borderRadius: '100px',
+                    backgroundColor: passosConcluidos[i] ? 'var(--accent)' : i === passoAtual ? 'var(--accent)' : 'var(--border)',
+                    transition: 'all 0.3s',
+                    opacity: passosConcluidos[i] ? 0.5 : 1,
+                  }} />
                 ))}
               </div>
 
-              <div style={{ backgroundColor: 'var(--accent-light)', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
-                <p style={{ fontSize: '15px', fontWeight: '700', color: 'var(--accent-dark)' }}>
-                  {PASSOS_LIVENESS[passoAtual]?.emoji} {PASSOS_LIVENESS[passoAtual]?.instrucao}
+              {/* Ícone grande do passo atual */}
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: 'var(--accent-light)', borderRadius: '16px', padding: '20px 12px 16px', marginBottom: '12px', border: '1px solid var(--accent-border)' }}>
+                <div style={{ color: 'var(--accent)', marginBottom: '12px' }}>
+                  {LIVENESS_ICON[PASSOS_LIVENESS[passoAtual]?.id]}
+                </div>
+                <p style={{ fontSize: '16px', fontWeight: '700', color: 'var(--text)', marginBottom: '4px' }}>
+                  {PASSOS_LIVENESS[passoAtual]?.instrucao}
+                </p>
+                <p style={{ fontSize: '11px', color: 'var(--muted)', marginBottom: feedbackLiveness ? '8px' : '0' }}>
+                  Passo {passoAtual + 1} de {PASSOS_LIVENESS.length}
                 </p>
                 {feedbackLiveness && (
-                  <p style={{ fontSize: '13px', color: 'var(--muted)', marginTop: '4px' }}>{feedbackLiveness}</p>
+                  <p style={{ fontSize: '13px', color: feedbackLiveness.startsWith('✅') ? 'var(--accent)' : 'var(--muted)', fontWeight: '500' }}>
+                    {feedbackLiveness}
+                  </p>
                 )}
               </div>
 
@@ -839,8 +899,8 @@ function Verificacao() {
               </div>
               <canvas ref={canvasSelfieRef} style={{ display: 'none' }} />
 
-              <button onClick={reiniciarLiveness} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>
-                🔄 Reiniciar verificação
+              <button onClick={reiniciarLiveness} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+                <RefreshCw size={14} /> Reiniciar verificação
               </button>
             </>
           )}
@@ -848,7 +908,7 @@ function Verificacao() {
           {livenessOk && selfiePreview && (
             <>
               <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
-                <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent-dark)' }}>✅ Verificação facial concluída!</p>
+                <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}><Check size={16} /> Verificação facial concluída!</p>
                 <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>Enviando automaticamente...</p>
               </div>
               <img src={selfiePreview} alt="selfie" style={{ width: '100%', borderRadius: '16px', marginBottom: '12px', maxHeight: '240px', objectFit: 'cover' }} />
@@ -917,21 +977,21 @@ function Verificacao() {
         </>)}
 
         {status === 'expirado' && card(<>
-          <div style={{ fontSize: '56px', marginBottom: '16px' }}>⏰</div>
+          <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(245,158,11,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><AlertCircle size={28} color="var(--gold)" strokeWidth={1.5} /></div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Link expirado</h2>
           <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>Este link expirou. Faça login para receber um novo.</p>
           <button onClick={() => router.push('/login')} style={{ backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>Fazer login</button>
         </>)}
 
         {status === 'usado' && card(<>
-          <div style={{ fontSize: '56px', marginBottom: '16px' }}>🔒</div>
+          <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(245,158,11,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><AlertCircle size={28} color="var(--gold)" strokeWidth={1.5} /></div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Link já utilizado</h2>
           <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>Este link já foi usado. Faça login para receber um novo.</p>
           <button onClick={() => router.push('/login')} style={{ backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>Fazer login</button>
         </>)}
 
         {status === 'erro' && card(<>
-          <div style={{ fontSize: '56px', marginBottom: '16px' }}>❌</div>
+          <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><AlertCircle size={28} color="#ef4444" strokeWidth={1.5} /></div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Algo deu errado</h2>
           <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>{mensagem}</p>
           <button onClick={() => router.push('/login')} style={{ backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>Voltar ao login</button>
