@@ -18,7 +18,7 @@ const PRIZE_CONFIG: Record<string, {
 }> = {
   ticket:        { label: 'Ticket',           color: '#eab308', bg: 'rgba(234,179,8,0.10)',    border: 'rgba(234,179,8,0.30)',    icon: <Ticket size={20} strokeWidth={1.5} /> },
   supercurtida:  { label: 'SuperLike',        color: '#ec4899', bg: 'rgba(236,72,153,0.10)',   border: 'rgba(236,72,153,0.30)',   icon: <Star size={20} strokeWidth={1.5} /> },
-  boost:         { label: 'Boost',            color: '#b8f542', bg: 'rgba(184,245,66,0.10)',   border: 'rgba(184,245,66,0.30)',   icon: <Zap size={20} strokeWidth={1.5} /> },
+  boost:         { label: 'Boost',            color: '#E11D48', bg: 'rgba(225,29,72,0.10)',   border: 'rgba(225,29,72,0.30)',   icon: <Zap size={20} strokeWidth={1.5} /> },
   lupa:          { label: 'Lupa',             color: '#3b82f6', bg: 'rgba(59,130,246,0.10)',   border: 'rgba(59,130,246,0.30)',   icon: <Search size={20} strokeWidth={1.5} /> },
   rewind:        { label: 'Desfazer',         color: '#a855f7', bg: 'rgba(168,85,247,0.10)',   border: 'rgba(168,85,247,0.30)',   icon: <RotateCcw size={20} strokeWidth={1.5} /> },
   invisivel_1d:  { label: 'Invisível 1 dia',  color: '#9ca3af', bg: 'rgba(156,163,175,0.10)',  border: 'rgba(156,163,175,0.30)',  icon: <Gift size={20} strokeWidth={1.5} /> },
@@ -33,7 +33,7 @@ const WHEEL_SEGMENTS = [
   { type: 'ticket',       label: '2 Tickets',   color: '#ca8a04' },
   { type: 'lupa',         label: '1 Lupa',      color: '#3b82f6' },
   { type: 'ticket',       label: '1 Ticket',    color: '#eab308' },
-  { type: 'boost',        label: '1 Boost',     color: '#b8f542' },
+  { type: 'boost',        label: '1 Boost',     color: '#E11D48' },
   { type: 'ticket',       label: '3 Tickets',   color: '#ca8a04' },
   { type: 'rewind',       label: '1 Desfazer',  color: '#a855f7' },
 ]
@@ -104,43 +104,79 @@ export default function RoletaPage() {
 
     const cx = canvas.width / 2
     const cy = canvas.height / 2
-    const radius = cx - 8
+    const radius = cx - 6
     const segCount = WHEEL_SEGMENTS.length
     const segAngle = (2 * Math.PI) / segCount
 
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 
+    // Sombra externa da roda
+    ctx.save()
+    ctx.shadowColor = 'rgba(225,29,72,0.35)'
+    ctx.shadowBlur = 18
+    ctx.beginPath()
+    ctx.arc(cx, cy, radius, 0, 2 * Math.PI)
+    ctx.strokeStyle = 'rgba(225,29,72,0.50)'
+    ctx.lineWidth = 2
+    ctx.stroke()
+    ctx.restore()
+
     WHEEL_SEGMENTS.forEach((seg, i) => {
       const startAngle = currentRotation + i * segAngle
       const endAngle = startAngle + segAngle
+      const midAngle = startAngle + segAngle / 2
+
+      // Gradiente radial por segmento (do centro para a borda)
+      const gx1 = cx + (radius * 0.2) * Math.cos(midAngle)
+      const gy1 = cy + (radius * 0.2) * Math.sin(midAngle)
+      const gx2 = cx + radius * Math.cos(midAngle)
+      const gy2 = cy + radius * Math.sin(midAngle)
+      const grad = ctx.createLinearGradient(gx1, gy1, gx2, gy2)
+      grad.addColorStop(0, seg.color + '18')
+      grad.addColorStop(1, seg.color + '55')
 
       ctx.beginPath()
       ctx.moveTo(cx, cy)
       ctx.arc(cx, cy, radius, startAngle, endAngle)
       ctx.closePath()
-      ctx.fillStyle = seg.color + '33'
+      ctx.fillStyle = grad
       ctx.fill()
-      ctx.strokeStyle = seg.color + '88'
+
+      // Borda com brilho
+      ctx.strokeStyle = seg.color + 'bb'
       ctx.lineWidth = 1.5
       ctx.stroke()
 
+      // Texto com sombra
       ctx.save()
       ctx.translate(cx, cy)
-      ctx.rotate(startAngle + segAngle / 2)
+      ctx.rotate(midAngle)
       ctx.textAlign = 'right'
+      ctx.shadowColor = 'rgba(0,0,0,0.7)'
+      ctx.shadowBlur = 4
       ctx.fillStyle = '#ffffff'
       ctx.font = 'bold 11px Inter, sans-serif'
-      ctx.fillText(seg.label, radius - 10, 4)
+      ctx.fillText(seg.label, radius - 12, 4)
       ctx.restore()
     })
 
+    // Hub central com gradiente
+    const hubGrad = ctx.createRadialGradient(cx - 4, cy - 4, 2, cx, cy, 24)
+    hubGrad.addColorStop(0, '#2a1520')
+    hubGrad.addColorStop(1, '#0F1117')
     ctx.beginPath()
-    ctx.arc(cx, cy, 22, 0, 2 * Math.PI)
-    ctx.fillStyle = '#0F1117'
+    ctx.arc(cx, cy, 24, 0, 2 * Math.PI)
+    ctx.fillStyle = hubGrad
     ctx.fill()
-    ctx.strokeStyle = 'rgba(255,255,255,0.13)'
+    ctx.strokeStyle = 'rgba(225,29,72,0.55)'
     ctx.lineWidth = 2
     ctx.stroke()
+
+    // Ponto central
+    ctx.beginPath()
+    ctx.arc(cx, cy, 5, 0, 2 * Math.PI)
+    ctx.fillStyle = 'rgba(225,29,72,0.8)'
+    ctx.fill()
   }
 
   function animateSpin(targetRotation: number, onDone: () => void) {

@@ -26,6 +26,15 @@ const PLAN_PRICES: Record<string, number> = {
   black: 99.97,
 }
 
+// ── Pacotes de Fichas ─────────────────────────────────────────────────────
+// ATENÇÃO: substitua os slugs placeholder pelos slugs reais criados na Cakto
+const FICHAS_OFFERS: Record<string, number> = {
+  'fichas_500':   500,    // TODO: substituir pelo slug real — R$ 7,97
+  'fichas_1500':  1500,   // TODO: substituir pelo slug real — R$ 19,97
+  'fichas_4000':  4000,   // TODO: substituir pelo slug real — R$ 44,97
+  'fichas_10000': 10000,  // TODO: substituir pelo slug real — R$ 99,97
+}
+
 // ── Loja avulsa ───────────────────────────────────────────────────────────
 type StoreItem =
   | { type: 'superlike' | 'boost' | 'lupa' | 'rewind' | 'ghost'; amount: number; item_type: string }
@@ -242,6 +251,26 @@ export async function POST(req: NextRequest) {
         console.error('Erro ao enviar email de compra da loja (não bloqueante):', err)
       }
 
+      return NextResponse.json({ success: true })
+    }
+
+    // ── 7. Fichas ──────────────────────────────────────────────────────────
+    const fichasAmount = FICHAS_OFFERS[offerSlug]
+    if (fichasAmount) {
+      await supabaseAdmin.rpc('credit_fichas', {
+        p_user_id:    userId,
+        p_amount:     fichasAmount,
+        p_order_id:   orderId,
+        p_description: `Compra de ${fichasAmount} fichas`,
+      })
+      console.log(`${fichasAmount} fichas creditadas para ${customerEmail}`)
+      try {
+        const { data: profileData } = await supabaseAdmin.from('profiles').select('name').eq('id', userId).single()
+        const nomeDisplay = profileData?.name?.split(' ')[0] ?? 'Usuario'
+        await sendRewardReceivedEmail(customerEmail, nomeDisplay, `${fichasAmount} Fichas`, 'compra na loja')
+      } catch (err) {
+        console.error('Erro ao enviar email de fichas (nao bloqueante):', err)
+      }
       return NextResponse.json({ success: true })
     }
 

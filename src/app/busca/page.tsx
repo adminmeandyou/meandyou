@@ -273,6 +273,13 @@ function useCountdown() {
 
 // ─── Mode Selector (injetado no AppHeader) ───────────────────────────────────
 
+const MODE_LABELS: Record<ViewMode, string> = {
+  discovery: 'Descobrir',
+  search: 'Busca',
+  daily: 'Match do Dia',
+  rooms: 'Salas',
+}
+
 function ModeSelectorTabs({
   viewMode,
   onChange,
@@ -282,62 +289,70 @@ function ModeSelectorTabs({
   onChange: (m: ViewMode) => void
   onFilterClick: () => void
 }) {
-  const tabs: { id: ViewMode; label: string }[] = [
-    { id: 'discovery', label: 'Descobrir' },
-    { id: 'search', label: 'Busca' },
-    { id: 'daily', label: 'Match do Dia' },
-    { id: 'rooms', label: 'Salas' },
-  ]
+  const [open, setOpen] = useState(false)
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      <div
-        style={{
-          display: 'flex',
-          backgroundColor: 'rgba(255,255,255,0.05)',
-          borderRadius: 100,
-          padding: 3,
-          gap: 2,
-          border: '1px solid rgba(255,255,255,0.07)',
-        }}
-      >
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => onChange(tab.id)}
-            style={{
-              padding: '4px 13px',
-              borderRadius: 100,
-              border: 'none',
-              fontSize: 13,
-              fontWeight: 500,
-              fontFamily: 'var(--font-jakarta)',
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-              backgroundColor: viewMode === tab.id ? 'var(--accent)' : 'transparent',
-              color: viewMode === tab.id ? '#fff' : 'var(--muted)',
-            }}
-          >
-            {tab.label}
-          </button>
-        ))}
+      {/* Botão Modos com dropdown */}
+      <div style={{ position: 'relative' }}>
+        <button
+          onClick={() => setOpen(o => !o)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 5,
+            padding: '5px 12px', borderRadius: 100,
+            border: '1px solid rgba(255,255,255,0.10)',
+            backgroundColor: 'rgba(255,255,255,0.05)',
+            color: 'var(--text)', fontSize: 13, fontWeight: 500,
+            fontFamily: 'var(--font-jakarta)', cursor: 'pointer',
+          }}
+        >
+          <span>{MODE_LABELS[viewMode]}</span>
+          <ChevronDown size={13} strokeWidth={1.5} color="var(--muted)" style={{ transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }} />
+        </button>
+
+        {open && (
+          <>
+            <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 99 }} />
+            <div style={{
+              position: 'absolute', top: 'calc(100% + 8px)', left: '50%',
+              transform: 'translateX(-50%)', zIndex: 100,
+              backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)',
+              borderRadius: 14, padding: 6, minWidth: 160,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            }}>
+              {(Object.keys(MODE_LABELS) as ViewMode[]).map((mode) => (
+                <button
+                  key={mode}
+                  onClick={() => { onChange(mode); setOpen(false) }}
+                  style={{
+                    width: '100%', padding: '9px 14px', borderRadius: 10,
+                    border: 'none',
+                    backgroundColor: viewMode === mode ? 'var(--accent-light)' : 'transparent',
+                    color: viewMode === mode ? 'var(--accent)' : 'var(--muted)',
+                    fontSize: 14, fontWeight: viewMode === mode ? 600 : 400,
+                    cursor: 'pointer', textAlign: 'left',
+                    fontFamily: 'var(--font-jakarta)',
+                    transition: 'background-color 0.15s',
+                  }}
+                >
+                  {MODE_LABELS[mode]}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
+      {/* Botão filtros */}
       <button
         onClick={onFilterClick}
         title="Filtros"
         style={{
-          width: 32,
-          height: 32,
-          borderRadius: 8,
+          width: 32, height: 32, borderRadius: 8,
           border: '1px solid rgba(255,255,255,0.10)',
-          backgroundColor: 'transparent',
-          color: 'var(--muted)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          cursor: 'pointer',
-          flexShrink: 0,
+          backgroundColor: 'transparent', color: 'var(--muted)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          cursor: 'pointer', flexShrink: 0,
         }}
       >
         <SlidersHorizontal size={14} strokeWidth={1.5} />
@@ -416,9 +431,9 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
   if (!profiles.length) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, padding: 24, textAlign: 'center' }}>
-        <Search size={40} color="rgba(255,255,255,0.20)" strokeWidth={1} />
-        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Sem matches hoje</p>
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Ajuste seus filtros para ver sugestões</p>
+        <Heart size={40} color="rgba(255,255,255,0.20)" strokeWidth={1} />
+        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Sem sugestoes hoje</p>
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Volte amanha ou ajuste seus filtros para ver mais pessoas</p>
       </div>
     )
   }
@@ -597,9 +612,9 @@ function SearchGrid({ deck }: { deck: Profile[] }) {
   if (!deck.length) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, padding: 24 }}>
-        <Search size={40} color="rgba(255,255,255,0.20)" strokeWidth={1} />
-        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Nenhum perfil</p>
-        <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>Ajuste os filtros para ver mais pessoas</p>
+        <Users size={40} color="rgba(255,255,255,0.20)" strokeWidth={1} />
+        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Nenhum perfil encontrado</p>
+        <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>Tente aumentar o raio de busca ou ajustar os filtros</p>
       </div>
     )
   }
@@ -1012,8 +1027,10 @@ export default function BuscaPage() {
         ) : !currentProfile ? (
           /* Sem perfis */
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, padding: '0 32px', textAlign: 'center' }}>
-            <span style={{ fontSize: 52 }}>🌍</span>
-            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: 0 }}>Você viu todo mundo!</h2>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Users size={28} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+            </div>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: 0 }}>Voce viu todo mundo!</h2>
             <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
               Nenhum perfil com esses filtros. Tente aumentar o raio ou ajustar os filtros.
             </p>
@@ -1434,13 +1451,21 @@ export default function BuscaPage() {
                 {localFilters.search_max_distance_km} km
               </span>
             </div>
-            <input
-              type="range" min={5} max={150} step={5}
-              value={localFilters.search_max_distance_km as number}
-              onChange={(e) => setLocalFilters(p => ({ ...p, search_max_distance_km: Number(e.target.value) }))}
-              className="ui-range-input"
-              style={{ width: '100%' }}
-            />
+            {/* Container position:relative é obrigatório para ui-range-input funcionar corretamente */}
+            <div style={{ position: 'relative', height: 22, display: 'flex', alignItems: 'center' }}>
+              <div style={{ position: 'absolute', left: 0, right: 0, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.08)' }} />
+              <div style={{
+                position: 'absolute', left: 0, height: 4, borderRadius: 100,
+                backgroundColor: 'var(--accent)',
+                width: `${((localFilters.search_max_distance_km as number - 5) / (150 - 5)) * 100}%`,
+              }} />
+              <input
+                type="range" min={5} max={150} step={5}
+                value={localFilters.search_max_distance_km as number}
+                onChange={(e) => setLocalFilters(p => ({ ...p, search_max_distance_km: Number(e.target.value) }))}
+                className="ui-range-input"
+              />
+            </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--muted-2)', marginTop: 4 }}>
               <span>5 km</span><span>150 km</span>
             </div>
