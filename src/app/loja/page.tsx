@@ -22,6 +22,17 @@ const FICHAS_PACKAGES = [
   { label: '10.000 fichas', price: 'R$ 99,97',  url: 'https://pay.cakto.com.br/fichas_10000', highlight: false },
 ]
 
+// ─── Desconto por plano ───────────────────────────────────────────────────
+function getPlanDiscount(plan: string | null): number {
+  if (plan === 'black') return 0.30
+  if (plan === 'plus')  return 0.15
+  return 0
+}
+
+function applyDiscount(base: number, plan: string | null): number {
+  return Math.max(1, Math.round(base * (1 - getPlanDiscount(plan))))
+}
+
 // ─── Itens compraveis com fichas ──────────────────────────────────────────
 type ItemKey =
   | 'superlike_1' | 'superlike_5'
@@ -36,7 +47,7 @@ interface StoreItem {
   label: string
   description: string
   icon: React.ReactNode
-  fichas: number
+  baseFichas: number   // preco base (Essencial)
   accentColor: string
   accentBg: string
   accentBorder: string
@@ -47,86 +58,86 @@ interface StoreItem {
 const STORE_ITEMS: StoreItem[] = [
   {
     key: 'superlike_1', label: '1 SuperLike', description: 'Se destaque para quem voce mais quer',
-    icon: <Star size={20} strokeWidth={1.5} />, fichas: 50,
+    icon: <Star size={20} strokeWidth={1.5} />, baseFichas: 50,
     accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.25)',
     balanceKey: 'superlikes',
   },
   {
-    key: 'superlike_5', label: '5 SuperLikes', description: 'Pacote com desconto — 200 fichas (salva 50)',
-    icon: <Star size={20} strokeWidth={1.5} />, fichas: 200,
+    key: 'superlike_5', label: '5 SuperLikes', description: 'Pacote economico',
+    icon: <Star size={20} strokeWidth={1.5} />, baseFichas: 200,
     accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.25)',
     balanceKey: 'superlikes',
   },
   {
     key: 'boost_1', label: '1 Boost', description: '30 min em destaque na sua regiao',
-    icon: <Zap size={20} strokeWidth={1.5} />, fichas: 60,
+    icon: <Zap size={20} strokeWidth={1.5} />, baseFichas: 60,
     accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
     balanceKey: 'boosts',
   },
   {
     key: 'boost_5', label: '5 Boosts', description: 'Estoque para o mes — 250 fichas',
-    icon: <Zap size={20} strokeWidth={1.5} />, fichas: 250,
+    icon: <Zap size={20} strokeWidth={1.5} />, baseFichas: 250,
     accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
     balanceKey: 'boosts',
   },
   {
     key: 'lupa_1', label: '1 Lupa', description: 'Revele perfis borrados na aba Destaque',
-    icon: <Search size={20} strokeWidth={1.5} />, fichas: 70,
+    icon: <Search size={20} strokeWidth={1.5} />, baseFichas: 70,
     accentColor: '#3b82f6', accentBg: 'rgba(59,130,246,0.10)', accentBorder: 'rgba(59,130,246,0.25)',
     balanceKey: 'lupas',
   },
   {
     key: 'lupa_5', label: '5 Lupas', description: 'Pacote com desconto — 290 fichas',
-    icon: <Search size={20} strokeWidth={1.5} />, fichas: 290,
+    icon: <Search size={20} strokeWidth={1.5} />, baseFichas: 290,
     accentColor: '#3b82f6', accentBg: 'rgba(59,130,246,0.10)', accentBorder: 'rgba(59,130,246,0.25)',
     balanceKey: 'lupas',
   },
   {
     key: 'rewind_1', label: '1 Desfazer', description: 'Volte atras em perfis que passou',
-    icon: <RotateCcw size={20} strokeWidth={1.5} />, fichas: 50,
+    icon: <RotateCcw size={20} strokeWidth={1.5} />, baseFichas: 50,
     accentColor: '#a855f7', accentBg: 'rgba(168,85,247,0.10)', accentBorder: 'rgba(168,85,247,0.25)',
     balanceKey: 'rewinds',
   },
   {
     key: 'rewind_5', label: '5 Desfazer', description: 'Pacote com desconto — 200 fichas',
-    icon: <RotateCcw size={20} strokeWidth={1.5} />, fichas: 200,
+    icon: <RotateCcw size={20} strokeWidth={1.5} />, baseFichas: 200,
     accentColor: '#a855f7', accentBg: 'rgba(168,85,247,0.10)', accentBorder: 'rgba(168,85,247,0.25)',
     balanceKey: 'rewinds',
   },
   {
     key: 'ghost_7d', label: 'Fantasma 7 dias', description: 'Fique invisivel nas buscas por 7 dias',
-    icon: <Ghost size={20} strokeWidth={1.5} />, fichas: 90,
+    icon: <Ghost size={20} strokeWidth={1.5} />, baseFichas: 90,
     accentColor: '#6b7280', accentBg: 'rgba(107,114,128,0.10)', accentBorder: 'rgba(107,114,128,0.25)',
     balanceKey: 'ghost',
   },
   {
     key: 'ghost_35d', label: 'Fantasma 35 dias', description: 'Invisibilidade por mais de um mes',
-    icon: <Ghost size={20} strokeWidth={1.5} />, fichas: 350,
+    icon: <Ghost size={20} strokeWidth={1.5} />, baseFichas: 350,
     accentColor: '#6b7280', accentBg: 'rgba(107,114,128,0.10)', accentBorder: 'rgba(107,114,128,0.25)',
     balanceKey: 'ghost',
   },
   // Novos itens exclusivos de fichas
   {
     key: 'reveals_24h', label: 'Ver quem curtiu (24h)', description: 'Veja todos os seus admiradores por 24 horas',
-    icon: <Eye size={20} strokeWidth={1.5} />, fichas: 200,
+    icon: <Eye size={20} strokeWidth={1.5} />, baseFichas: 200,
     accentColor: '#ec4899', accentBg: 'rgba(236,72,153,0.10)', accentBorder: 'rgba(236,72,153,0.25)',
     new: true,
   },
   {
     key: 'xp_bonus_3d', label: 'Bonus de XP (3 dias)', description: 'Ganhe o dobro de XP no streak por 3 dias',
-    icon: <TrendingUp size={20} strokeWidth={1.5} />, fichas: 150,
+    icon: <TrendingUp size={20} strokeWidth={1.5} />, baseFichas: 150,
     accentColor: '#10b981', accentBg: 'rgba(16,185,129,0.10)', accentBorder: 'rgba(16,185,129,0.25)',
     new: true,
   },
   {
     key: 'verified_plus', label: 'Selo Verificado Plus', description: 'Exibe um selo especial no seu perfil',
-    icon: <BadgeCheck size={20} strokeWidth={1.5} />, fichas: 500,
+    icon: <BadgeCheck size={20} strokeWidth={1.5} />, baseFichas: 500,
     accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.25)',
     new: true,
   },
   {
     key: 'caixa_surpresa', label: 'Caixa Surpresa', description: 'Premio aleatorio — pode ser raro!',
-    icon: <Gift size={20} strokeWidth={1.5} />, fichas: 100,
+    icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 100,
     accentColor: '#8b5cf6', accentBg: 'rgba(139,92,246,0.10)', accentBorder: 'rgba(139,92,246,0.25)',
     new: true,
   },
@@ -136,18 +147,23 @@ const STORE_ITEMS: StoreItem[] = [
 
 function PurchaseSheet({
   item,
+  price,
   fichas,
+  plan,
   onConfirm,
   onClose,
   loading,
 }: {
   item: StoreItem
+  price: number
   fichas: number
+  plan: string | null
   onConfirm: () => void
   onClose: () => void
   loading: boolean
 }) {
-  const canAfford = fichas >= item.fichas
+  const discount = getPlanDiscount(plan)
+  const canAfford = fichas >= price
 
   return (
     <>
@@ -182,14 +198,22 @@ function PurchaseSheet({
             </button>
           </div>
 
-          {/* Custo */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 14, backgroundColor: canAfford ? 'rgba(245,158,11,0.08)' : 'rgba(225,29,72,0.08)', border: `1px solid ${canAfford ? 'rgba(245,158,11,0.25)' : 'rgba(225,29,72,0.25)'}`, marginBottom: 16 }}>
+          {/* Custo com desconto */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 14, backgroundColor: canAfford ? 'rgba(245,158,11,0.08)' : 'rgba(225,29,72,0.08)', border: `1px solid ${canAfford ? 'rgba(245,158,11,0.25)' : 'rgba(225,29,72,0.25)'}`, marginBottom: 8 }}>
             <span style={{ fontSize: 14, color: 'var(--muted)' }}>Custo</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {discount > 0 && (
+                <span style={{ fontSize: 12, color: 'var(--muted)', textDecoration: 'line-through' }}>{item.baseFichas}</span>
+              )}
               <Coins size={15} color="#F59E0B" strokeWidth={1.5} />
-              <span style={{ fontSize: 16, fontWeight: 700, color: '#F59E0B' }}>{item.fichas} fichas</span>
+              <span style={{ fontSize: 16, fontWeight: 700, color: '#F59E0B' }}>{price} fichas</span>
             </div>
           </div>
+          {discount > 0 && (
+            <div style={{ textAlign: 'right', fontSize: 11, color: '#10b981', marginBottom: 12 }}>
+              {Math.round(discount * 100)}% de desconto plano {plan === 'black' ? 'Black' : 'Plus'}
+            </div>
+          )}
 
           {/* Saldo */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
@@ -207,12 +231,12 @@ function PurchaseSheet({
               style={{ width: '100%', padding: '16px', borderRadius: 14, border: 'none', backgroundColor: loading ? 'rgba(225,29,72,0.40)' : '#E11D48', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.2s' }}
             >
               {loading ? <Loader2 size={18} strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Coins size={18} strokeWidth={1.5} />}
-              {loading ? 'Processando...' : `Confirmar — ${item.fichas} fichas`}
+              {loading ? 'Processando...' : `Confirmar — ${price} fichas`}
             </button>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <p style={{ textAlign: 'center', fontSize: 13, color: '#f87171', margin: 0 }}>
-                Fichas insuficientes — precisa de mais {item.fichas - fichas} fichas
+                Fichas insuficientes — precisa de mais {price - fichas} fichas
               </p>
               <button
                 onClick={onClose}
@@ -248,6 +272,9 @@ export default function LojaPage() {
   const [activating, setActivating]       = useState(false)
   const [openItem, setOpenItem]           = useState<StoreItem | null>(null)
   const [purchasing, setPurchasing]       = useState(false)
+
+  const plan = limits.plan
+  const getPrice = (item: StoreItem) => applyDiscount(item.baseFichas, plan)
 
   useEffect(() => {
     if (!user) return
@@ -306,12 +333,12 @@ export default function LojaPage() {
       const res = await fetch('/api/loja/gastar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token ?? ''}` },
-        body: JSON.stringify({ item_key: item.key }),
+        body: JSON.stringify({ item_key: item.key, plan }),
       })
       const data = await res.json()
       if (data.success) {
         haptics.success()
-        setFichas(f => f - item.fichas)
+        setFichas(f => f - getPrice(item))
         toast.success(`${item.label} adicionado ao seu saldo!`)
         if (data.surpresa) {
           toast.info(`Caixa Surpresa: voce ganhou ${data.surpresa.reward_amount}x ${data.surpresa.reward_type}!`)
@@ -468,7 +495,7 @@ export default function LojaPage() {
                 {/* Preco em fichas */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                   <Coins size={13} color="#F59E0B" strokeWidth={1.5} />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: fichas >= item.fichas ? '#F59E0B' : 'rgba(248,249,250,0.35)' }}>{item.fichas}</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: fichas >= getPrice(item) ? '#F59E0B' : 'rgba(248,249,250,0.35)' }}>{getPrice(item)}</span>
                   <ChevronRight size={14} strokeWidth={1.5} color="rgba(248,249,250,0.25)" />
                 </div>
               </div>
@@ -485,7 +512,9 @@ export default function LojaPage() {
       {openItem && (
         <PurchaseSheet
           item={openItem}
+          price={getPrice(openItem)}
           fichas={fichas}
+          plan={plan}
           onConfirm={() => handlePurchase(openItem)}
           onClose={() => setOpenItem(null)}
           loading={purchasing}
