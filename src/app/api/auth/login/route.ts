@@ -20,6 +20,46 @@ async function getNome(userId: string): Promise<string> {
   return data?.name?.split(' ')[0] ?? 'Usuário'
 }
 
+// Helper: converte User-Agent em nome legível ("Chrome no Windows", "Safari no iPhone")
+function parseUserAgent(ua: string): string {
+  let browser = 'Navegador desconhecido'
+  let os = ''
+
+  if (/Edg\//.test(ua)) browser = 'Edge'
+  else if (/OPR\/|Opera/.test(ua)) browser = 'Opera'
+  else if (/Chrome\//.test(ua) && !/Chromium/.test(ua)) browser = 'Chrome'
+  else if (/Firefox\//.test(ua)) browser = 'Firefox'
+  else if (/Safari\//.test(ua) && !/Chrome/.test(ua)) browser = 'Safari'
+  else if (/MSIE|Trident/.test(ua)) browser = 'Internet Explorer'
+
+  if (/iPhone/.test(ua)) os = 'iPhone'
+  else if (/iPad/.test(ua)) os = 'iPad'
+  else if (/Android/.test(ua)) os = 'Android'
+  else if (/Windows NT/.test(ua)) os = 'Windows'
+  else if (/Mac OS X/.test(ua)) os = 'Mac'
+  else if (/Linux/.test(ua)) os = 'Linux'
+
+  return os ? `${browser} no ${os}` : browser
+}
+
+// Helper: resolve IP para cidade/país via ipapi.co
+async function resolveIp(ip: string): Promise<string> {
+  try {
+    const raw = ip.split(',')[0].trim()
+    if (!raw || raw === 'desconhecido' || raw.startsWith('127.') || raw.startsWith('::')) {
+      return 'Localização desconhecida'
+    }
+    const res = await fetch(`https://ipapi.co/${raw}/json/`, {
+      headers: { 'User-Agent': 'MeAndYou/1.0' },
+      signal: AbortSignal.timeout(3000),
+    })
+    const data = await res.json()
+    if (data.city && data.country_name) return `${data.city}, ${data.country_name}`
+    if (data.country_name) return data.country_name
+  } catch {}
+  return 'Localização desconhecida'
+}
+
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json()
@@ -133,8 +173,9 @@ export async function POST(req: NextRequest) {
     if (!knownHashes.includes(uaHash)) {
       ;(async () => {
         try {
-          const nome = await getNome(userId)
-          await sendNewDeviceLoginEmail(email, nome, ua.slice(0, 80), ip)
+          const [nome, local] = await Promise.all([getNome(userId), resolveIp(ip)])
+          const dispositivo = parseUserAgent(ua)
+          await sendNewDeviceLoginEmail(email, nome, dispositivo, local)
         } catch {}
       })()
 

@@ -58,13 +58,13 @@ export default function VideochamadaPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-[#0e0b14] flex items-center justify-center">
+    <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center">
       <Loader2 size={28} className="animate-spin text-white/20" />
     </div>
   )
 
   if (error) return (
-    <div className="min-h-screen bg-[#0e0b14] flex flex-col items-center justify-center gap-4 px-8 text-center">
+    <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center gap-4 px-8 text-center">
       <p className="text-white/40 text-sm">{error}</p>
       <button
         onClick={() => router.back()}
@@ -76,10 +76,10 @@ export default function VideochamadaPage() {
   )
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta">
+    <div className="min-h-screen bg-[var(--bg)] font-jakarta">
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-[var(--bg)]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
         <button
           onClick={() => router.back()}
           className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"

@@ -15,7 +15,7 @@ type Period = 'day' | 'week' | 'month'
 const PERIOD_LABELS: Record<Period, string> = {
   day: 'Hoje',
   week: 'Semana',
-  month: 'Mês',
+  month: 'Mes',
 }
 
 export default function DestaquesPage() {
@@ -60,7 +60,7 @@ export default function DestaquesPage() {
   }
 
   async function handleReveal(profileId: string) {
-    if (lupas <= 0) { toast.error('Sem lupas disponíveis. Compre na Loja.'); return }
+    if (lupas <= 0) { toast.error('Sem lupas disponiveis. Compre na Loja.'); return }
     haptics.tap()
     setRevealing(profileId)
     const { error } = await supabase.rpc('use_lupa', { p_user_id: user!.id, p_target_id: profileId })
@@ -85,38 +85,43 @@ export default function DestaquesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-24">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4">
-        <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => router.back()} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-            <ArrowLeft size={18} className="text-white/60" />
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: canAccess ? '14px' : '0' }}>
+          <button
+            onClick={() => router.back()}
+            style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+          >
+            <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
           </button>
-          <div className="flex items-center gap-2 flex-1">
-            <Flame size={18} className="text-orange-400" />
-            <h1 className="font-fraunces text-xl text-white">Destaques</h1>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+            <Flame size={18} color="#f97316" strokeWidth={1.5} />
+            <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0 }}>Destaques</h1>
           </div>
           {canAccess && (
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20">
-              <Search size={12} className="text-blue-400" />
-              <span className="text-blue-400 text-xs font-semibold">{lupas} lupas</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '100px', backgroundColor: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.20)', flexShrink: 0 }}>
+              <Search size={12} color="#60a5fa" strokeWidth={1.5} />
+              <span style={{ color: '#60a5fa', fontSize: '12px', fontWeight: 700 }}>{lupas} lupas</span>
             </div>
           )}
         </div>
 
-        {/* Seletor de período */}
+        {/* Seletor de periodo */}
         {canAccess && (
-          <div className="flex gap-2">
+          <div style={{ display: 'flex', gap: '8px' }}>
             {(Object.keys(PERIOD_LABELS) as Period[]).map((p) => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
-                className={`px-4 py-1.5 rounded-full text-sm border transition ${
-                  period === p
-                    ? 'bg-orange-500/20 border-orange-500/40 text-orange-400 font-semibold'
-                    : 'bg-white/5 border-white/10 text-white/50 hover:border-white/20'
-                }`}
+                style={{
+                  padding: '6px 16px', borderRadius: '100px', fontSize: '13px', cursor: 'pointer', transition: 'all 0.15s',
+                  fontFamily: 'var(--font-jakarta)', fontWeight: period === p ? 700 : 400,
+                  backgroundColor: period === p ? 'rgba(249,115,22,0.15)' : 'rgba(255,255,255,0.05)',
+                  border: period === p ? '1px solid rgba(249,115,22,0.40)' : '1px solid rgba(255,255,255,0.10)',
+                  color: period === p ? '#f97316' : 'var(--muted)',
+                }}
               >
                 {PERIOD_LABELS[p]}
               </button>
@@ -127,42 +132,44 @@ export default function DestaquesPage() {
 
       {/* Bloqueado para Essencial */}
       {!canAccess ? (
-        <div className="flex flex-col items-center justify-center min-h-[70vh] px-8 gap-5">
-          <div className="w-16 h-16 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-            <Lock size={28} className="text-orange-400" />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '70vh', padding: '0 32px', gap: '20px' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Lock size={28} color="#f97316" strokeWidth={1.5} />
           </div>
-          <div className="text-center">
-            <h2 className="font-fraunces text-2xl text-white mb-2">Exclusivo Plus e Black</h2>
-            <p className="text-white/40 text-sm leading-relaxed max-w-xs">
-              Veja os perfis mais curtidos da plataforma. Disponível a partir do plano Plus.
+          <div style={{ textAlign: 'center' }}>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', color: 'var(--text)', margin: '0 0 8px' }}>Exclusivo Plus e Black</h2>
+            <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: 1.5, margin: 0, maxWidth: '280px' }}>
+              Veja os perfis mais curtidos da plataforma. Disponivel a partir do plano Plus.
             </p>
           </div>
           <a
             href="/planos"
-            className="px-6 py-3.5 rounded-2xl bg-[#b8f542] text-black font-bold text-sm hover:bg-[#a8e030] transition"
+            style={{ padding: '14px 28px', borderRadius: '16px', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '14px', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', transition: 'opacity 0.2s' }}
           >
             Ver planos
           </a>
         </div>
       ) : (
-        <main className="px-5 pt-5">
+        <main style={{ padding: '20px' }}>
           {loading ? (
-            <div className="flex justify-center py-20">
-              <Loader2 size={24} className="animate-spin text-white/30" />
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '80px 0' }}>
+              <Loader2 size={24} color="rgba(255,255,255,0.30)" strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} />
             </div>
           ) : profiles.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-20 gap-3 text-white/30">
-              <Flame size={32} />
-              <p className="text-sm text-center">Nenhum destaque nesse período ainda.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: '12px', color: 'var(--muted)' }}>
+              <Flame size={32} strokeWidth={1.5} />
+              <p style={{ fontSize: '14px', textAlign: 'center', margin: 0 }}>Nenhum destaque nesse periodo ainda.</p>
             </div>
           ) : (
             <>
               {lupas === 0 && (
-                <div className="mb-4 p-3 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-300 text-xs text-center">
-                  Sem lupas para revelar perfis. Compre na <a href="/loja" className="underline font-semibold">Loja</a> ou ganhe jogando na roleta.
+                <div style={{ marginBottom: '16px', padding: '12px 16px', borderRadius: '12px', backgroundColor: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.20)', color: '#93c5fd', fontSize: '12px', textAlign: 'center' }}>
+                  Sem lupas para revelar perfis. Compre na{' '}
+                  <a href="/loja" style={{ color: '#93c5fd', fontWeight: 700 }}>Loja</a>
+                  {' '}ou ganhe jogando na roleta.
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-3">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 {profiles.map((profile) => (
                   <HighlightCard
                     key={profile.profile_id}
@@ -180,6 +187,8 @@ export default function DestaquesPage() {
           )}
         </main>
       )}
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
@@ -194,69 +203,69 @@ function HighlightCard({ profile, revealed, hasLupas, revealing, onReveal, onLik
   onView: () => void
 }) {
   return (
-    <div className="relative rounded-2xl overflow-hidden aspect-[3/4] bg-white/5 border border-white/5">
+    <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', aspectRatio: '3/4', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.05)' }}>
       {profile.photo_best ? (
         <Image
           src={profile.photo_best}
           alt={revealed ? profile.name : 'Perfil borrado'}
           fill
-          className={`object-cover transition-all duration-500 ${!revealed ? 'blur-xl scale-110' : ''}`}
+          style={{ objectFit: 'cover', transition: 'filter 0.5s, transform 0.5s', filter: !revealed ? 'blur(20px)' : 'none', transform: !revealed ? 'scale(1.1)' : 'scale(1)' }}
           sizes="200px"
         />
       ) : (
-        <div className="absolute inset-0 bg-white/5" />
+        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(255,255,255,0.05)' }} />
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.10) 50%, transparent 100%)' }} />
 
       {/* Badge boost */}
       {profile.is_boosted && (
-        <div className="absolute top-2 right-2 flex items-center gap-1 px-2 py-1 rounded-full bg-[#b8f542]/20 border border-[#b8f542]/40">
-          <Zap size={10} className="text-[#b8f542]" />
-          <span className="text-[#b8f542] text-xs font-bold">Boost</span>
+        <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', alignItems: 'center', gap: '3px', padding: '3px 8px', borderRadius: '100px', backgroundColor: 'rgba(184,245,66,0.20)', border: '1px solid rgba(184,245,66,0.40)' }}>
+          <Zap size={10} color="#b8f542" strokeWidth={1.5} />
+          <span style={{ color: '#b8f542', fontSize: '10px', fontWeight: 700 }}>Boost</span>
         </div>
       )}
 
-      {/* Overlay de revelar (quando borrado) */}
+      {/* Overlay de revelar */}
       {!revealed && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
+        <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
           <button
             onClick={onReveal}
             disabled={!hasLupas || revealing}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-500/80 text-white text-xs font-bold hover:bg-blue-500 transition disabled:opacity-40 disabled:cursor-not-allowed"
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '12px', backgroundColor: 'rgba(59,130,246,0.80)', color: '#fff', fontSize: '12px', fontWeight: 700, border: 'none', cursor: !hasLupas || revealing ? 'not-allowed' : 'pointer', opacity: !hasLupas || revealing ? 0.4 : 1, fontFamily: 'var(--font-jakarta)', transition: 'opacity 0.15s' }}
           >
-            {revealing ? <Loader2 size={12} className="animate-spin" /> : <Search size={12} />}
+            {revealing ? <Loader2 size={12} strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Search size={12} strokeWidth={1.5} />}
             Revelar com lupa
           </button>
         </div>
       )}
 
       {/* Info */}
-      <div className="absolute bottom-0 left-0 right-0 p-3">
-        <p className="font-fraunces text-sm text-white font-semibold">
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px' }}>
+        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: '13px', color: '#fff', fontWeight: 700, margin: 0 }}>
           {revealed ? `${profile.name}, ${profile.age}` : '• • •'}
         </p>
         {revealed && (
-          <p className="text-white/40 text-xs flex items-center gap-1 mt-0.5">
-            <MapPin size={9} /> {profile.city}
+          <p style={{ color: 'rgba(255,255,255,0.40)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '3px', margin: '2px 0 0' }}>
+            <MapPin size={9} strokeWidth={1.5} /> {profile.city}
           </p>
         )}
-        <div className="flex items-center gap-1 mt-0.5">
-          <Flame size={9} className="text-orange-400" />
-          <span className="text-orange-400 text-xs">{profile.like_count} curtidas</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '3px', marginTop: '2px' }}>
+          <Flame size={9} color="#f97316" strokeWidth={1.5} />
+          <span style={{ color: '#f97316', fontSize: '11px' }}>{profile.like_count} curtidas</span>
         </div>
 
-        {/* Botões — só aparecem após revelar */}
+        {/* Botoes */}
         {revealed && (
-          <div className="flex gap-2 mt-2">
+          <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
             <button
               onClick={onView}
-              className="flex-1 py-1.5 rounded-xl bg-white/10 text-white text-xs font-semibold hover:bg-white/20 transition"
+              style={{ flex: 1, padding: '6px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.10)', color: '#fff', fontSize: '11px', fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'background-color 0.15s' }}
             >
               Ver perfil
             </button>
             <button
               onClick={onLike}
-              className="flex-1 py-1.5 rounded-xl bg-[#b8f542]/20 text-[#b8f542] text-xs font-semibold hover:bg-[#b8f542]/30 transition"
+              style={{ flex: 1, padding: '6px', borderRadius: '10px', backgroundColor: 'var(--accent-light)', color: 'var(--accent)', fontSize: '11px', fontWeight: 700, border: '1px solid var(--accent-border)', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'background-color 0.15s' }}
             >
               Curtir
             </button>

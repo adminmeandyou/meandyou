@@ -28,12 +28,28 @@ type Match = {
   show_last_active?: boolean
 }
 
-function getExpiryInfo(matchedAt: string): { label: string; urgent: boolean } | null {
-  const hours = (Date.now() - new Date(matchedAt).getTime()) / 3600000
-  if (hours < 2) return { label: 'Novo', urgent: false }
-  if (hours > 22 && hours <= 36) return { label: 'Expira hoje', urgent: true }
-  if (hours > 36 && hours <= 48) return { label: 'Ultimo dia', urgent: true }
-  return null
+// Lógica: sem conversa expira em 7 dias, com conversa expira em 14 dias sem interação
+function getExpiryInfo(matchedAt: string, lastMessageAt: string | null): { label: string; urgent: boolean } | null {
+  const now = Date.now()
+  const matchAge = (now - new Date(matchedAt).getTime()) / 3600000 // horas
+
+  if (lastMessageAt === null) {
+    // Sem conversa: expiração em 7 dias (168h)
+    if (matchAge < 2) return { label: 'Novo', urgent: false }
+    const horasRestantes = 168 - matchAge
+    if (horasRestantes <= 0) return null // já expirou, cron vai limpar
+    if (horasRestantes <= 24) return { label: 'Expira hoje', urgent: true }
+    if (horasRestantes <= 48) return { label: `Expira em ${Math.ceil(horasRestantes / 24)}d`, urgent: true }
+    return null
+  } else {
+    // Com conversa: expiração em 14 dias de inatividade (336h)
+    const inativo = (now - new Date(lastMessageAt).getTime()) / 3600000
+    const horasRestantes = 336 - inativo
+    if (horasRestantes <= 0) return null
+    if (horasRestantes <= 24) return { label: 'Expira hoje', urgent: true }
+    if (horasRestantes <= 48) return { label: `Expira em ${Math.ceil(horasRestantes / 24)}d`, urgent: true }
+    return null
+  }
 }
 
 export default function MatchesPage() {
@@ -258,7 +274,7 @@ function NovoMatchCard({
   onIniciarConversa: () => void
   formatTempo: (d: string | null) => string
 }) {
-  const expiry = getExpiryInfo(match.matched_at)
+  const expiry = getExpiryInfo(match.matched_at, match.last_message_at)
 
   return (
     <button
@@ -322,6 +338,7 @@ function NovoMatchCard({
 // ─── Item de conversa ─────────────────────────────────────────────────────────
 
 function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: string | null) => string }) {
+  const expiry = getExpiryInfo(match.matched_at, match.last_message_at)
   return (
     <Link
       href={`/conversas/${match.conversation_id}`}
@@ -371,13 +388,25 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-          <p style={{
-            fontSize: 14, fontWeight: match.unread_count > 0 ? 700 : 500,
-            color: match.unread_count > 0 ? 'var(--text)' : 'rgba(248,249,250,0.80)',
-            margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
-            {match.name}
-          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+            <p style={{
+              fontSize: 14, fontWeight: match.unread_count > 0 ? 700 : 500,
+              color: match.unread_count > 0 ? 'var(--text)' : 'rgba(248,249,250,0.80)',
+              margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+            }}>
+              {match.name}
+            </p>
+            {expiry && (
+              <span style={{
+                fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 100, flexShrink: 0,
+                background: expiry.urgent ? 'rgba(225,29,72,0.15)' : 'rgba(225,29,72,0.08)',
+                color: expiry.urgent ? '#F43F5E' : 'var(--accent)',
+                border: `1px solid ${expiry.urgent ? 'rgba(225,29,72,0.30)' : 'var(--accent-border)'}`,
+              }}>
+                {expiry.label}
+              </span>
+            )}
+          </div>
           <span style={{ fontSize: 12, color: 'rgba(248,249,250,0.30)', flexShrink: 0, marginLeft: 8 }}>
             {formatTempo(match.last_message_at || match.matched_at)}
           </span>

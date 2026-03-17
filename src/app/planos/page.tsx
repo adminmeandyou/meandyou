@@ -12,7 +12,7 @@ const PLANS = [
     name: 'Essencial',
     price: 9.97,
     icon: Zap,
-    color: '#ffffff',
+    color: 'rgba(248,249,250,0.70)',
     checkoutUrl: 'https://pay.cakto.com.br/cip6fy9_797209',
     features: [
       'Ate 10 fotos no perfil',
@@ -29,7 +29,7 @@ const PLANS = [
     name: 'Plus',
     price: 39.97,
     icon: Star,
-    color: '#b8f542',
+    color: '#E11D48',
     checkoutUrl: 'https://pay.cakto.com.br/3arwn9f',
     highlight: true,
     badge: 'Melhor Custo-Beneficio',
@@ -106,110 +106,132 @@ export default function PlanosPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-12">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '48px' }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button
           onClick={() => router.back()}
-          className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"
+          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
         >
-          <ArrowLeft size={18} className="text-white/60" />
+          <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
         <div>
-          <h1 className="font-fraunces text-xl text-white leading-tight">Planos</h1>
-          <p className="text-white/30 text-xs">Escolha o seu</p>
+          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>Planos</h1>
+          <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Escolha o seu</p>
         </div>
       </header>
 
-      {/* Título */}
-      <div className="text-center px-6 pt-8 pb-6">
-        <h2 className="font-fraunces text-3xl text-white leading-tight">
-          Encontre quem <span className="italic text-[#b8f542]">combina</span> com voce
+      {/* Titulo */}
+      <div style={{ textAlign: 'center', padding: '32px 24px 24px' }}>
+        <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', color: 'var(--text)', margin: '0 0 8px', lineHeight: 1.2 }}>
+          Encontre quem{' '}
+          <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>combina</em>
+          {' '}com voce
         </h2>
-        <p className="text-white/35 text-sm mt-2 max-w-xs mx-auto">
+        <p style={{ fontSize: '14px', color: 'var(--muted)', margin: 0, maxWidth: '280px', display: 'inline-block' }}>
           Todos os planos incluem verificacao biometrica e perfis 100% reais
         </p>
       </div>
 
       {/* Cards — scroll horizontal com snap */}
-      <div
-        className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-5 pb-4"
-        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
-      >
+      <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '4px 20px 16px', scrollbarWidth: 'none' }}>
         {PLANS.map((plan) => {
           const Icon = plan.icon
           const isActive = currentPlan === plan.id
           const isHighlight = !!plan.highlight
+          const isBlack = plan.id === 'black'
+
+          const cardBg = isHighlight ? 'rgba(225,29,72,0.05)' : isBlack ? 'rgba(245,158,11,0.03)' : 'rgba(255,255,255,0.03)'
+          const cardBorder = isActive
+            ? `2px solid ${plan.color}`
+            : isHighlight
+            ? '1px solid rgba(225,29,72,0.30)'
+            : isBlack
+            ? '1px solid rgba(245,158,11,0.20)'
+            : '1px solid rgba(255,255,255,0.07)'
 
           return (
             <div
               key={plan.id}
-              className={`relative flex-shrink-0 w-[272px] snap-center rounded-3xl border p-5 flex flex-col transition ${
-                isHighlight
-                  ? 'bg-[#b8f542]/5 border-[#b8f542]/30'
-                  : 'bg-white/3 border-white/8'
-              } ${isActive ? 'ring-2 ring-[#b8f542]' : ''}`}
+              style={{
+                position: 'relative', flexShrink: 0, width: '272px', scrollSnapAlign: 'center',
+                borderRadius: '24px', border: cardBorder,
+                backgroundColor: cardBg,
+                padding: '20px', display: 'flex', flexDirection: 'column',
+                transition: 'transform 0.2s',
+              }}
             >
-              {/* Badge "Melhor Custo-Benefício" */}
+              {/* Badge Melhor Custo-Beneficio */}
               {isHighlight && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap px-4 py-1 rounded-full bg-[#b8f542] text-black text-[11px] font-bold">
+                <div style={{
+                  position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
+                  whiteSpace: 'nowrap', padding: '4px 16px', borderRadius: '100px',
+                  backgroundColor: 'var(--accent)', color: '#fff',
+                  fontSize: '11px', fontWeight: 700,
+                }}>
                   {plan.badge}
                 </div>
               )}
 
-              {/* Badge "Plano atual" */}
+              {/* Badge Plano atual */}
               {isActive && (
-                <div className="absolute -top-3.5 right-4 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-[11px]">
+                <div style={{
+                  position: 'absolute', top: '-14px', right: '16px',
+                  padding: '4px 12px', borderRadius: '100px',
+                  backgroundColor: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.20)',
+                  color: 'var(--text)', fontSize: '11px',
+                }}>
                   Plano atual
                 </div>
               )}
 
-              {/* Topo: ícone + nome + preço */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2.5">
-                  <div
-                    className="w-9 h-9 rounded-xl flex items-center justify-center"
-                    style={{ backgroundColor: `${plan.color}18` }}
-                  >
-                    <Icon size={18} style={{ color: plan.color }} />
+              {/* Topo: icone + nome + preco */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{ width: '36px', height: '36px', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: `${plan.color}18` }}>
+                    <Icon size={18} color={plan.color} strokeWidth={1.5} />
                   </div>
-                  <span className="font-fraunces text-lg text-white">{plan.name}</span>
+                  <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: '18px', color: 'var(--text)' }}>{plan.name}</span>
                 </div>
-                <div className="text-right">
-                  <span className="font-fraunces text-xl text-white">
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', display: 'block', lineHeight: 1 }}>
                     R$ {plan.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
-                  <div className="text-white/30 text-[11px]">/mes</div>
+                  <span style={{ fontSize: '11px', color: 'var(--muted)' }}>/mes</span>
                 </div>
               </div>
 
               {/* Divisor */}
-              <div className="h-px bg-white/6 mb-4" />
+              <div style={{ height: '1px', backgroundColor: 'rgba(255,255,255,0.06)', marginBottom: '16px' }} />
 
               {/* Features */}
-              <ul className="space-y-2.5 flex-1 mb-5">
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 20px', display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
                 {plan.features.map((feat) => (
-                  <li key={feat} className="flex items-start gap-2 text-sm text-white/65">
-                    <Check size={13} style={{ color: plan.color }} className="shrink-0 mt-0.5" />
+                  <li key={feat} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', fontSize: '13px', color: 'rgba(248,249,250,0.65)' }}>
+                    <Check size={13} color={plan.color} strokeWidth={2} style={{ flexShrink: 0, marginTop: '2px' }} />
                     {feat}
                   </li>
                 ))}
               </ul>
 
-              {/* Botão */}
+              {/* Botao */}
               <button
                 onClick={() => handleCheckout(plan)}
                 disabled={isActive || loading}
-                className={`w-full py-3.5 rounded-2xl font-semibold text-sm transition active:scale-95 ${
-                  isActive
-                    ? 'bg-white/5 text-white/30 cursor-default'
+                style={{
+                  width: '100%', padding: '14px', borderRadius: '16px',
+                  fontWeight: 700, fontSize: '14px', cursor: isActive ? 'default' : 'pointer',
+                  fontFamily: 'var(--font-jakarta)', transition: 'all 0.2s',
+                  ...(isActive
+                    ? { backgroundColor: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.25)', border: 'none' }
                     : isHighlight
-                    ? 'bg-[#b8f542] text-black hover:bg-[#a8e030]'
-                    : plan.id === 'black'
-                    ? 'bg-[#F59E0B]/10 border border-[#F59E0B]/30 text-[#F59E0B] hover:bg-[#F59E0B]/20'
-                    : 'bg-white/8 text-white border border-white/10 hover:bg-white/12'
-                }`}
+                    ? { backgroundColor: 'var(--accent)', color: '#fff', border: 'none' }
+                    : isBlack
+                    ? { backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.30)', color: '#F59E0B' }
+                    : { backgroundColor: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'var(--text)' }
+                  ),
+                }}
               >
                 {isActive ? 'Ativo' : `Assinar ${plan.name}`}
               </button>
@@ -217,31 +239,31 @@ export default function PlanosPage() {
           )
         })}
 
-        {/* Spacer final para o último card não colar na borda */}
-        <div className="flex-shrink-0 w-1" />
+        {/* Spacer final */}
+        <div style={{ flexShrink: 0, width: '4px' }} />
       </div>
 
       {/* Indicador de scroll */}
-      <div className="flex justify-center gap-1.5 mt-1 mb-6">
+      <div style={{ display: 'flex', justifyContent: 'center', gap: '6px', marginBottom: '24px' }}>
         {PLANS.map((p) => (
           <div
             key={p.id}
-            className={`h-1 rounded-full transition-all ${
-              p.highlight ? 'w-5 bg-[#b8f542]' : 'w-2 bg-white/20'
-            }`}
+            style={{
+              height: '4px', borderRadius: '100px', transition: 'all 0.2s',
+              width: p.highlight ? '20px' : '8px',
+              backgroundColor: p.highlight ? 'var(--accent)' : 'rgba(255,255,255,0.20)',
+            }}
           />
         ))}
       </div>
 
-      {/* Comparativo rápido */}
-      <div className="px-5 mb-6">
-        <div className="rounded-2xl border border-white/6 bg-white/3 overflow-hidden">
-          <div className="grid grid-cols-4 text-center text-[11px] border-b border-white/6">
-            <div className="py-3 px-2 text-white/30 font-medium">Feature</div>
+      {/* Comparativo rapido */}
+      <div style={{ padding: '0 20px 24px' }}>
+        <div style={{ borderRadius: '16px', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.02)', overflow: 'hidden' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', textAlign: 'center', fontSize: '11px', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ padding: '12px 8px', color: 'var(--muted)', fontWeight: 600 }}>Feature</div>
             {PLANS.map((p) => (
-              <div key={p.id} className="py-3 px-1 font-semibold" style={{ color: p.color }}>
-                {p.name}
-              </div>
+              <div key={p.id} style={{ padding: '12px 4px', fontWeight: 700, color: p.color }}>{p.name}</div>
             ))}
           </div>
           {[
@@ -250,23 +272,21 @@ export default function PlanosPage() {
             { label: 'Lupas',         values: ['1/dia', '1/dia', '2/dia'] },
             { label: 'Tickets',       values: ['1/dia', '2/dia', '3/dia'] },
             { label: 'Video',         values: ['1h/dia', '5h/dia', '10h/dia'] },
-            { label: 'Quem curtiu',   values: ['—', '✓', '✓'] },
-            { label: 'Backstage',     values: ['—', '—', '✓'] },
+            { label: 'Quem curtiu',   values: ['—', 'Sim', 'Sim'] },
+            { label: 'Backstage',     values: ['—', '—', 'Sim'] },
           ].map((row, i) => (
-            <div key={row.label} className={`grid grid-cols-4 text-center text-[11px] ${i % 2 === 0 ? '' : 'bg-white/[0.02]'}`}>
-              <div className="py-2.5 px-2 text-white/40 text-left">{row.label}</div>
+            <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', textAlign: 'center', fontSize: '11px', backgroundColor: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>
+              <div style={{ padding: '10px 8px', color: 'rgba(248,249,250,0.40)', textAlign: 'left' }}>{row.label}</div>
               {row.values.map((v, j) => (
-                <div key={j} className="py-2.5 px-1 text-white/60">
-                  {v}
-                </div>
+                <div key={j} style={{ padding: '10px 4px', color: 'rgba(248,249,250,0.60)' }}>{v}</div>
               ))}
             </div>
           ))}
         </div>
       </div>
 
-      {/* Rodapé */}
-      <p className="text-center text-white/20 text-xs px-5">
+      {/* Rodape */}
+      <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(248,249,250,0.20)', padding: '0 20px 8px' }}>
         Pagamento seguro via PIX ou cartao · Cancele quando quiser
       </p>
     </div>

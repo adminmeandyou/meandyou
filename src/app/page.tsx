@@ -1088,7 +1088,7 @@ export default function Home() {
               <div className="lp-cmp-header">
                 <div className="lp-cmp-col-label feature" />
                 <div className="lp-cmp-col-label them">Outros apps</div>
-                <div className="lp-cmp-col-label us">MeAndYou</div>
+                <div className="lp-cmp-col-label us">MeAnd<span style={{color:"#E11D48"}}>You</span></div>
               </div>
 
               {[

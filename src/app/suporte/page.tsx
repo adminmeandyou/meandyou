@@ -78,9 +78,9 @@ export default function SuportePage() {
 
   if (sent) {
     return (
-      <div className="min-h-screen bg-[#0e0b14] font-jakarta flex flex-col items-center justify-center px-8 gap-5">
-        <div className="w-16 h-16 rounded-full bg-[#b8f542]/10 border border-[#b8f542]/30 flex items-center justify-center">
-          <CheckCircle size={28} className="text-[#b8f542]" />
+      <div className="min-h-screen bg-[var(--bg)] font-jakarta flex flex-col items-center justify-center px-8 gap-5">
+        <div className="w-16 h-16 rounded-full bg-[var(--accent-light)] border border-[var(--accent-border)] flex items-center justify-center">
+          <CheckCircle size={28} className="text-[var(--accent)]" />
         </div>
         <div className="text-center">
           <h2 className="font-fraunces text-2xl text-white mb-2">Mensagem enviada!</h2>
@@ -101,9 +101,9 @@ export default function SuportePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-24">
+    <div className="min-h-screen bg-[var(--bg)] font-jakarta pb-24">
 
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-[var(--bg)]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
         <button onClick={() => router.back()} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
           <ArrowLeft size={18} className="text-white/60" />
         </button>
@@ -154,7 +154,7 @@ export default function SuportePage() {
                 onClick={() => setForm((f) => ({ ...f, categoria: cat.value }))}
                 className={`w-full py-3 px-4 rounded-xl border text-left text-sm transition ${
                   form.categoria === cat.value
-                    ? 'bg-[#b8f542]/10 border-[#b8f542]/40 text-[#b8f542] font-semibold'
+                    ? 'bg-[var(--accent-light)] border-[#b8f542]/40 text-[var(--accent)] font-semibold'
                     : 'bg-white/3 border-white/8 text-white/50 hover:border-white/20'
                 }`}
               >

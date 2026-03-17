@@ -83,9 +83,9 @@ h1, h2, h3 {
   font-family: var(--font-fraunces);
 }
 
-input {
-  background-color: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.07);
+input, textarea, select {
+  background-color: var(--bg-card2);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 14px 18px;
   color: var(--text);
@@ -97,12 +97,12 @@ input {
   color-scheme: dark;
 }
 
-input:focus {
+input:focus, textarea:focus, select:focus {
   border-color: var(--accent);
 }
 
-input::placeholder {
-  color: var(--muted);
+input::placeholder, textarea::placeholder {
+  color: var(--muted-2);
 }
 
 .btn-primary {

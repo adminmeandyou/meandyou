@@ -14,6 +14,20 @@ import { BadgePill } from '@/components/ui/BadgePill'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
 
+// ─── Status temporário ────────────────────────────────────────────────────────
+
+const STATUS_TEMP_LABELS: Record<string, string> = {
+  querendo_sair: 'Querendo sair',
+  cafe:          'Café e conversa',
+  praia:         'Praia',
+  academia:      'Academia',
+  cinema:        'Cinema',
+  estudando:     'Estudando',
+  turistando:    'Turistando',
+  bar:           'No bar',
+  'rolê':        'Procurando rolê',
+}
+
 // ─── Trust Score ──────────────────────────────────────────────────────────────
 
 function calcTrustScore(profile: any, photos: string[], filters: any): number {
@@ -61,124 +75,19 @@ function getStatusPills(userRow: any): StatusPill[] {
   return pills.slice(0, 4)
 }
 
-// ─── Pixel Art SVGs ───────────────────────────────────────────────────────────
+// ─── Emblema SVG ──────────────────────────────────────────────────────────────
+// SVGs ficam em public/badges/{id}.svg (32x32). Substitua pelos arquivos finais.
 
-function PixelShield({ color }: { color: string }) {
+function EmblemaSvg({ id, desbloqueado }: { id: string; desbloqueado: boolean }) {
   return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="1" y="0" width="6" height="1" fill={color}/>
-      <rect x="0" y="1" width="8" height="1" fill={color}/>
-      <rect x="0" y="2" width="2" height="3" fill={color}/>
-      <rect x="6" y="2" width="2" height="3" fill={color}/>
-      <rect x="0" y="5" width="8" height="1" fill={color}/>
-      <rect x="1" y="6" width="6" height="1" fill={color}/>
-      <rect x="2" y="7" width="4" height="1" fill={color}/>
-      <rect x="3" y="3" width="1" height="1" fill="rgba(255,255,255,0.6)"/>
-      <rect x="4" y="2" width="1" height="1" fill="rgba(255,255,255,0.6)"/>
-      <rect x="2" y="4" width="1" height="1" fill="rgba(255,255,255,0.6)"/>
-    </svg>
-  )
-}
-
-function PixelCrown({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="0" y="0" width="1" height="1" fill={color}/>
-      <rect x="4" y="0" width="1" height="1" fill={color}/>
-      <rect x="7" y="0" width="1" height="1" fill={color}/>
-      <rect x="0" y="1" width="1" height="2" fill={color}/>
-      <rect x="3" y="1" width="2" height="1" fill={color}/>
-      <rect x="7" y="1" width="1" height="2" fill={color}/>
-      <rect x="1" y="2" width="1" height="1" fill={color}/>
-      <rect x="6" y="2" width="1" height="1" fill={color}/>
-      <rect x="0" y="3" width="8" height="1" fill={color}/>
-      <rect x="0" y="4" width="8" height="3" fill={color}/>
-      <rect x="1" y="7" width="6" height="1" fill={color}/>
-    </svg>
-  )
-}
-
-function PixelCamera({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="2" y="0" width="1" height="1" fill={color}/>
-      <rect x="3" y="0" width="3" height="1" fill={color}/>
-      <rect x="0" y="1" width="8" height="6" fill={color}/>
-      <rect x="0" y="7" width="8" height="1" fill={color}/>
-      <rect x="2" y="2" width="4" height="4" fill="rgba(0,0,0,0.4)"/>
-      <rect x="3" y="3" width="2" height="2" fill="rgba(255,255,255,0.5)"/>
-    </svg>
-  )
-}
-
-function PixelScroll({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="1" y="0" width="6" height="8" fill={color}/>
-      <rect x="0" y="1" width="1" height="6" fill={color}/>
-      <rect x="2" y="2" width="4" height="1" fill="rgba(0,0,0,0.35)"/>
-      <rect x="2" y="4" width="3" height="1" fill="rgba(0,0,0,0.35)"/>
-      <rect x="2" y="6" width="2" height="1" fill="rgba(0,0,0,0.35)"/>
-    </svg>
-  )
-}
-
-function PixelTag({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="0" y="0" width="5" height="1" fill={color}/>
-      <rect x="0" y="1" width="7" height="1" fill={color}/>
-      <rect x="0" y="2" width="8" height="1" fill={color}/>
-      <rect x="0" y="3" width="8" height="1" fill={color}/>
-      <rect x="0" y="4" width="8" height="1" fill={color}/>
-      <rect x="0" y="5" width="7" height="1" fill={color}/>
-      <rect x="0" y="6" width="5" height="1" fill={color}/>
-      <rect x="5" y="2" width="1" height="1" fill="rgba(0,0,0,0.45)"/>
-    </svg>
-  )
-}
-
-function PixelHeart({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="1" y="0" width="2" height="1" fill={color}/>
-      <rect x="5" y="0" width="2" height="1" fill={color}/>
-      <rect x="0" y="1" width="4" height="2" fill={color}/>
-      <rect x="4" y="1" width="4" height="2" fill={color}/>
-      <rect x="0" y="3" width="8" height="2" fill={color}/>
-      <rect x="1" y="5" width="6" height="1" fill={color}/>
-      <rect x="2" y="6" width="4" height="1" fill={color}/>
-      <rect x="3" y="7" width="2" height="1" fill={color}/>
-    </svg>
-  )
-}
-
-function PixelZap({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="3" y="0" width="4" height="1" fill={color}/>
-      <rect x="2" y="1" width="4" height="1" fill={color}/>
-      <rect x="1" y="2" width="4" height="1" fill={color}/>
-      <rect x="2" y="3" width="5" height="1" fill={color}/>
-      <rect x="1" y="4" width="5" height="1" fill={color}/>
-      <rect x="2" y="5" width="4" height="1" fill={color}/>
-      <rect x="1" y="6" width="3" height="1" fill={color}/>
-      <rect x="1" y="7" width="2" height="1" fill={color}/>
-    </svg>
-  )
-}
-
-function PixelStar({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="3" y="0" width="2" height="2" fill={color}/>
-      <rect x="0" y="2" width="8" height="2" fill={color}/>
-      <rect x="1" y="4" width="6" height="1" fill={color}/>
-      <rect x="0" y="5" width="3" height="2" fill={color}/>
-      <rect x="5" y="5" width="3" height="2" fill={color}/>
-      <rect x="2" y="7" width="1" height="1" fill={color}/>
-      <rect x="5" y="7" width="1" height="1" fill={color}/>
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`/badges/${id}.svg`}
+      alt=""
+      width={32}
+      height={32}
+      style={{ display: 'block', opacity: desbloqueado ? 1 : 0.20, filter: desbloqueado ? 'none' : 'grayscale(1)' }}
+    />
   )
 }
 
@@ -192,7 +101,6 @@ interface EmblemaDef {
   desbloqueado: boolean
   progresso: number
   total: number
-  pixel: React.ReactNode
 }
 
 function getEmblemas(profile: any, photos: string[], filters: any, userRow: any): EmblemaDef[] {
@@ -205,7 +113,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: !!userRow?.verified,
       progresso: userRow?.verified ? 1 : 0,
       total: 1,
-      pixel: <PixelShield color="#a78bfa" />,
     },
     {
       id: 'perfil_completo',
@@ -215,7 +122,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: photos.length >= 9,
       progresso: photos.length,
       total: 9,
-      pixel: <PixelCrown color="#a78bfa" />,
     },
     {
       id: 'galeria_rica',
@@ -225,7 +131,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: photos.length >= 5,
       progresso: photos.length,
       total: 5,
-      pixel: <PixelCamera color="#60a5fa" />,
     },
     {
       id: 'bio_detalhada',
@@ -235,7 +140,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: (profile?.bio?.length ?? 0) >= 100,
       progresso: Math.min(profile?.bio?.length ?? 0, 100),
       total: 100,
-      pixel: <PixelScroll color="#60a5fa" />,
     },
     {
       id: 'tags_escolhidas',
@@ -245,7 +149,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: (profile?.highlight_tags?.length ?? 0) > 0,
       progresso: profile?.highlight_tags?.length ?? 0,
       total: 3,
-      pixel: <PixelTag color="rgba(248,249,250,0.70)" />,
     },
     {
       id: 'match_maker',
@@ -255,7 +158,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: false,
       progresso: 0,
       total: 50,
-      pixel: <PixelHeart color="#F59E0B" />,
     },
     {
       id: 'conversador',
@@ -265,7 +167,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: false,
       progresso: 0,
       total: 7,
-      pixel: <PixelZap color="#60a5fa" />,
     },
     {
       id: 'popular',
@@ -275,7 +176,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: false,
       progresso: 0,
       total: 100,
-      pixel: <PixelStar color="#F59E0B" />,
     },
   ]
 }
@@ -308,6 +208,10 @@ export default function VerPerfilPage() {
   const [denunciaEnviado, setDenunciaEnviado] = useState(false)
   const [userRow, setUserRow] = useState<any>(null)
   const [selectedBadge, setSelectedBadge] = useState<EmblemaDef | null>(null)
+  const [dbBadges, setDbBadges] = useState<{ badge_id: string; earned_at: string; badges: { name: string; description: string; icon: string; rarity: string } }[]>([])
+  const [ratings, setRatings] = useState<{ total: number; positive: number } | null>(null)
+  // 0 = totalmente borrado, 1 = metade, 2 = foto revelada, 3 = perfil completo
+  const [blurLevel, setBlurLevel] = useState(3)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -327,7 +231,7 @@ export default function VerPerfilPage() {
     // CORRECAO: NUNCA selecionar lat/lng/cep/rua/bairro em selects publicos
     const { data: profileData } = await supabase
       .from('profiles')
-      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_back, photo_best, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, highlight_tags')
+      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_back, photo_best, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, highlight_tags, status_temp, status_temp_expires_at, profile_question, profile_question_answer, blur_photos')
       .eq('id', profileId)
       .single()
 
@@ -367,6 +271,51 @@ export default function VerPerfilPage() {
       .eq('id', profileId)
       .single()
     setUserRow(userData)
+
+    // Carrega badges do banco
+    const { data: badgesData } = await supabase
+      .from('user_badges')
+      .select('badge_id, earned_at, badges(name, description, icon, rarity)')
+      .eq('user_id', profileId)
+    setDbBadges((badgesData as any) ?? [])
+
+    // Carrega avaliações recebidas (anônimas)
+    const { data: ratingsData } = await supabase
+      .from('match_ratings')
+      .select('rating')
+      .eq('rated_id', profileId)
+    if (ratingsData && ratingsData.length >= 3) {
+      const total = ratingsData.length
+      const positive = ratingsData.filter(r =>
+        r.rating === 'Pessoa incrivel!' || r.rating === 'Conversa agradavel'
+      ).length
+      setRatings({ total, positive })
+    }
+
+    // Revelação gradual: calcula blur com base em mensagens trocadas
+    if (profileData?.blur_photos && userId && profileId !== userId) {
+      const { data: matchRow } = await supabase
+        .from('matches')
+        .select('id')
+        .or(`and(user1.eq.${userId},user2.eq.${profileId}),and(user1.eq.${profileId},user2.eq.${userId})`)
+        .eq('status', 'active')
+        .single()
+
+      if (!matchRow) {
+        setBlurLevel(0) // sem match = totalmente borrado
+      } else {
+        const { count } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('match_id', matchRow.id)
+
+        const msgs = count ?? 0
+        if (msgs >= 20) setBlurLevel(3)
+        else if (msgs >= 10) setBlurLevel(2)
+        else if (msgs >= 5) setBlurLevel(1)
+        else setBlurLevel(0)
+      }
+    }
 
     if (userId) {
       const { data: viewerSub } = await supabase
@@ -485,6 +434,7 @@ export default function VerPerfilPage() {
             fill
             className="object-cover"
             sizes="100vw"
+            style={blurLevel < 2 ? { filter: `blur(${blurLevel === 0 ? 18 : 9}px)`, transform: 'scale(1.05)' } : undefined}
           />
         ) : (
           <div style={{ position: 'absolute', inset: 0, backgroundColor: '#0F1117', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(248,249,250,0.15)', fontSize: '64px' }}>?</div>
@@ -543,16 +493,27 @@ export default function VerPerfilPage() {
         )}
 
         {/* StatusPills flutuantes */}
-        {statusPills.length > 0 && (
-          <div style={{ position: 'absolute', bottom: '106px', left: '16px', zIndex: 10, display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {statusPills.map((pill, i) => (
-              <span key={i} style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, backgroundColor: pill.bg, color: pill.color, backdropFilter: 'blur(8px)', border: `1px solid ${pill.color}33`, letterSpacing: '0.01em', fontFamily: 'var(--font-jakarta)' }}>
-                {pill.label === 'Online agora' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: pill.color, marginRight: '5px', display: 'inline-block' }} />}
-                {pill.label}
-              </span>
-            ))}
-          </div>
-        )}
+        {(() => {
+          const statusTempVivo = profile?.status_temp &&
+            profile?.status_temp_expires_at &&
+            new Date(profile.status_temp_expires_at) > new Date()
+          const todasPills = [...statusPills]
+          return (statusPills.length > 0 || statusTempVivo) ? (
+            <div style={{ position: 'absolute', bottom: '106px', left: '16px', zIndex: 10, display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {todasPills.map((pill, i) => (
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, backgroundColor: pill.bg, color: pill.color, backdropFilter: 'blur(8px)', border: `1px solid ${pill.color}33`, letterSpacing: '0.01em', fontFamily: 'var(--font-jakarta)' }}>
+                  {pill.label === 'Online agora' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: pill.color, marginRight: '5px', display: 'inline-block' }} />}
+                  {pill.label}
+                </span>
+              ))}
+              {statusTempVivo && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, backgroundColor: 'rgba(96,165,250,0.18)', color: '#60a5fa', backdropFilter: 'blur(8px)', border: '1px solid rgba(96,165,250,0.30)', letterSpacing: '0.01em', fontFamily: 'var(--font-jakarta)', gap: 4 }}>
+                  {STATUS_TEMP_LABELS[profile.status_temp as string] ?? profile.status_temp}
+                </span>
+              )}
+            </div>
+          ) : null
+        })()}
 
         {/* Overlay nome na foto */}
         <div style={{ position: 'absolute', bottom: '24px', left: '20px', right: '20px', zIndex: 10 }}>
@@ -595,6 +556,39 @@ export default function VerPerfilPage() {
       {/* ── Conteudo ── */}
       <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
+        {/* Banner de revelação gradual */}
+        {profile.blur_photos && blurLevel < 3 && (
+          <div style={{ backgroundColor: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', borderRadius: 14, padding: '12px 16px' }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: '#F43F5E', marginBottom: 6 }}>
+              {blurLevel === 0 && 'Foto bloqueada — comece a conversar para revelar'}
+              {blurLevel === 1 && 'Continue conversando para revelar mais'}
+              {blurLevel === 2 && 'Foto revelada — mais 10 msgs para ver o perfil completo'}
+            </p>
+            <div style={{ display: 'flex', gap: 6 }}>
+              {[
+                { label: '5 msgs', done: blurLevel >= 1 },
+                { label: '10 msgs', done: blurLevel >= 2 },
+                { label: '20 msgs', done: blurLevel >= 3 },
+              ].map(step => (
+                <div key={step.label} style={{ flex: 1, height: 4, borderRadius: 100, backgroundColor: step.done ? '#E11D48' : 'rgba(255,255,255,0.10)' }} />
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+              {['Metade', 'Foto', 'Perfil'].map((l, i) => (
+                <span key={l} style={{ fontSize: 10, color: blurLevel > i ? 'rgba(248,249,250,0.50)' : 'rgba(248,249,250,0.25)' }}>{l}</span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Pergunta do perfil */}
+        {profile.profile_question && profile.profile_question_answer && (
+          <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '16px 18px' }}>
+            <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 8px' }}>{profile.profile_question}</p>
+            <p style={{ color: '#F8F9FA', fontSize: '15px', lineHeight: '1.65', margin: 0 }}>{profile.profile_question_answer}</p>
+          </div>
+        )}
+
         {/* Bio */}
         {profile.bio && (
           <p style={{ color: 'rgba(248,249,250,0.80)', fontSize: '14px', lineHeight: '1.75', margin: 0 }}>{profile.bio}</p>
@@ -610,6 +604,30 @@ export default function VerPerfilPage() {
             <div style={{ height: '100%', width: `${trustScore}%`, borderRadius: '100px', backgroundColor: 'var(--accent)', transition: 'width 0.6s ease' }} />
           </div>
         </div>
+
+        {/* Avaliações anônimas */}
+        {ratings && (
+          <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '16px 18px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <span style={{ fontSize: '12px', color: 'rgba(248,249,250,0.50)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Avaliações dos matches</span>
+              <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>{ratings.total} {ratings.total === 1 ? 'avaliação' : 'avaliações'}</span>
+            </div>
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <div style={{ flex: 1, backgroundColor: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
+                <p style={{ fontSize: '18px', fontWeight: 700, color: '#10b981', margin: '0 0 2px' }}>
+                  {Math.round((ratings.positive / ratings.total) * 100)}%
+                </p>
+                <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>boas conversas</p>
+              </div>
+              <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
+                <p style={{ fontSize: '18px', fontWeight: 700, color: '#F8F9FA', margin: '0 0 2px' }}>
+                  {ratings.total}
+                </p>
+                <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>avaliações</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Vitrine de Emblemas */}
         <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '16px 18px' }}>
@@ -628,9 +646,7 @@ export default function VerPerfilPage() {
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
               >
                 <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: emblema.desbloqueado ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${emblema.desbloqueado ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.04)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', transition: 'all 0.15s' }}>
-                  <div style={{ opacity: emblema.desbloqueado ? 1 : 0.20, imageRendering: 'pixelated' }}>
-                    {emblema.pixel}
-                  </div>
+                  <EmblemaSvg id={emblema.id} desbloqueado={emblema.desbloqueado} />
                   {!emblema.desbloqueado && (
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,9,14,0.55)' }}>
                       <span style={{ fontSize: '16px', opacity: 0.4 }}>🔒</span>
@@ -643,6 +659,23 @@ export default function VerPerfilPage() {
               </button>
             ))}
           </div>
+
+          {/* Badges do banco (fundador, pioneiro, etc) */}
+          {dbBadges.length > 0 && (
+            <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {dbBadges.map(ub => (
+                <span key={ub.badge_id} title={ub.badges?.description} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  padding: '5px 10px', borderRadius: 100, fontSize: 12, fontWeight: 600,
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)',
+                  color: 'rgba(248,249,250,0.75)',
+                }}>
+                  <span>{ub.badges?.icon}</span>
+                  <span>{ub.badges?.name}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Stats rapidos */}
@@ -693,12 +726,17 @@ export default function VerPerfilPage() {
             style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '20px', padding: '28px 24px', maxWidth: '340px', width: '100%' }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Pixel art grande + fundo */}
+            {/* SVG grande */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
               <div style={{ width: '80px', height: '80px', borderRadius: '16px', backgroundColor: selectedBadge.desbloqueado ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ opacity: selectedBadge.desbloqueado ? 1 : 0.25, transform: 'scale(1.8)', imageRendering: 'pixelated' }}>
-                  {selectedBadge.pixel}
-                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/badges/${selectedBadge.id}.svg`}
+                  alt=""
+                  width={48}
+                  height={48}
+                  style={{ display: 'block', opacity: selectedBadge.desbloqueado ? 1 : 0.20, filter: selectedBadge.desbloqueado ? 'none' : 'grayscale(1)' }}
+                />
                 {!selectedBadge.desbloqueado && (
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,9,14,0.65)' }}>
                     <span style={{ fontSize: '28px', opacity: 0.5 }}>🔒</span>

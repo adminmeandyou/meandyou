@@ -9,6 +9,7 @@ interface SliderRangeProps {
   step?: number
   disabled?: boolean
   label?: string
+  formatMax?: (v: number) => string
 }
 
 export function SliderRange({
@@ -20,6 +21,7 @@ export function SliderRange({
   step = 1,
   disabled = false,
   label,
+  formatMax,
 }: SliderRangeProps) {
   const [minVal, maxVal] = value
   const range = max - min
@@ -35,7 +37,7 @@ export function SliderRange({
             {label}
           </span>
           <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>
-            {minVal}{unit} — {maxVal}{unit}
+            {minVal}{unit} — {formatMax ? formatMax(maxVal) : `${maxVal}${unit}`}
           </span>
         </div>
       )}
@@ -45,7 +47,7 @@ export function SliderRange({
             {minVal}{unit}
           </span>
           <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>
-            {maxVal}{unit}
+            {formatMax ? formatMax(maxVal) : `${maxVal}${unit}`}
           </span>
         </div>
       )}

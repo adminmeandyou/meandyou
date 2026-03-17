@@ -6,9 +6,10 @@ import Image from 'next/image'
 import { supabase } from '@/app/lib/supabase'
 import { PaywallCard } from '@/components/PaywallCard'
 import {
-  SlidersHorizontal, X, Heart, Star, AlertCircle,
+  SlidersHorizontal, X, Heart, Star, Search, AlertCircle,
   Loader2, Lock, Check, MapPin, RotateCcw, Zap, Undo2,
   ChevronDown, ChevronUp, Users, Info,
+  Target, IdCard, Sparkles, Wind, Eye, Palette, Music, Home, Briefcase,
 } from 'lucide-react'
 import { SkeletonCard, skeletonCss } from '@/components/Skeleton'
 import { useToast } from '@/components/Toast'
@@ -40,14 +41,14 @@ interface FiltersState {
   [key: string]: boolean | number | string
 }
 
-type ViewMode = 'discovery' | 'search' | 'rooms'
+type ViewMode = 'discovery' | 'search' | 'rooms' | 'daily'
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const DEFAULT_FILTERS: FiltersState = {
   search_max_distance_km: 40,
   search_min_age: 18,
-  search_max_age: 99,
+  search_max_age: 60,
   search_gender: 'all',
 }
 
@@ -63,7 +64,7 @@ const GENDER_OPTIONS = [
 
 const FILTER_CATEGORIES = [
   {
-    id: 'objetivos', label: '🎯 O que busca', locked: false, required: true,
+    id: 'objetivos', label: 'O que busca', icon: Target, locked: false, required: true,
     groups: [{ label: 'Objetivos', options: [
       { key: 'obj_serious', label: 'Relacionamento sério' },
       { key: 'obj_casual', label: 'Relacionamento casual' },
@@ -75,7 +76,7 @@ const FILTER_CATEGORIES = [
     ]}]
   },
   {
-    id: 'orientacao', label: '🪪 Identidade', locked: false, required: true,
+    id: 'orientacao', label: 'Identidade', icon: IdCard, locked: false, required: true,
     groups: [
       { label: 'Orientação sexual aceita', options: [
         { key: 'sex_hetero', label: 'Heterossexual' }, { key: 'sex_homo', label: 'Homossexual' },
@@ -92,7 +93,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'religiao', label: '🙏 Religião', locked: false, required: true,
+    id: 'religiao', label: 'Religião', icon: Sparkles, locked: false, required: true,
     groups: [{ label: 'Religião aceita', options: [
       { key: 'rel_evangelical', label: 'Evangélico(a)' }, { key: 'rel_catholic', label: 'Católico(a)' },
       { key: 'rel_spiritist', label: 'Espírita' }, { key: 'rel_umbanda', label: 'Umbanda' },
@@ -103,7 +104,7 @@ const FILTER_CATEGORIES = [
     ]}]
   },
   {
-    id: 'vicios', label: '🚬 Vícios', locked: false, required: true,
+    id: 'vicios', label: 'Vícios', icon: Wind, locked: false, required: true,
     groups: [
       { label: 'Fumo', options: [
         { key: 'smoke_yes', label: 'Fuma' }, { key: 'smoke_occasionally', label: 'Ocasionalmente' },
@@ -116,7 +117,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'aparencia', label: '👁️ Aparência', locked: false, required: false,
+    id: 'aparencia', label: 'Aparência', icon: Eye, locked: false, required: false,
     groups: [
       { label: 'Cor dos olhos', options: [
         { key: 'eye_black', label: 'Pretos' }, { key: 'eye_brown', label: 'Castanhos' },
@@ -156,7 +157,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'estilo', label: '🎭 Estilo de vida', locked: false, required: false,
+    id: 'estilo', label: 'Estilo de vida', icon: Palette, locked: false, required: false,
     groups: [
       { label: 'Rotina', options: [
         { key: 'routine_gym', label: 'Academia' }, { key: 'routine_sports', label: 'Esportes' },
@@ -179,7 +180,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'hobbies', label: '🎮 Hobbies e música', locked: false, required: false,
+    id: 'hobbies', label: 'Hobbies e música', icon: Music, locked: false, required: false,
     groups: [
       { label: 'Hobbies', options: [
         { key: 'hob_gamer', label: 'Gamer' }, { key: 'hob_reader', label: 'Leitor(a)' },
@@ -199,7 +200,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'familia', label: '👨‍👩‍👧 Família', locked: false, required: false,
+    id: 'familia', label: 'Família', icon: Home, locked: false, required: false,
     groups: [
       { label: 'Filhos', options: [
         { key: 'kids_has', label: 'Tem filhos' }, { key: 'kids_no', label: 'Não tem filhos' },
@@ -214,7 +215,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'profissional', label: '💼 Profissional', locked: false, required: false,
+    id: 'profissional', label: 'Profissional', icon: Briefcase, locked: false, required: false,
     groups: [
       { label: 'Escolaridade', options: [
         { key: 'edu_highschool', label: 'Ensino médio' }, { key: 'edu_college_incomplete', label: 'Superior incompleto' },
@@ -230,7 +231,7 @@ const FILTER_CATEGORIES = [
     ]
   },
   {
-    id: 'fetiche', label: '🔞 Fetiche & Sugar', locked: true, required: false,
+    id: 'fetiche', label: 'Fetiche & Sugar', icon: Lock, locked: true, required: false,
     groups: [{ label: 'Dinâmicas', options: [
       { key: 'disc_throuple', label: 'Trisal' }, { key: 'disc_swing', label: 'Swing' },
       { key: 'disc_polyamory', label: 'Poliamor' }, { key: 'disc_bdsm', label: 'BDSM' },
@@ -284,6 +285,7 @@ function ModeSelectorTabs({
   const tabs: { id: ViewMode; label: string }[] = [
     { id: 'discovery', label: 'Descobrir' },
     { id: 'search', label: 'Busca' },
+    { id: 'daily', label: 'Match do Dia' },
     { id: 'rooms', label: 'Salas' },
   ]
 
@@ -344,13 +346,166 @@ function ModeSelectorTabs({
   )
 }
 
+// ─── Match do Dia ─────────────────────────────────────────────────────────────
+
+function DailyMatchView({ userId, localFilters }: { userId: string | null; localFilters: FiltersState }) {
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [loading, setLoading] = useState(true)
+  const [liked, setLiked] = useState<Record<string, boolean>>({})
+  const [passed, setPassed] = useState<Record<string, boolean>>({})
+  const toast = useToast()
+  const haptics = useHaptics()
+
+  useEffect(() => {
+    if (!userId) return
+    loadDaily()
+  }, [userId])
+
+  async function loadDaily() {
+    setLoading(true)
+    const today = new Date().toISOString().slice(0, 10)
+    const cacheKey = `daily_match_${userId}_${today}`
+    const cached = localStorage.getItem(cacheKey)
+    if (cached) {
+      try { setProfiles(JSON.parse(cached)); setLoading(false); return } catch {}
+    }
+    try {
+      const { data } = await supabase.rpc('search_profiles', {
+        current_user_id: userId,
+        max_distance_km: localFilters.search_max_distance_km,
+        min_age:         localFilters.search_min_age,
+        max_age:         localFilters.search_max_age >= 60 ? 120 : localFilters.search_max_age,
+      })
+      const daily = (data ?? []).slice(0, 5) as Profile[]
+      setProfiles(daily)
+      localStorage.setItem(cacheKey, JSON.stringify(daily))
+    } catch {}
+    setLoading(false)
+  }
+
+  async function handleLike(profile: Profile) {
+    if (!userId) return
+    setLiked(prev => ({ ...prev, [profile.id]: true }))
+    haptics.medium()
+    try {
+      await supabase.rpc('process_like', {
+        p_user_id: userId, p_target_id: profile.id, p_is_superlike: false,
+      })
+      toast.success('Curtida enviada!')
+    } catch {
+      toast.error('Falha ao curtir. Tente novamente.')
+    }
+  }
+
+  function handlePass(profileId: string) {
+    setPassed(prev => ({ ...prev, [profileId]: true }))
+    haptics.tap()
+  }
+
+  const active = profiles.filter(p => !liked[p.id] && !passed[p.id])
+  const todayLabel = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+        <Loader2 size={24} style={{ color: 'var(--accent)', animation: 'spin 1s linear infinite' }} />
+      </div>
+    )
+  }
+
+  if (!profiles.length) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, padding: 24, textAlign: 'center' }}>
+        <Search size={40} color="rgba(255,255,255,0.20)" strokeWidth={1} />
+        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Sem matches hoje</p>
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Ajuste seus filtros para ver sugestões</p>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ padding: '16px 16px 20px', overflowY: 'auto', height: '100%' }}>
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+          <Heart size={15} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+          <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)' }}>Match do Dia</span>
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'capitalize' }}>{todayLabel}</p>
+        <p style={{ fontSize: 12, color: 'var(--muted-2)', marginTop: 4 }}>
+          {active.length > 0
+            ? `${active.length} sugestão${active.length !== 1 ? 'ões' : ''} selecionada${active.length !== 1 ? 's' : ''} para você hoje`
+            : 'Voce já agiu em todas as sugestões de hoje!'}
+        </p>
+      </div>
+
+      {active.length === 0 && (
+        <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '24px 20px', textAlign: 'center' }}>
+          <p style={{ fontSize: 15, color: 'var(--text)', fontWeight: 600, marginBottom: 8 }}>Volte amanha!</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)' }}>Novas sugestões aparecem todo dia às 00:00.</p>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {active.map((profile) => {
+          const photos = profile.photos?.length ? profile.photos : profile.photo_best ? [profile.photo_best] : []
+          const photo = photos[0]
+          return (
+            <div
+              key={profile.id}
+              style={{
+                backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)',
+                borderRadius: 16, overflow: 'hidden',
+                display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px',
+              }}
+            >
+              <div style={{ width: 64, height: 64, borderRadius: 12, overflow: 'hidden', flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.05)' }}>
+                {photo ? (
+                  <Image src={photo} alt={profile.name} width={64} height={64} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Heart size={20} color="rgba(255,255,255,0.20)" strokeWidth={1} />
+                  </div>
+                )}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 15, color: 'var(--text)', marginBottom: 2 }}>
+                  {profile.name}{profile.age ? `, ${profile.age}` : ''}
+                </p>
+                {profile.city && (
+                  <p style={{ fontSize: 12, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <MapPin size={10} strokeWidth={1.5} /> {profile.city}
+                  </p>
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+                <button
+                  onClick={() => handleLike(profile)}
+                  style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(16,185,129,0.30)', backgroundColor: 'rgba(16,185,129,0.10)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                >
+                  <Heart size={16} strokeWidth={2} />
+                </button>
+                <button
+                  onClick={() => handlePass(profile.id)}
+                  style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'transparent', color: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                >
+                  <X size={16} strokeWidth={2} />
+                </button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ─── Placeholder: Salas Sociais ───────────────────────────────────────────────
 
 const MOCK_ROOMS = [
-  { id: '1', title: 'Noite de Pagode', desc: 'Quem curte uma roda de pagode?', count: 12, emoji: '🎵' },
-  { id: '2', title: 'Geeks & Gamers', desc: 'Para quem joga e ama tecnologia', count: 8, emoji: '🎮' },
-  { id: '3', title: 'Trilhas e Aventuras', desc: 'Apaixonados por natureza', count: 23, emoji: '🏕️' },
-  { id: '4', title: 'Cinema & Séries', desc: 'Discussões sem spoiler (ou com)', count: 17, emoji: '🎬' },
+  { id: '1', title: 'Noite de Pagode', desc: 'Quem curte uma roda de pagode?', count: 12 },
+  { id: '2', title: 'Geeks & Gamers', desc: 'Para quem joga e ama tecnologia', count: 8 },
+  { id: '3', title: 'Trilhas e Aventuras', desc: 'Apaixonados por natureza', count: 23 },
+  { id: '4', title: 'Cinema & Séries', desc: 'Discussões sem spoiler (ou com)', count: 17 },
 ]
 
 function RoomsPlaceholder() {
@@ -410,7 +565,7 @@ function RoomsPlaceholder() {
                 flexShrink: 0,
               }}
             >
-              {room.emoji}
+              <Users size={20} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>
@@ -442,7 +597,7 @@ function SearchGrid({ deck }: { deck: Profile[] }) {
   if (!deck.length) {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, padding: 24 }}>
-        <span style={{ fontSize: 40 }}>🔍</span>
+        <Search size={40} color="rgba(255,255,255,0.20)" strokeWidth={1} />
         <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Nenhum perfil</p>
         <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>Ajuste os filtros para ver mais pessoas</p>
       </div>
@@ -640,7 +795,7 @@ export default function BuscaPage() {
         current_user_id: id,
         max_distance_km: filters.search_max_distance_km,
         min_age:         filters.search_min_age,
-        max_age:         filters.search_max_age >= 99 ? 120 : filters.search_max_age,
+        max_age:         filters.search_max_age >= 60 ? 120 : filters.search_max_age,
       })
       setDeck(data ?? [])
       setCurrentIdx(0)
@@ -825,6 +980,8 @@ export default function BuscaPage() {
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         {viewMode === 'rooms' ? (
           <RoomsPlaceholder />
+        ) : viewMode === 'daily' ? (
+          <DailyMatchView userId={userId} localFilters={localFilters} />
         ) : viewMode === 'search' ? (
           <SearchGrid deck={deck} />
         ) : loadingDeck ? (
@@ -901,11 +1058,11 @@ export default function BuscaPage() {
             {likeLimit !== Infinity && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
                 <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>
-                  ⭐ {superlikesUsed}/{superlikeLimit}
+                  <Star size={10} strokeWidth={1.5} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 2 }} />{superlikesUsed}/{superlikeLimit}
                 </span>
                 <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.10)' }}>·</span>
                 <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>
-                  ❤️ {likesUsed}/{likeLimit}
+                  <Heart size={10} strokeWidth={1.5} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 2 }} />{likesUsed}/{likeLimit}
                 </span>
               </div>
             )}
@@ -1227,6 +1384,13 @@ export default function BuscaPage() {
           </div>
         )}
 
+        {/* Mensagem de contexto do filtro */}
+        {filtersConfigured && (
+          <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.40)', margin: '0 0 16px' }}>
+            Configure o perfil da pessoa que você está buscando
+          </p>
+        )}
+
         {/* Erro de validação */}
         {requiredError && (
           <div
@@ -1271,14 +1435,14 @@ export default function BuscaPage() {
               </span>
             </div>
             <input
-              type="range" min={5} max={300} step={5}
+              type="range" min={5} max={150} step={5}
               value={localFilters.search_max_distance_km as number}
               onChange={(e) => setLocalFilters(p => ({ ...p, search_max_distance_km: Number(e.target.value) }))}
               className="ui-range-input"
               style={{ width: '100%' }}
             />
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--muted-2)', marginTop: 4 }}>
-              <span>5 km</span><span>300 km</span>
+              <span>5 km</span><span>150 km</span>
             </div>
           </div>
 
@@ -1296,12 +1460,10 @@ export default function BuscaPage() {
             onChange={([minA, maxA]) => setLocalFilters(p => ({
               ...p,
               search_min_age: minA,
-              search_max_age: maxA >= 60 ? 99 : maxA,
+              search_max_age: maxA,
             }))}
+            formatMax={(v) => v >= 60 ? '60+' : String(v)}
           />
-          <p style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 6, textAlign: 'right' }}>
-            {(localFilters.search_max_age as number) >= 59 ? 'até 60+ anos' : ''}
-          </p>
 
           {/* Gênero */}
           <div style={{ marginTop: 16 }}>
@@ -1357,9 +1519,12 @@ export default function BuscaPage() {
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap', textAlign: 'left' }}>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>
-                    {cat.label}
-                  </span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <cat.icon size={14} strokeWidth={1.5} style={{ color: 'var(--muted)', flexShrink: 0 }} />
+                    <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>
+                      {cat.label}
+                    </span>
+                  </div>
                   {cat.required && !hasSelection && (
                     <span style={{ fontSize: 11, color: '#fbbf24', backgroundColor: 'rgba(251,191,36,0.10)', padding: '2px 8px', borderRadius: 100 }}>
                       obrigatório
@@ -1528,25 +1693,51 @@ export default function BuscaPage() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
           <div
             onClick={() => setShowUpgradeModal(false)}
-            style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.70)', backdropFilter: 'blur(4px)' }}
+            style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}
           />
           <div
             style={{
               position: 'relative',
               backgroundColor: 'var(--bg-card)',
-              borderRadius: 24,
+              borderRadius: 16,
               padding: '28px 22px',
-              border: '1px solid rgba(245,158,11,0.30)',
+              border: '1px solid var(--border)',
               maxWidth: 340,
               width: '100%',
               textAlign: 'center',
+              boxShadow: '0 24px 64px rgba(0,0,0,0.55)',
             }}
           >
-            <div style={{ fontSize: 44, marginBottom: 12 }}>
-              {upgradeReason === 'superlike' ? '⭐' : '🔞'}
+            <button
+              onClick={() => setShowUpgradeModal(false)}
+              style={{
+                position: 'absolute', top: 14, right: 14,
+                width: 28, height: 28, borderRadius: '50%',
+                border: '1px solid var(--border)',
+                backgroundColor: 'rgba(255,255,255,0.05)',
+                color: 'var(--muted)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                cursor: 'pointer',
+              }}
+            >
+              <X size={13} strokeWidth={2} />
+            </button>
+            <div
+              style={{
+                width: 52, height: 52, borderRadius: '50%',
+                backgroundColor: 'rgba(225,29,72,0.12)',
+                border: '1px solid rgba(225,29,72,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                margin: '0 auto 16px',
+              }}
+            >
+              {upgradeReason === 'superlike'
+                ? <Star size={22} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+                : <Lock size={22} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+              }
             </div>
             <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>
-              {upgradeReason === 'superlike' ? 'SuperCurtidas esgotadas' : <>Exclusivo <span style={{ color: '#F59E0B' }}>Black</span></>}
+              {upgradeReason === 'superlike' ? 'SuperCurtidas esgotadas' : 'Exclusivo Black'}
             </h3>
             <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 22px', lineHeight: 1.5 }}>
               {upgradeReason === 'superlike'
@@ -1561,10 +1752,10 @@ export default function BuscaPage() {
                 display: 'block',
                 width: '100%',
                 padding: '14px 0',
-                borderRadius: 14,
-                backgroundColor: '#F59E0B',
-                color: '#000',
-                fontWeight: 700,
+                borderRadius: 12,
+                backgroundColor: 'var(--accent)',
+                color: '#fff',
+                fontWeight: 600,
                 fontSize: 14,
                 textDecoration: 'none',
                 marginBottom: 10,

@@ -4,9 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useSearch } from '@/hooks/useSearch'
 import { useSwipe } from '@/hooks/useSwipe'
 import Image from 'next/image'
-import { Heart, X, Star, MapPin, ChevronDown, ChevronUp } from 'lucide-react'
-
-// ─── Página principal ─────────────────────────────────────────────────────────
+import { Heart, X, Star, MapPin, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react'
 
 export default function MatchPage() {
   const { results, loading, search, updateLocation } = useSearch()
@@ -24,20 +22,20 @@ export default function MatchPage() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] flex flex-col font-jakarta">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)' }}>
 
       {/* Header */}
-      <header className="px-5 py-4 flex items-center justify-between">
-        <h1 className="font-fraunces text-2xl text-white">
-          <span className="italic text-[#b8f542]">Me</span>AndYou
+      <header style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', color: 'var(--text)', margin: 0 }}>
+          Me<span style={{ color: 'var(--accent)', fontStyle: 'italic' }}>And</span>You
         </h1>
-        <span className="text-white/30 text-xs">
+        <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
           {results.length > 0 ? `${results.length} pessoas perto` : ''}
         </span>
       </header>
 
-      {/* Área do card */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 pb-4">
+      {/* Area do card */}
+      <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 16px 16px' }}>
         {loading ? (
           <LoadingState />
         ) : !hasMore || !currentProfile ? (
@@ -66,7 +64,7 @@ export default function MatchPage() {
   )
 }
 
-// ─── Card com swipe ───────────────────────────────────────────────────────────
+// ─── Card com swipe ─────────────────────────────────────────────────────────
 
 function SwipeCard({ profile, onSwipe, processing }: {
   profile: any
@@ -80,7 +78,6 @@ function SwipeCard({ profile, onSwipe, processing }: {
   const [dragOffset, setDragOffset] = useState(0)
   const [showBio, setShowBio] = useState(false)
 
-  // Touch handlers
   function onTouchStart(e: React.TouchEvent) {
     startX.current = e.touches[0].clientX
     isDragging.current = true
@@ -96,17 +93,11 @@ function SwipeCard({ profile, onSwipe, processing }: {
   function onTouchEnd() {
     isDragging.current = false
     const threshold = 100
-
-    if (dragOffset > threshold) {
-      onSwipe('like')
-    } else if (dragOffset < -threshold) {
-      onSwipe('dislike')
-    }
-
+    if (dragOffset > threshold) onSwipe('like')
+    else if (dragOffset < -threshold) onSwipe('dislike')
     setDragOffset(0)
   }
 
-  // Mouse handlers (desktop)
   function onMouseDown(e: React.MouseEvent) {
     startX.current = e.clientX
     isDragging.current = true
@@ -133,8 +124,8 @@ function SwipeCard({ profile, onSwipe, processing }: {
   return (
     <div
       ref={cardRef}
-      className="relative w-full max-w-sm select-none cursor-grab active:cursor-grabbing"
       style={{
+        position: 'relative', width: '100%', maxWidth: '384px', userSelect: 'none', cursor: 'grab',
         transform: `translateX(${dragOffset}px) rotate(${rotation}deg)`,
         transition: isDragging.current ? 'none' : 'transform 0.3s ease',
       }}
@@ -147,7 +138,7 @@ function SwipeCard({ profile, onSwipe, processing }: {
       onMouseLeave={onMouseUp}
     >
       {/* Card */}
-      <div className="relative rounded-3xl overflow-hidden bg-[#1a1528] aspect-[3/4] shadow-2xl">
+      <div style={{ position: 'relative', borderRadius: '24px', overflow: 'hidden', backgroundColor: '#1a1528', aspectRatio: '3/4', boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}>
 
         {/* Foto */}
         {profile.photo_best ? (
@@ -155,56 +146,57 @@ function SwipeCard({ profile, onSwipe, processing }: {
             src={profile.photo_best}
             alt={profile.name}
             fill
-            className="object-cover pointer-events-none"
+            style={{ objectFit: 'cover', pointerEvents: 'none' }}
             draggable={false}
             sizes="400px"
           />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-br from-[#b8f542]/10 to-transparent" />
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg, rgba(225,29,72,0.10), transparent)' }} />
         )}
 
         {/* Gradiente */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.10) 50%, transparent 100%)' }} />
 
-        {/* Indicador LIKE */}
-        <div
-          className="absolute top-8 left-6 border-4 border-[#b8f542] rounded-xl px-4 py-2 rotate-[-20deg]"
-          style={{ opacity: Math.max(likeOpacity, 0) }}
-        >
-          <span className="text-[#b8f542] font-black text-2xl tracking-widest">CURTIR</span>
+        {/* Indicador CURTIR */}
+        <div style={{
+          position: 'absolute', top: '32px', left: '24px',
+          border: '4px solid var(--accent)', borderRadius: '12px', padding: '6px 16px',
+          transform: 'rotate(-20deg)', opacity: Math.max(likeOpacity, 0),
+        }}>
+          <span style={{ color: 'var(--accent)', fontWeight: 900, fontSize: '24px', letterSpacing: '0.1em' }}>CURTIR</span>
         </div>
 
         {/* Indicador NOPE */}
-        <div
-          className="absolute top-8 right-6 border-4 border-red-500 rounded-xl px-4 py-2 rotate-[20deg]"
-          style={{ opacity: Math.max(dislikeOpacity, 0) }}
-        >
-          <span className="text-red-500 font-black text-2xl tracking-widest">NOPE</span>
+        <div style={{
+          position: 'absolute', top: '32px', right: '24px',
+          border: '4px solid #f87171', borderRadius: '12px', padding: '6px 16px',
+          transform: 'rotate(20deg)', opacity: Math.max(dislikeOpacity, 0),
+        }}>
+          <span style={{ color: '#f87171', fontWeight: 900, fontSize: '24px', letterSpacing: '0.1em' }}>NOPE</span>
         </div>
 
         {/* Info */}
-        <div className="absolute bottom-0 left-0 right-0 p-5">
-          <div className="flex items-end justify-between">
+        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '20px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
             <div>
-              <h2 className="font-fraunces text-2xl font-bold text-white">
+              <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', fontWeight: 700, color: '#fff', margin: 0 }}>
                 {profile.name}, {profile.age}
               </h2>
-              <p className="flex items-center gap-1 text-white/60 text-sm mt-1">
-                <MapPin size={12} />
+              <p style={{ display: 'flex', alignItems: 'center', gap: '4px', color: 'rgba(255,255,255,0.60)', fontSize: '14px', margin: '4px 0 0' }}>
+                <MapPin size={12} strokeWidth={1.5} />
                 {profile.city} · {profile.distance_km < 1 ? 'menos de 1 km' : `${profile.distance_km} km`}
               </p>
             </div>
             <button
               onClick={() => setShowBio(!showBio)}
-              className="w-9 h-9 rounded-full bg-white/10 flex items-center justify-center"
+              style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.10)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', flexShrink: 0 }}
             >
-              {showBio ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+              {showBio ? <ChevronDown size={16} strokeWidth={1.5} /> : <ChevronUp size={16} strokeWidth={1.5} />}
             </button>
           </div>
 
-          {/* Bio expansível */}
           {showBio && profile.bio && (
-            <p className="mt-3 text-white/70 text-sm leading-relaxed border-t border-white/10 pt-3">
+            <p style={{ marginTop: '12px', color: 'rgba(255,255,255,0.70)', fontSize: '14px', lineHeight: 1.5, borderTop: '1px solid rgba(255,255,255,0.10)', paddingTop: '12px' }}>
               {profile.bio}
             </p>
           )}
@@ -214,45 +206,45 @@ function SwipeCard({ profile, onSwipe, processing }: {
   )
 }
 
-// ─── Botões de ação ───────────────────────────────────────────────────────────
+// ─── Botoes de acao ──────────────────────────────────────────────────────────
 
 function ActionButtons({ onSwipe, processing }: {
   onSwipe: (action: any) => void
   processing: boolean
 }) {
   return (
-    <div className="flex items-center gap-5 mt-6">
+    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '24px' }}>
       {/* Dislike */}
       <button
         onClick={() => onSwipe('dislike')}
         disabled={processing}
-        className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-red-500/20 hover:border-red-500/40 transition active:scale-90"
+        style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: processing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', color: '#f87171' }}
       >
-        <X size={26} className="text-red-400" />
+        <X size={26} strokeWidth={2} />
       </button>
 
       {/* SuperLike */}
       <button
         onClick={() => onSwipe('superlike')}
         disabled={processing}
-        className="w-14 h-14 rounded-full bg-white/5 border border-white/10 flex items-center justify-center hover:bg-blue-500/20 hover:border-blue-500/40 transition active:scale-90"
+        style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: processing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', color: '#60a5fa' }}
       >
-        <Star size={20} className="text-blue-400" />
+        <Star size={20} strokeWidth={1.5} />
       </button>
 
       {/* Like */}
       <button
         onClick={() => onSwipe('like')}
         disabled={processing}
-        className="w-16 h-16 rounded-full bg-[#b8f542]/10 border border-[#b8f542]/30 flex items-center justify-center hover:bg-[#b8f542]/20 transition active:scale-90"
+        style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: processing ? 'not-allowed' : 'pointer', transition: 'all 0.2s', color: 'var(--accent)' }}
       >
-        <Heart size={26} className="text-[#b8f542]" fill="#b8f542" />
+        <Heart size={26} strokeWidth={1.5} fill="var(--accent)" />
       </button>
     </div>
   )
 }
 
-// ─── Modal de match ───────────────────────────────────────────────────────────
+// ─── Modal de match ──────────────────────────────────────────────────────────
 
 function MatchModal({ profile, matchId, onDismiss }: {
   profile: any
@@ -260,35 +252,35 @@ function MatchModal({ profile, matchId, onDismiss }: {
   onDismiss: () => void
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm px-6">
-      <div className="bg-[#141020] rounded-3xl border border-[#b8f542]/20 p-8 text-center max-w-sm w-full">
+    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(8px)', padding: '24px' }}>
+      <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '24px', border: '1px solid var(--accent-border)', padding: '32px 24px', textAlign: 'center', maxWidth: '360px', width: '100%' }}>
 
         {/* Foto */}
-        <div className="relative w-28 h-28 rounded-full overflow-hidden mx-auto mb-5 border-4 border-[#b8f542]">
+        <div style={{ position: 'relative', width: '112px', height: '112px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 20px', border: '4px solid var(--accent)' }}>
           {profile.photo_best ? (
-            <Image src={profile.photo_best} alt={profile.name} fill className="object-cover" />
+            <Image src={profile.photo_best} alt={profile.name} fill style={{ objectFit: 'cover' }} />
           ) : (
-            <div className="w-full h-full bg-[#b8f542]/10" />
+            <div style={{ width: '100%', height: '100%', backgroundColor: 'var(--accent-light)' }} />
           )}
         </div>
 
-        <h2 className="font-fraunces text-3xl text-white mb-1">
-          É um <span className="italic text-[#b8f542]">match!</span>
+        <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '32px', color: 'var(--text)', margin: '0 0 6px' }}>
+          E um <em style={{ color: 'var(--accent)' }}>match!</em>
         </h2>
-        <p className="text-white/50 text-sm mb-7">
-          Você e {profile.name} curtiram um ao outro
+        <p style={{ color: 'var(--muted)', fontSize: '14px', margin: '0 0 28px' }}>
+          Voce e {profile.name} curtiram um ao outro
         </p>
 
-        <div className="flex flex-col gap-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <a
             href={`/conversas/${matchId}`}
-            className="w-full py-3.5 rounded-2xl bg-[#b8f542] text-black font-semibold text-sm hover:bg-[#a8e030] transition"
+            style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '16px', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '14px', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', transition: 'opacity 0.2s' }}
           >
             Enviar mensagem
           </a>
           <button
             onClick={onDismiss}
-            className="w-full py-3.5 rounded-2xl border border-white/10 text-white/60 text-sm hover:text-white transition"
+            style={{ width: '100%', padding: '14px', borderRadius: '16px', border: '1px solid var(--border)', color: 'var(--muted)', backgroundColor: 'transparent', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'color 0.2s' }}
           >
             Continuar explorando
           </button>
@@ -298,28 +290,31 @@ function MatchModal({ profile, matchId, onDismiss }: {
   )
 }
 
-// ─── Estados auxiliares ───────────────────────────────────────────────────────
+// ─── Estados auxiliares ──────────────────────────────────────────────────────
 
 function LoadingState() {
   return (
-    <div className="flex flex-col items-center gap-3 text-white/30">
-      <div className="w-10 h-10 border-2 border-white/10 border-t-[#b8f542] rounded-full animate-spin" />
-      <span className="text-sm">Buscando pessoas perto…</span>
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', color: 'var(--muted)' }}>
+      <div style={{ width: '40px', height: '40px', border: '2px solid var(--border)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <span style={{ fontSize: '14px' }}>Buscando pessoas perto...</span>
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }
 
 function EmptyState({ onRefresh }: { onRefresh: () => void }) {
   return (
-    <div className="flex flex-col items-center gap-4 text-center px-8">
-      <div className="text-5xl">🌎</div>
-      <h3 className="font-fraunces text-xl text-white">Por enquanto é só</h3>
-      <p className="text-white/40 text-sm">
-        Não há mais perfis na sua região. Tente aumentar o raio de busca ou volte mais tarde.
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', textAlign: 'center', padding: '0 32px' }}>
+      <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <RefreshCw size={28} color="var(--accent)" strokeWidth={1.5} />
+      </div>
+      <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', margin: 0 }}>Por enquanto e so</h3>
+      <p style={{ color: 'var(--muted)', fontSize: '14px', margin: 0, lineHeight: 1.5 }}>
+        Nao ha mais perfis na sua regiao. Tente aumentar o raio de busca ou volte mais tarde.
       </p>
       <button
         onClick={onRefresh}
-        className="mt-2 px-6 py-3 rounded-2xl bg-[#b8f542]/10 border border-[#b8f542]/30 text-[#b8f542] text-sm hover:bg-[#b8f542]/20 transition"
+        style={{ padding: '12px 24px', borderRadius: '16px', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', color: 'var(--accent)', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.2s' }}
       >
         Tentar novamente
       </button>

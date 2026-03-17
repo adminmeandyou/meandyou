@@ -10,21 +10,20 @@ import { ArrowLeft, Ticket, Loader2, Star, Zap, Search, RotateCcw, Gift, Crown }
 // Mapeamento visual dos tipos de prêmio
 const PRIZE_CONFIG: Record<string, {
   label: string
-  emoji: string
   color: string
   bg: string
   border: string
   icon: React.ReactNode
   rarity?: string
 }> = {
-  ticket:        { label: 'Ticket',         emoji: '🎟️', color: 'text-yellow-400',  bg: 'bg-yellow-500/10',  border: 'border-yellow-500/30', icon: <Ticket size={20} /> },
-  supercurtida:  { label: 'SuperLike',      emoji: '⭐',  color: 'text-pink-400',    bg: 'bg-pink-500/10',    border: 'border-pink-500/30',   icon: <Star size={20} /> },
-  boost:         { label: 'Boost',          emoji: '⚡',  color: 'text-[#b8f542]',  bg: 'bg-[#b8f542]/10',  border: 'border-[#b8f542]/30',  icon: <Zap size={20} /> },
-  lupa:          { label: 'Lupa',           emoji: '🔍',  color: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/30',   icon: <Search size={20} /> },
-  rewind:        { label: 'Desfazer',       emoji: '↩️',  color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/30', icon: <RotateCcw size={20} /> },
-  invisivel_1d:  { label: 'Invisível 1 dia', emoji: '👻', color: 'text-gray-300',  bg: 'bg-gray-500/10',   border: 'border-gray-500/30',   icon: <Gift size={20} /> },
-  plan_plus_1d:  { label: '1 dia Plus',     emoji: '💎',  color: 'text-violet-400', bg: 'bg-violet-500/15', border: 'border-violet-500/40', icon: <Crown size={20} />, rarity: 'Raro' },
-  plan_black_1d: { label: '1 dia Black',    emoji: '🖤',  color: 'text-white',      bg: 'bg-white/10',      border: 'border-white/30',      icon: <Crown size={20} />, rarity: 'Lendário' },
+  ticket:        { label: 'Ticket',           color: '#eab308', bg: 'rgba(234,179,8,0.10)',    border: 'rgba(234,179,8,0.30)',    icon: <Ticket size={20} strokeWidth={1.5} /> },
+  supercurtida:  { label: 'SuperLike',        color: '#ec4899', bg: 'rgba(236,72,153,0.10)',   border: 'rgba(236,72,153,0.30)',   icon: <Star size={20} strokeWidth={1.5} /> },
+  boost:         { label: 'Boost',            color: '#b8f542', bg: 'rgba(184,245,66,0.10)',   border: 'rgba(184,245,66,0.30)',   icon: <Zap size={20} strokeWidth={1.5} /> },
+  lupa:          { label: 'Lupa',             color: '#3b82f6', bg: 'rgba(59,130,246,0.10)',   border: 'rgba(59,130,246,0.30)',   icon: <Search size={20} strokeWidth={1.5} /> },
+  rewind:        { label: 'Desfazer',         color: '#a855f7', bg: 'rgba(168,85,247,0.10)',   border: 'rgba(168,85,247,0.30)',   icon: <RotateCcw size={20} strokeWidth={1.5} /> },
+  invisivel_1d:  { label: 'Invisível 1 dia',  color: '#9ca3af', bg: 'rgba(156,163,175,0.10)',  border: 'rgba(156,163,175,0.30)',  icon: <Gift size={20} strokeWidth={1.5} /> },
+  plan_plus_1d:  { label: '1 dia Plus',       color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)',   border: 'rgba(139,92,246,0.40)',   icon: <Crown size={20} strokeWidth={1.5} />, rarity: 'Raro' },
+  plan_black_1d: { label: '1 dia Black',      color: '#F8F9FA', bg: 'rgba(255,255,255,0.10)',  border: 'rgba(255,255,255,0.30)',  icon: <Crown size={20} strokeWidth={1.5} />, rarity: 'Lendário' },
 }
 
 // Segmentos visuais da roleta (ordem na roda)
@@ -85,7 +84,6 @@ export default function RoletaPage() {
         .limit(10),
     ])
 
-    // Contar giros de hoje
     const { count } = await supabase
       .from('roleta_history')
       .select('*', { count: 'exact', head: true })
@@ -116,7 +114,6 @@ export default function RoletaPage() {
       const startAngle = currentRotation + i * segAngle
       const endAngle = startAngle + segAngle
 
-      // Fatia
       ctx.beginPath()
       ctx.moveTo(cx, cy)
       ctx.arc(cx, cy, radius, startAngle, endAngle)
@@ -127,7 +124,6 @@ export default function RoletaPage() {
       ctx.lineWidth = 1.5
       ctx.stroke()
 
-      // Texto
       ctx.save()
       ctx.translate(cx, cy)
       ctx.rotate(startAngle + segAngle / 2)
@@ -138,12 +134,11 @@ export default function RoletaPage() {
       ctx.restore()
     })
 
-    // Centro
     ctx.beginPath()
     ctx.arc(cx, cy, 22, 0, 2 * Math.PI)
-    ctx.fillStyle = '#1a1025'
+    ctx.fillStyle = '#0F1117'
     ctx.fill()
-    ctx.strokeStyle = '#ffffff22'
+    ctx.strokeStyle = 'rgba(255,255,255,0.13)'
     ctx.lineWidth = 2
     ctx.stroke()
   }
@@ -156,7 +151,6 @@ export default function RoletaPage() {
     function step(now: number) {
       const elapsed = now - start
       const progress = Math.min(elapsed / duration, 1)
-      // ease out cubic
       const ease = 1 - Math.pow(1 - progress, 3)
       const current = from + (targetRotation - from) * ease
       drawWheel(current)
@@ -176,7 +170,6 @@ export default function RoletaPage() {
     setSpinning(true)
     setResult(null)
 
-    // Chama RPC — toda lógica de peso, jackpot e débito de ticket está no banco
     const { data, error } = await supabase.rpc('spin_roleta', { p_user_id: user!.id })
 
     if (error || !data) {
@@ -187,7 +180,6 @@ export default function RoletaPage() {
 
     const prize: SpinResult = data
 
-    // Alinha a roda para parar visualmente no segmento do prêmio recebido
     const segAngle = (2 * Math.PI) / WHEEL_SEGMENTS.length
     const segIdx = (() => {
       if (prize.reward_type === 'ticket') {
@@ -198,7 +190,6 @@ export default function RoletaPage() {
       const map: Record<string, number> = { supercurtida: 1, lupa: 3, boost: 5, rewind: 7 }
       return map[prize.reward_type] ?? 0
     })()
-    // Para que o ponteiro (topo = -π/2) aponte para o centro do segmento correto
     const naturalStop = -Math.PI / 2 - (segIdx + 0.5) * segAngle
     const delta = ((naturalStop - rotation) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI)
     const targetRotation = rotation + 6 * 2 * Math.PI + delta
@@ -224,37 +215,47 @@ export default function RoletaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-24">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-          <ArrowLeft size={18} className="text-white/60" />
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button
+          onClick={() => router.back()}
+          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+        >
+          <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
-        <div className="flex-1">
-          <h1 className="font-fraunces text-xl text-white">Roleta</h1>
-          <p className="text-white/30 text-xs">Gire e ganhe prêmios todos os dias</p>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>Roleta</h1>
+          <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Gire e ganhe prêmios todos os dias</p>
         </div>
         {/* Saldo de tickets */}
-        <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20">
-          <Ticket size={12} className="text-yellow-400" />
-          <span className="text-yellow-400 text-xs font-bold">{loading ? '…' : tickets}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '100px', backgroundColor: 'rgba(234,179,8,0.10)', border: '1px solid rgba(234,179,8,0.25)', flexShrink: 0 }}>
+          <Ticket size={13} color="#eab308" strokeWidth={1.5} />
+          <span style={{ fontSize: '13px', color: '#eab308', fontWeight: 700 }}>{loading ? '…' : tickets}</span>
         </div>
       </header>
 
-      <div className="px-5 pt-6 space-y-6">
+      <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
         {/* Roleta */}
-        <div className="flex flex-col items-center gap-4">
-          {/* Ponteiro */}
-          <div className="relative">
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1 z-10 w-0 h-0"
-              style={{ borderLeft: '8px solid transparent', borderRight: '8px solid transparent', borderTop: '18px solid #b8f542' }} />
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+
+          {/* Ponteiro + canvas */}
+          <div style={{ position: 'relative' }}>
+            <div style={{
+              position: 'absolute', top: 0, left: '50%',
+              transform: 'translateX(-50%) translateY(-1px)',
+              zIndex: 10, width: 0, height: 0,
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderTop: '18px solid #E11D48',
+            }} />
             <canvas
               ref={canvasRef}
               width={260}
               height={260}
-              className="rounded-full border border-white/10"
+              style={{ borderRadius: '50%', border: '1px solid rgba(255,255,255,0.10)', display: 'block' }}
             />
           </div>
 
@@ -262,27 +263,38 @@ export default function RoletaPage() {
           <button
             onClick={handleSpin}
             disabled={!canSpin}
-            className="w-full max-w-xs py-4 rounded-2xl font-bold text-base transition-all
-              bg-[#b8f542] text-black hover:bg-[#a8e030] active:scale-95
-              disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100"
+            style={{
+              width: '100%', maxWidth: '320px', padding: '16px',
+              borderRadius: '16px', border: 'none',
+              backgroundColor: canSpin ? '#E11D48' : 'rgba(225,29,72,0.30)',
+              color: '#fff', fontSize: '15px', fontWeight: 700,
+              cursor: canSpin ? 'pointer' : 'not-allowed',
+              fontFamily: 'var(--font-jakarta)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              transition: 'background-color 0.2s',
+            }}
           >
             {spinning ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 size={18} className="animate-spin" /> Girando…
-              </span>
+              <>
+                <Loader2 size={18} strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} />
+                Girando…
+              </>
             ) : tickets === 0 ? (
               'Sem tickets — ganhe entrando amanhã'
             ) : spinsLeft === 0 ? (
               'Limite diário atingido'
             ) : (
-              `Girar (1 ticket)`
+              'Girar (1 ticket)'
             )}
           </button>
 
           {/* Info de tickets diários */}
-          <p className="text-white/30 text-xs text-center">
-            Plano {limits.isBlack ? 'Black' : limits.isPlus ? 'Plus' : 'Essencial'}: {dailyTickets} ticket{dailyTickets > 1 ? 's' : ''}/dia •{' '}
-            {spinsLeft > 0 ? `${spinsLeft} ticket${spinsLeft > 1 ? 's' : ''} diário${spinsLeft > 1 ? 's' : ''} disponível` : 'Ticket diário usado — compre mais na loja'}
+          <p style={{ fontSize: '12px', color: 'var(--muted)', textAlign: 'center', margin: 0 }}>
+            Plano {limits.isBlack ? 'Black' : limits.isPlus ? 'Plus' : 'Essencial'}: {dailyTickets} ticket{dailyTickets > 1 ? 's' : ''}/dia
+            {' • '}
+            {spinsLeft > 0
+              ? `${spinsLeft} ticket${spinsLeft > 1 ? 's' : ''} diário${spinsLeft > 1 ? 's' : ''} disponível`
+              : 'Ticket diário usado — compre mais na loja'}
           </p>
         </div>
 
@@ -290,18 +302,18 @@ export default function RoletaPage() {
         {result && (() => {
           const config = PRIZE_CONFIG[result.reward_type] ?? PRIZE_CONFIG['ticket']
           return (
-            <div className={`rounded-2xl p-5 border ${config.bg} ${config.border} flex items-center gap-4`}>
-              <span className="text-4xl">{config.emoji}</span>
-              <div className="flex-1">
+            <div style={{ borderRadius: '16px', padding: '20px', border: `1px solid ${config.border}`, backgroundColor: config.bg, display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: config.bg, border: `1px solid ${config.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: config.color, flexShrink: 0 }}>{config.icon}</div>
+              <div style={{ flex: 1 }}>
                 {config.rarity && (
-                  <span className={`text-xs font-bold uppercase tracking-widest ${config.color} mb-1 block`}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: config.color, display: 'block', marginBottom: '4px' }}>
                     {config.rarity}!
                   </span>
                 )}
-                <p className="text-white font-fraunces text-lg">
+                <p style={{ color: 'var(--text)', fontFamily: 'var(--font-fraunces)', fontSize: '17px', margin: 0 }}>
                   Você ganhou {formatPrize(result.reward_type, result.reward_amount)}!
                 </p>
-                <p className="text-white/40 text-xs mt-0.5">Adicionado ao seu saldo automaticamente</p>
+                <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '4px 0 0' }}>Adicionado ao seu saldo automaticamente</p>
               </div>
             </div>
           )
@@ -309,14 +321,14 @@ export default function RoletaPage() {
 
         {/* Tabela de prêmios */}
         <div>
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-3">Prêmios possíveis</h2>
-          <div className="space-y-2">
+          <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '10px' }}>Prêmios possíveis</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
             {Object.entries(PRIZE_CONFIG).map(([type, cfg]) => (
-              <div key={type} className={`flex items-center gap-3 p-3 rounded-xl border ${cfg.bg} ${cfg.border}`}>
-                <span className="text-lg">{cfg.emoji}</span>
-                <span className={`text-sm font-semibold ${cfg.color}`}>{cfg.label}</span>
+              <div key={type} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', border: `1px solid ${cfg.border}`, backgroundColor: cfg.bg }}>
+                <div style={{ color: cfg.color, display: 'flex' }}>{cfg.icon}</div>
+                <span style={{ fontSize: '14px', fontWeight: 600, color: cfg.color, flex: 1 }}>{cfg.label}</span>
                 {cfg.rarity && (
-                  <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${cfg.bg} ${cfg.border} ${cfg.color} font-bold`}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, color: cfg.color, backgroundColor: cfg.bg, border: `1px solid ${cfg.border}`, borderRadius: '100px', padding: '2px 10px' }}>
                     {cfg.rarity}
                   </span>
                 )}
@@ -328,15 +340,15 @@ export default function RoletaPage() {
         {/* Histórico */}
         {history.length > 0 && (
           <div>
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-white/30 mb-3">Últimos giros</h2>
-            <div className="space-y-2">
+            <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '10px' }}>Últimos giros</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {history.map((h, i) => {
                 const cfg = PRIZE_CONFIG[h.reward_type] ?? PRIZE_CONFIG['ticket']
                 return (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-xl bg-white/3 border border-white/5">
-                    <span className="text-base">{cfg.emoji}</span>
-                    <span className="text-white/60 text-sm flex-1">{formatPrize(h.reward_type, h.reward_amount)}</span>
-                    <span className="text-white/20 text-xs">
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 14px', borderRadius: '14px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.05)' }}>
+                    <div style={{ color: cfg.color, display: 'flex' }}>{cfg.icon}</div>
+                    <span style={{ fontSize: '13px', color: 'var(--muted)', flex: 1 }}>{formatPrize(h.reward_type, h.reward_amount)}</span>
+                    <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>
                       {new Date(h.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
                     </span>
                   </div>
@@ -347,19 +359,27 @@ export default function RoletaPage() {
         )}
 
         {/* CTA para ganhar mais tickets */}
-        <div className="rounded-2xl p-4 bg-white/3 border border-white/8 text-center space-y-2">
-          <p className="text-white/50 text-sm">Quer mais tickets?</p>
-          <div className="flex gap-2 justify-center flex-wrap">
-            <a href="/indicar" className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/60 text-xs hover:bg-white/10 transition">
+        <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', textAlign: 'center' }}>
+          <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 12px' }}>Quer mais tickets?</p>
+          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <a
+              href="/indicar"
+              style={{ padding: '8px 16px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', color: 'var(--muted)', fontSize: '12px', textDecoration: 'none', fontFamily: 'var(--font-jakarta)' }}
+            >
               Indicar amigos (+3 tickets)
             </a>
-            <a href="/streak" className="px-4 py-2 rounded-xl bg-[#b8f542]/10 border border-[#b8f542]/30 text-[#b8f542] text-xs hover:bg-[#b8f542]/20 transition">
+            <a
+              href="/streak"
+              style={{ padding: '8px 16px', borderRadius: '12px', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', color: 'var(--accent)', fontSize: '12px', textDecoration: 'none', fontFamily: 'var(--font-jakarta)' }}
+            >
               Ganhar via streak
             </a>
           </div>
         </div>
 
       </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

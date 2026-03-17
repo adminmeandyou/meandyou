@@ -37,6 +37,11 @@ interface ProfileData {
   highlight_tags: string[]
   highlight_tags_edited_at: string | null
   profile_edited_at: string | null
+  status_temp: string | null
+  status_temp_expires_at: string | null
+  profile_question: string | null
+  profile_question_answer: string | null
+  blur_photos: boolean
 }
 
 // ─── Utils de conversão filters → estado UI ──────────────────────────────────
@@ -131,7 +136,7 @@ export default function EditarPerfilPage() {
       setUserId(user.id)
       const [{ data: p }, { data: f }] = await Promise.all([
         supabase.from('profiles')
-          .select('bio, photo_face, photo_body, photo_side, photo_back, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at')
+          .select('bio, photo_face, photo_body, photo_side, photo_back, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at, profile_question, profile_question_answer, blur_photos')
           .eq('id', user.id).single(),
         supabase.from('filters').select('*').eq('user_id', user.id).single(),
       ])
@@ -186,6 +191,25 @@ export default function EditarPerfilPage() {
 
       <div style={{ padding: '4px 0' }}>
 
+        {/* ── Status de hoje (livre, temporário) ── */}
+        <Acordeao
+          id="status-hoje"
+          titulo="Status de hoje"
+          badge="Livre"
+          badgeCor="#10b981"
+          aberto={secaoAberta === 'status-hoje'}
+          onToggle={() => toggle('status-hoje')}
+        >
+          {userId && (
+            <StatusTempSection
+              userId={userId}
+              statusAtual={profileData?.status_temp ?? null}
+              expiresAt={profileData?.status_temp_expires_at ?? null}
+              onSaved={(s, e) => setProfileData(prev => prev ? { ...prev, status_temp: s, status_temp_expires_at: e } : prev)}
+            />
+          )}
+        </Acordeao>
+
         {/* ── Fotos & Bio (livre) ── */}
         <Acordeao
           id="fotos-bio"
@@ -201,6 +225,57 @@ export default function EditarPerfilPage() {
               profileData={profileData}
               onSaved={(updated) => setProfileData(prev => prev ? { ...prev, ...updated } : prev)}
             />
+          )}
+        </Acordeao>
+
+        {/* ── Revelação gradual de fotos ── */}
+        <Acordeao
+          id="revelacao-gradual"
+          titulo="Revelação gradual"
+          badge="Livre"
+          badgeCor="#10b981"
+          aberto={secaoAberta === 'revelacao-gradual'}
+          onToggle={() => toggle('revelacao-gradual')}
+        >
+          {userId && profileData !== null && (
+            <div style={{ padding: '4px 0 12px' }}>
+              <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.55)', lineHeight: 1.6, marginBottom: 16 }}>
+                Quando ativado, suas fotos aparecem borradas para quem ainda nao conversou com voce.
+                A medida que trocam mensagens, as fotos vao sendo reveladas progressivamente.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16, fontSize: 12, color: 'rgba(248,249,250,0.40)' }}>
+                <span>0 msg — foto totalmente borrada</span>
+                <span>5 msg — foto pela metade revelada</span>
+                <span>10 msg — foto completamente visivel</span>
+                <span>20 msg — perfil completo revelado</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px' }}>
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#F8F9FA', margin: '0 0 2px' }}>Ativar revelacao gradual</p>
+                  <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.40)', margin: 0 }}>
+                    {profileData.blur_photos ? 'Fotos borradas para desconhecidos' : 'Fotos visiveis para todos'}
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    const novo = !profileData.blur_photos
+                    setProfileData(prev => prev ? { ...prev, blur_photos: novo } : prev)
+                    await supabase.from('profiles').update({ blur_photos: novo }).eq('id', userId)
+                  }}
+                  style={{
+                    width: 44, height: 24, borderRadius: 100, border: 'none', cursor: 'pointer',
+                    backgroundColor: profileData.blur_photos ? '#E11D48' : 'rgba(255,255,255,0.12)',
+                    position: 'relative', transition: 'background-color 0.2s', flexShrink: 0,
+                  }}
+                >
+                  <span style={{
+                    position: 'absolute', top: 2, left: profileData.blur_photos ? 22 : 2,
+                    width: 20, height: 20, borderRadius: '50%', backgroundColor: '#fff',
+                    transition: 'left 0.2s', display: 'block',
+                  }} />
+                </button>
+              </div>
+            </div>
           )}
         </Acordeao>
 
@@ -384,6 +459,19 @@ function Acordeao({ id, titulo, badge, badgeCor, aberto, onToggle, children }: {
 
 // ─── Seção: Fotos & Bio ───────────────────────────────────────────────────────
 
+const PERGUNTAS_SUGESTOES = [
+  'Qual seria seu fim de semana ideal?',
+  'O que nao pode faltar num primeiro encontro?',
+  'Qual musica define voce agora?',
+  'Qual seria a viagem dos sonhos?',
+  'O que te faz rir de verdade?',
+  'Serie ou filme? Qual a favorita?',
+  'O que voce faz quando quer relaxar?',
+  'Qual superpoder voce escolheria?',
+  'Cafe da manha ou janta romantica?',
+  'Qual e sua historia favorita para contar?',
+]
+
 const BIO_SUGESTOES = [
   'Adoro viajar', 'Trabalho com tecnologia', 'Fa de boa musica',
   'Gosto de cozinhar', 'Apaixonado(a) por filmes', 'Amo animais',
@@ -407,6 +495,9 @@ function FotosBioSection({ userId, profileData, onSaved }: {
     return idx >= 0 ? idx : 0
   })
   const [bio, setBio] = useState(profileData.bio ?? '')
+  const [pergunta, setPergunta] = useState(profileData.profile_question ?? '')
+  const [resposta, setResposta] = useState(profileData.profile_question_answer ?? '')
+  const [mostrarListaPerguntas, setMostrarListaPerguntas] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [enviando, setEnviando] = useState<number | null>(null)
   const [erro, setErro] = useState('')
@@ -445,8 +536,10 @@ function FotosBioSection({ userId, profileData, onSaved }: {
     fotoSlots.forEach((slot, i) => { update[slot] = fotosUrls[i] ?? null })
     update['photo_best'] = fotosUrls[fotoPrincipal] ?? fotosUrls.find(Boolean) ?? null
     try {
-      await supabase.from('profiles').upsert({ id: userId, bio, ...update })
-      onSaved({ bio, photo_best: update['photo_best'], ...Object.fromEntries(fotoSlots.map((s, i) => [s, fotosUrls[i]])) } as any)
+      const perguntaFinal = pergunta.trim() || null
+      const respostaFinal = perguntaFinal ? (resposta.trim() || null) : null
+      await supabase.from('profiles').upsert({ id: userId, bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, ...update })
+      onSaved({ bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, photo_best: update['photo_best'], ...Object.fromEntries(fotoSlots.map((s, i) => [s, fotosUrls[i]])) } as any)
       setSucesso(true)
       setTimeout(() => setSucesso(false), 3000)
     } catch (err) { console.error('[editar-perfil] fotos-bio', err); setErro('Erro ao salvar.') }
@@ -544,6 +637,70 @@ function FotosBioSection({ userId, profileData, onSaved }: {
             {sug}
           </button>
         ))}
+      </div>
+
+      {/* Pergunta do perfil */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px', marginTop: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <label style={{ color: 'rgba(248,249,250,0.45)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>Pergunta (opcional)</label>
+          {pergunta && (
+            <button
+              onClick={() => { setPergunta(''); setResposta('') }}
+              style={{ color: 'rgba(248,249,250,0.30)', fontSize: '11px', background: 'none', border: 'none', cursor: 'pointer', padding: '0', fontFamily: 'var(--font-jakarta)' }}
+            >
+              Remover
+            </button>
+          )}
+        </div>
+        <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', margin: '0 0 10px' }}>
+          Aparece acima da sua bio. Escolha uma sugestao ou escreva a sua.
+        </p>
+
+        {/* Lista de sugestoes */}
+        <button
+          onClick={() => setMostrarListaPerguntas(p => !p)}
+          style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(248,249,250,0.55)', borderRadius: '100px', fontSize: '12px', padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
+        >
+          <span>{mostrarListaPerguntas ? '▲' : '▼'}</span> Ver sugestoes
+        </button>
+
+        {mostrarListaPerguntas && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '10px' }}>
+            {PERGUNTAS_SUGESTOES.map(q => (
+              <button
+                key={q}
+                onClick={() => { setPergunta(q); setMostrarListaPerguntas(false) }}
+                style={{ backgroundColor: pergunta === q ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.03)', border: `1px solid ${pergunta === q ? 'rgba(225,29,72,0.30)' : 'rgba(255,255,255,0.07)'}`, color: pergunta === q ? '#E11D48' : 'rgba(248,249,250,0.65)', borderRadius: '10px', fontSize: '13px', padding: '9px 12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-jakarta)' }}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Campo de pergunta personalizada */}
+        <input
+          value={pergunta}
+          onChange={e => setPergunta(e.target.value)}
+          maxLength={120}
+          placeholder="Ou escreva sua propria pergunta..."
+          style={{ width: '100%', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '10px 12px', color: '#F8F9FA', fontSize: '14px', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box', outline: 'none', marginBottom: '8px' }}
+        />
+
+        {/* Campo de resposta — so aparece se tiver pergunta */}
+        {pergunta.trim() && (
+          <>
+            <label style={{ display: 'block', color: 'rgba(248,249,250,0.45)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Sua resposta</label>
+            <textarea
+              value={resposta}
+              onChange={e => setResposta(e.target.value)}
+              maxLength={200}
+              placeholder="Responda de forma sincera e divertida..."
+              style={{ width: '100%', minHeight: '70px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '10px 12px', color: '#F8F9FA', fontSize: '14px', fontFamily: 'var(--font-jakarta)', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
+            />
+            <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', textAlign: 'right', margin: '4px 0 0' }}>{resposta.length}/200</p>
+          </>
+        )}
       </div>
 
       {erro && <p style={{ color: '#f87171', fontSize: '13px', margin: '8px 0 0' }}>{erro}</p>}
@@ -1132,6 +1289,145 @@ function BloqueioAviso({ horas, dias }: { horas?: number; dias?: number }) {
     <div style={{ padding: '10px 14px', borderRadius: '10px', backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.20)', display: 'flex', alignItems: 'center', gap: '8px' }}>
       <Clock size={14} color="#f59e0b" />
       <p style={{ color: '#f59e0b', fontSize: '13px', margin: 0 }}>{msg}</p>
+    </div>
+  )
+}
+
+// ─── Status Temporário ────────────────────────────────────────────────────────
+
+const STATUS_OPCOES = [
+  { id: 'querendo_sair',  label: 'Querendo sair'   },
+  { id: 'cafe',           label: 'Café e conversa' },
+  { id: 'praia',          label: 'Praia'           },
+  { id: 'academia',       label: 'Academia'        },
+  { id: 'cinema',         label: 'Cinema'          },
+  { id: 'estudando',      label: 'Estudando'       },
+  { id: 'turistando',     label: 'Turistando'      },
+  { id: 'bar',            label: 'No bar'          },
+  { id: 'rolê',           label: 'Procurando rolê' },
+]
+
+const DURACAO_OPCOES = [
+  { horas: 2,  label: '2 horas'  },
+  { horas: 4,  label: '4 horas'  },
+  { horas: 8,  label: '8 horas'  },
+  { horas: 24, label: '24 horas' },
+]
+
+function StatusTempSection({
+  userId,
+  statusAtual,
+  expiresAt,
+  onSaved,
+}: {
+  userId: string
+  statusAtual: string | null
+  expiresAt: string | null
+  onSaved: (status: string | null, expiresAt: string | null) => void
+}) {
+  const statusVivo = statusAtual && expiresAt && new Date(expiresAt) > new Date()
+  const [selecionado, setSelecionado] = useState<string | null>(statusVivo ? statusAtual : null)
+  const [duracao, setDuracao] = useState(4)
+  const [saving, setSaving] = useState(false)
+  const [sucesso, setSucesso] = useState(false)
+
+  async function salvar() {
+    setSaving(true)
+    const expires = new Date(Date.now() + duracao * 3600000).toISOString()
+    const { error } = await supabase
+      .from('profiles')
+      .update({ status_temp: selecionado, status_temp_expires_at: selecionado ? expires : null })
+      .eq('id', userId)
+
+    if (!error) {
+      onSaved(selecionado, selecionado ? expires : null)
+      setSucesso(true)
+      setTimeout(() => setSucesso(false), 2000)
+    }
+    setSaving(false)
+  }
+
+  async function remover() {
+    setSaving(true)
+    await supabase
+      .from('profiles')
+      .update({ status_temp: null, status_temp_expires_at: null })
+      .eq('id', userId)
+    setSelecionado(null)
+    onSaved(null, null)
+    setSaving(false)
+  }
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <p style={{ color: 'rgba(248,249,250,0.50)', fontSize: '13px', margin: '0 0 16px', lineHeight: 1.5 }}>
+        Mostre o que voce esta fazendo hoje. Aparece como tag no seu perfil por tempo limitado.
+      </p>
+
+      {statusVivo && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '10px 14px', borderRadius: 12, marginBottom: 16,
+          background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.20)',
+        }}>
+          <span style={{ color: '#F43F5E', fontSize: 13, fontWeight: 600 }}>
+            Status ativo: {STATUS_OPCOES.find(s => s.id === statusAtual)?.label}
+          </span>
+          <button
+            onClick={remover}
+            disabled={saving}
+            style={{ background: 'none', border: 'none', color: 'rgba(248,249,250,0.40)', cursor: 'pointer', fontSize: 13 }}
+          >
+            Remover
+          </button>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+        {STATUS_OPCOES.map(opcao => (
+          <button
+            key={opcao.id}
+            onClick={() => setSelecionado(prev => prev === opcao.id ? null : opcao.id)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 14px', borderRadius: 100,
+              border: selecionado === opcao.id ? '1px solid var(--accent)' : '1px solid rgba(255,255,255,0.10)',
+              background: selecionado === opcao.id ? 'rgba(225,29,72,0.12)' : 'rgba(255,255,255,0.04)',
+              color: selecionado === opcao.id ? '#F43F5E' : 'rgba(248,249,250,0.65)',
+              fontSize: 13, fontWeight: selecionado === opcao.id ? 600 : 400,
+              cursor: 'pointer', transition: 'all 0.15s',
+            }}
+          >
+            <span>{opcao.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {selecionado && (
+        <>
+          <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: 12, margin: '0 0 8px' }}>Duração</p>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+            {DURACAO_OPCOES.map(d => (
+              <button
+                key={d.horas}
+                onClick={() => setDuracao(d.horas)}
+                style={{
+                  flex: 1, padding: '8px 0', borderRadius: 10,
+                  border: duracao === d.horas ? '1px solid var(--accent)' : '1px solid rgba(255,255,255,0.08)',
+                  background: duracao === d.horas ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.03)',
+                  color: duracao === d.horas ? '#F43F5E' : 'rgba(248,249,250,0.50)',
+                  fontSize: 12, fontWeight: duracao === d.horas ? 700 : 400,
+                  cursor: 'pointer',
+                }}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      <BotaoSalvar loading={saving} sucesso={sucesso} onClick={salvar} />
     </div>
   )
 }

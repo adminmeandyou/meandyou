@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
-import { X, Star, Zap, Search, RotateCcw } from 'lucide-react'
+import { X, Star, Zap, Search, RotateCcw, Ghost } from 'lucide-react'
 
 export type StoreItemType = 'superlike' | 'boost' | 'lupa' | 'rewind' | 'ghost'
 
@@ -52,7 +52,7 @@ const PACKAGES: Record<StoreItemType, { title: string; icon: React.ReactNode; it
   },
   ghost: {
     title: 'Modo Fantasma',
-    icon: <span className="text-xl leading-none">👻</span>,
+    icon: <Ghost size={18} strokeWidth={1.5} style={{ color: '#9ca3af' }} />,
     items: [
       { label: '7 dias',  description: 'Some das buscas temporariamente', price: 'R$ 9',  url: 'https://pay.cakto.com.br/ct79bui' },
       { label: '35 dias', description: 'Melhor custo-benefício',           price: 'R$ 29', url: 'https://pay.cakto.com.br/jesigqc', highlight: true },

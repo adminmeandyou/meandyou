@@ -81,9 +81,9 @@ export default function DeletarContaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-24">
+    <div className="min-h-screen bg-[var(--bg)] font-jakarta pb-24">
 
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-[var(--bg)]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
         <button onClick={() => {
           if (step === 'pausar') setStep('aviso')
           else if (step === 'motivo') setStep('pausar')

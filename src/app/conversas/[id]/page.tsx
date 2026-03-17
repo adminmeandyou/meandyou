@@ -14,6 +14,7 @@ import {
 import { ChatBubble } from '@/components/ui/ChatBubble'
 import { ReportModal } from '@/components/ReportModal'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
+import { useToast } from '@/components/Toast'
 
 interface Message {
   id: string
@@ -50,6 +51,7 @@ export default function ChatPage() {
   const params = useParams()
   const matchId = params.id as string
   const router = useRouter()
+  const toast = useToast()
 
   const [userId, setUserId] = useState<string | null>(null)
   const [otherUser, setOtherUser] = useState<OtherUser | null>(null)
@@ -65,6 +67,9 @@ export default function ChatPage() {
   const [showIcebreakers, setShowIcebreakers] = useState(false)
   const [showConvite, setShowConvite] = useState(false)
   const [conviteText, setConviteText] = useState('')
+  const [conviteLocal, setConviteLocal] = useState('')
+  const [conviteDate, setConviteDate] = useState('')
+  const [conviteTime, setConviteTime] = useState('')
   const [shake, setShake] = useState(false)
   const [pendingConvite, setPendingConvite] = useState<string | null>(null)
 
@@ -77,6 +82,7 @@ export default function ChatPage() {
   const [meetingSaved, setMeetingSaved]         = useState(false)
   // Check-in pós-encontro (bloqueante)
   const [checkinMeeting, setCheckinMeeting] = useState<{ id: string; local: string; date: string } | null>(null)
+  const [checkinRecordId, setCheckinRecordId] = useState<string | null>(null)
   // Central de segurança
   const [showSecuritySheet, setShowSecuritySheet] = useState(false)
   const [unmatchConfirm, setUnmatchConfirm]       = useState(false)
@@ -327,16 +333,53 @@ export default function ChatPage() {
   }
 
   async function handleNudge() {
+    const nudgeKey = `nudge_last_${matchId}`
+    const last = localStorage.getItem(nudgeKey)
+    if (last) {
+      const diff = Date.now() - parseInt(last)
+      if (diff < 60 * 60 * 1000) {
+        const mins = Math.ceil((60 * 60 * 1000 - diff) / 60000)
+        toast.info(`Aguarde ${mins} min para dar outro nudge`)
+        return
+      }
+    }
+    localStorage.setItem(nudgeKey, Date.now().toString())
     if (navigator.vibrate) navigator.vibrate([100, 50, 150])
     await sendMessage(NUDGE_TOKEN)
   }
 
   async function handleSendConvite() {
     const texto = conviteText.trim()
-    if (!texto) return
-    await sendMessage(`${CONVITE_PREFIX}${texto}`)
+    if (!texto && !conviteLocal.trim()) return
+
+    // Se tem local/data/hora, envia formato estruturado __MEETING__
+    if (conviteLocal.trim()) {
+      const payload = JSON.stringify({
+        texto: texto || null,
+        local: conviteLocal.trim(),
+        date: conviteDate || null,
+        time: conviteTime || null,
+      })
+      await sendMessage(`__MEETING__:${payload}`)
+      // Cria registro na tabela meeting_invites via API
+      if (otherUser && conviteDate && conviteTime) {
+        const { data: { session } } = await supabase.auth.getSession()
+        const meetingDate = new Date(`${conviteDate}T${conviteTime}`).toISOString()
+        fetch('/api/meeting/invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ matchId, receiverId: otherUser.id, local: conviteLocal.trim(), meetingDate }),
+        }).catch(() => {})
+      }
+    } else {
+      await sendMessage(`${CONVITE_PREFIX}${texto}`)
+    }
+
     setShowConvite(false)
     setConviteText('')
+    setConviteLocal('')
+    setConviteDate('')
+    setConviteTime('')
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -378,20 +421,29 @@ export default function ChatPage() {
 
   // ── Fase 8: handlers ─────────────────────────────────────────────────────────
 
-  function handleSaveMeeting() {
+  async function handleSaveMeeting() {
     if (!meetingLocal.trim() || !meetingDateVal || !meetingTimeVal) return
-    const record = {
-      id: String(Date.now()),
-      matchId,
-      matchName: otherUser?.name ?? 'Match',
-      local: meetingLocal.trim(),
-      date: `${meetingDateVal}T${meetingTimeVal}`,
-      checkedIn: false,
-    }
+    const meetingDate = `${meetingDateVal}T${meetingTimeVal}`
+
+    // Salva no banco (privado — o match não vê)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/safety/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ matchId, matchName: otherUser?.name ?? 'Match', local: meetingLocal.trim(), meetingDate }),
+      })
+      const json = await res.json()
+      if (json.id) setCheckinRecordId(json.id)
+    } catch { /* silencioso */ }
+
+    // Mantém também localStorage como fallback
+    try {
+      const record = { id: String(Date.now()), matchId, matchName: otherUser?.name ?? 'Match', local: meetingLocal.trim(), date: meetingDate, checkedIn: false }
       const existing: any[] = JSON.parse(localStorage.getItem('meandyou_meetings') ?? '[]')
       localStorage.setItem('meandyou_meetings', JSON.stringify([...existing, record]))
     } catch { /* ignore */ }
+
     setMeetingSaved(true)
     setTimeout(() => {
       setShowMeetingModal(false)
@@ -402,8 +454,22 @@ export default function ChatPage() {
     }, 1500)
   }
 
-  function handleCheckinBem() {
+  async function handleCheckinBem() {
     if (!checkinMeeting) return
+
+    // Check-in no banco
+    if (checkinRecordId) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        fetch('/api/safety/checkin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ recordId: checkinRecordId }),
+        }).catch(() => {})
+      } catch { /* silencioso */ }
+    }
+
+    // Atualiza localStorage
     try {
       const records: any[] = JSON.parse(localStorage.getItem('meandyou_meetings') ?? '[]')
       localStorage.setItem('meandyou_meetings', JSON.stringify(
@@ -455,7 +521,22 @@ export default function ChatPage() {
       )
     }
 
-    // Convite encontro
+    // Convite estruturado (com local/data/hora)
+    if (msg.content.startsWith('__MEETING__:')) {
+      try {
+        const data = JSON.parse(msg.content.slice('__MEETING__:'.length))
+        const linhas = [
+          data.local && data.local,
+          (data.date && data.time) && `🗓 ${new Date(`${data.date}T${data.time}`).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`,
+          data.texto,
+        ].filter(Boolean).join('\n')
+        return (
+          <ConviteCard key={msg.id} text={linhas} isMe={isMe} time={formatMsgTime(msg.created_at)} onReply={(r) => sendMessage(r)} />
+        )
+      } catch { /* fallback abaixo */ }
+    }
+
+    // Convite encontro (texto livre — legado)
     if (msg.content.startsWith(CONVITE_PREFIX)) {
       const texto = msg.content.slice(CONVITE_PREFIX.length)
       return (
@@ -738,13 +819,54 @@ export default function ChatPage() {
                 <X size={14} color="var(--muted)" />
               </button>
             </div>
+            {/* Local (obrigatório para convite estruturado) */}
+            <input
+              type="text"
+              value={conviteLocal}
+              onChange={e => setConviteLocal(e.target.value)}
+              placeholder="Local (ex: Cafe do Centro, Praia do Gonzaga)"
+              maxLength={100}
+              autoFocus
+              style={{
+                width: '100%', background: 'rgba(255,255,255,0.05)',
+                border: '1px solid var(--border)', borderRadius: 12,
+                padding: '10px 14px', fontSize: 14, color: 'var(--text)',
+                outline: 'none', boxSizing: 'border-box',
+                fontFamily: 'var(--font-jakarta)', marginBottom: 8,
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <input
+                type="date"
+                value={conviteDate}
+                onChange={e => setConviteDate(e.target.value)}
+                style={{
+                  flex: 1, background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid var(--border)', borderRadius: 12,
+                  padding: '10px 14px', fontSize: 13, color: 'var(--text)',
+                  outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-jakarta)',
+                  colorScheme: 'dark',
+                }}
+              />
+              <input
+                type="time"
+                value={conviteTime}
+                onChange={e => setConviteTime(e.target.value)}
+                style={{
+                  flex: 1, background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid var(--border)', borderRadius: 12,
+                  padding: '10px 14px', fontSize: 13, color: 'var(--text)',
+                  outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-jakarta)',
+                  colorScheme: 'dark',
+                }}
+              />
+            </div>
             <input
               type="text"
               value={conviteText}
               onChange={e => setConviteText(e.target.value)}
-              placeholder="Ex: Tomar um cafe sabado, 14h?"
+              placeholder="Mensagem opcional..."
               maxLength={200}
-              autoFocus
               style={{
                 width: '100%', background: 'rgba(255,255,255,0.05)',
                 border: '1px solid var(--border)', borderRadius: 12,
@@ -752,16 +874,15 @@ export default function ChatPage() {
                 outline: 'none', boxSizing: 'border-box',
                 fontFamily: 'var(--font-jakarta)', marginBottom: 10,
               }}
-              onKeyDown={e => { if (e.key === 'Enter') handleSendConvite() }}
             />
             <button
               onClick={handleSendConvite}
-              disabled={!conviteText.trim() || sending}
+              disabled={(!conviteLocal.trim() && !conviteText.trim()) || sending}
               style={{
                 width: '100%', padding: '11px 0', borderRadius: 12,
-                background: conviteText.trim() ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
-                border: 'none', cursor: conviteText.trim() ? 'pointer' : 'default',
-                color: conviteText.trim() ? '#fff' : 'var(--muted)',
+                background: (conviteLocal.trim() || conviteText.trim()) ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
+                border: 'none', cursor: (conviteLocal.trim() || conviteText.trim()) ? 'pointer' : 'default',
+                color: (conviteLocal.trim() || conviteText.trim()) ? '#fff' : 'var(--muted)',
                 fontFamily: 'var(--font-jakarta)', fontSize: 14, fontWeight: 700,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               }}
@@ -913,17 +1034,16 @@ export default function ChatPage() {
               <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliacao anonima — {otherUser?.name} nao saberá quem avaliou.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { id: 'incrivel', emoji: '✨', label: 'Pessoa incrivel!', color: '#10b981' },
-                  { id: 'agradavel', emoji: '😊', label: 'Conversa agradavel', color: '#60a5fa' },
-                  { id: 'nao_interessei', emoji: '😐', label: 'Nao me interessei', color: 'rgba(248,249,250,0.45)' },
-                  { id: 'ignorado', emoji: '😶', label: 'Fui ignorado(a)', color: '#F43F5E' },
+                  { id: 'incrivel', label: 'Pessoa incrivel!', color: '#10b981' },
+                  { id: 'agradavel', label: 'Conversa agradavel', color: '#60a5fa' },
+                  { id: 'nao_interessei', label: 'Nao me interessei', color: 'rgba(248,249,250,0.45)' },
+                  { id: 'ignorado', label: 'Fui ignorado(a)', color: '#F43F5E' },
                 ].map(op => (
                   <button
                     key={op.id}
                     onClick={() => handleRating(op.id)}
                     style={{ width: '100%', padding: '14px 16px', borderRadius: 14, border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', color: 'var(--text)', fontSize: 15, fontWeight: 500, textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'var(--font-jakarta)', transition: 'all 0.15s' }}
                   >
-                    <span style={{ fontSize: 20 }}>{op.emoji}</span>
                     <span style={{ color: op.color }}>{op.label}</span>
                   </button>
                 ))}
@@ -943,24 +1063,22 @@ export default function ChatPage() {
               onClick={e => e.stopPropagation()}
             >
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                <div style={{ fontSize: 40, marginBottom: 10 }}>☕</div>
                 <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>O encontro aconteceu?</h3>
                 <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: 0, lineHeight: 1.55 }}>Voce aceitou um convite de encontro. Nos conte como foi!</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { id: 'incrivel', emoji: '🥰', label: 'Foi incrivel!' },
-                  { id: 'estranho', emoji: '😅', label: 'Foi estranho' },
-                  { id: 'bolo', emoji: '😤', label: 'Levei um bolo' },
-                  { id: 'ainda_nao', emoji: '⏳', label: 'Ainda nao aconteceu' },
+                  { id: 'incrivel', label: 'Foi incrivel!' },
+                  { id: 'estranho', label: 'Foi estranho' },
+                  { id: 'bolo', label: 'Levei um bolo' },
+                  { id: 'ainda_nao', label: 'Ainda nao aconteceu' },
                 ].map(op => (
                   <button
                     key={op.id}
                     onClick={() => handleBolo(op.id)}
-                    style={{ width: '100%', padding: '13px 16px', borderRadius: 14, border: op.id === 'bolo' ? '1px solid rgba(225,29,72,0.30)' : '1px solid var(--border)', backgroundColor: op.id === 'bolo' ? 'rgba(225,29,72,0.07)' : 'rgba(255,255,255,0.04)', color: op.id === 'bolo' ? 'var(--accent)' : 'var(--text)', fontSize: 14, fontWeight: 500, textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'var(--font-jakarta)', transition: 'all 0.15s' }}
+                    style={{ width: '100%', padding: '13px 16px', borderRadius: 14, border: op.id === 'bolo' ? '1px solid rgba(225,29,72,0.30)' : '1px solid var(--border)', backgroundColor: op.id === 'bolo' ? 'rgba(225,29,72,0.07)' : 'rgba(255,255,255,0.04)', color: op.id === 'bolo' ? 'var(--accent)' : 'var(--text)', fontSize: 14, fontWeight: 500, textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.15s' }}
                   >
-                    <span style={{ fontSize: 18 }}>{op.emoji}</span>
-                    <span>{op.label}</span>
+                    {op.label}
                   </button>
                 ))}
               </div>
@@ -1030,7 +1148,7 @@ export default function ChatPage() {
               <div style={{ fontSize:48,marginBottom:16 }}>🔔</div>
               <h3 style={{ fontFamily:'var(--font-fraunces)',fontSize:22,color:'var(--text)',margin:'0 0 8px' }}>Check-in de seguranca</h3>
               <p style={{ fontSize:13,color:'var(--muted)',margin:'0 0 6px',lineHeight:1.55 }}>Voce tinha um encontro com <strong style={{ color:'rgba(248,249,250,0.75)' }}>{otherUser?.name}</strong></p>
-              <p style={{ fontSize:12,color:'var(--muted-2)',margin:'0 0 28px' }}>📍 {checkinMeeting.local} · {new Date(checkinMeeting.date).toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
+              <p style={{ fontSize:12,color:'var(--muted-2)',margin:'0 0 28px' }}>{checkinMeeting.local} · {new Date(checkinMeeting.date).toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
               <p style={{ fontSize:14,color:'var(--text)',fontWeight:600,margin:'0 0 20px' }}>Como voce esta?</p>
               <div style={{ display:'flex',flexDirection:'column',gap:10 }}>
                 <button onClick={handleCheckinBem} style={{ width:'100%',padding:'15px 0',borderRadius:14,background:'#10b981',border:'none',color:'#fff',fontFamily:'var(--font-jakarta)',fontSize:15,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:10 }}>
