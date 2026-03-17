@@ -6,7 +6,54 @@ Sempre responda em português do Brasil.
 ## MeAndYou — Referência do Projeto
 
 > **Branch de trabalho:** `design-v2`
-> **Última atualização:** Fase 8 — Segurança Encontros (2026-03-16)
+> **Última atualização:** Fase 10 — Onboarding (2026-03-16)
+
+---
+
+### Fase 10 Concluída
+
+#### Onboarding — Cadastro multi-step, GPS/Notif Soft Ask, Verificação, Fricção na Saída
+
+#### Arquivos modificados
+
+| Arquivo | O que mudou |
+|---------|-------------|
+| `src/app/cadastro/page.tsx` | Reescrito: 7 telas (1 pergunta/tela), barra de progresso, pills no passo do código de convite. Lógica de validação e Turnstile preservadas. |
+| `src/app/onboarding/page.tsx` | Adicionado passo 3 "Permissoes": soft ask para GPS (navigator.geolocation) e notificações (Notification.requestPermission) com botão "Talvez depois". |
+| `src/app/verificacao/page.tsx` | Máscara oval SVG com corte (escurece fora do rosto) durante liveness. Tela de sucesso substituída por selo azul animado com ícone de escudo. |
+| `src/app/deletar-conta/page.tsx` | 4 etapas: aviso → pausar conta 30d (usa incognito_until) → motivo com pills → confirmar senha. |
+
+#### Detalhes de implementação
+
+**Cadastro multi-step:**
+- Steps: email → senha → nome completo → nome exibição → CPF → telefone → código de convite
+- Cada step valida antes de avançar (mesmo critério da versão anterior)
+- Step 6 usa pills "Tenho um código" / "Não tenho" — Turnstile aparece após escolha
+- Enter avança automaticamente
+
+**Soft Ask GPS/Notif:**
+- Cards clicáveis que disparam `navigator.geolocation.getCurrentPosition()` e `Notification.requestPermission()`
+- Se o usuário recusar, segue sem erro — botão "Talvez depois" pula o passo inteiro
+- Estado ativado muda aparência do card (fundo accent + check)
+
+**Máscara oval (verificacao):**
+- SVG com `<mask>` para criar corte na forma do rosto
+- Cantos em L vermelhos (E11D48) como guias visuais
+- Video usa `aspectRatio: 3/4` para manter proporção vertical
+
+**Pause conta:**
+- Usa `profiles.incognito_until = now() + 30d` — oculta do feed sem apagar dados
+- Redireciona para `/perfil?paused=1`
+
+**Motivo antes de deletar:**
+- 6 pills de motivo (opcional — "Pular e continuar" disponível)
+- Valor enviado no body do DELETE para registro futuro
+
+---
+
+### Fase 9 Concluída
+
+#### Loja e Monetização
 
 ---
 
