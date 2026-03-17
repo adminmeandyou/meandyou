@@ -1148,11 +1148,6 @@ export default function Perfil() {
           </button>
         </div>
 
-        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px' }}>
-          <a href="/deletar-conta" style={{ color: 'rgba(248,249,250,0.25)', textDecoration: 'none' }}>
-            Deletar minha conta
-          </a>
-        </p>
 
       </div>
     </div>
