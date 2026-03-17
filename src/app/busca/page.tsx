@@ -38,6 +38,7 @@ interface FiltersState {
   search_min_age: number
   search_max_age: number
   search_gender: string
+  search_state: string
   [key: string]: boolean | number | string
 }
 
@@ -50,6 +51,7 @@ const DEFAULT_FILTERS: FiltersState = {
   search_min_age: 18,
   search_max_age: 60,
   search_gender: 'all',
+  search_state: '',
 }
 
 const GENDER_OPTIONS = [
@@ -60,6 +62,37 @@ const GENDER_OPTIONS = [
   { value: 'trans_man', label: 'Homem Trans' },
   { value: 'nonbinary', label: 'Não-binário(a)' },
   { value: 'fluid', label: 'Gênero Fluido' },
+]
+
+const BR_STATES = [
+  { value: '', label: 'Qualquer estado' },
+  { value: 'AC', label: 'Acre' },
+  { value: 'AL', label: 'Alagoas' },
+  { value: 'AM', label: 'Amazonas' },
+  { value: 'AP', label: 'Amapá' },
+  { value: 'BA', label: 'Bahia' },
+  { value: 'CE', label: 'Ceará' },
+  { value: 'DF', label: 'Distrito Federal' },
+  { value: 'ES', label: 'Espírito Santo' },
+  { value: 'GO', label: 'Goiás' },
+  { value: 'MA', label: 'Maranhão' },
+  { value: 'MG', label: 'Minas Gerais' },
+  { value: 'MS', label: 'Mato Grosso do Sul' },
+  { value: 'MT', label: 'Mato Grosso' },
+  { value: 'PA', label: 'Pará' },
+  { value: 'PB', label: 'Paraíba' },
+  { value: 'PE', label: 'Pernambuco' },
+  { value: 'PI', label: 'Piauí' },
+  { value: 'PR', label: 'Paraná' },
+  { value: 'RJ', label: 'Rio de Janeiro' },
+  { value: 'RN', label: 'Rio Grande do Norte' },
+  { value: 'RO', label: 'Rondônia' },
+  { value: 'RR', label: 'Roraima' },
+  { value: 'RS', label: 'Rio Grande do Sul' },
+  { value: 'SC', label: 'Santa Catarina' },
+  { value: 'SE', label: 'Sergipe' },
+  { value: 'SP', label: 'São Paulo' },
+  { value: 'TO', label: 'Tocantins' },
 ]
 
 const FILTER_CATEGORIES = [
@@ -725,6 +758,7 @@ export default function BuscaPage() {
   // ── Novos states (Fase 4) ─────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState<ViewMode>('discovery')
   const [photoIdx, setPhotoIdx] = useState(0)
+  const [userGender, setUserGender] = useState<string>('')
 
   // ── Refs ──────────────────────────────────────────────────────────────────
   const dragStartX = useRef(0)
@@ -769,11 +803,12 @@ export default function BuscaPage() {
       if (!user) { window.location.href = '/login'; return }
       setUserId(user.id)
       const [profileRes, filtersRes] = await Promise.all([
-        supabase.from('profiles').select('plan').eq('id', user.id).single(),
+        supabase.from('profiles').select('plan, gender').eq('id', user.id).single(),
         supabase.from('filters').select('*').eq('user_id', user.id).single(),
       ])
       const plan = profileRes.data?.plan ?? 'essencial'
       setUserPlan(plan)
+      setUserGender(profileRes.data?.gender ?? '')
 
       const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
       const [todayLikesRes, avulsoRes] = await Promise.all([
@@ -1506,7 +1541,7 @@ export default function BuscaPage() {
           <div style={{ marginTop: 16 }}>
             <span style={{ fontSize: 13, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Gênero</span>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {GENDER_OPTIONS.map((opt) => (
+              {GENDER_OPTIONS.filter(opt => opt.value === 'all' || opt.value !== userGender).map((opt) => (
                 <Pill
                   key={opt.value}
                   size="sm"
@@ -1517,6 +1552,35 @@ export default function BuscaPage() {
                 </Pill>
               ))}
             </div>
+          </div>
+
+          {/* Estado */}
+          <div style={{ marginTop: 16 }}>
+            <span style={{ fontSize: 13, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Estado</span>
+            <select
+              value={localFilters.search_state as string}
+              onChange={(e) => setLocalFilters(p => ({ ...p, search_state: e.target.value }))}
+              style={{
+                width: '100%',
+                padding: '10px 14px',
+                borderRadius: 12,
+                border: '1px solid var(--border)',
+                backgroundColor: 'var(--bg-card)',
+                color: localFilters.search_state ? 'var(--text)' : 'var(--muted)',
+                fontSize: 14,
+                fontFamily: 'var(--font-jakarta)',
+                cursor: 'pointer',
+                outline: 'none',
+                appearance: 'none',
+                WebkitAppearance: 'none',
+              }}
+            >
+              {BR_STATES.map((s) => (
+                <option key={s.value} value={s.value} style={{ backgroundColor: '#0F1117' }}>
+                  {s.label}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 
