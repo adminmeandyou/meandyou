@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { ChatBubble } from '@/components/ui/ChatBubble'
 import { ReportModal } from '@/components/ReportModal'
+import { OnlineIndicator } from '@/components/OnlineIndicator'
 
 interface Message {
   id: string
@@ -28,6 +29,8 @@ interface OtherUser {
   name: string
   photo_best: string | null
   verified: boolean
+  last_active_at: string | null
+  show_last_active: boolean
 }
 
 const MAX_CHARS = 500
@@ -127,14 +130,14 @@ export default function ChatPage() {
     // Busca perfil do outro — sem campos sensíveis
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, name, photo_best')
+      .select('id, name, photo_best, show_last_active')
       .eq('id', otherId)
       .single()
 
-    // Busca se é verificado (tabela users, coluna verified)
+    // Busca se é verificado + last_active_at (tabela users)
     const { data: userRow } = await supabase
       .from('users')
-      .select('verified')
+      .select('verified, last_active_at')
       .eq('id', otherId)
       .single()
 
@@ -144,6 +147,8 @@ export default function ChatPage() {
       photo_best: profile?.photo_best ?? null,
       // ✅ verified fica em users, não profiles
       verified: userRow?.verified ?? false,
+      last_active_at: userRow?.last_active_at ?? null,
+      show_last_active: profile?.show_last_active ?? true,
     })
 
     // Carrega mensagens
@@ -559,7 +564,12 @@ export default function ChatPage() {
                   <span style={{ marginLeft: 6, fontSize: 12, color: 'var(--accent)' }}>✓</span>
                 )}
               </p>
-              <p style={{ fontSize: 11, color: 'var(--muted-2)', margin: 0 }}>Toque para ver perfil</p>
+              <OnlineIndicator
+                lastActiveAt={otherUser?.last_active_at}
+                showLastActive={otherUser?.show_last_active}
+                mode="text"
+                size={7}
+              />
             </div>
           </Link>
 

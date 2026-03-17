@@ -8,11 +8,14 @@ import { ArrowLeft, Flame, Ticket, Star, Zap, Search, RotateCcw, Gift, Lock, Che
 
 // Ícone e cor por tipo de prêmio
 const REWARD_CONFIG: Record<string, { emoji: string; color: string; bg: string; border: string; label: string }> = {
-  ticket:       { emoji: '🎟️', color: 'text-yellow-400',  bg: 'bg-yellow-500/10',  border: 'border-yellow-500/30',  label: 'Ticket' },
-  supercurtida: { emoji: '⭐',  color: 'text-pink-400',    bg: 'bg-pink-500/10',    border: 'border-pink-500/30',    label: 'SuperLike' },
-  boost:        { emoji: '⚡',  color: 'text-[#b8f542]',  bg: 'bg-[#b8f542]/10',  border: 'border-[#b8f542]/30',   label: 'Boost' },
-  lupa:         { emoji: '🔍',  color: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/30',    label: 'Lupa' },
-  rewind:       { emoji: '↩️',  color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/30',  label: 'Desfazer' },
+  ticket:        { emoji: '🎟️', color: 'text-yellow-400',  bg: 'bg-yellow-500/10',  border: 'border-yellow-500/30',  label: 'Ticket' },
+  supercurtida:  { emoji: '⭐',  color: 'text-pink-400',    bg: 'bg-pink-500/10',    border: 'border-pink-500/30',    label: 'SuperLike' },
+  boost:         { emoji: '⚡',  color: 'text-[#b8f542]',  bg: 'bg-[#b8f542]/10',  border: 'border-[#b8f542]/30',   label: 'Boost' },
+  lupa:          { emoji: '🔍',  color: 'text-blue-400',   bg: 'bg-blue-500/10',   border: 'border-blue-500/30',    label: 'Lupa' },
+  rewind:        { emoji: '↩️',  color: 'text-purple-400', bg: 'bg-purple-500/10', border: 'border-purple-500/30',  label: 'Desfazer' },
+  invisivel_1d:  { emoji: '👻',  color: 'text-gray-300',   bg: 'bg-gray-500/10',   border: 'border-gray-500/30',    label: 'Invisível 1 dia' },
+  plan_plus_1d:  { emoji: '💎',  color: 'text-violet-400', bg: 'bg-violet-500/10', border: 'border-violet-500/30',  label: '1 dia Plus' },
+  plan_black_1d: { emoji: '🖤',  color: 'text-white',      bg: 'bg-white/10',      border: 'border-white/30',       label: '1 dia Black' },
 }
 
 type CalendarEntry = {

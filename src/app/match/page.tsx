@@ -281,7 +281,7 @@ function MatchModal({ profile, matchId, onDismiss }: {
 
         <div className="flex flex-col gap-3">
           <a
-            href={`/chat/${matchId}`}
+            href={`/conversas/${matchId}`}
             className="w-full py-3.5 rounded-2xl bg-[#b8f542] text-black font-semibold text-sm hover:bg-[#a8e030] transition"
           >
             Enviar mensagem

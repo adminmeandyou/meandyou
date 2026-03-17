@@ -54,6 +54,11 @@
   --font-jakarta: 'Plus Jakarta Sans', sans-serif;
 }
 
+@keyframes shimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
 @keyframes slideUp {
   from { transform: translateY(100%); }
   to   { transform: translateY(0); }
@@ -120,6 +125,12 @@ input::placeholder {
   transform: translateY(-2px);
 }
 
+.btn-primary:active {
+  transform: scale(0.97);
+  opacity: 0.92;
+  box-shadow: 0 4px 16px rgba(225,29,72,0.25);
+}
+
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
@@ -143,6 +154,11 @@ input::placeholder {
 .btn-secondary:hover {
   border-color: var(--accent);
   color: var(--accent);
+}
+
+.btn-secondary:active {
+  transform: scale(0.97);
+  opacity: 0.85;
 }
 
 /* ── Design Tokens — Tailwind v4 @theme ── */

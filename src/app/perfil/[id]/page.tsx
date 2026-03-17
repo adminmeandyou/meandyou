@@ -11,6 +11,8 @@ import {
 } from 'lucide-react'
 import { SwipeButton } from '@/components/ui/SwipeButton'
 import { BadgePill } from '@/components/ui/BadgePill'
+import { useToast } from '@/components/Toast'
+import { useHaptics } from '@/hooks/useHaptics'
 
 // ─── Trust Score ──────────────────────────────────────────────────────────────
 
@@ -284,6 +286,8 @@ export default function VerPerfilPage() {
   const params = useParams()
   const profileId = params.id as string
   const router = useRouter()
+  const toast = useToast()
+  const haptics = useHaptics()
 
   // CORRECAO: buscar user via supabase.auth em vez de hook useAuth que pode nao existir
   const [userId, setUserId] = useState<string | null>(null)
@@ -393,6 +397,14 @@ export default function VerPerfilPage() {
   async function handleSwipe(action: 'like' | 'dislike' | 'superlike') {
     if (!userId) return
     setSwipeAction(action)
+
+    if (action === 'superlike') {
+      haptics.success()
+    } else if (action === 'like') {
+      haptics.medium()
+    } else {
+      haptics.tap()
+    }
 
     if (action === 'dislike') {
       // CORRECAO: salva dislike no banco via RPC (mesma que useSwipe usa)

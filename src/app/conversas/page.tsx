@@ -6,7 +6,12 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
-import { MessageCircle, Loader2, Search, Archive } from 'lucide-react'
+import { MessageCircle, Search, Archive } from 'lucide-react'
+import { SkeletonList } from '@/components/Skeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { OnlineIndicator } from '@/components/OnlineIndicator'
+import { useToast } from '@/components/Toast'
+import { useHaptics } from '@/hooks/useHaptics'
 
 interface Conversation {
   matchId: string
@@ -17,10 +22,14 @@ interface Conversation {
   lastMessageAt: string | null
   lastSenderId: string | null
   unreadCount: number
+  lastActiveAt?: string | null
+  showLastActive?: boolean
 }
 
 export default function ConversasPage() {
   const router = useRouter()
+  const toast = useToast()
+  const haptics = useHaptics()
 
   // ✅ CORREÇÃO: não usar useAuth — buscar user via supabase.auth.getUser()
   const [userId, setUserId] = useState<string | null>(null)
@@ -76,6 +85,8 @@ export default function ConversasPage() {
         lastSenderId: row.last_sender_id ?? null,
         // ✅ CORREÇÃO: campo 'read' (boolean) — não 'read_at'
         unreadCount: row.unread_count ?? 0,
+        lastActiveAt: row.other_last_active_at ?? null,
+        showLastActive: row.other_show_last_active ?? true,
       }))
 
       // Ordena por mais recente
@@ -88,6 +99,7 @@ export default function ConversasPage() {
       setConversations(convs)
     } catch {
       setConversations([])
+      toast.error('Erro ao carregar conversas')
     }
     setLoading(false)
   }
@@ -124,7 +136,6 @@ export default function ConversasPage() {
               </span>
             )}
           </div>
-          {loading && <Loader2 size={16} color="rgba(248,249,250,0.3)" className="animate-spin" />}
         </div>
 
         {/* Busca */}
@@ -153,7 +164,7 @@ export default function ConversasPage() {
           ]).map(({ key, label, Icon }) => (
             <button
               key={key}
-              onClick={() => setAba(key)}
+              onClick={() => { haptics.tap(); setAba(key) }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '6px 14px', borderRadius: 100,
@@ -161,7 +172,7 @@ export default function ConversasPage() {
                 background: aba === key ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
                 color: aba === key ? '#fff' : 'rgba(248,249,250,0.50)',
                 fontFamily: 'var(--font-jakarta)', fontSize: 13, fontWeight: aba === key ? 700 : 400,
-                cursor: 'pointer',
+                cursor: 'pointer', transition: 'all 0.15s',
               }}
             >
               <Icon size={12} />
@@ -174,42 +185,22 @@ export default function ConversasPage() {
       {/* Lista */}
       <main style={{ paddingBottom: 96 }}>
         {aba === 'arquivados' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 20px', gap: 16 }}>
-            <Archive size={44} color="rgba(248,249,250,0.12)" />
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(248,249,250,0.50)', margin: '0 0 4px' }}>Nenhuma arquivada</p>
-              <p style={{ fontSize: 13, maxWidth: 220, color: 'rgba(248,249,250,0.3)', margin: 0 }}>
-                Voce pode arquivar conversas para organizar sua caixa de entrada.
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            icon={<Archive size={28} />}
+            title="Nenhuma arquivada"
+            description="Voce pode arquivar conversas para organizar sua caixa de entrada."
+          />
         ) : loading ? (
-          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 80 }}>
-            <Loader2 size={24} color="rgba(248,249,250,0.3)" className="animate-spin" />
+          <div style={{ padding: '12px 0' }}>
+            <SkeletonList rows={6} />
           </div>
         ) : filtered.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 20px', gap: 14 }}>
-            <MessageCircle size={36} color="rgba(248,249,250,0.15)" />
-            <p style={{ fontSize: 14, textAlign: 'center', maxWidth: 220, color: 'rgba(248,249,250,0.3)', margin: 0 }}>
-              {searchTerm
-                ? 'Nenhuma conversa encontrada.'
-                : 'Voce ainda nao tem conversas. Faca um match para comecar!'}
-            </p>
-            {!searchTerm && (
-              <Link
-                href="/busca"
-                style={{
-                  marginTop: 8, fontSize: 13, fontWeight: 600,
-                  color: 'var(--accent)', textDecoration: 'none',
-                  padding: '8px 20px', borderRadius: 100,
-                  border: '1px solid var(--accent-border)',
-                  background: 'var(--accent-soft)',
-                }}
-              >
-                Explorar pessoas
-              </Link>
-            )}
-          </div>
+          <EmptyState
+            icon={<MessageCircle size={28} />}
+            title={searchTerm ? 'Nenhuma conversa encontrada' : 'Nenhuma conversa ainda'}
+            description={searchTerm ? undefined : 'Faca um match para comecar a conversar!'}
+            action={!searchTerm ? { label: 'Explorar pessoas', onClick: () => router.push('/busca') } : undefined}
+          />
         ) : (
           <div>
             {filtered.map((conv) => (
@@ -270,6 +261,17 @@ function ConversationItem({
             </div>
           )}
         </div>
+        {/* Indicador online (sobreposto) */}
+        {conv.unreadCount === 0 && (
+          <div style={{ position: 'absolute', bottom: 1, right: 1 }}>
+            <OnlineIndicator
+              lastActiveAt={conv.lastActiveAt}
+              showLastActive={conv.showLastActive}
+              mode="dot"
+              size={12}
+            />
+          </div>
+        )}
         {/* Badge de nao lidas */}
         {conv.unreadCount > 0 && (
           <div style={{

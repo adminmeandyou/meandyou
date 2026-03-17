@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
+import { SkeletonLine, SkeletonAvatar, skeletonCss } from '@/components/Skeleton'
 
 export default function Dashboard() {
   const router = useRouter()
@@ -56,8 +57,16 @@ export default function Dashboard() {
 
   if (carregando) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <p style={{ color: 'var(--muted)', fontSize: '15px' }}>Carregando...</p>
+      <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+        <style>{skeletonCss}</style>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%', maxWidth: 280 }}>
+          <SkeletonAvatar size={64} />
+          <SkeletonLine width={160} height={18} />
+          <SkeletonLine width={220} height={14} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, width: '100%', marginTop: 8 }}>
+            {[1,2,3,4].map(i => <SkeletonLine key={i} height={72} radius={16} />)}
+          </div>
+        </div>
       </div>
     )
   }

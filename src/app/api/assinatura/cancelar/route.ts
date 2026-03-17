@@ -9,12 +9,12 @@ const supabase = createClient(
 export async function POST(req: NextRequest) {
   try {
     // Valida sessão
-    const accessToken = req.cookies.get('sb-access-token')?.value
-    if (!accessToken) {
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    if (!token) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
     }
 
-    const { data: { user }, error: authErr } = await supabase.auth.getUser(accessToken)
+    const { data: { user }, error: authErr } = await supabase.auth.getUser(token)
     if (authErr || !user) {
       return NextResponse.json({ error: 'Sessão inválida' }, { status: 401 })
     }

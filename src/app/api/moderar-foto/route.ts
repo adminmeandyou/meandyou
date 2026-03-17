@@ -1,6 +1,7 @@
 // src/app/api/moderar-foto/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendPhotoRejectedEmail } from '@/app/lib/email'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,15 +10,30 @@ const supabaseAdmin = createClient(
 
 const MAX_UPLOADS_POR_HORA = 10
 
+async function uploadFoto(userId: string, index: number, foto: File): Promise<string | null> {
+  const ext = foto.name.split('.').pop() || 'jpg'
+  const path = `${userId}/foto_${index}.${ext}`
+  const bytes = await foto.arrayBuffer()
+  const { error } = await supabaseAdmin.storage
+    .from('fotos')
+    .upload(path, Buffer.from(bytes), { upsert: true, contentType: foto.type || 'image/jpeg' })
+  if (error) {
+    console.error('[moderar-foto] Erro no upload:', error)
+    return null
+  }
+  const { data } = supabaseAdmin.storage.from('fotos').getPublicUrl(path)
+  return data.publicUrl
+}
+
 export async function POST(req: NextRequest) {
   try {
     // 1. Verificar sessão do usuário
-    const accessToken = req.cookies.get('sb-access-token')?.value
-    if (!accessToken) {
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    if (!token) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken)
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     if (authError || !user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
@@ -45,16 +61,17 @@ export async function POST(req: NextRequest) {
         event_type: 'photo_upload_attempt',
         metadata: {},
       })
-    } catch (_) {}
+    } catch (err) { console.error('[moderar-foto] Falha ao registrar tentativa de upload:', err) }
 
-    // 3. Pegar foto do form
+    // 3. Pegar foto e índice do slot
     const formData = await req.formData()
     const foto = formData.get('foto') as File
     if (!foto) {
       return NextResponse.json({ error: 'Nenhuma foto enviada' }, { status: 400 })
     }
+    const index = parseInt((formData.get('index') as string) ?? '0')
 
-    // 4. Monta multipart/form-data para o Sightengine (formato correto da API)
+    // 4. Monta multipart/form-data para o Sightengine
     const sightengineForm = new FormData()
     sightengineForm.append('media', foto, foto.name || 'foto.jpg')
     sightengineForm.append('models', 'nudity-2.0,offensive,gore')
@@ -68,15 +85,19 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       console.error('Sightengine HTTP error:', response.status)
-      // Em caso de falha na API externa, aprovamos para não bloquear o usuário
-      return NextResponse.json({ aprovado: true, aviso: 'moderacao_indisponivel' })
+      // Moderação indisponível — faz upload mesmo assim para não bloquear o usuário
+      const url = await uploadFoto(user.id, index, foto)
+      if (!url) return NextResponse.json({ aprovado: false, motivo: 'Erro ao salvar a foto. Tente novamente.' })
+      return NextResponse.json({ aprovado: true, url, aviso: 'moderacao_indisponivel' })
     }
 
     const resultado = await response.json()
 
     if (resultado.status !== 'success') {
       console.error('Sightengine erro:', resultado)
-      return NextResponse.json({ aprovado: true, aviso: 'moderacao_indisponivel' })
+      const url = await uploadFoto(user.id, index, foto)
+      if (!url) return NextResponse.json({ aprovado: false, motivo: 'Erro ao salvar a foto. Tente novamente.' })
+      return NextResponse.json({ aprovado: true, url, aviso: 'moderacao_indisponivel' })
     }
 
     // 5. Nudez — bloqueia se qualquer categoria relevante ultrapassar o threshold
@@ -92,16 +113,34 @@ export async function POST(req: NextRequest) {
       gore > 0.7
 
     if (recusada) {
+      // Notifica o usuário por email (fire-and-forget)
+      if (user.email) {
+        supabaseAdmin
+          .from('profiles')
+          .select('name')
+          .eq('id', user.id)
+          .single()
+          .then(({ data: profile }) => {
+            sendPhotoRejectedEmail(
+              user.email!,
+              profile?.name || '',
+              'nudez ou conteúdo impróprio'
+            ).catch(err => console.error('[moderar-foto] Falha ao enviar email de rejeição:', err))
+          })
+      }
       return NextResponse.json({
         aprovado: false,
         motivo: 'Foto recusada: contém nudez ou conteúdo impróprio. Use fotos com roupas.',
       })
     }
 
-    return NextResponse.json({ aprovado: true })
+    // 6. Aprovada — fazer upload server-side e retornar URL
+    const url = await uploadFoto(user.id, index, foto)
+    if (!url) return NextResponse.json({ aprovado: false, motivo: 'Erro ao salvar a foto. Tente novamente.' })
+
+    return NextResponse.json({ aprovado: true, url })
   } catch (err) {
     console.error('Erro em moderar-foto:', err)
-    // Em exceção inesperada, não bloqueia o upload
-    return NextResponse.json({ aprovado: true, aviso: 'moderacao_indisponivel' })
+    return NextResponse.json({ aprovado: false, motivo: 'Erro inesperado. Tente novamente.' })
   }
 }

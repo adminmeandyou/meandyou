@@ -16,7 +16,7 @@ const ASSUNTO_LABELS: Record<string, string> = {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { nome, email, assunto, mensagem } = body
+    const { nome, email, assunto, mensagem, imagemBase64, imagemNome } = body
 
     if (!nome?.trim() || !email?.trim() || !assunto || !mensagem?.trim()) {
       return NextResponse.json({ error: 'Preencha todos os campos' }, { status: 400 })
@@ -40,13 +40,39 @@ export async function POST(req: NextRequest) {
     const emailSafe    = sanitize(email.trim())
     const mensagemSafe = sanitize(mensagem.trim())
 
+    // Prepara anexo de imagem se fornecido
+    const attachments: Array<{ filename: string; content: Buffer }> = []
+    let imagemHtml = ''
+    if (imagemBase64 && imagemNome) {
+      try {
+        const matches = (imagemBase64 as string).match(/^data:(.+);base64,(.+)$/)
+        if (matches) {
+          const base64Data = matches[2]
+          const buffer = Buffer.from(base64Data, 'base64')
+          const ext = (imagemNome as string).split('.').pop()?.toLowerCase() ?? 'jpg'
+          const filename = `anexo.${ext}`
+          attachments.push({ filename, content: buffer })
+          imagemHtml = `
+            <div style="margin-top: 20px;">
+              <p style="color: #aaa; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">Imagem anexada</p>
+              <img src="${sanitize(imagemBase64 as string)}" alt="Anexo" style="max-width: 100%; border-radius: 8px; border: 1px solid #333;" />
+            </div>
+          `
+        }
+      } catch {
+        // Ignora erro no processamento da imagem
+      }
+    }
+
     await resend.emails.send({
       from: 'MeAndYou Contato <noreply@meandyou.com.br>',
       to: ADMIN_EMAIL,
+      replyTo: email.trim(),
       subject: `[Contato] ${assuntoLabel} — ${nomeSafe}`,
+      attachments,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; padding: 24px;">
-          <h2 style="color: #E11D48; margin-bottom: 4px;">Novo contato via landing page</h2>
+          <h2 style="color: #E11D48; margin-bottom: 4px;">Novo contato via MeAndYou</h2>
           <p style="color: #888; font-size: 13px; margin-top: 0;">${agora}</p>
 
           <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
@@ -68,6 +94,8 @@ export async function POST(req: NextRequest) {
             <p style="color: #aaa; font-size: 12px; margin: 0 0 8px 0; text-transform: uppercase; letter-spacing: 1px;">Mensagem</p>
             <p style="color: #fff; font-size: 14px; line-height: 1.6; margin: 0; white-space: pre-wrap;">${mensagemSafe}</p>
           </div>
+
+          ${imagemHtml}
 
           <p style="color: #555; font-size: 11px; margin-top: 24px; text-align: center;">
             MeAndYou — Formulário de contato público

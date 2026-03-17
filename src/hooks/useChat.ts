@@ -14,8 +14,8 @@ export interface Message {
   read: boolean   // campo correto no schema — não é read_at
 }
 
-const MAX_CHARS = 500       // limite de caracteres por mensagem
-const MAX_MSGS_PER_MIN = 5  // rate limit: 5 mensagens/min sem resposta do outro lado
+const MAX_CHARS = 500
+const MAX_MSGS_PER_MIN = 5  // rate limit client: 5 msgs/min sem resposta do outro
 
 export function useChat(matchId: string) {
   const { user } = useAuth()
@@ -25,7 +25,6 @@ export function useChat(matchId: string) {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Rate limit: conta msgs enviadas pelo user no último minuto sem resposta do outro
   const rateLimitRef = useRef<{ count: number; lastReset: number; waitingReply: boolean }>({
     count: 0,
     lastReset: Date.now(),
@@ -93,12 +92,11 @@ export function useChat(matchId: string) {
             return [...prev, newMsg]
           })
 
-          // Se for mensagem do outro usuário → reseta rate limit
+          // Se for mensagem do outro usuário → reseta rate limit e marca como lida
           if (newMsg.sender_id !== user?.id) {
             rateLimitRef.current.count = 0
             rateLimitRef.current.waitingReply = false
 
-            // Marca como lida
             supabase
               .from('messages')
               .update({ read: true })
@@ -153,18 +151,23 @@ export function useChat(matchId: string) {
     }
     setMessages(prev => [...prev, tempMsg])
 
-    const { data, error: insertError } = await supabase
-      .from('messages')
-      .insert({ match_id: matchId, sender_id: user.id, content: trimmed })
-      .select()
-      .single()
+    const { data: { session } } = await supabase.auth.getSession()
+    const res = await fetch('/api/chat/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token ?? ''}`,
+      },
+      body: JSON.stringify({ matchId, content: trimmed }),
+    })
 
-    if (insertError) {
+    const json = await res.json()
+
+    if (!res.ok) {
       setMessages(prev => prev.filter(m => m.id !== tempId))
-      setError('Erro ao enviar mensagem. Tente novamente.')
+      setError(json.error ?? 'Erro ao enviar mensagem. Tente novamente.')
     } else {
-      setMessages(prev => prev.map(m => m.id === tempId ? data : m))
-      // Atualiza rate limit
+      setMessages(prev => prev.map(m => m.id === tempId ? json.message : m))
       rl.count++
       rl.waitingReply = true
     }

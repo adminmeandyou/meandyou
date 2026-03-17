@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import crypto from 'crypto'
-import { sendPlanActivatedEmail, sendReceiptEmail } from '@/app/lib/email'
+import { sendPlanActivatedEmail, sendReceiptEmail, sendRewardReceivedEmail } from '@/app/lib/email'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,21 +28,29 @@ const PLAN_PRICES: Record<string, number> = {
 
 // ── Loja avulsa ───────────────────────────────────────────────────────────
 type StoreItem =
-  | { type: 'superlike' | 'boost' | 'lupa' | 'rewind'; amount: number; item_type: string }
+  | { type: 'superlike' | 'boost' | 'lupa' | 'rewind' | 'ghost'; amount: number; item_type: string }
 
 const STORE_OFFERS: Record<string, StoreItem> = {
   // SuperLikes
-  'qjgmwzu': { type: 'superlike', amount: 5,  item_type: 'superlikes_5'  },
-  '33kbrpq': { type: 'superlike', amount: 15, item_type: 'superlikes_15' },
-  'ft87o9v': { type: 'superlike', amount: 30, item_type: 'superlikes_30' },
+  '3cg973u': { type: 'superlike', amount: 1,  item_type: 'superlikes_1'  },
+  '8imgsen': { type: 'superlike', amount: 5,  item_type: 'superlikes_5'  },
+  'nhx6ei3': { type: 'superlike', amount: 10, item_type: 'superlikes_10' },
   // Boosts
-  'hsv4ooq': { type: 'boost',     amount: 1,  item_type: 'boost_1'       },
-  'sgbdabs': { type: 'boost',     amount: 5,  item_type: 'boost_5'       },
-  // TODO: substituir pelos slugs reais ao criar os produtos no painel Cakto
-  // 'SLUG_LUPA_5':    { type: 'lupa',   amount: 5,  item_type: 'lupas_5'   },
-  // 'SLUG_LUPA_15':   { type: 'lupa',   amount: 15, item_type: 'lupas_15'  },
-  // 'SLUG_LUPA_30':   { type: 'lupa',   amount: 30, item_type: 'lupas_30'  },
-  // 'SLUG_REWIND_5':  { type: 'rewind', amount: 5,  item_type: 'rewinds_5' },
+  'mdpn9zu': { type: 'boost',     amount: 1,  item_type: 'boost_1'       },
+  'vyaecjn': { type: 'boost',     amount: 5,  item_type: 'boost_5'       },
+  'v2hkztt': { type: 'boost',     amount: 10, item_type: 'boost_10'      },
+  // Lupas (ver quem curtiu)
+  'hnou4rx': { type: 'lupa',      amount: 1,  item_type: 'lupas_1'       },
+  't8mzpty': { type: 'lupa',      amount: 5,  item_type: 'lupas_5'       },
+  'skksymv': { type: 'lupa',      amount: 10, item_type: 'lupas_10'      },
+  // Rewinds (desfazer curtida)
+  'jra25ti': { type: 'rewind',    amount: 1,  item_type: 'rewinds_1'     },
+  'tffexvs': { type: 'rewind',    amount: 5,  item_type: 'rewinds_5'     },
+  '7e5fjbx': { type: 'rewind',    amount: 10, item_type: 'rewinds_10'    },
+  // Modo Fantasma (cada unidade = 7 dias)
+  'ct79bui': { type: 'ghost',     amount: 7,  item_type: 'ghost_7d'      },
+  'jesigqc': { type: 'ghost',     amount: 35, item_type: 'ghost_35d'     },
+  '8b75h6z': { type: 'ghost',     amount: 70, item_type: 'ghost_70d'     },
 }
 
 // ── Validação HMAC ────────────────────────────────────────────────────────
@@ -89,28 +97,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true })
     }
 
-    const orderId       = body?.id              || body?.data?.id
+    const orderId = body?.id || body?.data?.id
 
-    // 3. Idempotência — ignora webhooks duplicados pelo mesmo orderId
-    // IMPORTANTE: rode este SQL no Supabase antes de usar:
-    // CREATE TABLE IF NOT EXISTS cakto_webhook_log (
-    //   order_id text PRIMARY KEY,
-    //   processed_at timestamptz DEFAULT now()
-    // );
-    if (orderId) {
-      const { error: insertError } = await supabaseAdmin
-        .from('cakto_webhook_log')
-        .insert({ order_id: orderId })
+    // 3. Idempotência — orderId é obrigatório para evitar duplo crédito
+    if (!orderId) {
+      console.error('Webhook Cakto: orderId ausente — rejeitando para evitar duplo crédito')
+      return NextResponse.json({ error: 'orderId obrigatório' }, { status: 400 })
+    }
 
-      if (insertError) {
-        // Conflito = já foi processado
-        if (insertError.code === '23505') {
-          console.log(`Webhook duplicado ignorado: ${orderId}`)
-          return NextResponse.json({ received: true })
-        }
-        // Tabela não existe ainda — prossegue sem idempotência e loga aviso
-        console.warn('cakto_webhook_log não encontrada — crie a tabela no Supabase')
+    const { error: insertError } = await supabaseAdmin
+      .from('cakto_webhook_log')
+      .insert({ order_id: orderId })
+
+    if (insertError) {
+      // Conflito = já foi processado
+      if (insertError.code === '23505') {
+        console.log(`Webhook duplicado ignorado: ${orderId}`)
+        return NextResponse.json({ received: true })
       }
+      // Tabela não existe ainda — prossegue sem idempotência e loga aviso
+      console.warn('cakto_webhook_log não encontrada — crie a tabela no Supabase')
     }
     const customerEmail = body?.customer?.email || body?.data?.customer?.email
     const offerSlug     = body?.offer?.slug     || body?.data?.offer?.slug || ''
@@ -211,9 +217,31 @@ export async function POST(req: NextRequest) {
         await supabaseAdmin.rpc('credit_lupas', baseParams)
       } else if (storeItem.type === 'rewind') {
         await supabaseAdmin.rpc('credit_rewinds', baseParams)
+      } else if (storeItem.type === 'ghost') {
+        await supabaseAdmin.rpc('activate_ghost_mode', {
+          p_user_id: userId,
+          p_days:    storeItem.amount,
+        })
       }
 
       console.log(`${storeItem.amount}x ${storeItem.type} creditado para ${customerEmail}`)
+
+      // Email de confirmação de compra avulsa
+      try {
+        const { data: profileData } = await supabaseAdmin.from('profiles').select('name').eq('id', userId).single()
+        const nomeDisplay = profileData?.name?.split(' ')[0] ?? 'Usuário'
+        const itemLabel: Record<string, string> = {
+          superlike: `${storeItem.amount} SuperLike${storeItem.amount > 1 ? 's' : ''}`,
+          boost:     `${storeItem.amount} Boost${storeItem.amount > 1 ? 's' : ''}`,
+          lupa:      `${storeItem.amount} Lupa${storeItem.amount > 1 ? 's' : ''}`,
+          rewind:    `${storeItem.amount} Desfazer Curtida${storeItem.amount > 1 ? 's' : ''}`,
+          ghost:     `${storeItem.amount} dias de Modo Fantasma`,
+        }
+        await sendRewardReceivedEmail(customerEmail, nomeDisplay, itemLabel[storeItem.type] ?? storeItem.item_type, 'compra na loja')
+      } catch (err) {
+        console.error('Erro ao enviar email de compra da loja (não bloqueante):', err)
+      }
+
       return NextResponse.json({ success: true })
     }
 

@@ -55,6 +55,7 @@ export default function Home() {
   // PWA Install
   const [installPrompt, setInstallPrompt] = useState<any>(null)
   const [installDone, setInstallDone] = useState(false)
+  const [selectedOS, setSelectedOS] = useState<'android' | 'ios'>('android')
 
   // Notifications
   const [notifList, setNotifList] = useState<Array<{id: number, text: string, exiting: boolean}>>([])
@@ -701,14 +702,17 @@ export default function Home() {
         .lp-install-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
         .lp-install-left h2 { font-family: var(--font-fraunces), serif; font-size: clamp(30px, 4vw, 52px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
         .lp-install-left h2 em { color: var(--accent); font-style: italic; }
-        .lp-install-left p { font-size: 16px; color: var(--text-muted); line-height: 1.75; margin-bottom: 36px; max-width: 440px; }
+        .lp-install-left p { font-size: 16px; color: var(--text-muted); line-height: 1.75; margin-bottom: 32px; max-width: 440px; }
+        .lp-install-os-tabs { display: flex; gap: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border); margin-bottom: 16px; max-width: 360px; }
+        .lp-os-tab { flex: 1; padding: 11px 16px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--text-muted); font-family: var(--font-jakarta), sans-serif; display: flex; align-items: center; justify-content: center; gap: 7px; transition: background 0.2s, color 0.2s; }
+        .lp-os-tab:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+        .lp-os-tab.active { background: var(--accent); color: #fff; }
         .lp-install-actions { display: flex; flex-direction: column; gap: 12px; max-width: 360px; }
         .lp-install-btn { display: flex; align-items: center; gap: 12px; padding: 15px 24px; border-radius: 14px; font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer; border: none; transition: transform 0.15s, box-shadow 0.2s, background 0.2s; font-family: var(--font-jakarta), sans-serif; width: 100%; }
         .lp-install-btn:hover { transform: translateY(-2px); }
         .lp-install-btn.android { background: var(--accent); color: #fff; box-shadow: 0 8px 32px rgba(225,29,72,.30); }
         .lp-install-btn.android:hover { background: #be123c; box-shadow: 0 12px 40px rgba(225,29,72,.45); }
-        .lp-install-btn.ios { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); }
-        .lp-install-btn.ios:hover { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.15); }
+        .lp-install-btn.ios { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border); cursor: default; }
         .lp-install-btn-icon { width: 22px; height: 22px; flex-shrink: 0; }
         .lp-install-btn-text { display: flex; flex-direction: column; text-align: left; }
         .lp-install-btn-text small { font-size: 11px; font-weight: 400; opacity: 0.7; margin-bottom: 1px; }
@@ -721,7 +725,7 @@ export default function Home() {
         .lp-install-step h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
         .lp-install-step p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; }
         .lp-install-os-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin: 8px 0 4px; }
-        @media (max-width: 960px) { .lp-install-inner { grid-template-columns: 1fr; gap: 48px; } .lp-install { padding: 72px 24px; } .lp-install-actions { max-width: 100%; } }
+        @media (max-width: 960px) { .lp-install-inner { grid-template-columns: 1fr; gap: 48px; } .lp-install { padding: 72px 24px; } .lp-install-actions { max-width: 100%; } .lp-install-os-tabs { max-width: 100%; } }
 
         /* ── TESTIMONIALS ── */
         .lp-testi { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border); }
@@ -1216,7 +1220,7 @@ export default function Home() {
           <div className="lp-intentions-inner">
             <div className="lp-intentions-header">
               <p className="lp-section-label">Intenções</p>
-              <h2 className="lp-section-title">Todo mundo sabe o que quer.<br />Agora você também filtra isso.</h2>
+              <h2 className="lp-section-title">Todo mundo sabe o que quer.<br />Agora você também <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>filtra</em> isso.</h2>
               <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '14px auto 0', lineHeight: 1.7 }}>
                 Chega de descobrir depois de semanas que vocês querem coisas completamente diferentes.
               </p>
@@ -1244,7 +1248,7 @@ export default function Home() {
         <section className="lp-how" id="como-funciona">
           <div className="lp-how-inner">
             <p className="lp-section-label">Como funciona</p>
-            <h2 className="lp-section-title">Em minutos você já tem matches reais.</h2>
+            <h2 className="lp-section-title">Em <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>minutos</em> você já tem matches reais.</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
               Simples e direto, com a segurança que outros apps nunca tiveram.
             </p>
@@ -1269,7 +1273,7 @@ export default function Home() {
         <section className="lp-diff">
           <div className="lp-diff-inner">
             <p className="lp-section-label">Diferenciais</p>
-            <h2 className="lp-section-title">Tudo que outros apps<br />nunca tiveram.</h2>
+            <h2 className="lp-section-title">Tudo que outros apps<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>nunca</em> tiveram.</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
               Três recursos que mudam completamente a forma de se conectar.
             </p>
@@ -1393,7 +1397,7 @@ export default function Home() {
         <section className="lp-gamif lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.75), rgba(8,9,14,0.88)), url('/backgrounds/MUITO%20MAIS%20DO%20QUE%20CURTIDAS.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-gamif-inner">
             <p className="lp-section-label">Muito mais do que curtidas</p>
-            <h2 className="lp-section-title">Recompensas por<br />estar aqui</h2>
+            <h2 className="lp-section-title"><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Recompensas</em> por<br />estar aqui</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '500px', margin: '0 auto', lineHeight: 1.7 }}>
               Todo dia tem prêmio. Quanto mais você usa, mais você ganha.
             </p>
@@ -1429,7 +1433,7 @@ export default function Home() {
         <section className="lp-testi lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.72), rgba(8,9,14,0.88)), url('/backgrounds/depoimentos.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <div className="lp-testi-inner">
             <p className="lp-section-label">Depoimentos</p>
-            <h2 className="lp-section-title">Chega de encontros frustrantes.<br />Veja quem já está vivendo o mundo real.</h2>
+            <h2 className="lp-section-title">Chega de encontros frustrantes.<br />Veja quem já está <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>vivendo</em> o mundo real.</h2>
             <div className="lp-testi-grid">
               {[
                 { name: 'Camila S.', role: 'Belo Horizonte · 27 anos · Plano Plus', text: 'Passei muito tempo em apps conversando com pessoas que estavam em momentos diferentes do meu. Aqui eu fui direto ao ponto: ativei os filtros e deixei claro que procuro algo sério. O app cortou o ruído e me conectou só com quem estava na mesma página. Encontrei uma pessoa incrível, sem perder o meu tempo nem o tempo de ninguém.' },
@@ -1460,79 +1464,105 @@ export default function Home() {
           <div className="lp-install-inner">
             <div className="lp-install-left lp-anim">
               <p className="lp-section-label">App</p>
-              <h2>Baixe agora.<br /><em>Sem loja de apps.</em></h2>
-              <p>Funciona como um app de verdade — ícone na tela inicial, notificações em tempo real. Sem ocupar espaço da loja, sem burocracia.</p>
+              <h2><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Baixe Agora.</em><br />Direto no seu celular.</h2>
+              <p>Ícone na tela inicial, notificações em tempo real. Sem precisar de loja de apps, sem burocracia de download.</p>
+
+              {/* Tabs Android / iPhone */}
+              <div className="lp-install-os-tabs">
+                <button
+                  className={`lp-os-tab${selectedOS === 'android' ? ' active' : ''}`}
+                  onClick={() => setSelectedOS('android')}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341 14.6 10.5l2.184-3.78a.75.75 0 0 0-1.3-.75L13.3 9.75H10.7L9.516 5.97a.75.75 0 0 0-1.3.75L10.4 10.5l-2.923 4.841A.75.75 0 1 0 8.777 16L12 10.933 15.223 16a.75.75 0 1 0 1.3-.659zM6.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm11 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+                  Android
+                </button>
+                <button
+                  className={`lp-os-tab${selectedOS === 'ios' ? ' active' : ''}`}
+                  onClick={() => setSelectedOS('ios')}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  iPhone
+                </button>
+              </div>
+
               <div className="lp-install-actions">
                 {installDone ? (
                   <div className="lp-install-done">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                     App instalado com sucesso!
                   </div>
+                ) : selectedOS === 'android' ? (
+                  <button onClick={handleInstall} className="lp-install-btn android" style={{ opacity: installPrompt ? 1 : 0.55, cursor: installPrompt ? 'pointer' : 'default' }}>
+                    <svg className="lp-install-btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341 14.6 10.5l2.184-3.78a.75.75 0 0 0-1.3-.75L13.3 9.75H10.7L9.516 5.97a.75.75 0 0 0-1.3.75L10.4 10.5l-2.923 4.841A.75.75 0 1 0 8.777 16L12 10.933 15.223 16a.75.75 0 1 0 1.3-.659zM6.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm11 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+                    <span className="lp-install-btn-text">
+                      <small>{installPrompt ? 'Toque para instalar' : 'Abra no Chrome para instalar'}</small>
+                      Instalar no Android
+                    </span>
+                  </button>
                 ) : (
-                  <>
-                    <button onClick={handleInstall} className="lp-install-btn android" style={{ opacity: installPrompt ? 1 : 0.5, cursor: installPrompt ? 'pointer' : 'default' }}>
-                      <svg className="lp-install-btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341 14.6 10.5l2.184-3.78a.75.75 0 0 0-1.3-.75L13.3 9.75H10.7L9.516 5.97a.75.75 0 0 0-1.3.75L10.4 10.5l-2.923 4.841A.75.75 0 1 0 8.777 16L12 10.933 15.223 16a.75.75 0 1 0 1.3-.659zM6.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm11 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
-                      <span className="lp-install-btn-text">
-                        <small>Toque para instalar</small>
-                        Instalar no Android
-                      </span>
-                    </button>
-                    <a href="#ios-steps" className="lp-install-btn ios">
-                      <svg className="lp-install-btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
-                      <span className="lp-install-btn-text">
-                        <small>Passo a passo</small>
-                        Instalar no iPhone
-                      </span>
-                    </a>
-                  </>
+                  <div className="lp-install-btn ios">
+                    <svg className="lp-install-btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                    <span className="lp-install-btn-text">
+                      <small>Siga os passos ao lado →</small>
+                      Instalar no iPhone
+                    </span>
+                  </div>
                 )}
               </div>
             </div>
-            <div className="lp-install-right lp-anim" id="ios-steps">
-              <p className="lp-install-os-label">Android · Chrome</p>
-              <div className="lp-install-step">
-                <div className="lp-install-step-num android">1</div>
-                <div>
-                  <h4>Abra no Chrome</h4>
-                  <p>Acesse meandyou.com.br pelo navegador Chrome no seu Android.</p>
-                </div>
-              </div>
-              <div className="lp-install-step">
-                <div className="lp-install-step-num android">2</div>
-                <div>
-                  <h4>Toque nos 3 pontos ⋮</h4>
-                  <p>No canto superior direito do Chrome, abra o menu de opções.</p>
-                </div>
-              </div>
-              <div className="lp-install-step">
-                <div className="lp-install-step-num android">3</div>
-                <div>
-                  <h4>Adicionar à tela inicial</h4>
-                  <p>Selecione a opção e confirme. O ícone aparece na sua tela.</p>
-                </div>
-              </div>
-              <p className="lp-install-os-label" style={{ marginTop: '8px' }}>iPhone · Safari</p>
-              <div className="lp-install-step">
-                <div className="lp-install-step-num ios">1</div>
-                <div>
-                  <h4>Abra no Safari</h4>
-                  <p>O Safari é obrigatório no iPhone para instalar apps pela web.</p>
-                </div>
-              </div>
-              <div className="lp-install-step">
-                <div className="lp-install-step-num ios">2</div>
-                <div>
-                  <h4>Toque em Compartilhar</h4>
-                  <p>Ícone de seta para cima na barra inferior do Safari.</p>
-                </div>
-              </div>
-              <div className="lp-install-step">
-                <div className="lp-install-step-num ios">3</div>
-                <div>
-                  <h4>Adicionar à Tela de Início</h4>
-                  <p>Role o menu para baixo, toque na opção e confirme.</p>
-                </div>
-              </div>
+
+            <div className="lp-install-right lp-anim">
+              {selectedOS === 'android' ? (
+                <>
+                  <p className="lp-install-os-label">Android · Chrome</p>
+                  <div className="lp-install-step">
+                    <div className="lp-install-step-num android">1</div>
+                    <div>
+                      <h4>Abra no Chrome</h4>
+                      <p>Acesse meandyou.com.br pelo navegador Chrome no seu Android.</p>
+                    </div>
+                  </div>
+                  <div className="lp-install-step">
+                    <div className="lp-install-step-num android">2</div>
+                    <div>
+                      <h4>Toque nos 3 pontos ⋮</h4>
+                      <p>No canto superior direito do Chrome, abra o menu de opções.</p>
+                    </div>
+                  </div>
+                  <div className="lp-install-step">
+                    <div className="lp-install-step-num android">3</div>
+                    <div>
+                      <h4>Adicionar à tela inicial</h4>
+                      <p>Selecione a opção e confirme. O ícone aparece na sua tela.</p>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p className="lp-install-os-label">iPhone · Safari</p>
+                  <div className="lp-install-step">
+                    <div className="lp-install-step-num ios">1</div>
+                    <div>
+                      <h4>Abra no Safari</h4>
+                      <p>No iPhone, use o Safari — é o único navegador que permite instalar apps pela web.</p>
+                    </div>
+                  </div>
+                  <div className="lp-install-step">
+                    <div className="lp-install-step-num ios">2</div>
+                    <div>
+                      <h4>Toque em Compartilhar</h4>
+                      <p>Ícone de seta para cima na barra inferior do Safari.</p>
+                    </div>
+                  </div>
+                  <div className="lp-install-step">
+                    <div className="lp-install-step-num ios">3</div>
+                    <div>
+                      <h4>Adicionar à Tela de Início</h4>
+                      <p>Role o menu para baixo, toque na opção e confirme. O ícone aparece na tela.</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -1543,7 +1573,23 @@ export default function Home() {
             <div className="lp-about-intro">
               <div className="lp-about-intro-left lp-anim">
                 <p className="lp-section-label">Quem somos</p>
-                <h2>O mercado parou no tempo.<br /><em>Nós adiantamos o relógio.</em></h2>
+                <h2>
+                  <span style={{
+                    display: 'block',
+                    fontSize: '0.52em',
+                    fontWeight: 400,
+                    color: 'rgba(248,249,250,0.42)',
+                    fontStyle: 'italic',
+                    letterSpacing: '0',
+                    lineHeight: 1.5,
+                    marginBottom: '14px',
+                    borderLeft: '2px solid var(--accent-border)',
+                    paddingLeft: '14px',
+                  }}>
+                    O mercado parou no tempo.
+                  </span>
+                  <em>Nós adiantamos<br />o relógio.</em>
+                </h2>
               </div>
               <div className="lp-about-intro-right lp-anim">
                 <p>Olhe para os aplicativos que você usa hoje. Eles são obsoletos na segurança, ultrapassados nas funções e desenhados para prender você na tela. O mercado transformou a busca por alguém em um videogame sem graça: as pessoas dão like, like, like, dão match, e a conversa simplesmente nunca acontece. Virou vício em validação, não em conexão.</p>
@@ -1628,10 +1674,10 @@ export default function Home() {
         {/* ── CTA final ── */}
         <section className="lp-cta lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.60), rgba(8,9,14,0.82)), url('/backgrounds/diferenciais.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
           <h2 className="lp-cta-title">
-            Sua pessoa <em>real</em><br />está <em style={{ fontStyle:'italic', color:'var(--accent)' }}>esperando.</em>
+            Sua pessoa real<br />está <em style={{ fontStyle:'italic', color:'var(--accent)' }}>esperando.</em>
           </h2>
-          <p className="lp-cta-sub" style={{ color:'var(--text-muted)', fontSize:'17px', marginBottom:'44px', position:'relative' }}>
-            <strong>Verificação real.</strong> Filtros completos. Conexões de <em>verdade.</em>
+          <p className="lp-cta-sub" style={{ color:'rgba(248,249,250,0.88)', fontSize:'17px', marginBottom:'44px', position:'relative' }}>
+            <strong>Verificação real.</strong> <strong>Filtros completos.</strong> Conexões de <em>verdade.</em>
           </p>
           <a href="/planos" className="lp-btn-cta-white" style={{ position:'relative' }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
@@ -1665,58 +1711,17 @@ export default function Home() {
               <h4>Conta</h4>
               <a href="/planos">Criar conta</a>
               <a href="/login">Entrar</a>
+              <a href="/fale-conosco">Fale Conosco</a>
               <a href="/suporte">Suporte</a>
-              <a href="/ajuda">Central de ajuda</a>
             </div>
           </div>
-          <div className="lp-footer-contact">
-            <h4>Fale Conosco</h4>
-            {contatoEnviado ? (
-              <p style={{ color: '#4ade80', fontSize: '14px', marginTop: '12px' }}>
-                Mensagem enviada! Respondemos em breve.
-              </p>
-            ) : (
-              <form className="lp-contact-form" onSubmit={handleContatoSubmit}>
-                <input
-                  type="text"
-                  placeholder="Seu nome"
-                  value={contatoNome}
-                  onChange={e => setContatoNome(e.target.value)}
-                />
-                <input
-                  type="email"
-                  placeholder="Seu e-mail"
-                  value={contatoEmail}
-                  onChange={e => setContatoEmail(e.target.value)}
-                />
-                <select
-                  value={contatoAssunto}
-                  onChange={e => setContatoAssunto(e.target.value)}
-                >
-                  <option value="" disabled>Assunto</option>
-                  <option value="suporte">Suporte técnico</option>
-                  <option value="conta">Minha conta</option>
-                  <option value="cobranca">Cobrança / plano</option>
-                  <option value="denuncia">Denúncia de perfil</option>
-                  <option value="parceria">Parceria</option>
-                  <option value="outro">Outro</option>
-                </select>
-                <textarea
-                  placeholder="Sua mensagem..."
-                  value={contatoMensagem}
-                  onChange={e => setContatoMensagem(e.target.value)}
-                />
-                {contatoErro && (
-                  <p style={{ color: '#f87171', fontSize: '13px', margin: '4px 0 0' }}>{contatoErro}</p>
-                )}
-                <button className="lp-contact-btn" type="submit" disabled={contatoEnviando}>
-                  {contatoEnviando ? 'Enviando...' : 'Enviar'}
-                </button>
-              </form>
-            )}
-          </div>
           <div className="lp-footer-bottom">
-            <p>© {new Date().getFullYear()} MeAndYou · Todos os direitos reservados</p>
+            <div>
+              <p>© {new Date().getFullYear()} MeAndYou · Todos os direitos reservados</p>
+              <p style={{ fontSize: '11px', marginTop: '4px', color: 'rgba(248,249,250,0.35)' }}>
+                Feito com carinho por brasileiros 🇧🇷
+              </p>
+            </div>
             <div className="lp-footer-btm-links">
               <a href="/privacidade">Privacidade</a>
               <a href="/termos">Termos</a>

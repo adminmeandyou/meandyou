@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc:*)",
+      "Bash(wsl -e bash -c \"cd /home/leandro/projetos/meandyou-app && npx tsc --noEmit 2>&1 | head -60\")",
+      "Bash(wsl -e bash -c \"cd /home/leandro/projetos/meandyou-app && node_modules/.bin/tsc --noEmit 2>&1 | head -60\")",
+      "Bash(find wsl.localhostUbuntuhomeleandromeandyou-appsrcappapiauth -name *.ts -type f)",
+      "Bash(grep -r \"check_login_attempts\\\\|register_login_attempt\\\\|update_streak\\\\|update_profile_score\" wsl.localhostUbuntuhomeleandromeandyou-appsrc --include=*.ts --include=*.tsx)"
+    ]
+  }
+}

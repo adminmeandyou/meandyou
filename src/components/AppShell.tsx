@@ -5,6 +5,7 @@ import { AppHeader } from './AppHeader'
 import { AppBottomNav } from './AppBottomNav'
 import { AppSidebar } from './AppSidebar'
 import { AppHeaderProvider, useAppHeader } from '@/contexts/AppHeaderContext'
+import { ToastProvider } from './Toast'
 
 /**
  * Rotas que recebem o shell do app (header + bottom nav + sidebar).
@@ -46,10 +47,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const shell = usesShell(pathname)
 
-  // Rotas sem shell: renderiza children diretamente
-  if (!shell) return <>{children}</>
+  // Rotas sem shell: renderiza children diretamente (sem ToastProvider — pages auth têm o próprio)
+  if (!shell) return <ToastProvider>{children}</ToastProvider>
 
   return (
+    <ToastProvider>
     <AppHeaderProvider>
       <div
         style={{
@@ -136,5 +138,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </div>
     </AppHeaderProvider>
+    </ToastProvider>
   )
 }

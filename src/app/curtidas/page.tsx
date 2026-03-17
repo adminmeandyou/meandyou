@@ -7,6 +7,8 @@ import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
 import { PaywallCard } from '@/components/PaywallCard'
+import { useToast } from '@/components/Toast'
+import { useHaptics } from '@/hooks/useHaptics'
 import { ArrowLeft, Heart, Star, Lock } from 'lucide-react'
 
 type LikerProfile = {
@@ -31,6 +33,8 @@ export default function CurtidasPage() {
   const { user } = useAuth()
   const { limits, loading: planLoading } = usePlan()
   const router = useRouter()
+  const toast = useToast()
+  const haptics = useHaptics()
 
   const [likers, setLikers] = useState<LikerProfile[]>([])
   const [loading, setLoading] = useState(true)
@@ -87,14 +91,16 @@ export default function CurtidasPage() {
   }
 
   async function handleLikeBack(profileId: string) {
+    haptics.medium()
     try {
       await supabase.rpc('process_swipe', {
         p_from: user!.id,
         p_to: profileId,
         p_type: 'like',
       })
+      toast.success('Curtida enviada!')
     } catch {
-      // ignora — o erro não impede o UX
+      toast.error('Erro ao enviar curtida')
     }
     setLikedBack((prev) => new Set(Array.from(prev).concat(profileId)))
   }

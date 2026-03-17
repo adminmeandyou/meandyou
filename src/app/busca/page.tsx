@@ -10,6 +10,9 @@ import {
   Loader2, Lock, Check, MapPin, RotateCcw, Zap, Undo2,
   ChevronDown, ChevronUp, Users, Info,
 } from 'lucide-react'
+import { SkeletonCard, skeletonCss } from '@/components/Skeleton'
+import { useToast } from '@/components/Toast'
+import { useHaptics } from '@/hooks/useHaptics'
 import { BottomSheet } from '@/components/ui/BottomSheet'
 import { Pill } from '@/components/ui/Pill'
 import { SliderRange } from '@/components/ui/SliderRange'
@@ -551,6 +554,8 @@ export default function BuscaPage() {
   const likeLimit = getLikeLimit(userPlan)
   const superlikeLimit = getSuperlikeLimit(userPlan) + superlikesAvulso
   const currentProfile = deck[currentIdx] ?? null
+  const toast = useToast()
+  const haptics = useHaptics()
 
   // ── Injeção do modeSelector no AppHeader ──────────────────────────────────
   const { setModeSelector } = useAppHeader()
@@ -726,8 +731,8 @@ export default function BuscaPage() {
         }
       } catch (err) {
         console.error('Erro ao processar swipe:', err)
-        setError('Falha ao registrar ação. Verifique sua conexão.')
-        setTimeout(() => setError(''), 4000)
+        toast.error('Falha ao registrar acao. Verifique sua conexao.')
+        haptics.error()
       }
     }, 350)
   }
@@ -823,10 +828,13 @@ export default function BuscaPage() {
         ) : viewMode === 'search' ? (
           <SearchGrid deck={deck} />
         ) : loadingDeck ? (
-          /* Loading */
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, color: 'var(--muted)' }}>
-            <Loader2 size={28} style={{ animation: 'ui-spin 1s linear infinite' }} />
-            <span style={{ fontSize: 13 }}>Carregando pessoas perto de você...</span>
+          /* Loading — skeleton deck */
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 20px', gap: 12 }}>
+            <style>{skeletonCss}</style>
+            <div style={{ width: '100%', maxWidth: 360 }}>
+              <SkeletonCard />
+            </div>
+            <span style={{ fontSize: 13, color: 'var(--muted-2)' }}>Buscando pessoas perto de você...</span>
           </div>
         ) : limitReached ? (
           /* Limite de curtidas — PaywallCard com countdown */

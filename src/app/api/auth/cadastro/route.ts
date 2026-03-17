@@ -36,13 +36,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Preencha todos os campos' }, { status: 400 })
     }
 
-    // ✅ CORREÇÃO AVISO 15: validar dígito verificador do CPF
+    if (nomeExibicao.trim().length < 2) {
+      return NextResponse.json({ error: 'O nome na plataforma deve ter pelo menos 2 caracteres' }, { status: 400 })
+    }
+
     if (!validarCPF(cpf)) {
       return NextResponse.json({ error: 'CPF inválido.' }, { status: 400 })
     }
 
     // Verificar Cloudflare Turnstile (se configurado)
     const turnstileSecret = process.env.TURNSTILE_SECRET_KEY
+    if (!turnstileSecret && process.env.NODE_ENV === 'production') {
+      console.warn('[cadastro] ATENÇÃO: TURNSTILE_SECRET_KEY não configurado em produção — captcha desabilitado!')
+    }
     if (turnstileSecret) {
       if (!cfToken) {
         return NextResponse.json({ error: 'Verificação de segurança necessária' }, { status: 400 })
@@ -178,8 +184,10 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 6. Email de boas-vindas via lib/email.ts
-    await sendWelcomeEmail(email, nomeExibicao)
+    // 6. Email de boas-vindas via lib/email.ts (fire-and-forget — não bloqueia resposta)
+    sendWelcomeEmail(email, nomeExibicao).catch(err =>
+      console.error('[cadastro] Falha ao enviar email de boas-vindas:', err)
+    )
 
     return NextResponse.json({ ok: true })
   } catch (err) {

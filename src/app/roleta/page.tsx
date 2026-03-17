@@ -64,7 +64,7 @@ export default function RoletaPage() {
   // Tickets diários por plano
   const dailyTickets = limits.isBlack ? 3 : limits.isPlus ? 2 : 1
   const spinsLeft = Math.max(0, dailyTickets - spinsToday)
-  const canSpin = tickets > 0 && !spinning
+  const canSpin = tickets > 0 && spinsLeft > 0 && !spinning
 
   useEffect(() => {
     if (!user) return
@@ -187,9 +187,21 @@ export default function RoletaPage() {
 
     const prize: SpinResult = data
 
-    // Anima a roda até um ângulo aleatório (pelo menos 5 voltas completas)
-    const extraSpins = 5 + Math.random() * 3
-    const targetRotation = rotation + extraSpins * 2 * Math.PI + Math.random() * 2 * Math.PI
+    // Alinha a roda para parar visualmente no segmento do prêmio recebido
+    const segAngle = (2 * Math.PI) / WHEEL_SEGMENTS.length
+    const segIdx = (() => {
+      if (prize.reward_type === 'ticket') {
+        if (prize.reward_amount === 2) return 2
+        if (prize.reward_amount === 3) return 6
+        return 0
+      }
+      const map: Record<string, number> = { supercurtida: 1, lupa: 3, boost: 5, rewind: 7 }
+      return map[prize.reward_type] ?? 0
+    })()
+    // Para que o ponteiro (topo = -π/2) aponte para o centro do segmento correto
+    const naturalStop = -Math.PI / 2 - (segIdx + 0.5) * segAngle
+    const delta = ((naturalStop - rotation) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI)
+    const targetRotation = rotation + 6 * 2 * Math.PI + delta
 
     animateSpin(targetRotation, () => {
       setResult(prize)
@@ -260,6 +272,8 @@ export default function RoletaPage() {
               </span>
             ) : tickets === 0 ? (
               'Sem tickets — ganhe entrando amanhã'
+            ) : spinsLeft === 0 ? (
+              'Limite diário atingido'
             ) : (
               `Girar (1 ticket)`
             )}
@@ -339,8 +353,8 @@ export default function RoletaPage() {
             <a href="/indicar" className="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-white/60 text-xs hover:bg-white/10 transition">
               Indicar amigos (+3 tickets)
             </a>
-            <a href="/loja" className="px-4 py-2 rounded-xl bg-[#b8f542]/10 border border-[#b8f542]/30 text-[#b8f542] text-xs hover:bg-[#b8f542]/20 transition">
-              Comprar na loja
+            <a href="/streak" className="px-4 py-2 rounded-xl bg-[#b8f542]/10 border border-[#b8f542]/30 text-[#b8f542] text-xs hover:bg-[#b8f542]/20 transition">
+              Ganhar via streak
             </a>
           </div>
         </div>

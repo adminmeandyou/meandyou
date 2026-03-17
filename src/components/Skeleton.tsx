@@ -1,9 +1,13 @@
+'use client'
+
+import type { CSSProperties } from 'react'
+
 /**
  * Skeleton loaders reutilizáveis.
  * Uso: <SkeletonCard /> <SkeletonList rows={5} /> <SkeletonAvatar />
  */
 
-const pulse: React.CSSProperties = {
+const pulse: CSSProperties = {
   background: 'linear-gradient(90deg, rgba(255,255,255,0.04) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 75%)',
   backgroundSize: '200% 100%',
   animation: 'shimmer 1.4s infinite',

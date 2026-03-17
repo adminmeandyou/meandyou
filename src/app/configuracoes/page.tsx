@@ -10,6 +10,8 @@ import {
   LogOut, CreditCard, Headphones, ShieldCheck, Monitor, Mail, Bell,
   Eye, EyeOff, Lock, Smartphone,
 } from 'lucide-react'
+import { useToast } from '@/components/Toast'
+import { useHaptics } from '@/hooks/useHaptics'
 
 // ─── Toggle Switch ─────────────────────────────────────────────────────────────
 function ToggleSwitch({ ativo, onChange, loading }: { ativo: boolean; onChange: () => void; loading?: boolean }) {
@@ -108,6 +110,8 @@ function Badge({ label, cor }: { label: string; cor: string }) {
 // ─── Página principal ──────────────────────────────────────────────────────────
 export default function ConfiguracoesPage() {
   const router = useRouter()
+  const toast = useToast()
+  const haptics = useHaptics()
 
   const [profile, setProfile]   = useState<{ name: string; photo_best: string | null; plan: string } | null>(null)
   const [email, setEmail]       = useState('')
@@ -149,6 +153,7 @@ export default function ConfiguracoesPage() {
   }, [])
 
   async function handleLogout() {
+    haptics.medium()
     await fetch('/api/auth/logout', { method: 'POST' })
     document.cookie = 'sb-access-token=; Max-Age=0; path=/'
     document.cookie = 'sb-refresh-token=; Max-Age=0; path=/'
@@ -156,32 +161,50 @@ export default function ConfiguracoesPage() {
   }
 
   async function toggleLastActive() {
+    haptics.tap()
     setSavingLastActive(true)
     const novo = !showLastActive
     setShowLastActive(novo)
     try {
-      await supabase.from('profiles').update({ show_last_active: novo }).eq('id', userId!)
-    } catch { setShowLastActive(!novo) }
+      const { error } = await supabase.from('profiles').update({ show_last_active: novo }).eq('id', userId!)
+      if (error) throw error
+      toast.success(novo ? 'Status de atividade ativado' : 'Status de atividade ocultado')
+    } catch {
+      setShowLastActive(!novo)
+      toast.error('Erro ao salvar preferencia')
+    }
     setSavingLastActive(false)
   }
 
   async function toggleNotifEmail() {
+    haptics.tap()
     setSavingNotifEmail(true)
     const novo = !notifEmail
     setNotifEmail(novo)
     try {
-      await supabase.from('profiles').update({ notifications_email: novo }).eq('id', userId!)
-    } catch { setNotifEmail(!novo) }
+      const { error } = await supabase.from('profiles').update({ notifications_email: novo }).eq('id', userId!)
+      if (error) throw error
+      toast.success(novo ? 'Emails de engajamento ativados' : 'Emails de engajamento desativados')
+    } catch {
+      setNotifEmail(!novo)
+      toast.error('Erro ao salvar preferencia')
+    }
     setSavingNotifEmail(false)
   }
 
   async function toggleNotifPush() {
+    haptics.tap()
     if (notifPush) { setNotifPush(false); return }
     setSavingPush(true)
     try {
       if ('Notification' in window) {
         const perm = await Notification.requestPermission()
-        if (perm === 'granted') setNotifPush(true)
+        if (perm === 'granted') {
+          setNotifPush(true)
+          toast.success('Notificacoes ativadas')
+        } else {
+          toast.info('Permissao negada pelo dispositivo')
+        }
       }
     } finally { setSavingPush(false) }
   }

@@ -7,6 +7,8 @@ import { usePlan } from '@/hooks/usePlan'
 import { useRouter } from 'next/navigation'
 import { Star, Zap, ArrowLeft, CheckCircle, Loader2, ShoppingBag, Search, RotateCcw, Ticket, Plus } from 'lucide-react'
 import { StoreBottomSheet, type StoreItemType } from '@/components/StoreBottomSheet'
+import { useToast } from '@/components/Toast'
+import { useHaptics } from '@/hooks/useHaptics'
 
 const SECTION_LABELS: Record<StoreItemType, { label: string; icon: React.ReactNode; description: string }> = {
   superlike: {
@@ -42,6 +44,8 @@ export default function LojaPage() {
   const { user } = useAuth()
   const { limits } = usePlan()
   const router = useRouter()
+  const toast = useToast()
+  const haptics = useHaptics()
 
   const [superlikes, setSuperlikes]           = useState(0)
   const [boosts, setBoosts]                   = useState(0)
@@ -51,7 +55,7 @@ export default function LojaPage() {
   const [boostActiveUntil, setBoostActiveUntil] = useState<string | null>(null)
   const [ghostModeUntil, setGhostModeUntil]   = useState<string | null>(null)
   const [activating, setActivating]           = useState(false)
-  const [activateMsg, setActivateMsg]         = useState<string | null>(null)
+
   const [loading, setLoading]                 = useState(true)
   const [openSheet, setOpenSheet]             = useState<StoreItemType | null>(null)
 
@@ -102,8 +106,8 @@ export default function LojaPage() {
   }
 
   async function handleActivateBoost() {
+    haptics.medium()
     setActivating(true)
-    setActivateMsg(null)
 
     const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/boosts/activate', {
@@ -116,18 +120,18 @@ export default function LojaPage() {
     const data = await res.json()
 
     if (data?.success) {
-      setActivateMsg('Boost ativado! Seu perfil esta em destaque por 30 minutos.')
+      haptics.success()
+      toast.success('Boost ativado! Perfil em destaque por 30 minutos.')
       setBoostActiveUntil(data.active_until)
       setBoosts((b) => b - 1)
     } else if (data?.reason === 'no_boosts') {
-      setActivateMsg('Voce nao tem Boosts disponiveis.')
+      toast.error('Voce nao tem Boosts disponiveis.')
     } else if (data?.reason === 'already_active') {
-      setActivateMsg('Voce ja tem um Boost ativo!')
+      toast.info('Voce ja tem um Boost ativo!')
     } else if (data?.reason === 'max_simultaneous') {
-      setActivateMsg('Limite de 2 Boosts simultaneos atingido (plano Black).')
+      toast.error('Limite de 2 Boosts simultaneos atingido.')
     }
     setActivating(false)
-    setTimeout(() => setActivateMsg(null), 4000)
   }
 
   const boostIsActive = boostActiveUntil && new Date(boostActiveUntil) > new Date()
@@ -198,10 +202,6 @@ export default function LojaPage() {
           </div>
         )}
 
-        {activateMsg && (
-          <p className="text-center text-sm text-white/50">{activateMsg}</p>
-        )}
-
         {/* Seções de compra */}
         <div className="space-y-3">
           {TYPES.map((type) => {
@@ -237,7 +237,7 @@ export default function LojaPage() {
 
                 {/* Botão comprar */}
                 <button
-                  onClick={() => setOpenSheet(type)}
+                  onClick={() => { haptics.tap(); setOpenSheet(type) }}
                   className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#b8f542]/10 border border-[#b8f542]/30 text-[#b8f542] text-sm font-semibold shrink-0 hover:bg-[#b8f542]/20 transition active:scale-95"
                 >
                   <Plus size={13} />

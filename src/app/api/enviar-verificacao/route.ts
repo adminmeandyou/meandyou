@@ -53,9 +53,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Erro ao gerar token' }, { status: 500 })
     }
 
-    // 4. Enviar email via lib/email.ts
+    // 4. Enviar email via lib/email.ts (fire-and-forget — token já está no banco)
     const primeiroNome = nome?.split(' ')[0] || ''
-    await sendVerificationEmail(email, primeiroNome, token)
+    sendVerificationEmail(email, primeiroNome, token).catch(err =>
+      console.error('[enviar-verificacao] Falha ao enviar email:', err)
+    )
 
     return NextResponse.json({ ok: true })
   } catch (err) {

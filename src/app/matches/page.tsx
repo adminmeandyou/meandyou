@@ -5,7 +5,12 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
-import { MessageCircle, Heart, Search, Loader2, Clock, Archive } from 'lucide-react'
+import { MessageCircle, Heart, Search, Clock, Archive, Loader2 } from 'lucide-react'
+import { SkeletonList } from '@/components/Skeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { OnlineIndicator } from '@/components/OnlineIndicator'
+import { useToast } from '@/components/Toast'
+import { useHaptics } from '@/hooks/useHaptics'
 
 type Match = {
   match_id: string
@@ -19,6 +24,8 @@ type Match = {
   last_message_at: string | null
   unread_count: number
   conversation_id: string | null
+  last_active_at?: string | null
+  show_last_active?: boolean
 }
 
 function getExpiryInfo(matchedAt: string): { label: string; urgent: boolean } | null {
@@ -31,6 +38,8 @@ function getExpiryInfo(matchedAt: string): { label: string; urgent: boolean } | 
 
 export default function MatchesPage() {
   const router = useRouter()
+  const toast = useToast()
+  const haptics = useHaptics()
   const [userId, setUserId] = useState<string | null>(null)
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
@@ -52,6 +61,7 @@ export default function MatchesPage() {
       setMatches(data || [])
     } catch {
       setMatches([])
+      toast.error('Erro ao carregar matches')
     }
     setLoading(false)
   }
@@ -127,7 +137,7 @@ export default function MatchesPage() {
           ]).map(({ key, label, Icon, count }) => (
             <button
               key={key}
-              onClick={() => setAba(key)}
+              onClick={() => { haptics.tap(); setAba(key) }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 padding: '7px 16px', borderRadius: 100,
@@ -135,7 +145,7 @@ export default function MatchesPage() {
                 background: aba === key ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
                 color: aba === key ? '#fff' : 'rgba(248,249,250,0.50)',
                 fontFamily: 'var(--font-jakarta)', fontSize: 13, fontWeight: aba === key ? 700 : 400,
-                cursor: 'pointer',
+                cursor: 'pointer', transition: 'all 0.15s',
               }}
             >
               <Icon size={13} />
@@ -155,44 +165,24 @@ export default function MatchesPage() {
 
       <main style={{ padding: '20px 0 0' }}>
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 96, gap: 12 }}>
-            <Loader2 size={28} color="rgba(248,249,250,0.3)" className="animate-spin" />
-            <span style={{ fontSize: 14, color: 'rgba(248,249,250,0.3)' }}>Carregando seus matches…</span>
+          <div style={{ padding: '16px 20px' }}>
+            <SkeletonList rows={5} />
           </div>
 
         ) : aba === 'arquivados' ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: 80, gap: 16, padding: '80px 20px' }}>
-            <Archive size={44} color="rgba(248,249,250,0.12)" />
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 15, fontWeight: 500, color: 'rgba(248,249,250,0.50)', margin: '0 0 4px' }}>Nenhum arquivado</p>
-              <p style={{ fontSize: 13, maxWidth: 220, color: 'rgba(248,249,250,0.3)', margin: 0 }}>
-                Voce pode arquivar conversas para organizar seus matches.
-              </p>
-            </div>
-          </div>
+          <EmptyState
+            icon={<Archive size={28} />}
+            title="Nenhum arquivado"
+            description="Voce pode arquivar matches para organizar sua lista."
+          />
 
         ) : matches.length === 0 ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '80px 20px', gap: 16 }}>
-            <Heart size={44} color="rgba(248,249,250,0.12)" />
-            <div style={{ textAlign: 'center' }}>
-              <p style={{ fontSize: 16, fontWeight: 500, color: 'rgba(248,249,250,0.50)', margin: '0 0 6px' }}>Nenhum match ainda</p>
-              <p style={{ fontSize: 13, maxWidth: 220, color: 'rgba(248,249,250,0.3)', margin: '0 0 16px', lineHeight: 1.5 }}>
-                Continue curtindo! Quando alguem curtir de volta, aparece aqui.
-              </p>
-            </div>
-            <Link
-              href="/busca"
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '12px 24px', borderRadius: 12,
-                background: 'var(--accent)', color: '#fff',
-                fontFamily: 'var(--font-jakarta)', fontSize: 14, fontWeight: 700,
-                textDecoration: 'none', boxShadow: '0 4px 24px rgba(225,29,72,0.35)',
-              }}
-            >
-              <Search size={15} /> Explorar perfis
-            </Link>
-          </div>
+          <EmptyState
+            icon={<Heart size={28} />}
+            title="Nenhum match ainda"
+            description="Continue curtindo! Quando alguem curtir de volta, aparece aqui."
+            action={{ label: 'Explorar perfis', onClick: () => router.push('/busca') }}
+          />
 
         ) : (
           <>
@@ -355,6 +345,16 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
             </div>
           )}
         </div>
+        {match.unread_count === 0 && (
+          <div style={{ position: 'absolute', bottom: 1, right: 1 }}>
+            <OnlineIndicator
+              lastActiveAt={match.last_active_at}
+              showLastActive={match.show_last_active}
+              mode="dot"
+              size={12}
+            />
+          </div>
+        )}
         {match.unread_count > 0 && (
           <div style={{
             position: 'absolute', top: -2, right: -2,
