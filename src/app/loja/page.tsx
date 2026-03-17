@@ -22,15 +22,9 @@ const FICHAS_PACKAGES = [
   { label: '10.000 fichas', price: 'R$ 99,97',  url: 'https://pay.cakto.com.br/fichas_10000', highlight: false },
 ]
 
-// ─── Desconto por plano ───────────────────────────────────────────────────
-function getPlanDiscount(plan: string | null): number {
-  if (plan === 'black') return 0.30
-  if (plan === 'plus')  return 0.15
-  return 0
-}
-
-function applyDiscount(base: number, plan: string | null): number {
-  return Math.max(1, Math.round(base * (1 - getPlanDiscount(plan))))
+// Preço fixo — igual para todos os planos
+function applyDiscount(base: number, _plan: string | null): number {
+  return base
 }
 
 // ─── Itens compraveis com fichas ──────────────────────────────────────────
@@ -199,21 +193,14 @@ function PurchaseSheet({
           </div>
 
           {/* Custo com desconto */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 14, backgroundColor: canAfford ? 'rgba(245,158,11,0.08)' : 'rgba(225,29,72,0.08)', border: `1px solid ${canAfford ? 'rgba(245,158,11,0.25)' : 'rgba(225,29,72,0.25)'}`, marginBottom: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 14, backgroundColor: canAfford ? 'rgba(245,158,11,0.08)' : 'rgba(225,29,72,0.08)', border: `1px solid ${canAfford ? 'rgba(245,158,11,0.25)' : 'rgba(225,29,72,0.25)'}`, marginBottom: 16 }}>
             <span style={{ fontSize: 14, color: 'var(--muted)' }}>Custo</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              {discount > 0 && (
-                <span style={{ fontSize: 12, color: 'var(--muted)', textDecoration: 'line-through' }}>{item.baseFichas}</span>
-              )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
               <Coins size={15} color="#F59E0B" strokeWidth={1.5} />
               <span style={{ fontSize: 16, fontWeight: 700, color: '#F59E0B' }}>{price} fichas</span>
             </div>
           </div>
-          {discount > 0 && (
-            <div style={{ textAlign: 'right', fontSize: 11, color: '#10b981', marginBottom: 12 }}>
-              {Math.round(discount * 100)}% de desconto plano {plan === 'black' ? 'Black' : 'Plus'}
-            </div>
-          )}
+
 
           {/* Saldo */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
