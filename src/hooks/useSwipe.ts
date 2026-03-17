@@ -59,28 +59,30 @@ export function useSwipe(profiles: ProfileResult[], onRefresh: () => void) {
 
     try {
       if (action === 'dislike') {
-        // Salva dislike no banco para não reaparecer o perfil
-        await supabase.from('likes').insert({
-          from_user: user.id,
-          to_user:   currentProfile.id,
-          type:      'dislike',
-        }).then(() => {}) // fire and forget — não bloqueia o swipe
+        // Gravar dislike na tabela (silencioso, não bloqueia a UI)
+        supabase
+          .from('dislikes')
+          .upsert(
+            { from_user: user.id, to_user: currentProfile.id },
+            { onConflict: 'from_user,to_user' }
+          )
+          .then(({ error }) => { if (error) console.error('Erro ao gravar dislike:', error) })
 
         setCurrentIndex(i => i + 1)
         setProcessing(false)
         return
       }
 
-      // like ou superlike — RPC process_like(p_from, p_to, type)
+      // like ou superlike — RPC process_like
       const { data, error } = await supabase.rpc('process_like', {
-        p_from: user.id,
-        p_to:   currentProfile.id,
-        p_type: action,          // 'like' | 'superlike'
+        p_user_id:      user.id,
+        p_target_id:    currentProfile.id,
+        p_is_superlike: action === 'superlike',
       })
 
       if (error) throw error
 
-      if (data?.matched) {
+      if (data?.is_match) {
         setMatchResult({
           isMatch:        true,
           matchId:        data.match_id,

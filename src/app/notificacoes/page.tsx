@@ -3,24 +3,27 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Bell, Heart, MessageCircle, Star, Zap, Crown, Loader2, CheckCheck } from 'lucide-react'
+import { ArrowLeft, Bell, Heart, MessageCircle, Star, Zap, Crown, CheckCheck } from 'lucide-react'
+import { SkeletonList } from '@/components/Skeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { useToast } from '@/components/Toast'
+import { useHaptics } from '@/hooks/useHaptics'
 
 type Notification = {
   id: string
   type: 'match' | 'message' | 'superlike' | 'boost_expired' | 'plan_expired'
   from_user_id: string | null
   read: boolean
-  data: Record<string, any>
+  data: Record<string, unknown>
   created_at: string
-  from_profile?: { name: string; photo_best: string | null }
 }
 
 const TYPE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string; bg: string }> = {
-  match:        { label: 'Novo match!',           icon: <Heart size={16} />,          color: 'text-pink-400',   bg: 'bg-pink-500/10' },
-  message:      { label: 'Nova mensagem',          icon: <MessageCircle size={16} />,  color: 'text-blue-400',   bg: 'bg-blue-500/10' },
-  superlike:    { label: 'SuperLike recebido',     icon: <Star size={16} />,           color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
-  boost_expired:{ label: 'Boost expirado',         icon: <Zap size={16} />,            color: 'text-white/40',   bg: 'bg-white/5' },
-  plan_expired: { label: 'Plano expirado',         icon: <Crown size={16} />,          color: 'text-orange-400', bg: 'bg-orange-500/10' },
+  match:         { label: 'Novo match!',         icon: <Heart size={16} />,         color: '#f472b6', bg: 'rgba(244,114,182,0.10)' },
+  message:       { label: 'Nova mensagem',        icon: <MessageCircle size={16} />, color: '#60a5fa', bg: 'rgba(96,165,250,0.10)' },
+  superlike:     { label: 'SuperLike recebido',   icon: <Star size={16} />,          color: '#facc15', bg: 'rgba(250,204,21,0.10)' },
+  boost_expired: { label: 'Boost expirado',       icon: <Zap size={16} />,           color: 'var(--muted)', bg: 'rgba(255,255,255,0.05)' },
+  plan_expired:  { label: 'Plano expirado',       icon: <Crown size={16} />,         color: '#fb923c', bg: 'rgba(251,146,60,0.10)' },
 }
 
 function timeAgo(dateStr: string) {
@@ -36,6 +39,8 @@ function timeAgo(dateStr: string) {
 
 export default function NotificacoesPage() {
   const router = useRouter()
+  const toast = useToast()
+  const haptics = useHaptics()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [markingRead, setMarkingRead] = useState(false)
@@ -46,28 +51,44 @@ export default function NotificacoesPage() {
 
   async function loadNotifications() {
     setLoading(true)
-    // Usa a API criada na etapa 5
-    const res = await fetch('/api/notificacoes')
-    if (res.ok) {
-      const data = await res.json()
-      setNotifications(data.notifications ?? [])
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/notificacoes', {
+        headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setNotifications(data.notificacoes ?? [])
+      } else {
+        toast.error('Erro ao carregar notificacoes')
+      }
+    } catch {
+      toast.error('Erro ao carregar notificacoes')
     }
     setLoading(false)
   }
 
   async function markAllRead() {
     if (markingRead) return
+    haptics.tap()
     setMarkingRead(true)
-    await fetch('/api/notificacoes', { method: 'PATCH' })
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      await fetch('/api/notificacoes', {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}` },
+      })
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+      toast.success('Todas marcadas como lidas')
+    } catch {
+      toast.error('Erro ao marcar como lidas')
+    }
     setMarkingRead(false)
   }
 
   function handleClick(n: Notification) {
-    // Marca individual como lida localmente
+    haptics.tap()
     setNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x))
-
-    // Navega para a tela correta conforme tipo
     if (n.type === 'match' && n.data?.match_id) {
       router.push(`/conversas/${n.data.match_id}`)
     } else if (n.type === 'message' && n.data?.match_id) {
@@ -82,75 +103,123 @@ export default function NotificacoesPage() {
   const unreadCount = notifications.filter((n) => !n.read).length
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-24">
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: 96 }}>
 
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-          <ArrowLeft size={18} className="text-white/60" />
+      {/* Header */}
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 30,
+        background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(16px)',
+        borderBottom: '1px solid var(--border)',
+        padding: '14px 20px',
+        display: 'flex', alignItems: 'center', gap: 12,
+      }}>
+        <button
+          onClick={() => router.back()}
+          style={{
+            width: 36, height: 36, borderRadius: '50%',
+            background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', flexShrink: 0,
+          }}
+        >
+          <ArrowLeft size={18} color="var(--muted)" />
         </button>
-        <div className="flex-1 flex items-center gap-2">
-          <Bell size={18} className="text-white/60" />
-          <h1 className="font-fraunces text-xl text-white">Notificações</h1>
+
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Bell size={18} color="var(--muted)" />
+          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: 0 }}>
+            Notificacoes
+          </h1>
           {unreadCount > 0 && (
-            <span className="text-xs px-2 py-0.5 rounded-full bg-pink-500/20 text-pink-400 font-bold">
+            <span style={{
+              fontSize: 11, padding: '2px 8px', borderRadius: 100,
+              background: 'var(--accent-light)', color: 'var(--accent)',
+              fontWeight: 700, border: '1px solid var(--accent-border)',
+            }}>
               {unreadCount}
             </span>
           )}
         </div>
+
         {unreadCount > 0 && (
           <button
             onClick={markAllRead}
             disabled={markingRead}
-            className="flex items-center gap-1.5 text-xs text-white/30 hover:text-white/60 transition"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, color: markingRead ? 'var(--muted-2)' : 'var(--muted)',
+              background: 'none', border: 'none', cursor: markingRead ? 'not-allowed' : 'pointer',
+              transition: 'color 0.15s',
+            }}
           >
             <CheckCheck size={14} />
-            Marcar todas lidas
+            Marcar lidas
           </button>
         )}
       </header>
 
+      {/* Conteúdo */}
       {loading ? (
-        <div className="flex justify-center py-24">
-          <Loader2 size={24} className="animate-spin text-white/20" />
+        <div style={{ padding: '12px 0' }}>
+          <SkeletonList rows={6} />
         </div>
       ) : notifications.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-32 gap-3 text-white/20">
-          <Bell size={36} />
-          <p className="text-sm">Nenhuma notificação ainda.</p>
-        </div>
+        <EmptyState
+          icon={<Bell size={28} />}
+          title="Nenhuma notificacao ainda"
+          description="Matches, mensagens e SuperLikes aparecem aqui."
+        />
       ) : (
-        <div className="divide-y divide-white/5">
+        <div style={{ borderTop: '1px solid var(--border-soft)' }}>
           {notifications.map((n) => {
             const cfg = TYPE_CONFIG[n.type] ?? TYPE_CONFIG['message']
             return (
               <button
                 key={n.id}
                 onClick={() => handleClick(n)}
-                className={`w-full flex items-center gap-4 px-5 py-4 text-left transition hover:bg-white/3 ${!n.read ? 'bg-white/2' : ''}`}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+                  padding: '14px 20px',
+                  textAlign: 'left', background: n.read ? 'transparent' : 'rgba(255,255,255,0.018)',
+                  cursor: 'pointer', transition: 'background 0.15s',
+                  border: 'none', borderBottom: '1px solid var(--border-soft)',
+                }}
               >
-                {/* Ícone do tipo */}
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${cfg.bg}`}>
-                  <span className={cfg.color}>{cfg.icon}</span>
+                {/* Ícone */}
+                <div style={{
+                  width: 40, height: 40, borderRadius: '50%',
+                  background: cfg.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  flexShrink: 0, color: cfg.color,
+                }}>
+                  {cfg.icon}
                 </div>
 
-                {/* Conteúdo */}
-                <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-semibold ${n.read ? 'text-white/50' : 'text-white'}`}>
+                {/* Texto */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{
+                    fontSize: 14, fontWeight: 600, margin: '0 0 2px',
+                    color: n.read ? 'var(--muted)' : 'var(--text)',
+                  }}>
                     {cfg.label}
-                    {n.data?.name && (
-                      <span className="font-normal text-white/50"> · {n.data.name}</span>
+                    {typeof n.data?.name === 'string' && n.data.name && (
+                      <span style={{ fontWeight: 400, color: 'var(--muted)' }}> · {n.data.name}</span>
                     )}
                   </p>
-                  {n.data?.message_preview && (
-                    <p className="text-xs text-white/30 truncate mt-0.5">{n.data.message_preview}</p>
+                  {typeof n.data?.message_preview === 'string' && n.data.message_preview && (
+                    <p style={{
+                      fontSize: 13, margin: 0, color: 'var(--muted-2)',
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                    }}>
+                      {n.data.message_preview}
+                    </p>
                   )}
                 </div>
 
                 {/* Meta */}
-                <div className="flex flex-col items-end gap-1 shrink-0">
-                  <span className="text-xs text-white/20">{timeAgo(n.created_at)}</span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
+                  <span style={{ fontSize: 12, color: 'var(--muted-2)' }}>{timeAgo(n.created_at)}</span>
                   {!n.read && (
-                    <span className="w-2 h-2 rounded-full bg-pink-400" />
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: 'var(--accent)' }} />
                   )}
                 </div>
               </button>

@@ -17,13 +17,13 @@ const LIMITE_VIDEO: Record<string, number> = {
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Autenticar via cookie de sessão
-    const accessToken = req.cookies.get('sb-access-token')?.value
-    if (!accessToken) {
+    // 1. Autenticar via Bearer token
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    if (!token) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken)
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     if (authError || !user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }

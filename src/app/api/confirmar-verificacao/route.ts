@@ -1,6 +1,7 @@
 // src/app/api/confirmar-verificacao/route.ts
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { sendVerificationApprovedEmail } from '@/app/lib/email'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -94,6 +95,23 @@ export async function POST(req: NextRequest) {
       await supabase.rpc('update_profile_score', { p_user_id: userId })
     } catch (err) {
       console.error('Erro ao atualizar score:', err)
+    }
+
+    // 7. Email de aprovação (fire-and-forget — não bloqueia a resposta)
+    const { data: userInfo } = await supabase
+      .from('users')
+      .select('email')
+      .eq('id', userId)
+      .single()
+    const { data: profileInfo } = await supabase
+      .from('profiles')
+      .select('name')
+      .eq('id', userId)
+      .single()
+    if (userInfo?.email) {
+      sendVerificationApprovedEmail(userInfo.email, profileInfo?.name || '').catch(err =>
+        console.error('[confirmar-verificacao] Falha ao enviar email de aprovação:', err)
+      )
     }
 
     return NextResponse.json({ ok: true })

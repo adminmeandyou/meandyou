@@ -86,9 +86,13 @@ export default function MinhaAssinaturaPage() {
     if (!active) return
     setCancelling(true)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/assinatura/cancelar', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
         body: JSON.stringify({ subscription_id: active.id }),
       })
       const json = await res.json()

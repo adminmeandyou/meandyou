@@ -7,6 +7,25 @@ import { Camera, X, Star, ChevronRight, ChevronLeft, HelpCircle } from 'lucide-r
 
 const ETAPAS = ['Fotos', 'Básico', 'Aparência', 'Identidade', 'Estilo de vida', 'Valores', 'O que busco']
 
+interface NominatimResult {
+  lat: string
+  lon: string
+  display_name: string
+  address: {
+    city?: string
+    town?: string
+    village?: string
+    municipality?: string
+    state?: string
+    state_code?: string
+    suburb?: string
+    neighbourhood?: string
+    quarter?: string
+    road?: string
+    pedestrian?: string
+  }
+}
+
 const tooltips: Record<string, string> = {
   'Homem': 'Você nasceu com corpo masculino e se identifica como homem.',
   'Mulher': 'Você nasceu com corpo feminino e se identifica como mulher.',
@@ -65,6 +84,7 @@ export default function Perfil() {
 
   // ETAPA 0 - Fotos
   const [fotos, setFotos] = useState<(File | null)[]>(Array(10).fill(null))
+  const [fotosUrls, setFotosUrls] = useState<(string | null)[]>(Array(10).fill(null))
   const [previews, setPreviews] = useState<string[]>(Array(10).fill(''))
   const [fotoPrincipal, setFotoPrincipal] = useState(0)
   const [verificandoFoto, setVerificandoFoto] = useState<number | null>(null)
@@ -83,7 +103,7 @@ export default function Perfil() {
   const [cepStatus, setCepStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle')
   const [buscaRua, setBuscaRua] = useState('')
   const [estadoBusca, setEstadoBusca] = useState('')
-  const [sugestoesRua, setSugestoesRua] = useState<any[]>([])
+  const [sugestoesRua, setSugestoesRua] = useState<NominatimResult[]>([])
   const [buscandoRua, setBuscandoRua] = useState(false)
 
   // ETAPA 2 - Aparência
@@ -106,7 +126,9 @@ export default function Perfil() {
   const [statusCivil, setStatusCivil] = useState('')
 
   // ETAPA 4 - Estilo de vida
-  const [vicios, setVicios] = useState('')
+  const [fumo, setFumo]       = useState('')
+  const [bebida, setBebida]   = useState('')
+  const [cannabis, setCannabis] = useState(false)
   const [rotina, setRotina] = useState<string[]>([])
   const [personalidade, setPersonalidade] = useState<string[]>([])
   const [hobbies, setHobbies] = useState<string[]>([])
@@ -169,7 +191,7 @@ export default function Perfil() {
     setBuscandoRua(false)
   }
 
-  const selecionarSugestao = (item: any) => {
+  const selecionarSugestao = (item: NominatimResult) => {
     const addr = item.address
     setCidade(addr.city || addr.town || addr.village || addr.municipality || '')
     setEstado(addr.state_code || addr.state || '')
@@ -192,15 +214,21 @@ export default function Perfil() {
     const duplicada = fotos.some((f, i) => f && i !== index && f.name === file.name && f.size === file.size)
     if (duplicada) { setErro('Esta foto já foi adicionada.'); return }
 
-    const url = URL.createObjectURL(file)
-    const novosPreviewsTemp = [...previews]; novosPreviewsTemp[index] = url; setPreviews(novosPreviewsTemp)
+    const previewLocal = URL.createObjectURL(file)
+    const novosPreviewsTemp = [...previews]; novosPreviewsTemp[index] = previewLocal; setPreviews(novosPreviewsTemp)
     setVerificandoFoto(index)
     setErro('')
 
     try {
       const formData = new FormData()
       formData.append('foto', file)
-      const res = await fetch('/api/moderar-foto', { method: 'POST', body: formData })
+      formData.append('index', String(index))
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/moderar-foto', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}` },
+        body: formData,
+      })
       const data = await res.json()
 
       if (!data.aprovado) {
@@ -210,25 +238,29 @@ export default function Perfil() {
         return
       }
 
+      // Salva o File (para detecção de duplicatas) e a URL retornada pelo servidor
       const novasFotos = [...fotos]; novasFotos[index] = file; setFotos(novasFotos)
+      const novasUrls = [...fotosUrls]; novasUrls[index] = data.url; setFotosUrls(novasUrls)
+      const novosPreviews = [...previews]; novosPreviews[index] = data.url; setPreviews(novosPreviews)
       setErro('')
     } catch {
-      // Se Sightengine cair, não bloqueia o usuário
-      const novasFotos = [...fotos]; novasFotos[index] = file; setFotos(novasFotos)
-      setErro('')
+      // Falha de rede — limpa a foto, não salva sem moderação/upload server-side
+      const novosPreviewsErr = [...previews]; novosPreviewsErr[index] = ''; setPreviews(novosPreviewsErr)
+      setErro('Falha de conexão ao verificar a foto. Tente novamente.')
     }
     setVerificandoFoto(null)
   }
 
   const removerFoto = (index: number) => {
     const novasFotos = [...fotos]; novasFotos[index] = null; setFotos(novasFotos)
+    const novasUrls = [...fotosUrls]; novasUrls[index] = null; setFotosUrls(novasUrls)
     const novosPreiews = [...previews]; novosPreiews[index] = ''; setPreviews(novosPreiews)
     if (fotoPrincipal === index) setFotoPrincipal(0)
   }
 
   const validarEtapa = (): string => {
     if (etapa === 0) {
-      const obrigatorias = fotos.slice(0, 5).filter(f => f !== null)
+      const obrigatorias = fotosUrls.slice(0, 5).filter(u => u !== null)
       if (obrigatorias.length < 5) return 'Envie todas as 5 fotos obrigatórias para continuar.'
     }
     if (etapa === 1) {
@@ -268,7 +300,8 @@ export default function Perfil() {
       if (!statusCivil) return 'Selecione seu status civil.'
     }
     if (etapa === 4) {
-      if (!vicios) return 'Informe seus hábitos com substâncias.'
+      if (!fumo) return 'Informe seus hábitos com tabaco.'
+      if (!bebida) return 'Informe seus hábitos com bebida alcoólica.'
       if (rotina.length === 0) return 'Selecione pelo menos 1 opção de rotina.'
       if (personalidade.length === 0) return 'Selecione pelo menos 1 traço de personalidade.'
       if (hobbies.length === 0) return 'Selecione pelo menos 1 hobbie.'
@@ -300,25 +333,12 @@ export default function Perfil() {
 
     try {
       if (etapa === 0) {
-        const fotoSlots = ['photo_face', 'photo_body', 'photo_side', 'photo_back', 'photo_best', 'photo_extra1', 'photo_extra2', 'photo_extra3', 'photo_extra4', 'photo_extra5']
-        const urls: (string | null)[] = Array(10).fill(null)
-
-        for (let i = 0; i < fotos.length; i++) {
-          if (fotos[i]) {
-            const ext = fotos[i]!.name.split('.').pop() || 'jpg'
-            // ✅ CORREÇÃO: nome único com uuid + timestamp para evitar cache stale
-            const path = `${userId}/foto_${i}_${userId}_${Date.now()}.${ext}`
-            await supabase.storage.from('fotos').upload(path, fotos[i]!, { upsert: true })
-            const { data } = supabase.storage.from('fotos').getPublicUrl(path)
-            urls[i] = data.publicUrl
-          }
-        }
-
+        // URLs já foram geradas server-side em /api/moderar-foto
+        const fotoSlots = ['photo_face', 'photo_body', 'photo_side', 'photo_back', 'photo_extra1', 'photo_extra2', 'photo_extra3', 'photo_extra4', 'photo_extra5']
         const update: Record<string, string | null> = {}
-        fotoSlots.forEach((slot, i) => { update[slot] = urls[i] })
-        // photo_best usa a foto marcada como principal
-        update['photo_best'] = urls[fotoPrincipal] || urls[0]
-
+        fotoSlots.forEach((slot, i) => { update[slot] = fotosUrls[i] ?? null })
+        // photo_best é determinado pelo fotoPrincipal, não por um slot fixo
+        update['photo_best'] = fotosUrls[fotoPrincipal] ?? fotosUrls[0] ?? null
         await supabase.from('profiles').upsert({ id: userId, ...update })
       }
 
@@ -430,14 +450,14 @@ export default function Perfil() {
         const inst = (v: string) => instrumento.includes(v)
         await supabase.from('filters').upsert({
           user_id: userId,
-          smoke_yes: vicios === 'Fumo',
-          smoke_occasionally: vicios === 'Fumo ocasionalmente',
-          smoke_no: vicios === 'Não fumo',
-          drink_yes: vicios === 'Consumo bebida alcoólica',
-          drink_socially: vicios === 'Bebo socialmente',
-          drink_no: vicios === 'Não consumo bebida alcoólica',
-          drug_cannabis: vicios === 'Consumo cannabis',
-          no_addictions: vicios === 'Não possuo vícios',
+          smoke_yes: fumo === 'Fumo',
+          smoke_occasionally: fumo === 'Fumo ocasionalmente',
+          smoke_no: fumo === 'Não fumo',
+          drink_yes: bebida === 'Consumo bebida alcoólica',
+          drink_socially: bebida === 'Bebo socialmente',
+          drink_no: bebida === 'Não consumo bebida alcoólica',
+          drug_cannabis: cannabis,
+          no_addictions: fumo === 'Não fumo' && bebida === 'Não consumo bebida alcoólica' && !cannabis,
           routine_gym: r('Pratico academia'),
           routine_sports: r('Pratico esporte regularmente'),
           routine_sedentary: r('Sou sedentário(a)'),
@@ -628,7 +648,7 @@ export default function Perfil() {
       }
 
       setEtapa(etapa + 1)
-    } catch { setErro('Erro ao salvar. Tente novamente.') }
+    } catch (err) { console.error('[salvarEtapa] etapa', etapa, err); setErro('Erro ao salvar. Tente novamente.') }
     setSalvando(false)
   }
 
@@ -985,8 +1005,14 @@ export default function Perfil() {
         {etapa === 4 && (
           <div>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '24px' }}>Estilo de vida</h2>
-            <Secao titulo="Vícios e substâncias" obrigatorio>
-              {['Fumo','Fumo ocasionalmente','Não fumo','Consumo bebida alcoólica','Bebo socialmente','Não consumo bebida alcoólica','Consumo cannabis','Não possuo vícios'].map(op => <TagUnica key={op} label={op} valor={op} current={vicios} onChange={setVicios} />)}
+            <Secao titulo="Tabaco" obrigatorio>
+              {['Fumo','Fumo ocasionalmente','Não fumo'].map(op => <TagUnica key={op} label={op} valor={op} current={fumo} onChange={setFumo} />)}
+            </Secao>
+            <Secao titulo="Bebida alcoólica" obrigatorio>
+              {['Consumo bebida alcoólica','Bebo socialmente','Não consumo bebida alcoólica'].map(op => <TagUnica key={op} label={op} valor={op} current={bebida} onChange={setBebida} />)}
+            </Secao>
+            <Secao titulo="Outras substâncias">
+              <Tag label="Consumo cannabis" ativo={cannabis} onClick={() => setCannabis(!cannabis)} />
             </Secao>
             <Secao titulo="Rotina e estilo de vida" obrigatorio>
               {['Pratico academia','Pratico esporte regularmente','Sou sedentário(a)','Sou caseiro(a)','Gosto de sair','Gosto de balada','Sou noturno(a)','Sou matutino(a)','Sou workaholic','Tenho vida equilibrada'].map(tag => <Tag key={tag} label={tag} ativo={rotina.includes(tag)} onClick={() => toggleTag(rotina, setRotina, tag)} />)}
@@ -1081,6 +1107,12 @@ export default function Perfil() {
             {salvando ? 'Salvando...' : verificandoFoto !== null ? 'Verificando foto...' : etapa === 6 ? 'Concluir perfil' : 'Continuar'} {!salvando && verificandoFoto === null && <ChevronRight size={18} />}
           </button>
         </div>
+
+        <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '13px' }}>
+          <a href="/deletar-conta" style={{ color: 'rgba(248,249,250,0.25)', textDecoration: 'none' }}>
+            Deletar minha conta
+          </a>
+        </p>
 
       </div>
     </div>

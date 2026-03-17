@@ -13,7 +13,7 @@ const PLAN_NAMES: Record<string, string> = {
 function ObrigadoContent() {
   const searchParams = useSearchParams()
   const planoParam = searchParams.get('plano') ?? ''
-  const planoNome = PLAN_NAMES[planoParam] ?? planoParam ?? 'Premium'
+  const planoNome = PLAN_NAMES[planoParam] || planoParam || 'Premium'
 
   return (
     <div
@@ -163,7 +163,7 @@ function ObrigadoContent() {
               display: 'block',
               textAlign: 'center',
               backgroundColor: 'var(--accent)',
-              color: '#000',
+              color: '#fff',
               fontWeight: '600',
               fontSize: '0.9375rem',
               padding: '14px',

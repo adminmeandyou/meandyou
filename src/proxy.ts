@@ -10,7 +10,8 @@ const PROTECTED_ROUTES = [
   '/busca', '/match', '/matches', '/chat', '/perfil', '/planos', '/dashboard',
   '/conversas', '/loja', '/destaque', '/indicar', '/backstage',
   '/roleta', '/streak', '/onboarding', '/notificacoes', '/suporte',
-  '/ajuda', '/deletar-conta', '/minha-assinatura', '/videochamada',
+  '/ajuda', '/deletar-conta', '/minha-assinatura', '/videochamada', '/curtidas',
+  '/configuracoes',
 ]
 
 // Rotas públicas (redireciona para /busca se já logado)
@@ -112,6 +113,19 @@ export async function proxy(req: NextRequest) {
 
     if (!userRow?.verified && !pathname.startsWith('/verificacao')) {
       return NextResponse.redirect(new URL('/verificacao', req.url))
+    }
+
+    // Verificar se usuário concluiu o onboarding
+    if (!pathname.startsWith('/onboarding') && !pathname.startsWith('/perfil')) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('onboarding_done')
+        .eq('id', user.id)
+        .single()
+
+      if (profile && profile.onboarding_done === false) {
+        return NextResponse.redirect(new URL('/onboarding', req.url))
+      }
     }
   }
 

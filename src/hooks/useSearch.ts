@@ -102,13 +102,24 @@ export function useSearch() {
     const activeFilters = customFilters ?? filters
 
     try {
-      // Parâmetros corretos da RPC search_profiles conforme skill
+      // Captura localização em tempo real (nullable — RPC aceita null)
+      const loc = await new Promise<{ lat: number; lng: number } | null>((resolve) => {
+        if (!navigator.geolocation) { resolve(null); return }
+        navigator.geolocation.getCurrentPosition(
+          (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
+          () => resolve(null),
+          { timeout: 5000 }
+        )
+      })
+
       const { data, error: rpcError } = await supabase.rpc('search_profiles', {
-        p_user_id:       user.id,
-        p_max_distance:  activeFilters.maxDistanceKm,
-        p_min_age:       activeFilters.minAge,
-        p_max_age:       activeFilters.maxAge,
-        p_gender:        activeFilters.gender === 'all' ? null : activeFilters.gender,
+        p_user_id:         user.id,
+        p_lat:             loc?.lat ?? null,
+        p_lng:             loc?.lng ?? null,
+        p_max_distance_km: activeFilters.maxDistanceKm,
+        p_min_age:         activeFilters.minAge,
+        p_max_age:         activeFilters.maxAge >= 99 ? 120 : activeFilters.maxAge,
+        p_gender:          activeFilters.gender === 'all' ? null : activeFilters.gender,
       })
 
       if (rpcError) throw rpcError

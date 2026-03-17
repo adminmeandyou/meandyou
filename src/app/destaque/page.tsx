@@ -7,6 +7,8 @@ import { usePlan } from '@/hooks/usePlan'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Flame, MapPin, Zap, Lock, ArrowLeft, Loader2, Search } from 'lucide-react'
+import { useToast } from '@/components/Toast'
+import { useHaptics } from '@/hooks/useHaptics'
 
 type Period = 'day' | 'week' | 'month'
 
@@ -20,6 +22,8 @@ export default function DestaquesPage() {
   const { user } = useAuth()
   const { limits } = usePlan()
   const router = useRouter()
+  const toast = useToast()
+  const haptics = useHaptics()
 
   const [period, setPeriod] = useState<Period>('week')
   const [profiles, setProfiles] = useState<any[]>([])
@@ -56,25 +60,28 @@ export default function DestaquesPage() {
   }
 
   async function handleReveal(profileId: string) {
-    if (lupas <= 0) return
+    if (lupas <= 0) { toast.error('Sem lupas disponíveis. Compre na Loja.'); return }
+    haptics.tap()
     setRevealing(profileId)
-    // Debita 1 lupa
     const { error } = await supabase.rpc('use_lupa', { p_user_id: user!.id, p_target_id: profileId })
     if (!error) {
       setRevealedIds((prev) => new Set(Array.from(prev).concat(profileId)))
       setLupas((l) => l - 1)
+    } else {
+      toast.error('Erro ao revelar perfil')
     }
     setRevealing(null)
   }
 
   async function handleLike(profileId: string) {
-    // params corretos: p_from, p_to, p_type — igual ao useSwipe corrigido
+    haptics.medium()
     await supabase.rpc('process_swipe', {
       p_from: user!.id,
       p_to: profileId,
       p_type: 'like',
     })
     setProfiles((prev) => prev.filter((p) => p.profile_id !== profileId))
+    toast.success('Curtida enviada!')
   }
 
   return (

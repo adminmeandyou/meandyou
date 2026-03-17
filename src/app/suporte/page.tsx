@@ -49,9 +49,13 @@ export default function SuportePage() {
     const prioridade = limits.isBlack ? '🔴 PRIORITÁRIO (Black)' : limits.isPlus ? '🟡 Plus' : '⚪ Essencial'
 
     // Envia via API de email (Resend → adminmeandyou@proton.me)
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/suporte', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token ?? ''}`,
+      },
       body: JSON.stringify({
         user_id: user.id,
         email: user.email,

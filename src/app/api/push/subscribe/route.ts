@@ -10,12 +10,12 @@ const supabaseAdmin = createClient(
 // POST — salvar subscription de Web Push do dispositivo
 export async function POST(req: NextRequest) {
   try {
-    const accessToken = req.cookies.get('sb-access-token')?.value
-    if (!accessToken) {
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    if (!token) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken)
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     if (authError || !user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
@@ -55,12 +55,12 @@ export async function POST(req: NextRequest) {
 // DELETE — remover subscription (usuário desativou notificações)
 export async function DELETE(req: NextRequest) {
   try {
-    const accessToken = req.cookies.get('sb-access-token')?.value
-    if (!accessToken) {
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    if (!token) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(accessToken)
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     if (authError || !user) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
