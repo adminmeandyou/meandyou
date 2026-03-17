@@ -85,7 +85,7 @@ function NovaSenhaInner() {
           </h1>
           <p style={{ color: 'var(--muted)', fontSize: '15px' }}>Crie uma nova senha</p>
         </div>
-        <div style={{ backgroundColor: 'var(--white)', border: '1px solid var(--border)', borderRadius: '24px', padding: '36px', boxShadow: 'var(--shadow)' }}>
+        <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px', padding: '36px', boxShadow: 'var(--shadow)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
               <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>

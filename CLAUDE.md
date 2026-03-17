@@ -5,8 +5,8 @@ Sempre responda em português do Brasil.
 
 ## MeAndYou — Referência do Projeto
 
-> **Branch de trabalho:** `design-v2`
-> **Última atualização:** Fase 12 — Estados de Transição e Polish (2026-03-17)
+> **Branch de trabalho:** `main`
+> **Última atualização:** 2026-03-17 — v2 design unificado, sistema de fichas, salas, níveis de conexão, foto desfocada
 
 ---
 
