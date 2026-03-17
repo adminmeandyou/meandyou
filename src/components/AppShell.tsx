@@ -77,7 +77,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div
             style={{
               width: '100%',
-              height: '100vh',
+              maxWidth: '430px',
+              height: '100dvh',
               position: 'relative',
               backgroundColor: 'var(--bg)',
               display: 'flex',

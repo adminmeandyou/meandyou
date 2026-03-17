@@ -27,7 +27,7 @@ export default function MatchPage() {
       {/* Header */}
       <header style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', color: 'var(--text)', margin: 0 }}>
-          Me<span style={{ color: 'var(--accent)', fontStyle: 'italic' }}>And</span>You
+          MeAnd<span style={{ color: 'var(--accent)', fontStyle: 'italic' }}>You</span>
         </h1>
         <span style={{ fontSize: '12px', color: 'var(--muted)' }}>
           {results.length > 0 ? `${results.length} pessoas perto` : ''}

@@ -152,7 +152,11 @@ export default function StreakPage() {
             <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '10px' }}>Calendário do mês — 1 prêmio por dia</p>
 
             {calendar.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--muted)', fontSize: '14px' }}>Calendário do mês ainda não gerado. Volte em breve!</div>
+              <div style={{ textAlign: 'center', padding: '40px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+                <Lock size={28} color="rgba(255,255,255,0.15)" strokeWidth={1.5} />
+                <p style={{ color: 'var(--muted)', fontSize: '14px', margin: 0 }}>Continue entrando no app todo dia</p>
+                <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '12px', margin: 0 }}>Seu calendario sera gerado automaticamente</p>
+              </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
                 {calendar.map((entry) => {

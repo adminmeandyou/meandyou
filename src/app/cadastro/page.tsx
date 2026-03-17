@@ -217,7 +217,7 @@ function CadastroInner() {
             <Link href="/" style={{ color: 'var(--muted)', fontSize: '14px', textDecoration: 'none' }}>← Início</Link>
           )}
           <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: '18px', color: 'var(--text)' }}>
-            Me<span style={{ color: 'var(--accent)' }}>And</span>You
+            MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
           </span>
           <span style={{ fontSize: '13px', color: 'var(--muted-2)', fontFamily: 'var(--font-jakarta)' }}>{step + 1}/{TOTAL_STEPS}</span>
         </div>

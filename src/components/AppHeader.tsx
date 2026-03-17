@@ -44,7 +44,7 @@ export function AppHeader({ modeSelector }: AppHeaderProps) {
           flexShrink: 0,
         }}
       >
-        Me<span style={{ color: 'var(--accent)' }}>And</span>You
+        MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
       </Link>
 
       {/* Seletor de modos — reservado para Fase 4 */}
