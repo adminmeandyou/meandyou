@@ -75,124 +75,19 @@ function getStatusPills(userRow: any): StatusPill[] {
   return pills.slice(0, 4)
 }
 
-// ─── Pixel Art SVGs ───────────────────────────────────────────────────────────
+// ─── Emblema SVG ──────────────────────────────────────────────────────────────
+// SVGs ficam em public/badges/{id}.svg (32x32). Substitua pelos arquivos finais.
 
-function PixelShield({ color }: { color: string }) {
+function EmblemaSvg({ id, desbloqueado }: { id: string; desbloqueado: boolean }) {
   return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="1" y="0" width="6" height="1" fill={color}/>
-      <rect x="0" y="1" width="8" height="1" fill={color}/>
-      <rect x="0" y="2" width="2" height="3" fill={color}/>
-      <rect x="6" y="2" width="2" height="3" fill={color}/>
-      <rect x="0" y="5" width="8" height="1" fill={color}/>
-      <rect x="1" y="6" width="6" height="1" fill={color}/>
-      <rect x="2" y="7" width="4" height="1" fill={color}/>
-      <rect x="3" y="3" width="1" height="1" fill="rgba(255,255,255,0.6)"/>
-      <rect x="4" y="2" width="1" height="1" fill="rgba(255,255,255,0.6)"/>
-      <rect x="2" y="4" width="1" height="1" fill="rgba(255,255,255,0.6)"/>
-    </svg>
-  )
-}
-
-function PixelCrown({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="0" y="0" width="1" height="1" fill={color}/>
-      <rect x="4" y="0" width="1" height="1" fill={color}/>
-      <rect x="7" y="0" width="1" height="1" fill={color}/>
-      <rect x="0" y="1" width="1" height="2" fill={color}/>
-      <rect x="3" y="1" width="2" height="1" fill={color}/>
-      <rect x="7" y="1" width="1" height="2" fill={color}/>
-      <rect x="1" y="2" width="1" height="1" fill={color}/>
-      <rect x="6" y="2" width="1" height="1" fill={color}/>
-      <rect x="0" y="3" width="8" height="1" fill={color}/>
-      <rect x="0" y="4" width="8" height="3" fill={color}/>
-      <rect x="1" y="7" width="6" height="1" fill={color}/>
-    </svg>
-  )
-}
-
-function PixelCamera({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="2" y="0" width="1" height="1" fill={color}/>
-      <rect x="3" y="0" width="3" height="1" fill={color}/>
-      <rect x="0" y="1" width="8" height="6" fill={color}/>
-      <rect x="0" y="7" width="8" height="1" fill={color}/>
-      <rect x="2" y="2" width="4" height="4" fill="rgba(0,0,0,0.4)"/>
-      <rect x="3" y="3" width="2" height="2" fill="rgba(255,255,255,0.5)"/>
-    </svg>
-  )
-}
-
-function PixelScroll({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="1" y="0" width="6" height="8" fill={color}/>
-      <rect x="0" y="1" width="1" height="6" fill={color}/>
-      <rect x="2" y="2" width="4" height="1" fill="rgba(0,0,0,0.35)"/>
-      <rect x="2" y="4" width="3" height="1" fill="rgba(0,0,0,0.35)"/>
-      <rect x="2" y="6" width="2" height="1" fill="rgba(0,0,0,0.35)"/>
-    </svg>
-  )
-}
-
-function PixelTag({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="0" y="0" width="5" height="1" fill={color}/>
-      <rect x="0" y="1" width="7" height="1" fill={color}/>
-      <rect x="0" y="2" width="8" height="1" fill={color}/>
-      <rect x="0" y="3" width="8" height="1" fill={color}/>
-      <rect x="0" y="4" width="8" height="1" fill={color}/>
-      <rect x="0" y="5" width="7" height="1" fill={color}/>
-      <rect x="0" y="6" width="5" height="1" fill={color}/>
-      <rect x="5" y="2" width="1" height="1" fill="rgba(0,0,0,0.45)"/>
-    </svg>
-  )
-}
-
-function PixelHeart({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="1" y="0" width="2" height="1" fill={color}/>
-      <rect x="5" y="0" width="2" height="1" fill={color}/>
-      <rect x="0" y="1" width="4" height="2" fill={color}/>
-      <rect x="4" y="1" width="4" height="2" fill={color}/>
-      <rect x="0" y="3" width="8" height="2" fill={color}/>
-      <rect x="1" y="5" width="6" height="1" fill={color}/>
-      <rect x="2" y="6" width="4" height="1" fill={color}/>
-      <rect x="3" y="7" width="2" height="1" fill={color}/>
-    </svg>
-  )
-}
-
-function PixelZap({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="3" y="0" width="4" height="1" fill={color}/>
-      <rect x="2" y="1" width="4" height="1" fill={color}/>
-      <rect x="1" y="2" width="4" height="1" fill={color}/>
-      <rect x="2" y="3" width="5" height="1" fill={color}/>
-      <rect x="1" y="4" width="5" height="1" fill={color}/>
-      <rect x="2" y="5" width="4" height="1" fill={color}/>
-      <rect x="1" y="6" width="3" height="1" fill={color}/>
-      <rect x="1" y="7" width="2" height="1" fill={color}/>
-    </svg>
-  )
-}
-
-function PixelStar({ color }: { color: string }) {
-  return (
-    <svg width="40" height="40" viewBox="0 0 8 8" style={{ imageRendering: 'pixelated', display: 'block' }}>
-      <rect x="3" y="0" width="2" height="2" fill={color}/>
-      <rect x="0" y="2" width="8" height="2" fill={color}/>
-      <rect x="1" y="4" width="6" height="1" fill={color}/>
-      <rect x="0" y="5" width="3" height="2" fill={color}/>
-      <rect x="5" y="5" width="3" height="2" fill={color}/>
-      <rect x="2" y="7" width="1" height="1" fill={color}/>
-      <rect x="5" y="7" width="1" height="1" fill={color}/>
-    </svg>
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={`/badges/${id}.svg`}
+      alt=""
+      width={32}
+      height={32}
+      style={{ display: 'block', opacity: desbloqueado ? 1 : 0.20, filter: desbloqueado ? 'none' : 'grayscale(1)' }}
+    />
   )
 }
 
@@ -206,7 +101,6 @@ interface EmblemaDef {
   desbloqueado: boolean
   progresso: number
   total: number
-  pixel: React.ReactNode
 }
 
 function getEmblemas(profile: any, photos: string[], filters: any, userRow: any): EmblemaDef[] {
@@ -219,7 +113,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: !!userRow?.verified,
       progresso: userRow?.verified ? 1 : 0,
       total: 1,
-      pixel: <PixelShield color="#a78bfa" />,
     },
     {
       id: 'perfil_completo',
@@ -229,7 +122,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: photos.length >= 9,
       progresso: photos.length,
       total: 9,
-      pixel: <PixelCrown color="#a78bfa" />,
     },
     {
       id: 'galeria_rica',
@@ -239,7 +131,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: photos.length >= 5,
       progresso: photos.length,
       total: 5,
-      pixel: <PixelCamera color="#60a5fa" />,
     },
     {
       id: 'bio_detalhada',
@@ -249,7 +140,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: (profile?.bio?.length ?? 0) >= 100,
       progresso: Math.min(profile?.bio?.length ?? 0, 100),
       total: 100,
-      pixel: <PixelScroll color="#60a5fa" />,
     },
     {
       id: 'tags_escolhidas',
@@ -259,7 +149,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: (profile?.highlight_tags?.length ?? 0) > 0,
       progresso: profile?.highlight_tags?.length ?? 0,
       total: 3,
-      pixel: <PixelTag color="rgba(248,249,250,0.70)" />,
     },
     {
       id: 'match_maker',
@@ -269,7 +158,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: false,
       progresso: 0,
       total: 50,
-      pixel: <PixelHeart color="#F59E0B" />,
     },
     {
       id: 'conversador',
@@ -279,7 +167,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: false,
       progresso: 0,
       total: 7,
-      pixel: <PixelZap color="#60a5fa" />,
     },
     {
       id: 'popular',
@@ -289,7 +176,6 @@ function getEmblemas(profile: any, photos: string[], filters: any, userRow: any)
       desbloqueado: false,
       progresso: 0,
       total: 100,
-      pixel: <PixelStar color="#F59E0B" />,
     },
   ]
 }
@@ -669,9 +555,7 @@ export default function VerPerfilPage() {
                 style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
               >
                 <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: emblema.desbloqueado ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${emblema.desbloqueado ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.04)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', transition: 'all 0.15s' }}>
-                  <div style={{ opacity: emblema.desbloqueado ? 1 : 0.20, imageRendering: 'pixelated' }}>
-                    {emblema.pixel}
-                  </div>
+                  <EmblemaSvg id={emblema.id} desbloqueado={emblema.desbloqueado} />
                   {!emblema.desbloqueado && (
                     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,9,14,0.55)' }}>
                       <span style={{ fontSize: '16px', opacity: 0.4 }}>🔒</span>
@@ -751,12 +635,17 @@ export default function VerPerfilPage() {
             style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '20px', padding: '28px 24px', maxWidth: '340px', width: '100%' }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Pixel art grande + fundo */}
+            {/* SVG grande */}
             <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
               <div style={{ width: '80px', height: '80px', borderRadius: '16px', backgroundColor: selectedBadge.desbloqueado ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
-                <div style={{ opacity: selectedBadge.desbloqueado ? 1 : 0.25, transform: 'scale(1.8)', imageRendering: 'pixelated' }}>
-                  {selectedBadge.pixel}
-                </div>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/badges/${selectedBadge.id}.svg`}
+                  alt=""
+                  width={48}
+                  height={48}
+                  style={{ display: 'block', opacity: selectedBadge.desbloqueado ? 1 : 0.20, filter: selectedBadge.desbloqueado ? 'none' : 'grayscale(1)' }}
+                />
                 {!selectedBadge.desbloqueado && (
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,9,14,0.65)' }}>
                     <span style={{ fontSize: '28px', opacity: 0.5 }}>🔒</span>
