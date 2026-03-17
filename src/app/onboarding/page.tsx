@@ -38,7 +38,7 @@ export default function OnboardingPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
     await supabase.from('profiles').update({ onboarding_done: true }).eq('id', user.id)
-    router.push('/perfil')
+    router.push('/busca')
   }
 
   const pedirGps = async () => {

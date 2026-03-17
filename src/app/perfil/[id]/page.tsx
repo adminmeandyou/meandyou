@@ -17,15 +17,23 @@ import { useHaptics } from '@/hooks/useHaptics'
 // ─── Status temporário ────────────────────────────────────────────────────────
 
 const STATUS_TEMP_LABELS: Record<string, string> = {
+  filme_serie:    'Querendo assistir um filme/série',
+  sair_comer:     'Querendo sair para comer',
+  sair_beber:     'Querendo sair para beber',
+  sair_conversar: 'Querendo sair para conversar',
+  praia:          'Querendo curtir uma praia',
+  viagem:         'Querendo viajar',
+  video_chat:     'Querendo conversar por vídeo',
+  treino:         'Querendo companhia para treinar',
+  role:           'Procurando rolê',
+  // legado (status antigos que podem ainda estar ativos no banco)
   querendo_sair: 'Querendo sair',
   cafe:          'Café e conversa',
-  praia:         'Praia',
   academia:      'Academia',
   cinema:        'Cinema',
   estudando:     'Estudando',
   turistando:    'Turistando',
   bar:           'No bar',
-  'rolê':        'Procurando rolê',
 }
 
 // ─── Trust Score ──────────────────────────────────────────────────────────────

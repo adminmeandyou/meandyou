@@ -33,13 +33,10 @@ export default function Dashboard() {
         .eq('id', user.id)
         .single()
 
-      // ✅ CORREÇÃO: sem perfil → onboarding primeiro (não direto ao /perfil)
+      // Sem perfil criado ainda (primeira vez) → onboarding
       if (!profile?.name) { router.push('/onboarding'); return }
 
-      // ✅ CORREÇÃO: onboarding_done false → exibir onboarding uma única vez
-      if (!profile?.onboarding_done) { router.push('/onboarding'); return }
-
-      // Tudo ok — redireciona para a busca (tela principal do app)
+      // Perfil existe → mostrar dashboard normalmente
       setNome(profile.name)
       setCarregando(false)
     }

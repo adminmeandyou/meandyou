@@ -127,6 +127,7 @@ export default function EditarPerfilPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [profileData, setProfileData] = useState<ProfileData | null>(null)
   const [filtersData, setFiltersData] = useState<any>(null)
+  const [emblemasTitulos, setEmblemasTitulos] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [secaoAberta, setSecaoAberta] = useState<string | null>('fotos-bio')
 
@@ -134,14 +135,16 @@ export default function EditarPerfilPage() {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.push('/login'); return }
       setUserId(user.id)
-      const [{ data: p }, { data: f }] = await Promise.all([
+      const [{ data: p }, { data: f }, { data: bData }] = await Promise.all([
         supabase.from('profiles')
           .select('bio, photo_face, photo_body, photo_side, photo_back, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at, profile_question, profile_question_answer, blur_photos')
           .eq('id', user.id).single(),
         supabase.from('filters').select('*').eq('user_id', user.id).single(),
+        supabase.from('user_badges').select('badges(name)').eq('user_id', user.id),
       ])
       setProfileData(p as ProfileData)
       setFiltersData(f)
+      setEmblemasTitulos(((bData ?? []) as any[]).map((ub: any) => ub.badges?.name).filter(Boolean))
       setLoading(false)
     })
   }, [])
@@ -158,7 +161,6 @@ export default function EditarPerfilPage() {
     )
   }
 
-  const tagsDisponiveis = getAllTags(filtersData)
   const horasTagsBloqueadas = horasRestantes(profileData?.highlight_tags_edited_at ?? null, 6)
   const diasCamposBloqueados = diasRestantes(profileData?.profile_edited_at ?? null, 7)
   const completude = calcCompletude(profileData, filtersData)
@@ -240,20 +242,20 @@ export default function EditarPerfilPage() {
           {userId && profileData !== null && (
             <div style={{ padding: '4px 0 12px' }}>
               <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.55)', lineHeight: 1.6, marginBottom: 16 }}>
-                Quando ativado, suas fotos aparecem borradas para quem ainda nao conversou com voce.
-                A medida que trocam mensagens, as fotos vao sendo reveladas progressivamente.
+                Quando ativado, suas fotos aparecem borradas para quem ainda não conversou com você.
+                À medida que trocam mensagens, as fotos vão sendo reveladas progressivamente.
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16, fontSize: 12, color: 'rgba(248,249,250,0.40)' }}>
-                <span>0 msg — foto totalmente borrada</span>
-                <span>5 msg — foto pela metade revelada</span>
-                <span>10 msg — foto completamente visivel</span>
-                <span>20 msg — perfil completo revelado</span>
+                <span>0 mensagem — foto totalmente borrada</span>
+                <span>5 mensagens — foto revelada pela metade</span>
+                <span>10 mensagens — foto completamente visível</span>
+                <span>20 mensagens — perfil completamente revelado</span>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px' }}>
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: '#F8F9FA', margin: '0 0 2px' }}>Ativar revelacao gradual</p>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#F8F9FA', margin: '0 0 2px' }}>Ativar revelação gradual</p>
                   <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.40)', margin: 0 }}>
-                    {profileData.blur_photos ? 'Fotos borradas para desconhecidos' : 'Fotos visiveis para todos'}
+                    {profileData.blur_photos ? 'Fotos borradas para desconhecidos' : 'Fotos visíveis para todos'}
                   </p>
                 </div>
                 <button
@@ -291,7 +293,7 @@ export default function EditarPerfilPage() {
           {userId && (
             <TagsDestaqueSection
               userId={userId}
-              tagsDisponiveis={tagsDisponiveis}
+              emblemasTitulos={emblemasTitulos}
               tagsSelecionadas={profileData?.highlight_tags ?? []}
               bloqueadoPor={horasTagsBloqueadas}
               onSaved={(tags) => setProfileData(prev => prev ? { ...prev, highlight_tags: tags, highlight_tags_edited_at: new Date().toISOString() } : prev)}
@@ -461,19 +463,19 @@ function Acordeao({ id, titulo, badge, badgeCor, aberto, onToggle, children }: {
 
 const PERGUNTAS_SUGESTOES = [
   'Qual seria seu fim de semana ideal?',
-  'O que nao pode faltar num primeiro encontro?',
-  'Qual musica define voce agora?',
+  'O que não pode faltar num primeiro encontro?',
+  'Qual música define você agora?',
   'Qual seria a viagem dos sonhos?',
   'O que te faz rir de verdade?',
-  'Serie ou filme? Qual a favorita?',
-  'O que voce faz quando quer relaxar?',
-  'Qual superpoder voce escolheria?',
-  'Cafe da manha ou janta romantica?',
-  'Qual e sua historia favorita para contar?',
+  'Série ou filme? Qual é a favorita?',
+  'O que você faz quando quer relaxar?',
+  'Qual superpoder você escolheria?',
+  'Café da manhã ou jantar romântico?',
+  'Qual é a sua história favorita para contar?',
 ]
 
 const BIO_SUGESTOES = [
-  'Adoro viajar', 'Trabalho com tecnologia', 'Fa de boa musica',
+  'Adoro viajar', 'Trabalho com tecnologia', 'Fã de boa música',
   'Gosto de cozinhar', 'Apaixonado(a) por filmes', 'Amo animais',
   'Pratico esportes', 'Leitor(a) compulsivo(a)', 'Amo a natureza',
 ]
@@ -653,7 +655,7 @@ function FotosBioSection({ userId, profileData, onSaved }: {
           )}
         </div>
         <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', margin: '0 0 10px' }}>
-          Aparece acima da sua bio. Escolha uma sugestao ou escreva a sua.
+          Aparece acima da sua bio. Escolha uma sugestão ou escreva a sua.
         </p>
 
         {/* Lista de sugestoes */}
@@ -661,7 +663,7 @@ function FotosBioSection({ userId, profileData, onSaved }: {
           onClick={() => setMostrarListaPerguntas(p => !p)}
           style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(248,249,250,0.55)', borderRadius: '100px', fontSize: '12px', padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
         >
-          <span>{mostrarListaPerguntas ? '▲' : '▼'}</span> Ver sugestoes
+          <span>{mostrarListaPerguntas ? '▲' : '▼'}</span> Ver sugestões
         </button>
 
         {mostrarListaPerguntas && (
@@ -710,11 +712,11 @@ function FotosBioSection({ userId, profileData, onSaved }: {
   )
 }
 
-// ─── Seção: Tags de destaque ──────────────────────────────────────────────────
+// ─── Seção: Títulos de emblemas ───────────────────────────────────────────────
 
-function TagsDestaqueSection({ userId, tagsDisponiveis, tagsSelecionadas, bloqueadoPor, onSaved }: {
+function TagsDestaqueSection({ userId, emblemasTitulos, tagsSelecionadas, bloqueadoPor, onSaved }: {
   userId: string
-  tagsDisponiveis: string[]
+  emblemasTitulos: string[]
   tagsSelecionadas: string[]
   bloqueadoPor: number
   onSaved: (tags: string[]) => void
@@ -724,16 +726,15 @@ function TagsDestaqueSection({ userId, tagsDisponiveis, tagsSelecionadas, bloque
   const [erro, setErro] = useState('')
   const [sucesso, setSucesso] = useState(false)
 
-  function toggle(tag: string) {
-    if (selecionadas.includes(tag)) {
-      setSelecionadas(prev => prev.filter(t => t !== tag))
-    } else if (selecionadas.length < 5) {
-      setSelecionadas(prev => [...prev, tag])
+  function toggle(titulo: string) {
+    if (selecionadas.includes(titulo)) {
+      setSelecionadas(prev => prev.filter(t => t !== titulo))
+    } else if (selecionadas.length < 1) {
+      setSelecionadas(prev => [...prev, titulo])
     }
   }
 
   async function salvar() {
-    if (selecionadas.length === 0) { setErro('Escolha pelo menos 1 tag.'); return }
     setSalvando(true); setErro(''); setSucesso(false)
     try {
       await supabase.from('profiles').update({
@@ -758,10 +759,15 @@ function TagsDestaqueSection({ userId, tagsDisponiveis, tagsSelecionadas, bloque
     )
   }
 
-  if (tagsDisponiveis.length === 0) {
+  if (emblemasTitulos.length === 0) {
     return (
       <div style={{ padding: '16px' }}>
-        <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px' }}>Complete seu perfil primeiro para ter tags disponíveis.</p>
+        <div style={{ padding: '14px 16px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+          <p style={{ color: 'rgba(248,249,250,0.55)', fontSize: '14px', margin: '0 0 6px', fontWeight: 600 }}>Nenhum emblema conquistado ainda</p>
+          <p style={{ color: 'rgba(248,249,250,0.35)', fontSize: '13px', margin: 0, lineHeight: 1.5 }}>
+            Os títulos disponíveis para exibir no seu card vêm dos emblemas que você conquistar. Complete desafios para desbloquear seus primeiros títulos.
+          </p>
+        </div>
       </div>
     )
   }
@@ -769,19 +775,19 @@ function TagsDestaqueSection({ userId, tagsDisponiveis, tagsSelecionadas, bloque
   return (
     <div style={{ padding: '16px' }}>
       <p style={{ color: 'rgba(248,249,250,0.50)', fontSize: '13px', margin: '0 0 4px' }}>
-        Escolha até <strong style={{ color: '#E11D48' }}>5 tags</strong> para exibir no seu card. As demais continuam funcionando nos filtros de busca.
+        Escolha <strong style={{ color: '#E11D48' }}>1 título</strong> de emblema conquistado para exibir no seu card. Assim como no Valorant, você pode usar o título de um emblema diferente do que exibe.
       </p>
       <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', margin: '0 0 16px' }}>
-        {selecionadas.length}/5 selecionadas
+        {selecionadas.length}/1 selecionado
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-        {tagsDisponiveis.map(tag => (
+        {emblemasTitulos.map(titulo => (
           <TagChip
-            key={tag}
-            label={tag}
-            ativo={selecionadas.includes(tag)}
-            desabilitado={!selecionadas.includes(tag) && selecionadas.length >= 5}
-            onClick={() => toggle(tag)}
+            key={titulo}
+            label={titulo}
+            ativo={selecionadas.includes(titulo)}
+            desabilitado={!selecionadas.includes(titulo) && selecionadas.length >= 1}
+            onClick={() => toggle(titulo)}
           />
         ))}
       </div>
@@ -1162,13 +1168,21 @@ function ObjetivosSection({ userId, filtersData, bloqueado, onSaved }: {
     disc_throuple: 'Trisal', disc_swing: 'Swing / aberto', disc_polyamory: 'Poliamor', disc_bdsm: 'BDSM / fetiches',
   }
 
+  const RESTRITOS = ['Sugar Baby', 'Sugar Daddy / Mommy', 'BDSM / fetiches']
+
   const [objetivos, setObjetivos] = useState<string[]>(() => findMulti(filtersData, mapObj))
   const [discreto, setDiscreto] = useState<string[]>(() => findMulti(filtersData, mapDiscreto))
   const [salvando, setSalvando] = useState(false)
   const [erro, setErro] = useState('')
   const [sucesso, setSucesso] = useState(false)
+  const [modalRestrito, setModalRestrito] = useState<string | null>(null)
+  const [tooltipAberto, setTooltipAberto] = useState(false)
 
   function tog(arr: string[], setArr: (v: string[]) => void, val: string) {
+    if (RESTRITOS.includes(val) && !arr.includes(val)) {
+      setModalRestrito(val)
+      return
+    }
     setArr(arr.includes(val) ? arr.filter(v => v !== val) : [...arr, val])
   }
 
@@ -1202,6 +1216,56 @@ function ObjetivosSection({ userId, filtersData, bloqueado, onSaved }: {
           {erro && <p style={{ color: '#f87171', fontSize: '13px', margin: 0 }}>{erro}</p>}
           <BotaoSalvar loading={salvando} sucesso={sucesso} onClick={salvar} />
         </>
+      )}
+
+      {/* Modal de acesso restrito (sugar / fetiche) */}
+      {modalRestrito && (
+        <div
+          onClick={() => setModalRestrito(null)}
+          style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 200, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 0 24px' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ backgroundColor: '#0F1117', borderRadius: '20px 20px 16px 16px', padding: '24px 20px', width: '100%', maxWidth: '430px', border: '1px solid rgba(255,255,255,0.08)' }}
+          >
+            <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '12px', textAlign: 'center', marginBottom: '8px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>Acesso especial</p>
+            <h3 style={{ color: '#F8F9FA', fontSize: '18px', fontFamily: 'var(--font-fraunces)', marginBottom: '8px', textAlign: 'center' }}>{modalRestrito}</h3>
+            <p style={{ color: 'rgba(248,249,250,0.50)', fontSize: '13px', lineHeight: 1.6, marginBottom: '20px', textAlign: 'center' }}>
+              Esta categoria requer verificação adicional por segurança. Você pode fazer upgrade de plano ou solicitar acesso via suporte.
+            </p>
+            <button
+              onClick={() => window.location.href = '/planos'}
+              style={{ width: '100%', padding: '13px', borderRadius: '12px', border: 'none', backgroundColor: '#E11D48', color: '#fff', fontWeight: 700, fontSize: '14px', cursor: 'pointer', marginBottom: '10px', fontFamily: 'var(--font-jakarta)' }}
+            >
+              Fazer upgrade de plano
+            </button>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <a
+                href="/suporte"
+                style={{ color: 'rgba(248,249,250,0.45)', fontSize: '13px', textDecoration: 'underline', textDecorationColor: 'rgba(248,249,250,0.20)' }}
+              >
+                Solicitar acesso via suporte
+              </a>
+              <div style={{ position: 'relative', display: 'inline-flex' }}>
+                <button
+                  onClick={() => setTooltipAberto(p => !p)}
+                  style={{ width: '18px', height: '18px', borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.10)', border: 'none', cursor: 'pointer', fontSize: '11px', color: 'rgba(248,249,250,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700 }}
+                >?</button>
+                {tooltipAberto && (
+                  <div style={{ position: 'absolute', bottom: '26px', right: 0, width: '220px', backgroundColor: '#1a1d28', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '10px', padding: '10px 12px', fontSize: '12px', color: 'rgba(248,249,250,0.65)', lineHeight: 1.6, zIndex: 10 }}>
+                    O acesso via suporte permite usar esta categoria sem upgrade de plano. Envie uma solicitação e nossa equipe avaliará em até 48h.
+                  </div>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => setModalRestrito(null)}
+              style={{ width: '100%', padding: '11px', marginTop: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'transparent', color: 'rgba(248,249,250,0.40)', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )
@@ -1296,15 +1360,15 @@ function BloqueioAviso({ horas, dias }: { horas?: number; dias?: number }) {
 // ─── Status Temporário ────────────────────────────────────────────────────────
 
 const STATUS_OPCOES = [
-  { id: 'querendo_sair',  label: 'Querendo sair'   },
-  { id: 'cafe',           label: 'Café e conversa' },
-  { id: 'praia',          label: 'Praia'           },
-  { id: 'academia',       label: 'Academia'        },
-  { id: 'cinema',         label: 'Cinema'          },
-  { id: 'estudando',      label: 'Estudando'       },
-  { id: 'turistando',     label: 'Turistando'      },
-  { id: 'bar',            label: 'No bar'          },
-  { id: 'rolê',           label: 'Procurando rolê' },
+  { id: 'filme_serie',    label: 'Querendo assistir um filme/série'    },
+  { id: 'sair_comer',     label: 'Querendo sair para comer'            },
+  { id: 'sair_beber',     label: 'Querendo sair para beber'            },
+  { id: 'sair_conversar', label: 'Querendo sair para conversar'        },
+  { id: 'praia',          label: 'Querendo curtir uma praia'           },
+  { id: 'viagem',         label: 'Querendo viajar'                     },
+  { id: 'video_chat',     label: 'Querendo conversar por vídeo'        },
+  { id: 'treino',         label: 'Querendo companhia para treinar'     },
+  { id: 'role',           label: 'Procurando rolê'                     },
 ]
 
 const DURACAO_OPCOES = [
@@ -1361,7 +1425,7 @@ function StatusTempSection({
   return (
     <div style={{ padding: '16px' }}>
       <p style={{ color: 'rgba(248,249,250,0.50)', fontSize: '13px', margin: '0 0 16px', lineHeight: 1.5 }}>
-        Mostre o que voce esta fazendo hoje. Aparece como tag no seu perfil por tempo limitado.
+        Mostre o que você está fazendo hoje. Aparece como tag no seu perfil por tempo limitado.
       </p>
 
       {statusVivo && (

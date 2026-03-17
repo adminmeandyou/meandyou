@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, Users, DollarSign, Flag, ShieldAlert, TrendingUp, LogOut, XCircle, UserCog } from 'lucide-react'
+import { LayoutDashboard, Users, DollarSign, Flag, ShieldAlert, TrendingUp, LogOut, XCircle, UserCog, Award } from 'lucide-react'
 import { supabase } from '@/app/lib/supabase'
 
 type NavItem = { href: string; label: string; icon: React.ElementType }
@@ -17,6 +17,7 @@ const ALL_NAV: NavItem[] = [
   { href: '/admin/marketing',      label: 'Marketing',      icon: TrendingUp      },
   { href: '/admin/cancelamentos',  label: 'Cancelamentos',  icon: XCircle         },
   { href: '/admin/equipe',         label: 'Equipe',         icon: UserCog         },
+  { href: '/admin/emblemas',       label: 'Emblemas',       icon: Award           },
 ]
 
 const STAFF_PERMISSIONS: Record<string, string[]> = {
@@ -82,7 +83,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside style={{ width: '220px', backgroundColor: '#111', borderRight: '1px solid #222', display: 'flex', flexDirection: 'column', padding: '24px 0', flexShrink: 0 }}>
         <div style={{ padding: '0 20px 24px', borderBottom: '1px solid #222' }}>
           <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: '#fff' }}>
-            Me<span style={{ color: '#e11d48' }}>And</span>You
+            MeAnd<span style={{ color: '#e11d48' }}>You</span>
           </p>
           <p style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>{roleLabel}</p>
         </div>
