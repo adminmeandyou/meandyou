@@ -6,7 +6,55 @@ Sempre responda em português do Brasil.
 ## MeAndYou — Referência do Projeto
 
 > **Branch de trabalho:** `design-v2`
-> **Última atualização:** Fase 11 — Configuracoes (2026-03-16)
+> **Última atualização:** Fase 12 — Estados de Transição e Polish (2026-03-17)
+
+---
+
+### Fase 12 Concluída
+
+#### Estados de Transição e Polish
+
+#### Componentes criados/registrados
+
+| Componente | Arquivo | Descrição |
+|-----------|---------|-----------|
+| `SkeletonList`, `SkeletonCard`, `SkeletonGrid`, etc. | `src/components/Skeleton.tsx` | Skeletons shimmer para listas, grids, avatares e linhas de texto |
+| `OnlineIndicator` | `src/components/OnlineIndicator.tsx` | Bolinha verde/âmbar de status (modo `dot` sobreposto ao avatar, modo `text` no header) |
+| `ToastProvider` + `useToast` | `src/components/Toast.tsx` | Sistema global de toasts (success/error/info), injetado no AppShell |
+| `useHaptics` | `src/hooks/useHaptics.ts` | navigator.vibrate wrapper com presets: tap(10ms), medium(25ms), success([15,40,15]), error([30,20,30]), match([20,60,80]) |
+
+#### Arquivos modificados
+
+| Arquivo | O que mudou |
+|---------|-------------|
+| `src/components/AppShell.tsx` | `ToastProvider` envolve todas as rotas (shell e não-shell) |
+| `src/components/Skeleton.tsx` | Adicionado `'use client'` + import `CSSProperties` correto |
+| `src/app/matches/page.tsx` | Fix: `Loader2` adicionado ao import lucide; skeleton + EmptyState já presentes |
+| `src/app/conversas/page.tsx` | Skeleton + EmptyState + OnlineIndicator (dot nos avatares) + useToast + useHaptics |
+| `src/app/notificacoes/page.tsx` | Skeleton + EmptyState + useToast + useHaptics |
+| `src/app/configuracoes/page.tsx` | useToast (sucesso/erro nos toggles) + useHaptics (tap em toggles, medium no logout) |
+| `src/app/conversas/[id]/page.tsx` | OnlineIndicator (texto no header abaixo do nome) — busca `last_active_at` + `show_last_active` |
+| `src/app/perfil/[id]/page.tsx` | useHaptics nos FABs: tap=dislike, medium=like, success=superlike |
+| `src/app/curtidas/page.tsx` | useToast (curtida enviada/erro) + useHaptics.medium() no like back |
+| `src/app/loja/page.tsx` | useToast (boost ativado/erro) + useHaptics; removido activateMsg inline |
+| `src/app/destaque/page.tsx` | useToast (revelar/curtir) + useHaptics |
+
+#### Detalhes de implementação
+
+**OnlineIndicator — regras de status:**
+- `< 1h` → ponto verde + "Ativo agora"
+- `< 24h` → ponto âmbar + "Ativo hoje"
+- `< 48h` → sem ponto + "Ativo ontem"
+- `< 7d` → sem ponto + "Ativo esta semana"
+- `> 7d` ou `show_last_active = false` → nada exibido
+
+**Toast — posição:** `bottom: 80px` (acima da bottom nav), pill arredondado, auto-dismiss em 3.2s, máx 3 toasts simultâneos.
+
+**Haptics — guia de uso:**
+- `tap()` — toggle, seleção, abrir sheet
+- `medium()` — like, curtir de volta, enviar, ativar boost
+- `success()` — superlike, match confirmado
+- `error()` — falha crítica
 
 ---
 
