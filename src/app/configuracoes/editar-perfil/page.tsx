@@ -39,6 +39,8 @@ interface ProfileData {
   profile_edited_at: string | null
   status_temp: string | null
   status_temp_expires_at: string | null
+  profile_question: string | null
+  profile_question_answer: string | null
 }
 
 // ─── Utils de conversão filters → estado UI ──────────────────────────────────
@@ -133,7 +135,7 @@ export default function EditarPerfilPage() {
       setUserId(user.id)
       const [{ data: p }, { data: f }] = await Promise.all([
         supabase.from('profiles')
-          .select('bio, photo_face, photo_body, photo_side, photo_back, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at')
+          .select('bio, photo_face, photo_body, photo_side, photo_back, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at, profile_question, profile_question_answer')
           .eq('id', user.id).single(),
         supabase.from('filters').select('*').eq('user_id', user.id).single(),
       ])
@@ -405,6 +407,19 @@ function Acordeao({ id, titulo, badge, badgeCor, aberto, onToggle, children }: {
 
 // ─── Seção: Fotos & Bio ───────────────────────────────────────────────────────
 
+const PERGUNTAS_SUGESTOES = [
+  'Qual seria seu fim de semana ideal?',
+  'O que nao pode faltar num primeiro encontro?',
+  'Qual musica define voce agora?',
+  'Qual seria a viagem dos sonhos?',
+  'O que te faz rir de verdade?',
+  'Serie ou filme? Qual a favorita?',
+  'O que voce faz quando quer relaxar?',
+  'Qual superpoder voce escolheria?',
+  'Cafe da manha ou janta romantica?',
+  'Qual e sua historia favorita para contar?',
+]
+
 const BIO_SUGESTOES = [
   'Adoro viajar', 'Trabalho com tecnologia', 'Fa de boa musica',
   'Gosto de cozinhar', 'Apaixonado(a) por filmes', 'Amo animais',
@@ -428,6 +443,9 @@ function FotosBioSection({ userId, profileData, onSaved }: {
     return idx >= 0 ? idx : 0
   })
   const [bio, setBio] = useState(profileData.bio ?? '')
+  const [pergunta, setPergunta] = useState(profileData.profile_question ?? '')
+  const [resposta, setResposta] = useState(profileData.profile_question_answer ?? '')
+  const [mostrarListaPerguntas, setMostrarListaPerguntas] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [enviando, setEnviando] = useState<number | null>(null)
   const [erro, setErro] = useState('')
@@ -466,8 +484,10 @@ function FotosBioSection({ userId, profileData, onSaved }: {
     fotoSlots.forEach((slot, i) => { update[slot] = fotosUrls[i] ?? null })
     update['photo_best'] = fotosUrls[fotoPrincipal] ?? fotosUrls.find(Boolean) ?? null
     try {
-      await supabase.from('profiles').upsert({ id: userId, bio, ...update })
-      onSaved({ bio, photo_best: update['photo_best'], ...Object.fromEntries(fotoSlots.map((s, i) => [s, fotosUrls[i]])) } as any)
+      const perguntaFinal = pergunta.trim() || null
+      const respostaFinal = perguntaFinal ? (resposta.trim() || null) : null
+      await supabase.from('profiles').upsert({ id: userId, bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, ...update })
+      onSaved({ bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, photo_best: update['photo_best'], ...Object.fromEntries(fotoSlots.map((s, i) => [s, fotosUrls[i]])) } as any)
       setSucesso(true)
       setTimeout(() => setSucesso(false), 3000)
     } catch (err) { console.error('[editar-perfil] fotos-bio', err); setErro('Erro ao salvar.') }
@@ -565,6 +585,70 @@ function FotosBioSection({ userId, profileData, onSaved }: {
             {sug}
           </button>
         ))}
+      </div>
+
+      {/* Pergunta do perfil */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px', marginTop: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+          <label style={{ color: 'rgba(248,249,250,0.45)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>Pergunta (opcional)</label>
+          {pergunta && (
+            <button
+              onClick={() => { setPergunta(''); setResposta('') }}
+              style={{ color: 'rgba(248,249,250,0.30)', fontSize: '11px', background: 'none', border: 'none', cursor: 'pointer', padding: '0', fontFamily: 'var(--font-jakarta)' }}
+            >
+              Remover
+            </button>
+          )}
+        </div>
+        <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', margin: '0 0 10px' }}>
+          Aparece acima da sua bio. Escolha uma sugestao ou escreva a sua.
+        </p>
+
+        {/* Lista de sugestoes */}
+        <button
+          onClick={() => setMostrarListaPerguntas(p => !p)}
+          style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(248,249,250,0.55)', borderRadius: '100px', fontSize: '12px', padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
+        >
+          <span>{mostrarListaPerguntas ? '▲' : '▼'}</span> Ver sugestoes
+        </button>
+
+        {mostrarListaPerguntas && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '10px' }}>
+            {PERGUNTAS_SUGESTOES.map(q => (
+              <button
+                key={q}
+                onClick={() => { setPergunta(q); setMostrarListaPerguntas(false) }}
+                style={{ backgroundColor: pergunta === q ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.03)', border: `1px solid ${pergunta === q ? 'rgba(225,29,72,0.30)' : 'rgba(255,255,255,0.07)'}`, color: pergunta === q ? '#E11D48' : 'rgba(248,249,250,0.65)', borderRadius: '10px', fontSize: '13px', padding: '9px 12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-jakarta)' }}
+              >
+                {q}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Campo de pergunta personalizada */}
+        <input
+          value={pergunta}
+          onChange={e => setPergunta(e.target.value)}
+          maxLength={120}
+          placeholder="Ou escreva sua propria pergunta..."
+          style={{ width: '100%', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '10px 12px', color: '#F8F9FA', fontSize: '14px', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box', outline: 'none', marginBottom: '8px' }}
+        />
+
+        {/* Campo de resposta — so aparece se tiver pergunta */}
+        {pergunta.trim() && (
+          <>
+            <label style={{ display: 'block', color: 'rgba(248,249,250,0.45)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Sua resposta</label>
+            <textarea
+              value={resposta}
+              onChange={e => setResposta(e.target.value)}
+              maxLength={200}
+              placeholder="Responda de forma sincera e divertida..."
+              style={{ width: '100%', minHeight: '70px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '10px 12px', color: '#F8F9FA', fontSize: '14px', fontFamily: 'var(--font-jakarta)', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
+            />
+            <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', textAlign: 'right', margin: '4px 0 0' }}>{resposta.length}/200</p>
+          </>
+        )}
       </div>
 
       {erro && <p style={{ color: '#f87171', fontSize: '13px', margin: '8px 0 0' }}>{erro}</p>}

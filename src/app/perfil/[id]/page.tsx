@@ -342,7 +342,7 @@ export default function VerPerfilPage() {
     // CORRECAO: NUNCA selecionar lat/lng/cep/rua/bairro em selects publicos
     const { data: profileData } = await supabase
       .from('profiles')
-      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_back, photo_best, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, highlight_tags, status_temp, status_temp_expires_at')
+      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_back, photo_best, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, highlight_tags, status_temp, status_temp_expires_at, profile_question, profile_question_answer')
       .eq('id', profileId)
       .single()
 
@@ -627,6 +627,14 @@ export default function VerPerfilPage() {
 
       {/* ── Conteudo ── */}
       <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+
+        {/* Pergunta do perfil */}
+        {profile.profile_question && profile.profile_question_answer && (
+          <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '16px 18px' }}>
+            <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 8px' }}>{profile.profile_question}</p>
+            <p style={{ color: '#F8F9FA', fontSize: '15px', lineHeight: '1.65', margin: 0 }}>{profile.profile_question_answer}</p>
+          </div>
+        )}
 
         {/* Bio */}
         {profile.bio && (
