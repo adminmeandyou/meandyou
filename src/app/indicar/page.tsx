@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { Gift, Copy, Check, Users, Share2, ArrowLeft, Ticket, Star } from 'lucide-react'
+import { Gift, Copy, Check, Users, Share2, ArrowLeft, Ticket, Star, Zap } from 'lucide-react'
 
 export default function IndicarPage() {
   const router = useRouter()
@@ -21,7 +21,6 @@ export default function IndicarPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // referral_code fica em profiles
     const { data: prof } = await supabase
       .from('profiles')
       .select('id, name, referral_code')
@@ -29,7 +28,6 @@ export default function IndicarPage() {
       .single()
     setProfile(prof)
 
-    // Saldos nas tabelas corretas — NUNCA em profiles
     const [{ data: sl }, { data: bo }, { data: rw }, { data: tk }] = await Promise.all([
       supabase.from('user_superlikes').select('amount').eq('user_id', user.id).single(),
       supabase.from('user_boosts').select('amount').eq('user_id', user.id).single(),
@@ -45,10 +43,7 @@ export default function IndicarPage() {
 
     const { data: refs } = await supabase
       .from('referrals')
-      .select(`
-        id, status, created_at,
-        referred:referred_id ( name )
-      `)
+      .select(`id, status, created_at, referred:referred_id ( name )`)
       .eq('referrer_id', user.id)
       .order('created_at', { ascending: false })
     setReferrals(refs ?? [])
@@ -70,7 +65,7 @@ export default function IndicarPage() {
     if (navigator.share) {
       await navigator.share({
         title: 'MeAndYou',
-        text: '💘 Te convidei para o MeAndYou! Se cadastra pelo meu link e a gente ganha tickets de bônus:',
+        text: 'Te convidei para o MeAndYou! Se cadastra pelo meu link e a gente ganha tickets de bonus:',
         url: getReferralLink(),
       })
     } else {
@@ -80,143 +75,158 @@ export default function IndicarPage() {
 
   const rewarded = referrals.filter(r => r.status === 'rewarded').length
   const pending  = referrals.filter(r => r.status === 'pending').length
-
-  // Bônus ao indicar 3 amigos
   const bonusBoostUnlocked = rewarded >= 3
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0e0b14] flex items-center justify-center">
-        <div className="w-8 h-8 border-2 border-[#b8f542] border-t-transparent rounded-full animate-spin" />
+      <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ width: 28, height: 28, border: '2px solid var(--border)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta text-white pb-24">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-          <ArrowLeft size={18} className="text-white/60" />
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button
+          onClick={() => router.back()}
+          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+        >
+          <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
-        <div className="flex-1">
-          <h1 className="font-fraunces text-xl text-white">Indique e ganhe</h1>
-          <p className="text-white/30 text-xs">Você e seu amigo ganham bônus</p>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>Indique e ganhe</h1>
+          <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Voce e seu amigo ganham bonus</p>
         </div>
       </header>
 
-      <div className="px-5 pt-5 space-y-4 max-w-md mx-auto">
+      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '480px', margin: '0 auto' }}>
 
-        {/* O que vocês ganham — recompensas corretas per skill */}
-        <div className="rounded-2xl p-4 bg-white/3 border border-white/8">
-          <p className="text-xs text-white/30 uppercase tracking-widest mb-3">O que vocês ganham</p>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-white/5 rounded-xl p-3 text-center">
-              <div className="text-2xl mb-1">🎟️</div>
-              <p className="text-xs text-white/60 font-semibold">3 Tickets</p>
-              <p className="text-white/30 text-xs">cada um</p>
+        {/* O que voces ganham */}
+        <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px' }}>O que voces ganham</p>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '14px 12px', textAlign: 'center', border: '1px solid var(--border-soft)' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px', color: '#F59E0B' }}>
+                <Ticket size={22} strokeWidth={1.5} />
+              </div>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', margin: 0 }}>3 Tickets</p>
+              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>cada um</p>
             </div>
-            <div className="bg-white/5 rounded-xl p-3 text-center">
-              <div className="text-2xl mb-1">⭐</div>
-              <p className="text-xs text-white/60 font-semibold">1 SuperLike</p>
-              <p className="text-white/30 text-xs">quem indicou</p>
+            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '14px 12px', textAlign: 'center', border: '1px solid var(--border-soft)' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px', color: 'var(--accent)' }}>
+                <Star size={22} strokeWidth={1.5} />
+              </div>
+              <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', margin: 0 }}>1 SuperLike</p>
+              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>quem indicou</p>
             </div>
           </div>
-          <p className="text-xs text-white/20 text-center mt-3">
+          <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.20)', textAlign: 'center', margin: '12px 0 0' }}>
             Liberado quando o amigo fizer a primeira assinatura
           </p>
         </div>
 
-        {/* Bônus ao indicar 3 */}
-        <div className={`rounded-2xl p-4 border flex items-center gap-3 ${bonusBoostUnlocked ? 'bg-[#b8f542]/10 border-[#b8f542]/30' : 'bg-white/3 border-white/8'}`}>
-          <span className="text-2xl">⚡</span>
-          <div className="flex-1">
-            <p className={`text-sm font-semibold ${bonusBoostUnlocked ? 'text-[#b8f542]' : 'text-white/50'}`}>
-              {bonusBoostUnlocked ? '1 Boost bônus desbloqueado!' : '1 Boost bônus ao indicar 3 amigos'}
-            </p>
-            <p className="text-white/30 text-xs">{rewarded}/3 amigos convertidos</p>
+        {/* Bonus ao indicar 3 */}
+        <div style={{
+          borderRadius: '16px', padding: '16px',
+          backgroundColor: bonusBoostUnlocked ? 'var(--accent-light)' : 'rgba(255,255,255,0.03)',
+          border: `1px solid ${bonusBoostUnlocked ? 'var(--accent-border)' : 'rgba(255,255,255,0.07)'}`,
+          display: 'flex', alignItems: 'center', gap: '12px',
+        }}>
+          <div style={{ color: bonusBoostUnlocked ? 'var(--accent)' : 'var(--muted)', flexShrink: 0 }}>
+            <Zap size={22} strokeWidth={1.5} />
           </div>
-          {bonusBoostUnlocked && <Check size={16} className="text-[#b8f542]" />}
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: '14px', fontWeight: 700, color: bonusBoostUnlocked ? 'var(--accent)' : 'var(--muted)', margin: 0 }}>
+              {bonusBoostUnlocked ? '1 Boost bonus desbloqueado!' : '1 Boost bonus ao indicar 3 amigos'}
+            </p>
+            <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '3px 0 0' }}>{rewarded}/3 amigos convertidos</p>
+          </div>
+          {bonusBoostUnlocked && <Check size={16} color="var(--accent)" strokeWidth={2} />}
         </div>
 
-        {/* Seu código */}
-        <div className="rounded-2xl p-4 bg-white/3 border border-white/8">
-          <p className="text-xs text-white/30 uppercase tracking-widest mb-3">Seu código de convite</p>
-          <div className="bg-white/5 rounded-xl px-4 py-3 flex items-center justify-between mb-3">
-            <span className="text-xl font-bold tracking-widest font-fraunces text-[#b8f542]">
+        {/* Seu codigo */}
+        <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px' }}>Seu codigo de convite</p>
+
+          <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', border: '1px solid var(--border-soft)' }}>
+            <span style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '0.15em', fontFamily: 'var(--font-fraunces)', color: 'var(--accent)' }}>
               {profile?.referral_code}
             </span>
             <button
               onClick={copyLink}
-              className="flex items-center gap-1.5 text-xs text-white/40 hover:text-white transition"
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: copied ? 'var(--accent)' : 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'color 0.15s' }}
             >
-              {copied ? <Check size={14} className="text-[#b8f542]" /> : <Copy size={14} />}
+              {copied ? <Check size={14} strokeWidth={2} /> : <Copy size={14} strokeWidth={1.5} />}
               {copied ? 'Copiado!' : 'Copiar link'}
             </button>
           </div>
 
-          {/* Botão de compartilhamento nativo */}
           <button
             onClick={shareNative}
-            className="w-full py-3 rounded-xl bg-[#b8f542] text-black font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#a8e030] transition"
+            style={{ width: '100%', padding: '14px', borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-jakarta)', transition: 'background-color 0.2s' }}
           >
-            <Share2 size={16} />
+            <Share2 size={16} strokeWidth={1.5} />
             Compartilhar convite
           </button>
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="rounded-2xl p-4 bg-white/3 border border-white/8 text-center">
-            <p className="text-3xl font-bold font-fraunces text-[#b8f542]">{rewarded}</p>
-            <p className="text-xs text-white/30 mt-1">Convertidas</p>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+          <div style={{ borderRadius: '16px', padding: '18px 16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', textAlign: 'center' }}>
+            <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: '32px', fontWeight: 700, color: 'var(--accent)', margin: 0, lineHeight: 1 }}>{rewarded}</p>
+            <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '6px 0 0' }}>Convertidas</p>
           </div>
-          <div className="rounded-2xl p-4 bg-white/3 border border-white/8 text-center">
-            <p className="text-3xl font-bold font-fraunces text-white/50">{pending}</p>
-            <p className="text-xs text-white/30 mt-1">Aguardando assinar</p>
-          </div>
-        </div>
-
-        {/* Saldo atual — tabelas corretas */}
-        <div className="rounded-2xl p-4 bg-white/3 border border-white/8">
-          <p className="text-xs text-white/30 uppercase tracking-widest mb-3">Seu saldo atual</p>
-          <div className="grid grid-cols-4 gap-2 text-center">
-            <div>
-              <p className="text-xl font-bold">{saldo.superlikes}</p>
-              <p className="text-xs text-white/30">SuperLikes</p>
-            </div>
-            <div>
-              <p className="text-xl font-bold">{saldo.boosts}</p>
-              <p className="text-xs text-white/30">Boosts</p>
-            </div>
-            <div>
-              <p className="text-xl font-bold">{saldo.rewinds}</p>
-              <p className="text-xs text-white/30">Desfazer</p>
-            </div>
-            <div>
-              <p className="text-xl font-bold text-yellow-400">{saldo.tickets}</p>
-              <p className="text-xs text-white/30">Tickets</p>
-            </div>
+          <div style={{ borderRadius: '16px', padding: '18px 16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', textAlign: 'center' }}>
+            <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: '32px', fontWeight: 700, color: 'var(--muted)', margin: 0, lineHeight: 1 }}>{pending}</p>
+            <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '6px 0 0' }}>Aguardando assinar</p>
           </div>
         </div>
 
-        {/* Lista de indicações */}
+        {/* Saldo atual */}
+        <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px' }}>Seu saldo atual</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'center' }}>
+            <div>
+              <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', margin: 0 }}>{saldo.superlikes}</p>
+              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>SuperLikes</p>
+            </div>
+            <div>
+              <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', margin: 0 }}>{saldo.boosts}</p>
+              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Boosts</p>
+            </div>
+            <div>
+              <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', margin: 0 }}>{saldo.rewinds}</p>
+              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Desfazer</p>
+            </div>
+            <div>
+              <p style={{ fontSize: '20px', fontWeight: 800, color: '#F59E0B', margin: 0 }}>{saldo.tickets}</p>
+              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Tickets</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Lista de indicacoes */}
         {referrals.length > 0 && (
-          <div className="rounded-2xl p-4 bg-white/3 border border-white/8">
-            <p className="text-xs text-white/30 uppercase tracking-widest mb-3 flex items-center gap-2">
-              <Users size={12} /> Suas indicações ({referrals.length})
+          <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+            <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Users size={12} strokeWidth={1.5} />
+              Suas indicacoes ({referrals.length})
             </p>
-            <div className="space-y-2">
-              {referrals.map((r) => (
-                <div key={r.id} className="flex items-center justify-between py-2 border-b border-white/5 last:border-0">
-                  <span className="text-sm text-white/70">{r.referred?.name ?? 'Usuário'}</span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full ${
-                    r.status === 'rewarded'
-                      ? 'bg-[#b8f542]/20 text-[#b8f542]'
-                      : 'bg-white/5 text-white/30'
-                  }`}>
-                    {r.status === 'rewarded' ? '✓ Recompensado' : 'Pendente'}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
+              {referrals.map((r, i) => (
+                <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < referrals.length - 1 ? '1px solid var(--border-soft)' : 'none' }}>
+                  <span style={{ fontSize: '14px', color: 'var(--text)' }}>{r.referred?.name ?? 'Usuario'}</span>
+                  <span style={{
+                    fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '100px',
+                    backgroundColor: r.status === 'rewarded' ? 'var(--accent-light)' : 'rgba(255,255,255,0.05)',
+                    color: r.status === 'rewarded' ? 'var(--accent)' : 'var(--muted)',
+                    border: `1px solid ${r.status === 'rewarded' ? 'var(--accent-border)' : 'rgba(255,255,255,0.08)'}`,
+                  }}>
+                    {r.status === 'rewarded' ? 'Recompensado' : 'Pendente'}
                   </span>
                 </div>
               ))}
@@ -225,6 +235,8 @@ export default function IndicarPage() {
         )}
 
       </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

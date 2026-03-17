@@ -1,8 +1,9 @@
 'use client'
-// src/app/minha-assinatura/page.tsx
+
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/app/lib/supabase'
+import { ArrowLeft, Check, AlertTriangle, Loader2, Headphones } from 'lucide-react'
 
 type Subscription = {
   id: string
@@ -21,21 +22,21 @@ const PLAN_LABELS: Record<string, string> = {
 }
 
 const PLAN_PRICES: Record<string, string> = {
-  essencial: 'R$ 9,97/mês',
-  plus: 'R$ 39,97/mês',
-  black: 'R$ 99,97/mês',
+  essencial: 'R$ 9,97/mes',
+  plus: 'R$ 39,97/mes',
+  black: 'R$ 99,97/mes',
 }
 
-const PLAN_COLORS: Record<string, { badge: string; border: string; text: string }> = {
-  essencial: { badge: 'bg-green-100 text-green-700', border: 'border-[var(--accent)]', text: 'text-[var(--accent)]' },
-  plus:      { badge: 'bg-blue-100 text-blue-700',   border: 'border-blue-400',         text: 'text-blue-600'       },
-  black:     { badge: 'bg-purple-100 text-purple-700', border: 'border-purple-400',     text: 'text-purple-600'     },
+const PLAN_COLORS: Record<string, { color: string; bg: string; border: string }> = {
+  essencial: { color: 'rgba(248,249,250,0.70)', bg: 'rgba(255,255,255,0.06)', border: 'rgba(255,255,255,0.15)' },
+  plus:      { color: '#E11D48',   bg: 'rgba(225,29,72,0.08)',  border: 'rgba(225,29,72,0.30)'  },
+  black:     { color: '#F59E0B',   bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.30)' },
 }
 
 const PLAN_FEATURES: Record<string, string[]> = {
-  essencial: ['5 curtidas/dia', '1 SuperCurtida/dia', '1 ticket de roleta/dia', 'Verificação de identidade', '1 filtro ativo'],
-  plus:      ['30 curtidas/dia', '4 SuperCurtidas/dia', '2 tickets/dia', '1 Lupa/dia', 'Desfazer curtida (1/dia)', 'Filtros avançados', 'Ver quem curtiu'],
-  black:     ['Curtidas ilimitadas', '10 SuperCurtidas/dia', '3 tickets/dia', '2 Lupas/dia', 'Boost automático diário', 'Backstage (Sugar e Fetiche)', 'Suporte prioritário 24h'],
+  essencial: ['5 curtidas/dia', '1 SuperCurtida/dia', '1 ticket de roleta/dia', 'Verificacao de identidade', '1 filtro ativo'],
+  plus:      ['30 curtidas/dia', '4 SuperCurtidas/dia', '2 tickets/dia', '1 Lupa/dia', 'Desfazer curtida (1/dia)', 'Filtros avancados', 'Ver quem curtiu'],
+  black:     ['Curtidas ilimitadas', '10 SuperCurtidas/dia', '3 tickets/dia', '2 Lupas/dia', 'Boost automatico diario', 'Backstage (Sugar e Fetiche)', 'Suporte prioritario 24h'],
 }
 
 function formatDate(iso: string) {
@@ -56,7 +57,6 @@ export default function MinhaAssinaturaPage() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [msg, setMsg]                 = useState<{ text: string; type: 'success' | 'error' } | null>(null)
 
-  // ── Auth ──────────────────────────────────────────────────────────────
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (!data.user) { router.replace('/login'); return }
@@ -64,7 +64,6 @@ export default function MinhaAssinaturaPage() {
     }).catch(() => router.replace('/login'))
   }, [router])
 
-  // ── Buscar assinaturas ────────────────────────────────────────────────
   useEffect(() => {
     if (!userId) return
     supabase
@@ -80,8 +79,8 @@ export default function MinhaAssinaturaPage() {
 
   const active = subscriptions.find(s => s.status === 'active')
   const history = subscriptions.filter(s => s.status !== 'active')
+  const planStyle = active ? (PLAN_COLORS[active.plan] ?? PLAN_COLORS['essencial']) : null
 
-  // ── Cancelar ──────────────────────────────────────────────────────────
   async function handleCancel() {
     if (!active) return
     setCancelling(true)
@@ -97,7 +96,7 @@ export default function MinhaAssinaturaPage() {
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Erro ao cancelar')
-      setMsg({ text: 'Assinatura cancelada. Você mantém acesso até o fim do período pago.', type: 'success' })
+      setMsg({ text: 'Assinatura cancelada. Voce mantem acesso ate o fim do periodo pago.', type: 'success' })
       setSubs(prev => prev.map(s => s.id === active.id ? { ...s, status: 'cancelled' } : s))
     } catch (err: unknown) {
       const error = err instanceof Error ? err.message : 'Erro ao cancelar'
@@ -110,62 +109,69 @@ export default function MinhaAssinaturaPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin" />
+      <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader2 size={28} color="var(--accent)" strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} />
+        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] pb-20">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '80px' }}>
+
       {/* Header */}
-      <header className="bg-[var(--bg-card)] border-b border-[var(--border)] px-4 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="text-[var(--muted)] hover:text-[var(--text)] transition-colors">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
+      <header style={{ backgroundColor: 'var(--bg-card)', borderBottom: '1px solid var(--border)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button
+          onClick={() => router.back()}
+          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+        >
+          <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
-        <h1 className="font-fraunces text-xl font-bold text-[var(--text)]">Minha Assinatura</h1>
+        <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0 }}>Minha Assinatura</h1>
       </header>
 
-      <div className="max-w-lg mx-auto px-4 pt-6 space-y-6">
+      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
         {/* Mensagem de feedback */}
         {msg && (
-          <div className={`rounded-xl p-4 text-sm font-medium ${msg.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-600 border border-red-200'}`}>
+          <div style={{
+            borderRadius: '12px', padding: '14px 16px', fontSize: '14px', fontWeight: 600,
+            backgroundColor: msg.type === 'success' ? 'rgba(16,185,129,0.10)' : 'rgba(225,29,72,0.10)',
+            color: msg.type === 'success' ? '#10b981' : 'var(--accent)',
+            border: `1px solid ${msg.type === 'success' ? 'rgba(16,185,129,0.25)' : 'var(--accent-border)'}`,
+          }}>
             {msg.text}
           </div>
         )}
 
         {/* Plano ativo */}
-        {active ? (
-          <div className={`bg-[var(--bg-card)] rounded-2xl border-2 ${PLAN_COLORS[active.plan]?.border ?? 'border-[var(--border)]'} shadow-sm overflow-hidden`}>
+        {active && planStyle ? (
+          <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '20px', border: `2px solid ${planStyle.border}`, overflow: 'hidden' }}>
+
             {/* Topo */}
-            <div className="px-5 pt-5 pb-4">
-              <div className="flex items-start justify-between mb-3">
+            <div style={{ padding: '20px 20px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '12px' }}>
                 <div>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${PLAN_COLORS[active.plan]?.badge ?? 'bg-gray-100 text-gray-600'}`}>
+                  <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '100px', backgroundColor: planStyle.bg, color: planStyle.color, border: `1px solid ${planStyle.border}` }}>
                     Plano ativo
                   </span>
-                  <h2 className={`font-fraunces text-2xl font-bold mt-2 ${PLAN_COLORS[active.plan]?.text ?? 'text-[var(--text)]'}`}>
+                  <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '26px', color: planStyle.color, margin: '8px 0 4px' }}>
                     {PLAN_LABELS[active.plan] ?? active.plan}
                   </h2>
-                  <p className="text-sm text-[var(--muted)] mt-0.5">{PLAN_PRICES[active.plan]}</p>
+                  <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>{PLAN_PRICES[active.plan]}</p>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs text-[var(--muted)]">Renova em</p>
-                  <p className="text-sm font-semibold text-[var(--text)]">{formatDate(active.ends_at)}</p>
-                  <p className="text-xs text-[var(--muted)] mt-0.5">{daysLeft(active.ends_at)} dias restantes</p>
+                <div style={{ textAlign: 'right' }}>
+                  <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '0 0 4px' }}>Renova em</p>
+                  <p style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', margin: '0 0 2px' }}>{formatDate(active.ends_at)}</p>
+                  <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>{daysLeft(active.ends_at)} dias restantes</p>
                 </div>
               </div>
 
               {/* Features */}
-              <ul className="space-y-1.5 mt-3">
+              <ul style={{ listStyle: 'none', padding: 0, margin: '12px 0 0', display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {(PLAN_FEATURES[active.plan] ?? []).map(f => (
-                  <li key={f} className="flex items-center gap-2 text-sm text-[var(--text)]">
-                    <svg className="w-4 h-4 text-[var(--accent)] shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414L8.414 15l-4.121-4.121a1 1 0 011.414-1.414L8.414 12.172l6.879-6.879a1 1 0 011.414 0z" clipRule="evenodd"/>
-                    </svg>
+                  <li key={f} style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', color: 'var(--text)' }}>
+                    <Check size={14} color={planStyle.color} strokeWidth={2} style={{ flexShrink: 0 }} />
                     {f}
                   </li>
                 ))}
@@ -173,23 +179,23 @@ export default function MinhaAssinaturaPage() {
             </div>
 
             {/* Detalhes */}
-            <div className="bg-[var(--bg)] px-5 py-3 border-t border-[var(--border)] space-y-1.5 text-xs text-[var(--muted)]">
-              <p>Ativo desde: <span className="text-[var(--text)]">{formatDate(active.starts_at)}</span></p>
-              <p>Válido até: <span className="text-[var(--text)] font-medium">{formatDate(active.ends_at)}</span></p>
-              <p>Pedido: <span className="text-[var(--text)] font-mono">{active.cakto_order_id}</span></p>
+            <div style={{ backgroundColor: 'var(--bg)', padding: '12px 20px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Ativo desde: <span style={{ color: 'var(--text)' }}>{formatDate(active.starts_at)}</span></p>
+              <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Valido ate: <span style={{ color: 'var(--text)', fontWeight: 600 }}>{formatDate(active.ends_at)}</span></p>
+              <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Pedido: <span style={{ color: 'var(--text)', fontFamily: 'monospace', fontSize: '11px' }}>{active.cakto_order_id}</span></p>
             </div>
 
-            {/* Ações */}
-            <div className="px-5 py-4 flex flex-col gap-2 border-t border-[var(--border)]">
+            {/* Acoes */}
+            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
                 onClick={() => router.push('/planos')}
-                className="btn-primary w-full text-sm py-2.5"
+                style={{ width: '100%', padding: '12px', borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'opacity 0.2s' }}
               >
                 Fazer upgrade de plano
               </button>
               <button
                 onClick={() => setShowConfirm(true)}
-                className="w-full text-sm py-2.5 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 transition-colors"
+                style={{ width: '100%', padding: '12px', borderRadius: '12px', backgroundColor: 'transparent', color: '#f87171', fontWeight: 500, fontSize: '14px', border: '1px solid rgba(239,68,68,0.25)', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'background-color 0.2s' }}
               >
                 Cancelar assinatura
               </button>
@@ -197,92 +203,103 @@ export default function MinhaAssinaturaPage() {
           </div>
         ) : (
           /* Sem plano ativo */
-          <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] p-6 text-center">
-            <div className="w-14 h-14 rounded-full bg-[var(--accent-light)] flex items-center justify-center mx-auto mb-3">
-              <svg className="w-7 h-7 text-[var(--accent)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+          <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '20px', border: '1px solid var(--border)', padding: '32px 24px', textAlign: 'center' }}>
+            <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <AlertTriangle size={26} color="var(--accent)" strokeWidth={1.5} />
             </div>
-            <h3 className="font-fraunces font-bold text-lg text-[var(--text)] mb-1">Nenhum plano ativo</h3>
-            <p className="text-sm text-[var(--muted)] mb-4">Assine um plano para desbloquear mais recursos e aparecer para mais pessoas.</p>
-            <button onClick={() => router.push('/planos')} className="btn-primary text-sm px-6">
-              Ver planos disponíveis
+            <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: '0 0 8px' }}>Nenhum plano ativo</h3>
+            <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 20px' }}>Assine um plano para desbloquear mais recursos e aparecer para mais pessoas.</p>
+            <button
+              onClick={() => router.push('/planos')}
+              style={{ padding: '12px 28px', borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+            >
+              Ver planos disponiveis
             </button>
           </div>
         )}
 
-        {/* Histórico */}
+        {/* Historico */}
         {history.length > 0 && (
-          <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] overflow-hidden">
-            <h3 className="font-semibold text-[var(--text)] px-5 pt-4 pb-2 text-sm">Histórico de assinaturas</h3>
-            <div className="divide-y divide-[var(--border)]">
-              {history.map(s => (
-                <div key={s.id} className="px-5 py-3 flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-[var(--text)]">{PLAN_LABELS[s.plan] ?? s.plan}</p>
-                    <p className="text-xs text-[var(--muted)]">{formatDate(s.starts_at)} → {formatDate(s.ends_at)}</p>
-                    <p className="text-xs font-mono text-[var(--muted)] mt-0.5">{s.cakto_order_id}</p>
+          <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', padding: '16px 20px 8px', margin: 0 }}>Historico de assinaturas</p>
+            <div>
+              {history.map((s, i) => {
+                const statusColor = s.status === 'cancelled' ? '#f87171' : s.status === 'expired' ? 'var(--muted)' : '#F59E0B'
+                const statusBg = s.status === 'cancelled' ? 'rgba(239,68,68,0.10)' : s.status === 'expired' ? 'rgba(255,255,255,0.05)' : 'rgba(245,158,11,0.10)'
+                const statusLabel = s.status === 'cancelled' ? 'Cancelado' : s.status === 'expired' ? 'Expirado' : s.status
+                return (
+                  <div key={s.id} style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: i === 0 ? '1px solid var(--border)' : '1px solid var(--border-soft)' }}>
+                    <div>
+                      <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', margin: '0 0 2px' }}>{PLAN_LABELS[s.plan] ?? s.plan}</p>
+                      <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '0 0 2px' }}>{formatDate(s.starts_at)} ate {formatDate(s.ends_at)}</p>
+                      <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)', fontFamily: 'monospace', margin: 0 }}>{s.cakto_order_id}</p>
+                    </div>
+                    <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '100px', backgroundColor: statusBg, color: statusColor, flexShrink: 0, marginLeft: '12px' }}>
+                      {statusLabel}
+                    </span>
                   </div>
-                  <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
-                    s.status === 'cancelled' ? 'bg-red-50 text-red-500' :
-                    s.status === 'expired'   ? 'bg-gray-100 text-gray-500' :
-                    'bg-yellow-50 text-yellow-600'
-                  }`}>
-                    {s.status === 'cancelled' ? 'Cancelado' : s.status === 'expired' ? 'Expirado' : s.status}
-                  </span>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
 
-        {/* Info LGPD / suporte */}
-        <div className="bg-[var(--bg-card)] rounded-2xl border border-[var(--border)] p-5">
-          <h3 className="font-semibold text-[var(--text)] text-sm mb-2">Precisa de ajuda?</h3>
-          <p className="text-xs text-[var(--muted)] mb-3 leading-relaxed">
-            Para contestar cobranças, reembolsos ou dúvidas sobre sua assinatura, entre em contato com o suporte. Respondemos em até 24h úteis.
+        {/* Info / suporte */}
+        <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '20px' }}>
+          <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', margin: '0 0 8px' }}>Precisa de ajuda?</h3>
+          <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 14px', lineHeight: 1.5 }}>
+            Para contestar cobranças, reembolsos ou duvidas sobre sua assinatura, entre em contato com o suporte. Respondemos em ate 24h uteis.
           </p>
-          <button onClick={() => router.push('/suporte')} className="btn-secondary text-xs px-4 py-2">
+          <button
+            onClick={() => router.push('/suporte')}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--muted)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+          >
+            <Headphones size={14} strokeWidth={1.5} />
             Abrir suporte
           </button>
         </div>
 
       </div>
 
-      {/* Modal de confirmação de cancelamento */}
+      {/* Modal de confirmacao de cancelamento */}
       {showConfirm && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center z-50 p-4">
-          <div className="bg-[var(--bg-card)] rounded-2xl w-full max-w-sm p-6">
-            <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-              </svg>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.70)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
+          <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '20px', width: '100%', maxWidth: '400px', padding: '24px', border: '1px solid var(--border)' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+              <AlertTriangle size={22} color="#f87171" strokeWidth={1.5} />
             </div>
-            <h3 className="font-fraunces font-bold text-lg text-center text-[var(--text)] mb-2">Cancelar assinatura?</h3>
-            <p className="text-sm text-[var(--muted)] text-center mb-1">
-              Você continuará com acesso ao plano <strong className="text-[var(--text)]">{PLAN_LABELS[active?.plan ?? '']}</strong> até{' '}
-              <strong className="text-[var(--text)]">{active ? formatDate(active.ends_at) : ''}</strong>.
+            <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', textAlign: 'center', color: 'var(--text)', margin: '0 0 8px' }}>Cancelar assinatura?</h3>
+            <p style={{ fontSize: '14px', color: 'var(--muted)', textAlign: 'center', margin: '0 0 8px', lineHeight: 1.5 }}>
+              Voce continuara com acesso ao plano <strong style={{ color: 'var(--text)' }}>{PLAN_LABELS[active?.plan ?? '']}</strong> ate{' '}
+              <strong style={{ color: 'var(--text)' }}>{active ? formatDate(active.ends_at) : ''}</strong>.
             </p>
-            <p className="text-xs text-[var(--muted)] text-center mb-5">Após essa data, você perderá o acesso às funcionalidades do plano. Para voltar a usá-las, será necessário assinar novamente.</p>
-            <div className="flex gap-3">
+            <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.30)', textAlign: 'center', margin: '0 0 24px' }}>Apos essa data, voce perdera o acesso as funcionalidades do plano. Para voltar a usa-las, sera necessario assinar novamente.</p>
+            <div style={{ display: 'flex', gap: '10px' }}>
               <button
                 onClick={() => setShowConfirm(false)}
                 disabled={cancelling}
-                className="flex-1 py-2.5 rounded-xl border border-[var(--border)] text-sm text-[var(--text)] hover:bg-[var(--bg)] transition-colors"
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid var(--border)', backgroundColor: 'transparent', color: 'var(--text)', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'background-color 0.2s' }}
               >
                 Manter plano
               </button>
               <button
                 onClick={handleCancel}
                 disabled={cancelling}
-                className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition-colors disabled:opacity-60"
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', backgroundColor: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.30)', color: '#f87171', fontSize: '14px', fontWeight: 700, cursor: cancelling ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', opacity: cancelling ? 0.6 : 1, transition: 'opacity 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
-                {cancelling ? 'Cancelando...' : 'Confirmar cancelamento'}
+                {cancelling ? (
+                  <>
+                    <Loader2 size={14} strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} />
+                    Cancelando...
+                  </>
+                ) : 'Confirmar cancelamento'}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

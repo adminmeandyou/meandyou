@@ -20,7 +20,7 @@ export default function BackstagePage() {
 
   if (planLoading) {
     return (
-      <div className="min-h-screen bg-[#0e0b14] flex items-center justify-center">
+      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center">
         <Loader2 size={28} className="animate-spin text-white/30" />
       </div>
     )
@@ -67,10 +67,10 @@ function BackstageBlurred({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack
   }
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta relative overflow-hidden">
+    <div className="min-h-screen bg-[var(--bg)] font-jakarta relative overflow-hidden">
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-[var(--bg)]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
         <button onClick={onBack} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
           <ArrowLeft size={18} className="text-white/60" />
         </button>
@@ -88,7 +88,7 @@ function BackstageBlurred({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack
       </div>
 
       {/* Overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-6 bg-[#0e0b14]/80 backdrop-blur-sm">
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-6 bg-[var(--bg)]/80 backdrop-blur-sm">
         <div className="w-16 h-16 rounded-full bg-[#f5c842]/10 border border-[#f5c842]/30 flex items-center justify-center mb-5">
           <Lock size={28} className="text-[#f5c842]" />
         </div>
@@ -227,10 +227,10 @@ function BackstageContent({ onBack }: { onBack: () => void }) {
     : requests.filter((r) => r.tier === selectedFilter)
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-24">
+    <div className="min-h-screen bg-[var(--bg)] font-jakarta pb-24">
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-[var(--bg)]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
         <button onClick={onBack} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
           <ArrowLeft size={18} className="text-white/60" />
         </button>
