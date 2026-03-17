@@ -335,10 +335,21 @@ function NovoMatchCard({
   )
 }
 
+// ─── Nível de conexão ─────────────────────────────────────────────────────────
+
+function getNivel(matchedAt: string, lastMessageAt: string | null): { label: string; color: string } | null {
+  if (!lastMessageAt) return null
+  const daysSinceMatch = (Date.now() - new Date(matchedAt).getTime()) / 86400000
+  if (daysSinceMatch > 30) return { label: 'Historia', color: '#F59E0B' }
+  if (daysSinceMatch > 7)  return { label: 'Conexao',  color: '#10b981' }
+  return { label: 'Sintonia', color: '#60a5fa' }
+}
+
 // ─── Item de conversa ─────────────────────────────────────────────────────────
 
 function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: string | null) => string }) {
   const expiry = getExpiryInfo(match.matched_at, match.last_message_at)
+  const nivel = getNivel(match.matched_at, match.last_message_at)
   return (
     <Link
       href={`/conversas/${match.conversation_id}`}
@@ -404,6 +415,16 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
                 border: `1px solid ${expiry.urgent ? 'rgba(225,29,72,0.30)' : 'var(--accent-border)'}`,
               }}>
                 {expiry.label}
+              </span>
+            )}
+            {!expiry && nivel && (
+              <span style={{
+                fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 100, flexShrink: 0,
+                background: `${nivel.color}18`,
+                color: nivel.color,
+                border: `1px solid ${nivel.color}35`,
+              }}>
+                {nivel.label}
               </span>
             )}
           </div>

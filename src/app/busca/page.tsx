@@ -514,92 +514,104 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
   )
 }
 
-// ─── Placeholder: Salas Sociais ───────────────────────────────────────────────
+// ─── Salas Sociais ────────────────────────────────────────────────────────────
 
 const MOCK_ROOMS = [
-  { id: '1', title: 'Noite de Pagode', desc: 'Quem curte uma roda de pagode?', count: 12 },
-  { id: '2', title: 'Geeks & Gamers', desc: 'Para quem joga e ama tecnologia', count: 8 },
-  { id: '3', title: 'Trilhas e Aventuras', desc: 'Apaixonados por natureza', count: 23 },
-  { id: '4', title: 'Cinema & Séries', desc: 'Discussões sem spoiler (ou com)', count: 17 },
+  { id: '1', title: 'Noite de Pagode',    desc: 'Quem curte uma roda de pagode?',       count: 12, emoji: '🎶' },
+  { id: '2', title: 'Geeks & Gamers',     desc: 'Para quem joga e ama tecnologia',       count: 8,  emoji: '🎮' },
+  { id: '3', title: 'Trilhas e Aventuras',desc: 'Apaixonados por natureza',              count: 23, emoji: '🏕' },
+  { id: '4', title: 'Cinema & Series',    desc: 'Discussoes sem spoiler (ou com)',       count: 17, emoji: '🎬' },
+  { id: '5', title: 'Esportes ao Vivo',   desc: 'Torcedores que curtem jogar tambem',   count: 9,  emoji: '⚽' },
+  { id: '6', title: 'Culinaria & Bares',  desc: 'Onde comer bem esta cidade?',          count: 14, emoji: '🍻' },
 ]
 
-function RoomsPlaceholder() {
+function RoomsPlaceholder({ userPlan }: { userPlan: string }) {
+  const toast = useToast()
+  const canJoin = userPlan === 'plus' || userPlan === 'black'
+
+  function handleJoin(title: string) {
+    if (!canJoin) return
+    toast.info(`Sala "${title}" em beta — disponivel em breve!`)
+  }
+
+  function handleCriar() {
+    if (!canJoin) return
+    toast.info('Criar salas estara disponivel em breve!')
+  }
+
   return (
     <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
-      <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <Users size={16} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
-        <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)' }}>
-          Salas Sociais
-        </span>
-        <span
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-            padding: '2px 8px',
-            borderRadius: 100,
-            backgroundColor: 'rgba(225,29,72,0.12)',
-            color: 'var(--accent)',
-            border: '1px solid rgba(225,29,72,0.25)',
-          }}
-        >
-          Em breve
-        </span>
+
+      {/* Header */}
+      <div style={{ marginBottom: 6, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Users size={16} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+          <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)' }}>
+            Salas Sociais
+          </span>
+        </div>
+        {canJoin && (
+          <button
+            onClick={handleCriar}
+            style={{
+              padding: '6px 14px', borderRadius: 100, border: '1px solid var(--accent-border)',
+              backgroundColor: 'var(--accent-soft)', color: 'var(--accent)',
+              fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-jakarta)',
+            }}
+          >
+            + Criar sala
+          </button>
+        )}
       </div>
 
       <p style={{ fontSize: 13, color: 'var(--muted)', fontFamily: 'var(--font-jakarta)', marginBottom: 20, lineHeight: 1.5 }}>
-        Entre em salas temáticas e converse com pessoas que compartilham os mesmos interesses.
+        Entre em salas tematicas e converse com pessoas que compartilham os mesmos interesses.
       </p>
 
+      {/* Paywall para Essencial */}
+      {!canJoin && (
+        <div style={{ marginBottom: 20 }}>
+          <PaywallCard
+            title="Salas exclusivas para Plus e Black"
+            description="Faca upgrade para entrar em salas tematicas e conhecer pessoas com os mesmos interesses."
+            ctaLabel="Ver planos"
+          />
+        </div>
+      )}
+
+      {/* Lista de salas */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {MOCK_ROOMS.map((room) => (
-          <div
+          <button
             key={room.id}
+            onClick={() => handleJoin(room.title)}
+            disabled={!canJoin}
             style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 14,
-              padding: '14px 16px',
-              borderRadius: 16,
-              backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              opacity: 0.7,
-              cursor: 'not-allowed',
+              display: 'flex', alignItems: 'center', gap: 14,
+              padding: '14px 16px', borderRadius: 16, width: '100%', textAlign: 'left',
+              backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)',
+              opacity: canJoin ? 1 : 0.45, cursor: canJoin ? 'pointer' : 'default',
+              transition: 'border-color 0.15s',
             }}
           >
-            <div
-              style={{
-                width: 48,
-                height: 48,
-                borderRadius: 14,
-                backgroundColor: 'rgba(225,29,72,0.10)',
-                border: '1px solid rgba(225,29,72,0.20)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 22,
-                flexShrink: 0,
-              }}
-            >
-              <Users size={20} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+            <div style={{
+              width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+              backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+            }}>
+              {room.emoji}
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, color: 'var(--text)', marginBottom: 2 }}>
+              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, color: 'var(--text)', margin: '0 0 2px' }}>
                 {room.title}
               </p>
-              <p style={{ fontSize: 12, color: 'var(--muted)', lineHeight: 1.4 }}>{room.desc}</p>
+              <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, lineHeight: 1.4 }}>{room.desc}</p>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-              <div
-                style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: '50%',
-                  backgroundColor: 'rgba(16,185,129,0.6)',
-                }}
-              />
+              <div style={{ width: 7, height: 7, borderRadius: '50%', backgroundColor: 'rgba(16,185,129,0.7)' }} />
               <span style={{ fontSize: 12, color: 'var(--muted)' }}>{room.count}</span>
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </div>
@@ -994,7 +1006,7 @@ export default function BuscaPage() {
       {/* Conteúdo principal */}
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         {viewMode === 'rooms' ? (
-          <RoomsPlaceholder />
+          <RoomsPlaceholder userPlan={userPlan} />
         ) : viewMode === 'daily' ? (
           <DailyMatchView userId={userId} localFilters={localFilters} />
         ) : viewMode === 'search' ? (

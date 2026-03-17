@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, HelpCircle, ChevronDown, ChevronUp, Search, MessageCircle, FileText, Shield } from 'lucide-react'
+import { ArrowLeft, HelpCircle, ChevronDown, ChevronUp, Search, MessageCircle, FileText, Shield, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 
 type FAQ = { pergunta: string; resposta: string; categoria: string }
@@ -224,12 +224,15 @@ export default function AjudaPage() {
         </div>
 
         {/* Links legais */}
-        <div style={{ display: 'flex', gap: '12px', paddingBottom: '8px' }}>
+        <div style={{ display: 'flex', gap: '12px', paddingBottom: '8px', flexWrap: 'wrap' }}>
           <Link href="/termos" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--muted)', textDecoration: 'none' }}>
             <FileText size={13} strokeWidth={1.5} /> Termos de uso
           </Link>
           <Link href="/privacidade" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--muted)', textDecoration: 'none' }}>
             <Shield size={13} strokeWidth={1.5} /> Privacidade
+          </Link>
+          <Link href="/deletar-conta" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'rgba(248,100,100,0.55)', textDecoration: 'none' }}>
+            <Trash2 size={13} strokeWidth={1.5} /> Excluir conta
           </Link>
         </div>
 

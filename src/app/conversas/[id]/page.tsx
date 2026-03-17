@@ -629,15 +629,29 @@ export default function ChatPage() {
 
           {/* Avatar clicável → perfil */}
           <Link href={`/perfil/${otherUser?.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, textDecoration: 'none' }}>
-            <div style={{ position: 'relative', width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', flexShrink: 0, border: '1px solid var(--border)' }}>
-              {otherUser?.photo_best ? (
-                <Image src={otherUser.photo_best} alt={otherUser.name} fill className="object-cover" sizes="40px" />
-              ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 16 }}>{otherUser?.name[0]}</span>
+            {(() => {
+              const otherMsgs = messages.filter(m => m.sender_id !== userId).length
+              const blurPx = otherMsgs >= 20 ? 0 : otherMsgs >= 10 ? 2 : otherMsgs >= 5 ? 5 : 10
+              const revealLabel = blurPx > 0 ? `${Math.max(0, (blurPx === 10 ? 5 : blurPx === 5 ? 10 : 20) - otherMsgs)} msgs` : null
+              return (
+                <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }} title={revealLabel ? `Foto revela em ${revealLabel}` : undefined}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '1px solid var(--border)', filter: blurPx > 0 ? `blur(${blurPx}px)` : 'none', transition: 'filter 0.4s' }}>
+                    {otherUser?.photo_best ? (
+                      <Image src={otherUser.photo_best} alt={otherUser.name} fill className="object-cover" sizes="40px" />
+                    ) : (
+                      <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 16 }}>{otherUser?.name[0]}</span>
+                      </div>
+                    )}
+                  </div>
+                  {revealLabel && (
+                    <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,9,14,0.45)' }}>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: '#fff', textAlign: 'center', lineHeight: 1.2 }}>{revealLabel}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
+              )
+            })()}
             <div style={{ minWidth: 0 }}>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {otherUser?.name}
