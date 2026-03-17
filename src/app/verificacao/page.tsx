@@ -268,21 +268,30 @@ function Verificacao() {
   const iniciarCamera = async (tipo: 'frente' | 'verso' | 'selfie') => {
     const facingMode = tipo === 'selfie' ? 'user' : 'environment'
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode, width: 1280, height: 720 } })
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: facingMode }, width: { ideal: 1280 }, height: { ideal: 720 } }
+      })
       if (tipo === 'frente') {
         streamFrenteRef.current = stream
-        if (videoFrenteRef.current) { videoFrenteRef.current.srcObject = stream; videoFrenteRef.current.play() }
+        if (videoFrenteRef.current) { videoFrenteRef.current.srcObject = stream; videoFrenteRef.current.play().catch(() => {}) }
         setCameraFrenteAtiva(true)
       } else if (tipo === 'verso') {
         streamVersoRef.current = stream
-        if (videoVersoRef.current) { videoVersoRef.current.srcObject = stream; videoVersoRef.current.play() }
+        if (videoVersoRef.current) { videoVersoRef.current.srcObject = stream; videoVersoRef.current.play().catch(() => {}) }
         setCameraVersoAtiva(true)
       } else {
         streamSelfieRef.current = stream
-        if (videoSelfieRef.current) { videoSelfieRef.current.srcObject = stream; videoSelfieRef.current.play() }
+        if (videoSelfieRef.current) { videoSelfieRef.current.srcObject = stream; videoSelfieRef.current.play().catch(() => {}) }
         setCameraSelfieAtiva(true)
       }
-    } catch { setErroForm('Permissão de câmera negada. Permita o acesso e tente novamente.') }
+    } catch (err: any) {
+      const msg = err?.name === 'NotAllowedError'
+        ? 'Permissão de câmera negada. Permita o acesso nas configurações do navegador.'
+        : err?.name === 'NotFoundError'
+        ? 'Nenhuma câmera encontrada no dispositivo.'
+        : `Erro ao abrir câmera: ${err?.message ?? 'Tente novamente.'}`
+      setErroForm(msg)
+    }
   }
 
   const pararCamera = (tipo: 'frente' | 'verso' | 'selfie') => {
@@ -325,8 +334,14 @@ function Verificacao() {
     setLivenessOk(false)
     piscarContRef.current = 0
     olhosAbertosRef.current = true
-    await iniciarCamera('selfie')
+    // ✅ CORREÇÃO: renderizar o elemento <video> ANTES de iniciarCamera
+    // Se livenessIniciado=false, o <video ref={videoSelfieRef}> não existe no DOM,
+    // então videoSelfieRef.current é null e o stream nunca é atribuído ao elemento.
     setLivenessIniciado(true)
+    setFeedbackLiveness('Iniciando câmera...')
+    // Aguarda React renderizar o elemento <video> no DOM
+    await new Promise(r => setTimeout(r, 80))
+    await iniciarCamera('selfie')
     setDeteccaoAtiva(true)
     setFeedbackLiveness(PASSOS_LIVENESS[0].instrucao)
   }
