@@ -65,6 +65,9 @@ export default function ChatPage() {
   const [showIcebreakers, setShowIcebreakers] = useState(false)
   const [showConvite, setShowConvite] = useState(false)
   const [conviteText, setConviteText] = useState('')
+  const [conviteLocal, setConviteLocal] = useState('')
+  const [conviteDate, setConviteDate] = useState('')
+  const [conviteTime, setConviteTime] = useState('')
   const [shake, setShake] = useState(false)
   const [pendingConvite, setPendingConvite] = useState<string | null>(null)
 
@@ -77,6 +80,7 @@ export default function ChatPage() {
   const [meetingSaved, setMeetingSaved]         = useState(false)
   // Check-in pós-encontro (bloqueante)
   const [checkinMeeting, setCheckinMeeting] = useState<{ id: string; local: string; date: string } | null>(null)
+  const [checkinRecordId, setCheckinRecordId] = useState<string | null>(null)
   // Central de segurança
   const [showSecuritySheet, setShowSecuritySheet] = useState(false)
   const [unmatchConfirm, setUnmatchConfirm]       = useState(false)
@@ -333,10 +337,36 @@ export default function ChatPage() {
 
   async function handleSendConvite() {
     const texto = conviteText.trim()
-    if (!texto) return
-    await sendMessage(`${CONVITE_PREFIX}${texto}`)
+    if (!texto && !conviteLocal.trim()) return
+
+    // Se tem local/data/hora, envia formato estruturado __MEETING__
+    if (conviteLocal.trim()) {
+      const payload = JSON.stringify({
+        texto: texto || null,
+        local: conviteLocal.trim(),
+        date: conviteDate || null,
+        time: conviteTime || null,
+      })
+      await sendMessage(`__MEETING__:${payload}`)
+      // Cria registro na tabela meeting_invites via API
+      if (otherUser && conviteDate && conviteTime) {
+        const { data: { session } } = await supabase.auth.getSession()
+        const meetingDate = new Date(`${conviteDate}T${conviteTime}`).toISOString()
+        fetch('/api/meeting/invite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ matchId, receiverId: otherUser.id, local: conviteLocal.trim(), meetingDate }),
+        }).catch(() => {})
+      }
+    } else {
+      await sendMessage(`${CONVITE_PREFIX}${texto}`)
+    }
+
     setShowConvite(false)
     setConviteText('')
+    setConviteLocal('')
+    setConviteDate('')
+    setConviteTime('')
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -378,20 +408,29 @@ export default function ChatPage() {
 
   // ── Fase 8: handlers ─────────────────────────────────────────────────────────
 
-  function handleSaveMeeting() {
+  async function handleSaveMeeting() {
     if (!meetingLocal.trim() || !meetingDateVal || !meetingTimeVal) return
-    const record = {
-      id: String(Date.now()),
-      matchId,
-      matchName: otherUser?.name ?? 'Match',
-      local: meetingLocal.trim(),
-      date: `${meetingDateVal}T${meetingTimeVal}`,
-      checkedIn: false,
-    }
+    const meetingDate = `${meetingDateVal}T${meetingTimeVal}`
+
+    // Salva no banco (privado — o match não vê)
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/safety/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+        body: JSON.stringify({ matchId, matchName: otherUser?.name ?? 'Match', local: meetingLocal.trim(), meetingDate }),
+      })
+      const json = await res.json()
+      if (json.id) setCheckinRecordId(json.id)
+    } catch { /* silencioso */ }
+
+    // Mantém também localStorage como fallback
+    try {
+      const record = { id: String(Date.now()), matchId, matchName: otherUser?.name ?? 'Match', local: meetingLocal.trim(), date: meetingDate, checkedIn: false }
       const existing: any[] = JSON.parse(localStorage.getItem('meandyou_meetings') ?? '[]')
       localStorage.setItem('meandyou_meetings', JSON.stringify([...existing, record]))
     } catch { /* ignore */ }
+
     setMeetingSaved(true)
     setTimeout(() => {
       setShowMeetingModal(false)
@@ -402,8 +441,22 @@ export default function ChatPage() {
     }, 1500)
   }
 
-  function handleCheckinBem() {
+  async function handleCheckinBem() {
     if (!checkinMeeting) return
+
+    // Check-in no banco
+    if (checkinRecordId) {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        fetch('/api/safety/checkin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
+          body: JSON.stringify({ recordId: checkinRecordId }),
+        }).catch(() => {})
+      } catch { /* silencioso */ }
+    }
+
+    // Atualiza localStorage
     try {
       const records: any[] = JSON.parse(localStorage.getItem('meandyou_meetings') ?? '[]')
       localStorage.setItem('meandyou_meetings', JSON.stringify(
@@ -455,7 +508,22 @@ export default function ChatPage() {
       )
     }
 
-    // Convite encontro
+    // Convite estruturado (com local/data/hora)
+    if (msg.content.startsWith('__MEETING__:')) {
+      try {
+        const data = JSON.parse(msg.content.slice('__MEETING__:'.length))
+        const linhas = [
+          data.local && `📍 ${data.local}`,
+          (data.date && data.time) && `🗓 ${new Date(`${data.date}T${data.time}`).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`,
+          data.texto,
+        ].filter(Boolean).join('\n')
+        return (
+          <ConviteCard key={msg.id} text={linhas} isMe={isMe} time={formatMsgTime(msg.created_at)} onReply={(r) => sendMessage(r)} />
+        )
+      } catch { /* fallback abaixo */ }
+    }
+
+    // Convite encontro (texto livre — legado)
     if (msg.content.startsWith(CONVITE_PREFIX)) {
       const texto = msg.content.slice(CONVITE_PREFIX.length)
       return (
@@ -738,13 +806,54 @@ export default function ChatPage() {
                 <X size={14} color="var(--muted)" />
               </button>
             </div>
+            {/* Local (obrigatório para convite estruturado) */}
+            <input
+              type="text"
+              value={conviteLocal}
+              onChange={e => setConviteLocal(e.target.value)}
+              placeholder="Local (ex: Cafe do Centro, Praia do Gonzaga)"
+              maxLength={100}
+              autoFocus
+              style={{
+                width: '100%', background: 'rgba(255,255,255,0.05)',
+                border: '1px solid var(--border)', borderRadius: 12,
+                padding: '10px 14px', fontSize: 14, color: 'var(--text)',
+                outline: 'none', boxSizing: 'border-box',
+                fontFamily: 'var(--font-jakarta)', marginBottom: 8,
+              }}
+            />
+            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+              <input
+                type="date"
+                value={conviteDate}
+                onChange={e => setConviteDate(e.target.value)}
+                style={{
+                  flex: 1, background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid var(--border)', borderRadius: 12,
+                  padding: '10px 14px', fontSize: 13, color: 'var(--text)',
+                  outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-jakarta)',
+                  colorScheme: 'dark',
+                }}
+              />
+              <input
+                type="time"
+                value={conviteTime}
+                onChange={e => setConviteTime(e.target.value)}
+                style={{
+                  flex: 1, background: 'rgba(255,255,255,0.05)',
+                  border: '1px solid var(--border)', borderRadius: 12,
+                  padding: '10px 14px', fontSize: 13, color: 'var(--text)',
+                  outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-jakarta)',
+                  colorScheme: 'dark',
+                }}
+              />
+            </div>
             <input
               type="text"
               value={conviteText}
               onChange={e => setConviteText(e.target.value)}
-              placeholder="Ex: Tomar um cafe sabado, 14h?"
+              placeholder="Mensagem opcional..."
               maxLength={200}
-              autoFocus
               style={{
                 width: '100%', background: 'rgba(255,255,255,0.05)',
                 border: '1px solid var(--border)', borderRadius: 12,
@@ -752,16 +861,15 @@ export default function ChatPage() {
                 outline: 'none', boxSizing: 'border-box',
                 fontFamily: 'var(--font-jakarta)', marginBottom: 10,
               }}
-              onKeyDown={e => { if (e.key === 'Enter') handleSendConvite() }}
             />
             <button
               onClick={handleSendConvite}
-              disabled={!conviteText.trim() || sending}
+              disabled={(!conviteLocal.trim() && !conviteText.trim()) || sending}
               style={{
                 width: '100%', padding: '11px 0', borderRadius: 12,
-                background: conviteText.trim() ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
-                border: 'none', cursor: conviteText.trim() ? 'pointer' : 'default',
-                color: conviteText.trim() ? '#fff' : 'var(--muted)',
+                background: (conviteLocal.trim() || conviteText.trim()) ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
+                border: 'none', cursor: (conviteLocal.trim() || conviteText.trim()) ? 'pointer' : 'default',
+                color: (conviteLocal.trim() || conviteText.trim()) ? '#fff' : 'var(--muted)',
                 fontFamily: 'var(--font-jakarta)', fontSize: 14, fontWeight: 700,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               }}

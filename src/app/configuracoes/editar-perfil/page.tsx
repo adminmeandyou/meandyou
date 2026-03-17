@@ -37,6 +37,8 @@ interface ProfileData {
   highlight_tags: string[]
   highlight_tags_edited_at: string | null
   profile_edited_at: string | null
+  status_temp: string | null
+  status_temp_expires_at: string | null
 }
 
 // ─── Utils de conversão filters → estado UI ──────────────────────────────────
@@ -131,7 +133,7 @@ export default function EditarPerfilPage() {
       setUserId(user.id)
       const [{ data: p }, { data: f }] = await Promise.all([
         supabase.from('profiles')
-          .select('bio, photo_face, photo_body, photo_side, photo_back, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at')
+          .select('bio, photo_face, photo_body, photo_side, photo_back, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at')
           .eq('id', user.id).single(),
         supabase.from('filters').select('*').eq('user_id', user.id).single(),
       ])
@@ -185,6 +187,25 @@ export default function EditarPerfilPage() {
       </div>
 
       <div style={{ padding: '4px 0' }}>
+
+        {/* ── Status de hoje (livre, temporário) ── */}
+        <Acordeao
+          id="status-hoje"
+          titulo="Status de hoje"
+          badge="Livre"
+          badgeCor="#10b981"
+          aberto={secaoAberta === 'status-hoje'}
+          onToggle={() => toggle('status-hoje')}
+        >
+          {userId && (
+            <StatusTempSection
+              userId={userId}
+              statusAtual={profileData?.status_temp ?? null}
+              expiresAt={profileData?.status_temp_expires_at ?? null}
+              onSaved={(s, e) => setProfileData(prev => prev ? { ...prev, status_temp: s, status_temp_expires_at: e } : prev)}
+            />
+          )}
+        </Acordeao>
 
         {/* ── Fotos & Bio (livre) ── */}
         <Acordeao
@@ -1132,6 +1153,146 @@ function BloqueioAviso({ horas, dias }: { horas?: number; dias?: number }) {
     <div style={{ padding: '10px 14px', borderRadius: '10px', backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.20)', display: 'flex', alignItems: 'center', gap: '8px' }}>
       <Clock size={14} color="#f59e0b" />
       <p style={{ color: '#f59e0b', fontSize: '13px', margin: 0 }}>{msg}</p>
+    </div>
+  )
+}
+
+// ─── Status Temporário ────────────────────────────────────────────────────────
+
+const STATUS_OPCOES = [
+  { id: 'querendo_sair',  label: 'Querendo sair',   icon: '🍻' },
+  { id: 'cafe',           label: 'Café e conversa', icon: '☕' },
+  { id: 'praia',          label: 'Praia',            icon: '🏖' },
+  { id: 'academia',       label: 'Academia',         icon: '🏋️' },
+  { id: 'cinema',         label: 'Cinema',           icon: '🎬' },
+  { id: 'estudando',      label: 'Estudando',        icon: '📚' },
+  { id: 'turistando',     label: 'Turistando',       icon: '🧳' },
+  { id: 'bar',            label: 'No bar',           icon: '🥂' },
+  { id: 'rolê',           label: 'Procurando rolê',  icon: '📍' },
+]
+
+const DURACAO_OPCOES = [
+  { horas: 2,  label: '2 horas'  },
+  { horas: 4,  label: '4 horas'  },
+  { horas: 8,  label: '8 horas'  },
+  { horas: 24, label: '24 horas' },
+]
+
+function StatusTempSection({
+  userId,
+  statusAtual,
+  expiresAt,
+  onSaved,
+}: {
+  userId: string
+  statusAtual: string | null
+  expiresAt: string | null
+  onSaved: (status: string | null, expiresAt: string | null) => void
+}) {
+  const statusVivo = statusAtual && expiresAt && new Date(expiresAt) > new Date()
+  const [selecionado, setSelecionado] = useState<string | null>(statusVivo ? statusAtual : null)
+  const [duracao, setDuracao] = useState(4)
+  const [saving, setSaving] = useState(false)
+  const [sucesso, setSucesso] = useState(false)
+
+  async function salvar() {
+    setSaving(true)
+    const expires = new Date(Date.now() + duracao * 3600000).toISOString()
+    const { error } = await supabase
+      .from('profiles')
+      .update({ status_temp: selecionado, status_temp_expires_at: selecionado ? expires : null })
+      .eq('id', userId)
+
+    if (!error) {
+      onSaved(selecionado, selecionado ? expires : null)
+      setSucesso(true)
+      setTimeout(() => setSucesso(false), 2000)
+    }
+    setSaving(false)
+  }
+
+  async function remover() {
+    setSaving(true)
+    await supabase
+      .from('profiles')
+      .update({ status_temp: null, status_temp_expires_at: null })
+      .eq('id', userId)
+    setSelecionado(null)
+    onSaved(null, null)
+    setSaving(false)
+  }
+
+  return (
+    <div style={{ padding: '16px' }}>
+      <p style={{ color: 'rgba(248,249,250,0.50)', fontSize: '13px', margin: '0 0 16px', lineHeight: 1.5 }}>
+        Mostre o que voce esta fazendo hoje. Aparece como tag no seu perfil por tempo limitado.
+      </p>
+
+      {statusVivo && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '10px 14px', borderRadius: 12, marginBottom: 16,
+          background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.20)',
+        }}>
+          <span style={{ color: '#F43F5E', fontSize: 13, fontWeight: 600 }}>
+            Status ativo: {STATUS_OPCOES.find(s => s.id === statusAtual)?.icon} {STATUS_OPCOES.find(s => s.id === statusAtual)?.label}
+          </span>
+          <button
+            onClick={remover}
+            disabled={saving}
+            style={{ background: 'none', border: 'none', color: 'rgba(248,249,250,0.40)', cursor: 'pointer', fontSize: 13 }}
+          >
+            Remover
+          </button>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+        {STATUS_OPCOES.map(opcao => (
+          <button
+            key={opcao.id}
+            onClick={() => setSelecionado(prev => prev === opcao.id ? null : opcao.id)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '8px 14px', borderRadius: 100,
+              border: selecionado === opcao.id ? '1px solid var(--accent)' : '1px solid rgba(255,255,255,0.10)',
+              background: selecionado === opcao.id ? 'rgba(225,29,72,0.12)' : 'rgba(255,255,255,0.04)',
+              color: selecionado === opcao.id ? '#F43F5E' : 'rgba(248,249,250,0.65)',
+              fontSize: 13, fontWeight: selecionado === opcao.id ? 600 : 400,
+              cursor: 'pointer', transition: 'all 0.15s',
+            }}
+          >
+            <span>{opcao.icon}</span>
+            <span>{opcao.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {selecionado && (
+        <>
+          <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: 12, margin: '0 0 8px' }}>Duração</p>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+            {DURACAO_OPCOES.map(d => (
+              <button
+                key={d.horas}
+                onClick={() => setDuracao(d.horas)}
+                style={{
+                  flex: 1, padding: '8px 0', borderRadius: 10,
+                  border: duracao === d.horas ? '1px solid var(--accent)' : '1px solid rgba(255,255,255,0.08)',
+                  background: duracao === d.horas ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.03)',
+                  color: duracao === d.horas ? '#F43F5E' : 'rgba(248,249,250,0.50)',
+                  fontSize: 12, fontWeight: duracao === d.horas ? 700 : 400,
+                  cursor: 'pointer',
+                }}
+              >
+                {d.label}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+
+      <BotaoSalvar loading={saving} sucesso={sucesso} onClick={salvar} />
     </div>
   )
 }

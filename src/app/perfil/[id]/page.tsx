@@ -14,6 +14,20 @@ import { BadgePill } from '@/components/ui/BadgePill'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
 
+// ─── Status temporário ────────────────────────────────────────────────────────
+
+const STATUS_TEMP_LABELS: Record<string, string> = {
+  querendo_sair: '🍻 Querendo sair',
+  cafe:          '☕ Café e conversa',
+  praia:         '🏖 Praia',
+  academia:      '🏋️ Academia',
+  cinema:        '🎬 Cinema',
+  estudando:     '📚 Estudando',
+  turistando:    '🧳 Turistando',
+  bar:           '🥂 No bar',
+  'rolê':        '📍 Procurando rolê',
+}
+
 // ─── Trust Score ──────────────────────────────────────────────────────────────
 
 function calcTrustScore(profile: any, photos: string[], filters: any): number {
@@ -308,6 +322,7 @@ export default function VerPerfilPage() {
   const [denunciaEnviado, setDenunciaEnviado] = useState(false)
   const [userRow, setUserRow] = useState<any>(null)
   const [selectedBadge, setSelectedBadge] = useState<EmblemaDef | null>(null)
+  const [dbBadges, setDbBadges] = useState<{ badge_id: string; earned_at: string; badges: { name: string; description: string; icon: string; rarity: string } }[]>([])
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -327,7 +342,7 @@ export default function VerPerfilPage() {
     // CORRECAO: NUNCA selecionar lat/lng/cep/rua/bairro em selects publicos
     const { data: profileData } = await supabase
       .from('profiles')
-      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_back, photo_best, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, highlight_tags')
+      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_back, photo_best, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, highlight_tags, status_temp, status_temp_expires_at')
       .eq('id', profileId)
       .single()
 
@@ -367,6 +382,13 @@ export default function VerPerfilPage() {
       .eq('id', profileId)
       .single()
     setUserRow(userData)
+
+    // Carrega badges do banco
+    const { data: badgesData } = await supabase
+      .from('user_badges')
+      .select('badge_id, earned_at, badges(name, description, icon, rarity)')
+      .eq('user_id', profileId)
+    setDbBadges((badgesData as any) ?? [])
 
     if (userId) {
       const { data: viewerSub } = await supabase
@@ -543,16 +565,27 @@ export default function VerPerfilPage() {
         )}
 
         {/* StatusPills flutuantes */}
-        {statusPills.length > 0 && (
-          <div style={{ position: 'absolute', bottom: '106px', left: '16px', zIndex: 10, display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-            {statusPills.map((pill, i) => (
-              <span key={i} style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, backgroundColor: pill.bg, color: pill.color, backdropFilter: 'blur(8px)', border: `1px solid ${pill.color}33`, letterSpacing: '0.01em', fontFamily: 'var(--font-jakarta)' }}>
-                {pill.label === 'Online agora' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: pill.color, marginRight: '5px', display: 'inline-block' }} />}
-                {pill.label}
-              </span>
-            ))}
-          </div>
-        )}
+        {(() => {
+          const statusTempVivo = profile?.status_temp &&
+            profile?.status_temp_expires_at &&
+            new Date(profile.status_temp_expires_at) > new Date()
+          const todasPills = [...statusPills]
+          return (statusPills.length > 0 || statusTempVivo) ? (
+            <div style={{ position: 'absolute', bottom: '106px', left: '16px', zIndex: 10, display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+              {todasPills.map((pill, i) => (
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, backgroundColor: pill.bg, color: pill.color, backdropFilter: 'blur(8px)', border: `1px solid ${pill.color}33`, letterSpacing: '0.01em', fontFamily: 'var(--font-jakarta)' }}>
+                  {pill.label === 'Online agora' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: pill.color, marginRight: '5px', display: 'inline-block' }} />}
+                  {pill.label}
+                </span>
+              ))}
+              {statusTempVivo && (
+                <span style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, backgroundColor: 'rgba(96,165,250,0.18)', color: '#60a5fa', backdropFilter: 'blur(8px)', border: '1px solid rgba(96,165,250,0.30)', letterSpacing: '0.01em', fontFamily: 'var(--font-jakarta)', gap: 4 }}>
+                  {STATUS_TEMP_LABELS[profile.status_temp as string] ?? profile.status_temp}
+                </span>
+              )}
+            </div>
+          ) : null
+        })()}
 
         {/* Overlay nome na foto */}
         <div style={{ position: 'absolute', bottom: '24px', left: '20px', right: '20px', zIndex: 10 }}>
@@ -643,6 +676,23 @@ export default function VerPerfilPage() {
               </button>
             ))}
           </div>
+
+          {/* Badges do banco (fundador, pioneiro, etc) */}
+          {dbBadges.length > 0 && (
+            <div style={{ marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+              {dbBadges.map(ub => (
+                <span key={ub.badge_id} title={ub.badges?.description} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 5,
+                  padding: '5px 10px', borderRadius: 100, fontSize: 12, fontWeight: 600,
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)',
+                  color: 'rgba(248,249,250,0.75)',
+                }}>
+                  <span>{ub.badges?.icon}</span>
+                  <span>{ub.badges?.name}</span>
+                </span>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Stats rapidos */}
