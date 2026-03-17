@@ -708,9 +708,9 @@ export default function Perfil() {
         {label} {obrigatorio && <span style={{ color: 'var(--accent)' }}>*</span>}
       </p>
       <select value={value} onChange={e => onChange(e.target.value)} style={{
-        backgroundColor: 'var(--white)', border: '1px solid var(--border)', borderRadius: '12px',
-        padding: '12px 16px', color: value ? 'var(--text)' : 'var(--muted)',
-        fontFamily: 'var(--font-jakarta)', fontSize: '15px', width: '100%', outline: 'none'
+        backgroundColor: '#13161F', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px',
+        padding: '12px 16px', color: value ? '#F8F9FA' : 'rgba(248,249,250,0.30)',
+        fontFamily: 'var(--font-jakarta)', fontSize: '15px', width: '100%', outline: 'none', colorScheme: 'dark'
       }}>
         <option value="">Selecione</option>
         {options.map(o => <option key={o}>{o}</option>)}
@@ -719,9 +719,9 @@ export default function Perfil() {
   )
 
   const inputStyle: React.CSSProperties = {
-    backgroundColor: 'var(--white)', border: '1px solid var(--border)', borderRadius: '12px',
-    padding: '12px 16px', color: 'var(--text)', fontFamily: 'var(--font-jakarta)',
-    fontSize: '15px', width: '100%', outline: 'none', boxSizing: 'border-box'
+    backgroundColor: '#13161F', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px',
+    padding: '12px 16px', color: '#F8F9FA', fontFamily: 'var(--font-jakarta)',
+    fontSize: '15px', width: '100%', outline: 'none', boxSizing: 'border-box', colorScheme: 'dark'
   }
 
   const Progresso = () => (
@@ -860,7 +860,7 @@ export default function Perfil() {
                   <input type="text" placeholder="Nome da rua, avenida..." value={buscaRua}
                     onChange={e => { setBuscaRua(e.target.value); if (e.target.value.length >= 4) buscarPorRua(e.target.value, estadoBusca) }}
                     style={inputStyle} />
-                  <select value={estadoBusca} onChange={e => { setEstadoBusca(e.target.value); if (buscaRua.length >= 4) buscarPorRua(buscaRua, e.target.value) }} style={{ backgroundColor: 'var(--white)', border: '1px solid var(--border)', borderRadius: '12px', padding: '14px 10px', color: 'var(--text)', fontFamily: 'var(--font-jakarta)', fontSize: '15px', width: '72px', outline: 'none' }}>
+                  <select value={estadoBusca} onChange={e => { setEstadoBusca(e.target.value); if (buscaRua.length >= 4) buscarPorRua(buscaRua, e.target.value) }} style={{ backgroundColor: '#13161F', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '14px 10px', color: '#F8F9FA', fontFamily: 'var(--font-jakarta)', fontSize: '15px', width: '72px', outline: 'none', colorScheme: 'dark' }}>
                     <option value="">UF</option>
                     {['AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG','PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'].map(uf => <option key={uf}>{uf}</option>)}
                   </select>
