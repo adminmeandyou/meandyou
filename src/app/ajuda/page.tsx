@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, HelpCircle, ChevronDown, ChevronUp, Search, MessageCircle } from 'lucide-react'
+import { ArrowLeft, HelpCircle, ChevronDown, ChevronUp, Search, MessageCircle, FileText, Shield } from 'lucide-react'
+import Link from 'next/link'
 
 type FAQ = { pergunta: string; resposta: string; categoria: string }
 
@@ -10,86 +11,91 @@ const FAQS: FAQ[] = [
   // Conta
   {
     categoria: 'Conta',
-    pergunta: 'Como faço para verificar minha identidade?',
-    resposta: 'Após o cadastro, acesse a tela de verificação e siga o processo de liveness detection com sua câmera. Após enviar, nossa equipe aprova em até 24h. A verificação é obrigatória para usar o app.',
+    pergunta: 'Como faco para verificar minha identidade?',
+    resposta: 'Apos o cadastro, acesse a tela de verificacao e siga o processo de liveness detection com sua camera. Apos enviar, nossa equipe aprova em ate 24h. A verificacao e obrigatoria para usar o app.',
   },
   {
     categoria: 'Conta',
     pergunta: 'Posso ter mais de uma conta?',
-    resposta: 'Não. Cada CPF só pode estar vinculado a uma conta. Contas duplicadas são removidas automaticamente.',
+    resposta: 'Nao. Cada CPF so pode estar vinculado a uma conta. Contas duplicadas sao removidas automaticamente.',
   },
   {
     categoria: 'Conta',
     pergunta: 'Como altero minha senha?',
-    resposta: 'Na tela de login, clique em "Esqueci minha senha". Você receberá um email com o link para redefinir. O link expira em 30 minutos.',
+    resposta: 'Na tela de login, clique em "Esqueci minha senha". Voce recebera um email com o link para redefinir. O link expira em 30 minutos.',
   },
   {
     categoria: 'Conta',
     pergunta: 'Como excluo minha conta?',
-    resposta: 'Acesse Configurações → Excluir conta. Você precisará confirmar sua senha. Todos os seus dados serão removidos permanentemente em conformidade com a LGPD. Esta ação não pode ser desfeita.',
+    resposta: 'Acesse Configuracoes > Excluir conta. Voce precisara confirmar sua senha. Todos os seus dados serao removidos permanentemente em conformidade com a LGPD. Esta acao nao pode ser desfeita.',
   },
   // Planos
   {
     categoria: 'Planos',
-    pergunta: 'Qual a diferença entre os planos?',
-    resposta: 'Essencial: 5 curtidas/dia, 1 ticket de roleta. Plus: 30 curtidas/dia, ver quem curtiu, área de destaques, 2 tickets/dia. Black: curtidas ilimitadas, Backstage exclusivo, 10 SuperCurtidas/dia, suporte prioritário 24h, 3 tickets/dia.',
+    pergunta: 'Qual a diferenca entre os planos?',
+    resposta: 'Essencial: 5 curtidas/dia, 1 ticket de roleta. Plus: 30 curtidas/dia, ver quem curtiu, area de destaques, 2 tickets/dia. Black: curtidas ilimitadas, Backstage exclusivo, 10 SuperCurtidas/dia, suporte prioritario 24h, 3 tickets/dia.',
   },
   {
     categoria: 'Planos',
     pergunta: 'Como cancelo minha assinatura?',
-    resposta: 'O cancelamento é feito diretamente pela plataforma Cakto (processadora de pagamentos). Acesse o email de confirmação da assinatura e clique em "Gerenciar assinatura". Após o cancelamento, o plano fica ativo até o fim do período pago.',
+    resposta: 'O cancelamento e feito diretamente pela plataforma Cakto (processadora de pagamentos). Acesse o email de confirmacao da assinatura e clique em "Gerenciar assinatura". Apos o cancelamento, o plano fica ativo ate o fim do periodo pago.',
   },
   {
     categoria: 'Planos',
     pergunta: 'Posso pedir reembolso?',
-    resposta: 'Assinaturas não são reembolsáveis após ativação. Compras avulsas (SuperLikes, Boosts etc.) também não têm reembolso. Em caso de cobrança indevida, entre em contato pelo suporte.',
+    resposta: 'Assinaturas nao sao reembolsaveis apos ativacao. Compras avulsas (fichas, SuperLikes, Boosts etc.) tambem nao tem reembolso. Em caso de cobranca indevida, entre em contato pelo suporte.',
   },
   // Funcionalidades
   {
     categoria: 'Funcionalidades',
-    pergunta: 'O que é o Boost?',
-    resposta: 'O Boost coloca seu perfil em destaque por 30 minutos na busca da sua região, aumentando sua visibilidade. Plano Black pode ter até 2 Boosts ativos ao mesmo tempo.',
+    pergunta: 'O que e o Boost?',
+    resposta: 'O Boost coloca seu perfil em destaque por 30 minutos na busca da sua regiao, aumentando sua visibilidade. Plano Black pode ter ate 2 Boosts ativos ao mesmo tempo.',
   },
   {
     categoria: 'Funcionalidades',
-    pergunta: 'O que é a Lupa?',
-    resposta: 'A Lupa revela um perfil borrado na área de Destaques, permitindo ver quem é a pessoa antes de curtir. Você ganha lupas pelo calendário de streak, roleta ou comprando na loja.',
+    pergunta: 'O que e a Lupa?',
+    resposta: 'A Lupa revela um perfil borrado na area de Destaques, permitindo ver quem e a pessoa antes de curtir. Voce ganha lupas pelo calendario de streak, roleta ou comprando na loja.',
   },
   {
     categoria: 'Funcionalidades',
     pergunta: 'Como funciona o streak?',
-    resposta: 'Entre no app todo dia para manter sua sequência. A cada dia você ganha um prêmio do calendário mensal. Se ficar mais de 7 dias sem entrar, o streak reseta para zero.',
+    resposta: 'Entre no app todo dia para manter sua sequencia. A cada dia voce ganha um premio do calendario mensal. Se ficar mais de 7 dias sem entrar, o streak reseta para zero.',
   },
   {
     categoria: 'Funcionalidades',
     pergunta: 'Como funciona a roleta?',
-    resposta: 'Use tickets para girar a roleta e ganhar prêmios (SuperLikes, Boosts, Lupas e mais). Você ganha tickets todo dia só por entrar no app, pelo calendário de streak e ao indicar amigos.',
+    resposta: 'Use tickets para girar a roleta e ganhar premios (SuperLikes, Boosts, Lupas e mais). Voce ganha tickets todo dia so por entrar no app, pelo calendario de streak e ao indicar amigos.',
   },
   {
     categoria: 'Funcionalidades',
-    pergunta: 'O que é o Backstage?',
-    resposta: 'Área exclusiva para assinantes Black. Nela você vê perfis de usuários Essencial e Plus que fizeram um pedido de conexão especial. Ao pagar R$ 15, você acessa o chat com essa pessoa por 30 dias.',
+    pergunta: 'O que e o Backstage?',
+    resposta: 'Area exclusiva para assinantes Black. Nela voce ve perfis de usuarios Essencial e Plus que fizeram um pedido de conexao especial. Ao pagar R$ 15, voce acessa o chat com essa pessoa por 30 dias.',
   },
   {
     categoria: 'Funcionalidades',
     pergunta: 'Como funciona a videochamada?',
-    resposta: 'Disponível para matches confirmados. Plano Essencial: 60min/dia. Plus: 300min/dia. Black: 600min/dia. Os minutos são descontados automaticamente ao encerrar a chamada.',
-  },
-  // Segurança
-  {
-    categoria: 'Segurança',
-    pergunta: 'Como denuncio um usuário?',
-    resposta: 'Acesse o perfil da pessoa, role até o final e toque em "Denunciar". Nossa equipe analisa todas as denúncias e pode banir o usuário permanentemente.',
+    resposta: 'Disponivel para matches confirmados. Plano Essencial: 60min/dia. Plus: 300min/dia. Black: 600min/dia. Os minutos sao descontados automaticamente ao encerrar a chamada.',
   },
   {
-    categoria: 'Segurança',
-    pergunta: 'Como bloqueio alguém?',
-    resposta: 'No perfil da pessoa ou na conversa, toque no menu (⋮) e selecione "Bloquear". O usuário não será notificado e não poderá mais ver seu perfil ou enviar mensagens.',
+    categoria: 'Funcionalidades',
+    pergunta: 'O que sao fichas?',
+    resposta: 'Fichas sao a moeda do MeAndYou. Voce compra pacotes de fichas e usa para adquirir itens na loja, como SuperLikes, Boosts, Lupas e outros recursos especiais.',
+  },
+  // Seguranca
+  {
+    categoria: 'Seguranca',
+    pergunta: 'Como denuncio um usuario?',
+    resposta: 'Acesse o perfil da pessoa, role ate o final e toque em "Denunciar". Nossa equipe analisa todas as denuncias e pode banir o usuario permanentemente.',
   },
   {
-    categoria: 'Segurança',
-    pergunta: 'Meus dados são seguros?',
-    resposta: 'Sim. Usamos verificação biométrica para garantir que cada conta pertence a uma pessoa real. Seus dados são armazenados com segurança e nunca vendidos a terceiros. Para mais informações, consulte nossa Política de Privacidade.',
+    categoria: 'Seguranca',
+    pergunta: 'Como bloqueio alguem?',
+    resposta: 'No perfil da pessoa ou na conversa, toque no menu e selecione "Bloquear". O usuario nao sera notificado e nao podera mais ver seu perfil ou enviar mensagens.',
+  },
+  {
+    categoria: 'Seguranca',
+    pergunta: 'Meus dados sao seguros?',
+    resposta: 'Sim. Usamos verificacao biometrica para garantir que cada conta pertence a uma pessoa real. Seus dados sao armazenados com seguranca e nunca vendidos a terceiros. Para mais informacoes, consulte nossa Politica de Privacidade.',
   },
 ]
 
@@ -108,43 +114,54 @@ export default function AjudaPage() {
   })
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-24">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-          <ArrowLeft size={18} className="text-white/60" />
+      {/* Header */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button
+          onClick={() => router.back()}
+          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+        >
+          <ArrowLeft size={18} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
-        <div className="flex-1">
-          <h1 className="font-fraunces text-xl text-white">Central de Ajuda</h1>
-          <p className="text-white/30 text-xs">Perguntas frequentes</p>
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>Central de Ajuda</h1>
+          <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Perguntas frequentes</p>
         </div>
       </header>
 
-      <div className="px-5 pt-5 space-y-4">
+      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
         {/* Busca */}
-        <div className="relative">
-          <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20" />
+        <div style={{ position: 'relative' }}>
+          <Search size={16} color="rgba(248,249,250,0.25)" strokeWidth={1.5} style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)' }} />
           <input
             type="text"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar dúvida…"
-            className="w-full bg-white/5 border border-white/10 rounded-2xl pl-10 pr-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-[#b8f542]/40"
+            placeholder="Buscar duvida..."
+            style={{
+              width: '100%', boxSizing: 'border-box',
+              backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+              borderRadius: '14px', paddingLeft: '40px', paddingRight: '16px', paddingTop: '12px', paddingBottom: '12px',
+              color: 'var(--text)', fontSize: '14px', outline: 'none', fontFamily: 'var(--font-jakarta)',
+            }}
           />
         </div>
 
         {/* Filtro categorias */}
-        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px', scrollbarWidth: 'none' }}>
           {CATEGORIAS.map((cat) => (
             <button
               key={cat}
               onClick={() => setCategoriaAtiva(cat)}
-              className={`px-3 py-1.5 rounded-full text-xs border whitespace-nowrap transition shrink-0 ${
-                categoriaAtiva === cat
-                  ? 'bg-[#b8f542]/20 border-[#b8f542]/40 text-[#b8f542] font-semibold'
-                  : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
-              }`}
+              style={{
+                padding: '6px 14px', borderRadius: '100px', fontSize: '12px', border: '1px solid',
+                whiteSpace: 'nowrap', flexShrink: 0, cursor: 'pointer', fontFamily: 'var(--font-jakarta)', fontWeight: 600, transition: 'all 0.15s',
+                backgroundColor: categoriaAtiva === cat ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.04)',
+                borderColor: categoriaAtiva === cat ? 'rgba(225,29,72,0.35)' : 'rgba(255,255,255,0.08)',
+                color: categoriaAtiva === cat ? 'var(--accent)' : 'rgba(248,249,250,0.40)',
+              }}
             >
               {cat}
             </button>
@@ -153,31 +170,33 @@ export default function AjudaPage() {
 
         {/* Lista FAQ */}
         {filtradas.length === 0 ? (
-          <div className="flex flex-col items-center py-16 gap-3 text-white/20">
-            <HelpCircle size={32} />
-            <p className="text-sm text-center">Nenhuma dúvida encontrada.<br />Tente outros termos ou fale com o suporte.</p>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '64px 0', gap: '12px', color: 'var(--muted)' }}>
+            <HelpCircle size={32} strokeWidth={1.5} color="rgba(248,249,250,0.20)" />
+            <p style={{ fontSize: '14px', textAlign: 'center', color: 'rgba(248,249,250,0.30)', margin: 0 }}>
+              Nenhuma duvida encontrada.<br />Tente outros termos ou fale com o suporte.
+            </p>
           </div>
         ) : (
-          <div className="space-y-2">
-            {filtradas.map((faq, i) => {
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            {filtradas.map((faq) => {
               const index = FAQS.indexOf(faq)
               const isOpen = aberta === index
               return (
-                <div key={index} className="rounded-2xl border border-white/8 overflow-hidden">
+                <div key={index} style={{ borderRadius: '16px', border: `1px solid ${isOpen ? 'rgba(225,29,72,0.20)' : 'var(--border)'}`, overflow: 'hidden', backgroundColor: isOpen ? 'rgba(225,29,72,0.04)' : 'rgba(255,255,255,0.02)', transition: 'all 0.15s' }}>
                   <button
                     onClick={() => setAberta(isOpen ? null : index)}
-                    className="w-full flex items-center justify-between px-4 py-4 text-left hover:bg-white/3 transition"
+                    style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', textAlign: 'left', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', gap: '12px' }}
                   >
-                    <span className={`text-sm font-semibold pr-4 ${isOpen ? 'text-white' : 'text-white/70'}`}>
+                    <span style={{ fontSize: '14px', fontWeight: 600, color: isOpen ? 'var(--text)' : 'rgba(248,249,250,0.75)', fontFamily: 'var(--font-jakarta)', flex: 1 }}>
                       {faq.pergunta}
                     </span>
                     {isOpen
-                      ? <ChevronUp size={16} className="text-[#b8f542] shrink-0" />
-                      : <ChevronDown size={16} className="text-white/20 shrink-0" />
+                      ? <ChevronUp size={16} color="var(--accent)" strokeWidth={1.5} style={{ flexShrink: 0 }} />
+                      : <ChevronDown size={16} color="rgba(248,249,250,0.25)" strokeWidth={1.5} style={{ flexShrink: 0 }} />
                     }
                   </button>
                   {isOpen && (
-                    <div className="px-4 pb-4 text-white/50 text-sm leading-relaxed border-t border-white/5 pt-3">
+                    <div style={{ padding: '0 16px 16px', color: 'var(--muted)', fontSize: '14px', lineHeight: 1.7, borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '12px' }}>
                       {faq.resposta}
                     </div>
                   )}
@@ -188,17 +207,30 @@ export default function AjudaPage() {
         )}
 
         {/* CTA suporte */}
-        <div className="rounded-2xl p-4 bg-white/3 border border-white/8 flex items-center gap-3">
-          <MessageCircle size={20} className="text-white/30 shrink-0" />
-          <div className="flex-1">
-            <p className="text-white/60 text-sm">Não encontrou o que precisava?</p>
+        <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: 'var(--accent-soft)', border: '1px solid var(--accent-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <MessageCircle size={18} color="var(--accent)" strokeWidth={1.5} />
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ color: 'var(--text)', fontSize: '14px', fontWeight: 600, margin: 0 }}>Nao encontrou o que precisava?</p>
+            <p style={{ color: 'var(--muted)', fontSize: '12px', margin: '2px 0 0' }}>Nossa equipe responde em ate 24h</p>
           </div>
           <a
             href="/suporte"
-            className="px-3 py-2 rounded-xl bg-[#b8f542]/10 border border-[#b8f542]/30 text-[#b8f542] text-xs font-bold hover:bg-[#b8f542]/20 transition whitespace-nowrap"
+            style={{ padding: '8px 16px', borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', fontSize: '13px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', fontFamily: 'var(--font-jakarta)', flexShrink: 0 }}
           >
-            Falar com suporte
+            Abrir chamado
           </a>
+        </div>
+
+        {/* Links legais */}
+        <div style={{ display: 'flex', gap: '12px', paddingBottom: '8px' }}>
+          <Link href="/termos" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--muted)', textDecoration: 'none' }}>
+            <FileText size={13} strokeWidth={1.5} /> Termos de uso
+          </Link>
+          <Link href="/privacidade" style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--muted)', textDecoration: 'none' }}>
+            <Shield size={13} strokeWidth={1.5} /> Privacidade
+          </Link>
         </div>
 
       </div>

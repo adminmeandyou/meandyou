@@ -17,7 +17,7 @@ export default function Termos() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: 'var(--white)',
+        backgroundColor: 'var(--bg)',
       }}>
         <Link href="/" style={{
           fontFamily: 'var(--font-fraunces)',
@@ -144,7 +144,7 @@ function Section({ titulo, children }: { titulo: string; children: React.ReactNo
       </h2>
       <p style={{
         fontSize: '15px',
-        color: '#444',
+        color: 'var(--muted)',
         lineHeight: 1.8,
       }}>
         {children}

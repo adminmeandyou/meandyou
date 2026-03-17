@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import type { Metadata } from 'next'
+import { FileText } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Política de Privacidade — MeAndYou',
@@ -17,7 +18,7 @@ export default function Privacidade() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: 'var(--white)',
+        backgroundColor: 'var(--bg)',
       }}>
         <Link href="/" style={{
           fontFamily: 'var(--font-fraunces)',
@@ -51,14 +52,14 @@ export default function Privacidade() {
 
         {/* Resumo destacado */}
         <div style={{
-          backgroundColor: 'var(--accent-light)',
-          border: '1px solid rgba(46,196,160,0.3)',
+          backgroundColor: 'rgba(225,29,72,0.06)',
+          border: '1px solid rgba(225,29,72,0.20)',
           borderRadius: '16px',
           padding: '20px 24px',
           marginBottom: '48px',
         }}>
-          <p style={{ fontSize: '14px', color: 'var(--accent-dark)', fontWeight: 700, marginBottom: '8px' }}>
-            📋 Resumo rápido
+          <p style={{ fontSize: '14px', color: 'var(--accent)', fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <FileText size={14} /> Resumo rapido
           </p>
           <p style={{ fontSize: '14px', color: 'var(--text)', lineHeight: 1.7, margin: 0 }}>
             Coletamos apenas os dados necessários para o funcionamento da plataforma. Não vendemos seus dados.
@@ -201,7 +202,7 @@ function Section({ titulo, children }: { titulo: string; children: React.ReactNo
       }}>
         {titulo}
       </h2>
-      <p style={{ fontSize: '15px', color: '#444', lineHeight: 1.8 }}>
+      <p style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: 1.8 }}>
         {children}
       </p>
     </section>

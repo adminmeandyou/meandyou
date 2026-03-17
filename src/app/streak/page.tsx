@@ -52,7 +52,19 @@ export default function StreakPage() {
       supabase.from('streak_calendar').select('day_number, reward_type, reward_amount, claimed').eq('user_id', user!.id).order('day_number', { ascending: true }),
     ])
     setStreak(st ?? { current_streak: 0, longest_streak: 0, last_login_date: null })
-    setCalendar(cal ?? [])
+
+    // Gerar calendário automaticamente se ainda não existe
+    if (!cal || cal.length === 0) {
+      await supabase.rpc('generate_streak_calendar', { p_user_id: user!.id })
+      const { data: calNovo } = await supabase
+        .from('streak_calendar')
+        .select('day_number, reward_type, reward_amount, claimed')
+        .eq('user_id', user!.id)
+        .order('day_number', { ascending: true })
+      setCalendar(calNovo ?? [])
+    } else {
+      setCalendar(cal)
+    }
     setLoading(false)
   }
 
@@ -192,22 +204,26 @@ export default function StreakPage() {
             )}
           </div>
 
-          {/* Legenda de fases */}
-          <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
-            <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '10px' }}>Prêmios por fase</p>
-            {[
-              { range: 'Dias 1–6',   desc: 'Tickets (maioria), item básico ocasional',      color: 'rgba(248,249,250,0.40)' },
-              { range: 'Dias 7–13',  desc: 'Mais tickets, primeiros itens especiais',       color: '#3b82f6' },
-              { range: 'Dias 14–20', desc: 'Itens médios com mais frequência',              color: '#b8f542' },
-              { range: 'Dias 21–29', desc: 'Itens bons aparecem',                           color: '#8b5cf6' },
-              { range: 'Dias 30–60', desc: 'Prêmios máximos (até 10 itens do mesmo tipo)', color: '#f97316' },
-            ].map((f) => (
-              <div key={f.range} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '6px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 700, color: f.color, minWidth: '72px', flexShrink: 0 }}>{f.range}</span>
-                <span style={{ fontSize: '11px', color: 'var(--muted)' }}>{f.desc}</span>
+          {/* Motivacao diaria */}
+          {(() => {
+            const msgs = [
+              { min: 0,  max: 1,  text: 'Primeiro passo dado! Volte amanha para manter sua sequencia.', color: 'rgba(248,249,250,0.40)' },
+              { min: 2,  max: 3,  text: 'Voce esta construindo um habito! Continue assim.', color: '#3b82f6' },
+              { min: 4,  max: 6,  text: 'Quase uma semana! Sua dedicacao esta rendendo frutos.', color: '#3b82f6' },
+              { min: 7,  max: 13, text: 'Uma semana completa! Voce esta entrando no ritmo.', color: '#ec4899' },
+              { min: 14, max: 20, text: 'Duas semanas! Voce e um usuario dedicado — os melhores premios estao chegando.', color: '#b8f542' },
+              { min: 21, max: 29, text: 'Tres semanas seguidas! Poucos chegam ate aqui. Continue!', color: '#8b5cf6' },
+              { min: 30, max: 60, text: 'Um mes ou mais! Voce e lendario no MeAndYou. Os premios refletem isso.', color: '#f97316' },
+              { min: 61, max: 999, text: 'Nivel maximo desbloqueado. Voce e parte do grupo mais dedicado do app!', color: '#F59E0B' },
+            ]
+            const msg = msgs.find(m => currentDay >= m.min && currentDay <= m.max) ?? msgs[0]
+            return (
+              <div style={{ borderRadius: '16px', padding: '16px 18px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: msg.color, flexShrink: 0, marginTop: '5px' }} />
+                <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>{msg.text}</p>
               </div>
-            ))}
-          </div>
+            )
+          })()}
 
           {/* CTA roleta */}
           <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'rgba(234,179,8,0.05)', border: '1px solid rgba(234,179,8,0.20)', display: 'flex', alignItems: 'center', gap: '12px' }}>

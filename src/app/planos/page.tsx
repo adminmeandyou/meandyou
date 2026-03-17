@@ -134,8 +134,13 @@ export default function PlanosPage() {
         </p>
       </div>
 
+      {/* Hint de arraste */}
+      <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(248,249,250,0.30)', marginBottom: '8px', letterSpacing: '0.05em' }}>
+        Arraste para ver todos os planos
+      </p>
+
       {/* Cards — scroll horizontal com snap */}
-      <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '4px 20px 16px', scrollbarWidth: 'none' }}>
+      <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '4px 20px 16px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
         {PLANS.map((plan) => {
           const Icon = plan.icon
           const isActive = currentPlan === plan.id

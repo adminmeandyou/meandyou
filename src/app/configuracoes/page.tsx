@@ -210,7 +210,7 @@ export default function ConfiguracoesPage() {
   }
 
   const planLabel = profile?.plan === 'black' ? 'Black' : profile?.plan === 'plus' ? 'Plus' : 'Essencial'
-  const planCor = profile?.plan === 'black' ? '#c9a84c' : profile?.plan === 'plus' ? 'var(--accent)' : 'rgba(255,255,255,0.4)'
+  const planCor = profile?.plan === 'black' ? '#F59E0B' : profile?.plan === 'plus' ? 'var(--accent)' : 'rgba(255,255,255,0.4)'
 
   if (loading) {
     return (

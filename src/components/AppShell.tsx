@@ -77,7 +77,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div
             style={{
               width: '100%',
-              maxWidth: 430,
               height: '100vh',
               position: 'relative',
               backgroundColor: 'var(--bg)',
@@ -113,29 +112,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* Painel direito — reservado para Chat/Matches em lg+ */}
-        <div
-          className="hidden lg:flex"
-          style={{
-            flex: '1 1 0',
-            minWidth: 280,
-            maxWidth: 400,
-            borderLeft: '1px solid var(--border)',
-            backgroundColor: 'var(--bg-card)',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {/* Placeholder — será preenchido na Fase 4+ */}
-          <span
-            style={{
-              fontSize: 13,
-              color: 'var(--muted-2)',
-              fontFamily: 'var(--font-jakarta)',
-            }}
-          />
-        </div>
       </div>
     </AppHeaderProvider>
     </ToastProvider>

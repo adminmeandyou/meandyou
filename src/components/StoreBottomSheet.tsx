@@ -25,7 +25,7 @@ const PACKAGES: Record<StoreItemType, { title: string; icon: React.ReactNode; it
   },
   boost: {
     title: 'Boosts',
-    icon: <Zap size={18} className="text-[#b8f542]" />,
+    icon: <Zap size={18} className="text-white" />,
     items: [
       { label: '1 Boost',   description: '30 min em destaque na sua região', price: 'R$ 6',  url: 'https://pay.cakto.com.br/mdpn9zu' },
       { label: '5 Boosts',  description: 'Melhor custo-benefício',           price: 'R$ 25', url: 'https://pay.cakto.com.br/vyaecjn', highlight: true },
@@ -123,7 +123,7 @@ export function StoreBottomSheet({ type, onClose }: StoreBottomSheetProps) {
               onClick={onClose}
               className={`flex items-center gap-4 p-4 rounded-2xl border transition active:scale-[0.98] ${
                 item.highlight
-                  ? 'bg-[#b8f542]/5 border-[#b8f542]/30'
+                  ? 'bg-[#E11D48]/5 border-[#E11D48]/30'
                   : 'bg-white/3 border-white/8'
               }`}
             >
@@ -131,14 +131,14 @@ export function StoreBottomSheet({ type, onClose }: StoreBottomSheetProps) {
                 <div className="flex items-center gap-2 flex-wrap">
                   <p className="text-white font-semibold text-sm">{item.label}</p>
                   {item.highlight && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-[#b8f542]/20 text-[#b8f542] font-semibold">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-[#E11D48]/20 text-[#E11D48] font-semibold">
                       Popular
                     </span>
                   )}
                 </div>
                 <p className="text-white/30 text-xs mt-0.5 truncate">{item.description}</p>
               </div>
-              <span className={`font-bold text-base shrink-0 ${item.highlight ? 'text-[#b8f542]' : 'text-white'}`}>
+              <span className={`font-bold text-base shrink-0 ${item.highlight ? 'text-white' : 'text-white'}`}>
                 {item.price}
               </span>
             </a>
