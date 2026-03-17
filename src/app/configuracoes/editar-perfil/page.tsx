@@ -41,6 +41,7 @@ interface ProfileData {
   status_temp_expires_at: string | null
   profile_question: string | null
   profile_question_answer: string | null
+  blur_photos: boolean
 }
 
 // ─── Utils de conversão filters → estado UI ──────────────────────────────────
@@ -135,7 +136,7 @@ export default function EditarPerfilPage() {
       setUserId(user.id)
       const [{ data: p }, { data: f }] = await Promise.all([
         supabase.from('profiles')
-          .select('bio, photo_face, photo_body, photo_side, photo_back, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at, profile_question, profile_question_answer')
+          .select('bio, photo_face, photo_body, photo_side, photo_back, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at, profile_question, profile_question_answer, blur_photos')
           .eq('id', user.id).single(),
         supabase.from('filters').select('*').eq('user_id', user.id).single(),
       ])
@@ -224,6 +225,57 @@ export default function EditarPerfilPage() {
               profileData={profileData}
               onSaved={(updated) => setProfileData(prev => prev ? { ...prev, ...updated } : prev)}
             />
+          )}
+        </Acordeao>
+
+        {/* ── Revelação gradual de fotos ── */}
+        <Acordeao
+          id="revelacao-gradual"
+          titulo="Revelação gradual"
+          badge="Livre"
+          badgeCor="#10b981"
+          aberto={secaoAberta === 'revelacao-gradual'}
+          onToggle={() => toggle('revelacao-gradual')}
+        >
+          {userId && profileData !== null && (
+            <div style={{ padding: '4px 0 12px' }}>
+              <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.55)', lineHeight: 1.6, marginBottom: 16 }}>
+                Quando ativado, suas fotos aparecem borradas para quem ainda nao conversou com voce.
+                A medida que trocam mensagens, as fotos vao sendo reveladas progressivamente.
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16, fontSize: 12, color: 'rgba(248,249,250,0.40)' }}>
+                <span>0 msg — foto totalmente borrada</span>
+                <span>5 msg — foto pela metade revelada</span>
+                <span>10 msg — foto completamente visivel</span>
+                <span>20 msg — perfil completo revelado</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px' }}>
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: '#F8F9FA', margin: '0 0 2px' }}>Ativar revelacao gradual</p>
+                  <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.40)', margin: 0 }}>
+                    {profileData.blur_photos ? 'Fotos borradas para desconhecidos' : 'Fotos visiveis para todos'}
+                  </p>
+                </div>
+                <button
+                  onClick={async () => {
+                    const novo = !profileData.blur_photos
+                    setProfileData(prev => prev ? { ...prev, blur_photos: novo } : prev)
+                    await supabase.from('profiles').update({ blur_photos: novo }).eq('id', userId)
+                  }}
+                  style={{
+                    width: 44, height: 24, borderRadius: 100, border: 'none', cursor: 'pointer',
+                    backgroundColor: profileData.blur_photos ? '#E11D48' : 'rgba(255,255,255,0.12)',
+                    position: 'relative', transition: 'background-color 0.2s', flexShrink: 0,
+                  }}
+                >
+                  <span style={{
+                    position: 'absolute', top: 2, left: profileData.blur_photos ? 22 : 2,
+                    width: 20, height: 20, borderRadius: '50%', backgroundColor: '#fff',
+                    transition: 'left 0.2s', display: 'block',
+                  }} />
+                </button>
+              </div>
+            </div>
           )}
         </Acordeao>
 
