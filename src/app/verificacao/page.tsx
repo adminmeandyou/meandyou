@@ -24,6 +24,7 @@ function Verificacao() {
   const [status, setStatus] = useState<Status>('loading')
   const [mensagem, setMensagem] = useState('')
   const [emailEnviado, setEmailEnviado] = useState(false)
+  const [erroEmail, setErroEmail] = useState('')
   const [userId, setUserId] = useState('')
   const [tokenAtual, setTokenAtual] = useState('')
 
@@ -181,13 +182,31 @@ function Verificacao() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
     const { data } = await supabase.from('users').select('verified, email').eq('id', user.id).single()
-    if (data?.verified) { router.push('/dashboard'); return }
+    if (data?.verified) { router.push('/busca'); return }
     setStatus('aguardando')
+
+    // Checar se já existe token válido antes de gerar novo — preserva rate limit
+    const agora = new Date().toISOString()
+    const { data: tokenExistente } = await supabase
+      .from('verification_tokens')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('used', false)
+      .gte('expires_at', agora)
+      .maybeSingle()
+
+    if (tokenExistente) {
+      // Email já foi enviado antes e o link ainda é válido — não gerar outro
+      setEmailEnviado(true)
+      return
+    }
+
     await enviarEmailVerificacao(user.id, data?.email || user.email || '')
   }
 
   const enviarEmailVerificacao = async (uid: string, email: string) => {
     if (emailEnviado) return
+    setErroEmail('')
     try {
       const { data: profile } = await supabase.from('profiles').select('name').eq('id', uid).single()
       const res = await fetch('/api/enviar-verificacao', {
@@ -195,8 +214,15 @@ function Verificacao() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId: uid, email, nome: profile?.name || '' }),
       })
-      if (res.ok) setEmailEnviado(true)
-    } catch (e) { console.error(e) }
+      if (res.ok) {
+        setEmailEnviado(true)
+      } else {
+        const d = await res.json().catch(() => ({}))
+        setErroEmail(d.error || 'Erro ao enviar email. Tente novamente.')
+      }
+    } catch {
+      setErroEmail('Erro de conexão. Tente novamente.')
+    }
   }
 
   const reenviarEmail = async () => {
@@ -494,23 +520,31 @@ function Verificacao() {
     if (tipoDoc !== 'cpf_doc' && !docVerso) { setErroForm('Anexe ou fotografe o verso do documento.'); return }
     if (!selfieFile) { setErroForm('Conclua a verificação de rosto antes de continuar.'); return }
     setStatus('enviando')
-    try {
-      // Upload dos arquivos para o bucket documentos (privado)
-      await uploadArquivo(docFrente, `${userId}/frente.jpg`)
-      if (docVerso) await uploadArquivo(docVerso, `${userId}/verso.jpg`)
-      await uploadArquivo(selfieFile, `${userId}/selfie.jpg`)
 
-      // ✅ CORREÇÃO: CPF salvo via API route com service role (não mais anon key no client)
-      // Antes: supabase.from('users').update({ cpf }) na page → RLS bloqueava sem sessão
-      // Chama a API que seta verified = true, salva CPF e atualiza profile_completeness (+15pts)
-      const res = await fetch('/api/confirmar-verificacao', {
+    // Timeout de 60s por operação — evita spinner infinito em conexões instáveis
+    // function declaration (não arrow) para evitar parse ambíguo de <T> como JSX em .tsx
+    function comTimeout<T>(p: Promise<T>): Promise<T> {
+      return Promise.race([
+        p,
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Tempo esgotado. Verifique sua conexão e tente novamente.')), 60000)
+        ),
+      ])
+    }
+
+    try {
+      await comTimeout(uploadArquivo(docFrente, `${userId}/frente.jpg`))
+      if (docVerso) await comTimeout(uploadArquivo(docVerso, `${userId}/verso.jpg`))
+      await comTimeout(uploadArquivo(selfieFile, `${userId}/selfie.jpg`))
+
+      const res = await comTimeout(fetch('/api/confirmar-verificacao', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token: tokenAtual, userId, cpf: cpfLimpo }),
-      })
+      }))
       const data = await res.json()
-      if (data.ok) { setStatus('sucesso'); setTimeout(() => router.push('/dashboard'), 3000) }
-      else { setStatus('erro'); setMensagem('Erro ao confirmar verificação. Tente novamente.') }
+      if (data.ok) { setStatus('sucesso'); setTimeout(() => router.push('/perfil'), 3000) }
+      else { setStatus('erro'); setMensagem(data.error || 'Erro ao confirmar verificação. Tente novamente.') }
     } catch (e: any) {
       setStatus('erro')
       setMensagem(e.message || 'Erro inesperado. Tente novamente.')
@@ -520,12 +554,14 @@ function Verificacao() {
   // ─── Componentes visuais ─────────────────────────────────────────────────────
 
   const card = (children: React.ReactNode) => (
-    <div style={{ backgroundColor: 'var(--white)', borderRadius: '24px', padding: '28px', boxShadow: 'var(--shadow)' }}>{children}</div>
+    <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '24px', padding: '28px', boxShadow: 'var(--shadow)', border: '1px solid var(--border)' }}>{children}</div>
   )
+
+  const totalPassos = tipoDoc === 'cpf_doc' ? 3 : 4
 
   const passos = (passo: number) => (
     <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginBottom: '20px' }}>
-      {[1,2,3,4].map(i => (
+      {Array.from({ length: totalPassos }, (_, i) => i + 1).map(i => (
         <div key={i} style={{ width: i === passo ? '24px' : '8px', height: '8px', borderRadius: '100px', backgroundColor: i <= passo ? 'var(--accent)' : 'var(--border)', transition: 'all 0.3s' }} />
       ))}
     </div>
@@ -643,13 +679,14 @@ function Verificacao() {
             <p style={{ fontSize: '13px', color: 'var(--accent-dark)', fontWeight: '600' }}>📱 Abra o link no celular</p>
             <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>A selfie ao vivo só funciona no celular.</p>
           </div>
+          {erroEmail && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '12px', fontWeight: '600' }}>{erroEmail}</p>}
           {emailEnviado && <button onClick={reenviarEmail} style={{ backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '10px 24px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Reenviar email</button>}
         </>)}
 
         {status === 'dados' && card(<>
           {passos(1)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Seus dados</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '20px' }}>Passo 1 de 4 — CPF e documento</p>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '20px' }}>Passo 1 de {totalPassos} — CPF e documento</p>
           <div style={{ textAlign: 'left', marginBottom: '16px' }}>
             <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>CPF</label>
             <input type="tel" placeholder="000.000.000-00" value={cpf} onChange={e => setCpf(formatarCPF(e.target.value))}
@@ -675,7 +712,7 @@ function Verificacao() {
         {status === 'doc_frente' && card(<>
           {passos(2)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Frente do documento</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 2 de 4 — {tipoDoc === 'rg' ? 'RG' : tipoDoc === 'cnh' ? 'CNH' : 'CPF'} frente</p>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 2 de {totalPassos} — {tipoDoc === 'rg' ? 'RG' : tipoDoc === 'cnh' ? 'CNH' : 'CPF'} frente</p>
           {dicas(['Fundo liso, de preferência branco ou claro', 'Boa iluminação — evite sombras e reflexos', 'Documento inteiro visível, sem cortar bordas', 'Sem acessórios cobrindo o documento', 'Imagem nítida e sem borrão'])}
           {botoesCaptura('frente', modoFrente, setModoFrente, docFrentePreview, docFrente, cameraFrenteAtiva, videoFrenteRef, canvasFrenteRef)}
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
@@ -689,7 +726,7 @@ function Verificacao() {
         {status === 'doc_verso' && card(<>
           {passos(3)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Verso do documento</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 3 de 4 — {tipoDoc === 'rg' ? 'RG' : 'CNH'} verso</p>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 3 de {totalPassos} — {tipoDoc === 'rg' ? 'RG' : 'CNH'} verso</p>
           {dicas(['Fundo liso, de preferência branco ou claro', 'Boa iluminação — evite sombras e reflexos', 'Documento inteiro visível, sem cortar bordas', 'Imagem nítida e sem borrão'])}
           {botoesCaptura('verso', modoVerso, setModoVerso, docVersoPreview, docVerso, cameraVersoAtiva, videoVersoRef, canvasVersoRef)}
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
@@ -701,9 +738,9 @@ function Verificacao() {
         </>)}
 
         {status === 'selfie' && card(<>
-          {passos(4)}
+          {passos(totalPassos)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Verificação facial</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 4 de 4 — Confirmação de que você é uma pessoa real</p>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo {totalPassos} de {totalPassos} — Confirmação de que você é uma pessoa real</p>
 
           {!livnessIniciado && !livenessOk && (
             <>
@@ -757,15 +794,31 @@ function Verificacao() {
                 )}
               </div>
 
-              <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', backgroundColor: '#111', marginBottom: '12px' }}>
-                <video ref={videoSelfieRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '16px', display: cameraSelfieAtiva ? 'block' : 'none' }} />
+              <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', backgroundColor: '#111', marginBottom: '12px', aspectRatio: '3/4' }}>
+                <video ref={videoSelfieRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover', display: cameraSelfieAtiva ? 'block' : 'none' }} />
                 {cameraSelfieAtiva && (
-                  <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '55%', height: '78%', border: '2px dashed rgba(225,29,72,0.8)', borderRadius: '50%', pointerEvents: 'none' }} />
+                  <svg viewBox="0 0 300 400" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
+                    <defs>
+                      <mask id="oval-cutout">
+                        <rect width="300" height="400" fill="white" />
+                        <ellipse cx="150" cy="185" rx="90" ry="120" fill="black" />
+                      </mask>
+                    </defs>
+                    {/* Fundo escurecido fora do oval */}
+                    <rect width="300" height="400" fill="rgba(0,0,0,0.55)" mask="url(#oval-cutout)" />
+                    {/* Borda do oval */}
+                    <ellipse cx="150" cy="185" rx="90" ry="120" fill="none" stroke="rgba(225,29,72,0.9)" strokeWidth="2.5" />
+                    {/* Marcadores de canto */}
+                    <path d="M78 100 Q60 100 60 118" fill="none" stroke="#E11D48" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M222 100 Q240 100 240 118" fill="none" stroke="#E11D48" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M78 270 Q60 270 60 252" fill="none" stroke="#E11D48" strokeWidth="3" strokeLinecap="round" />
+                    <path d="M222 270 Q240 270 240 252" fill="none" stroke="#E11D48" strokeWidth="3" strokeLinecap="round" />
+                  </svg>
                 )}
                 {!cameraSelfieAtiva && (
-                  <div style={{ padding: '40px', textAlign: 'center' }}>
-                    <div style={{ fontSize: '36px' }}>⏳</div>
-                    <p style={{ color: '#aaa', fontSize: '13px', marginTop: '8px' }}>Abrindo câmera...</p>
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
+                    <div style={{ width: '28px', height: '28px', border: '3px solid var(--border)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: '12px' }} />
+                    <p style={{ color: '#aaa', fontSize: '13px' }}>Abrindo câmera...</p>
                   </div>
                 )}
               </div>
@@ -817,10 +870,35 @@ function Verificacao() {
         </div>}
 
         {status === 'sucesso' && card(<>
-          <div style={{ fontSize: '56px', marginBottom: '16px' }}>✅</div>
-          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Documentos enviados!</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7' }}>Seus documentos foram enviados. Bem-vindo(a) ao MeAndYou!<br /><br />Redirecionando...</p>
+          {/* Selo azul de verificação */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+            <div style={{ position: 'relative', width: '88px', height: '88px' }}>
+              <svg viewBox="0 0 88 88" width="88" height="88">
+                <defs>
+                  <linearGradient id="sealGrad" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#2563EB" />
+                    <stop offset="100%" stopColor="#1D4ED8" />
+                  </linearGradient>
+                </defs>
+                {/* Escudo arredondado */}
+                <path d="M44 6 L76 18 L76 44 C76 61 62 75 44 82 C26 75 12 61 12 44 L12 18 Z" fill="url(#sealGrad)" />
+                {/* Brilho superior */}
+                <path d="M44 10 L72 20 L72 42 C72 57 60 70 44 77" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
+                {/* Checkmark */}
+                <polyline points="28,44 38,54 60,32" fill="none" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              {/* Brilho animado */}
+              <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, rgba(37,99,235,0.25) 0%, transparent 70%)', animation: 'pulse 2s ease-in-out infinite' }} />
+            </div>
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', color: 'var(--text)', marginBottom: '8px' }}>Identidade verificada!</h2>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: '100px', padding: '4px 14px', marginBottom: '16px' }}>
+            <svg width="12" height="12" viewBox="0 0 88 88"><path d="M44 6 L76 18 L76 44 C76 61 62 75 44 82 C26 75 12 61 12 44 L12 18 Z" fill="#2563EB" /><polyline points="28,44 38,54 60,32" fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" /></svg>
+            <span style={{ fontSize: '12px', fontWeight: '700', color: '#60A5FA' }}>Perfil Verificado</span>
+          </div>
+          <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7' }}>Sua identidade foi confirmada com sucesso. Agora complete o seu perfil para começar.<br /><br />Redirecionando...</p>
           <div style={{ width: '48px', height: '48px', border: '4px solid var(--accent)', borderTop: '4px solid transparent', borderRadius: '50%', margin: '24px auto 0', animation: 'spin 1s linear infinite' }} />
+          <style>{`@keyframes pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }`}</style>
         </>)}
 
         {status === 'expirado' && card(<>
