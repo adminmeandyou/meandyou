@@ -51,25 +51,25 @@ interface StoreItem {
 
 const STORE_ITEMS: StoreItem[] = [
   {
-    key: 'superlike_1', label: '1 SuperLike', description: 'Se destaque para quem voce mais quer',
+    key: 'superlike_1', label: '1 SuperLike', description: 'Se destaque para quem você mais quer',
     icon: <Star size={20} strokeWidth={1.5} />, baseFichas: 50,
     accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.25)',
     balanceKey: 'superlikes',
   },
   {
-    key: 'superlike_5', label: '5 SuperLikes', description: 'Pacote economico',
+    key: 'superlike_5', label: '5 SuperLikes', description: 'Pacote econômico',
     icon: <Star size={20} strokeWidth={1.5} />, baseFichas: 200,
     accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.25)',
     balanceKey: 'superlikes',
   },
   {
-    key: 'boost_1', label: '1 Boost', description: '30 min em destaque na sua regiao',
+    key: 'boost_1', label: '1 Boost', description: '30 min em destaque na sua região',
     icon: <Zap size={20} strokeWidth={1.5} />, baseFichas: 60,
     accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
     balanceKey: 'boosts',
   },
   {
-    key: 'boost_5', label: '5 Boosts', description: 'Estoque para o mes — 250 fichas',
+    key: 'boost_5', label: '5 Boosts', description: 'Estoque para o mês — 250 fichas',
     icon: <Zap size={20} strokeWidth={1.5} />, baseFichas: 250,
     accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
     balanceKey: 'boosts',
@@ -87,7 +87,7 @@ const STORE_ITEMS: StoreItem[] = [
     balanceKey: 'lupas',
   },
   {
-    key: 'rewind_1', label: '1 Desfazer', description: 'Volte atras em perfis que passou',
+    key: 'rewind_1', label: '1 Desfazer', description: 'Volte atrás em perfis que passou',
     icon: <RotateCcw size={20} strokeWidth={1.5} />, baseFichas: 50,
     accentColor: '#a855f7', accentBg: 'rgba(168,85,247,0.10)', accentBorder: 'rgba(168,85,247,0.25)',
     balanceKey: 'rewinds',
@@ -99,13 +99,13 @@ const STORE_ITEMS: StoreItem[] = [
     balanceKey: 'rewinds',
   },
   {
-    key: 'ghost_7d', label: 'Fantasma 7 dias', description: 'Fique invisivel nas buscas por 7 dias',
+    key: 'ghost_7d', label: 'Fantasma 7 dias', description: 'Fique invisível nas buscas por 7 dias',
     icon: <Ghost size={20} strokeWidth={1.5} />, baseFichas: 90,
     accentColor: '#6b7280', accentBg: 'rgba(107,114,128,0.10)', accentBorder: 'rgba(107,114,128,0.25)',
     balanceKey: 'ghost',
   },
   {
-    key: 'ghost_35d', label: 'Fantasma 35 dias', description: 'Invisibilidade por mais de um mes',
+    key: 'ghost_35d', label: 'Fantasma 35 dias', description: 'Invisibilidade por mais de um mês',
     icon: <Ghost size={20} strokeWidth={1.5} />, baseFichas: 350,
     accentColor: '#6b7280', accentBg: 'rgba(107,114,128,0.10)', accentBorder: 'rgba(107,114,128,0.25)',
     balanceKey: 'ghost',
@@ -118,7 +118,7 @@ const STORE_ITEMS: StoreItem[] = [
     new: true,
   },
   {
-    key: 'xp_bonus_3d', label: 'Bonus de XP (3 dias)', description: 'Ganhe o dobro de XP no streak por 3 dias',
+    key: 'xp_bonus_3d', label: 'Bônus de XP (3 dias)', description: 'Ganhe o dobro de XP no streak por 3 dias',
     icon: <TrendingUp size={20} strokeWidth={1.5} />, baseFichas: 150,
     accentColor: '#10b981', accentBg: 'rgba(16,185,129,0.10)', accentBorder: 'rgba(16,185,129,0.25)',
     new: true,
@@ -130,7 +130,7 @@ const STORE_ITEMS: StoreItem[] = [
     new: true,
   },
   {
-    key: 'caixa_surpresa', label: 'Caixa Surpresa', description: 'Premio aleatorio — pode ser raro!',
+    key: 'caixa_surpresa', label: 'Caixa Surpresa', description: 'Prêmio aleatório — pode ser raro!',
     icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 100,
     accentColor: '#8b5cf6', accentBg: 'rgba(139,92,246,0.10)', accentBorder: 'rgba(139,92,246,0.25)',
     new: true,
@@ -304,9 +304,9 @@ export default function LojaPage() {
       setBoostActiveUntil(data.active_until)
       setBoosts((b) => b - 1)
     } else if (data?.reason === 'no_boosts') {
-      toast.error('Voce nao tem Boosts disponiveis.')
+      toast.error('Você não tem Boosts disponíveis.')
     } else if (data?.reason === 'already_active') {
-      toast.info('Voce ja tem um Boost ativo!')
+      toast.info('Você já tem um Boost ativo!')
     }
     setActivating(false)
   }
@@ -328,7 +328,7 @@ export default function LojaPage() {
         setFichas(f => f - getPrice(item))
         toast.success(`${item.label} adicionado ao seu saldo!`)
         if (data.surpresa) {
-          toast.info(`Caixa Surpresa: voce ganhou ${data.surpresa.reward_amount}x ${data.surpresa.reward_type}!`)
+          toast.info(`Caixa Surpresa: você ganhou ${data.surpresa.reward_amount}x ${data.surpresa.reward_type}!`)
         }
         setOpenItem(null)
         await loadBalance()
@@ -341,7 +341,7 @@ export default function LojaPage() {
       }
     } catch {
       haptics.error()
-      toast.error('Erro de conexao. Tente novamente.')
+      toast.error('Erro de conexão. Tente novamente.')
     }
     setPurchasing(false)
   }
@@ -491,7 +491,7 @@ export default function LojaPage() {
         </div>
 
         <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(248,249,250,0.20)', paddingBottom: '8px' }}>
-          Fichas adquiridas via Cakto. Pagamento unico, sem reembolso.
+          Fichas adquiridas via Cakto. Pagamento único, sem reembolso.
         </p>
       </div>
 

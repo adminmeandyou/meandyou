@@ -15,7 +15,7 @@ const PLANS = [
     color: 'rgba(248,249,250,0.70)',
     checkoutUrl: 'https://pay.cakto.com.br/cip6fy9_797209',
     features: [
-      'Ate 10 fotos no perfil',
+      'Até 10 fotos no perfil',
       '5 curtidas por dia',
       '1 SuperCurtida/dia',
       '1 Ticket de roleta/dia',
@@ -34,12 +34,12 @@ const PLANS = [
     highlight: true,
     badge: 'Melhor Custo-Beneficio',
     features: [
-      'Ate 10 fotos no perfil',
+      'Até 10 fotos no perfil',
       '30 curtidas por dia',
       '4 SuperCurtidas/dia',
       '2 Tickets de roleta/dia',
       '1 Lupa por dia',
-      'Ver quem curtiu voce',
+      'Ver quem curtiu você',
       'Desfazer curtida (1/dia)',
       'Destaque na busca',
       '5h de videochamada/dia',
@@ -53,7 +53,7 @@ const PLANS = [
     color: '#F59E0B',
     checkoutUrl: 'https://pay.cakto.com.br/hftqkrj',
     features: [
-      'Ate 10 fotos no perfil',
+      'Até 10 fotos no perfil',
       'Curtidas ilimitadas',
       '10 SuperCurtidas/dia',
       '3 Tickets de roleta/dia',
@@ -127,10 +127,10 @@ export default function PlanosPage() {
         <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', color: 'var(--text)', margin: '0 0 8px', lineHeight: 1.2 }}>
           Encontre quem{' '}
           <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>combina</em>
-          {' '}com voce
+          {' '}com você
         </h2>
         <p style={{ fontSize: '14px', color: 'var(--muted)', margin: 0, maxWidth: '280px', display: 'inline-block' }}>
-          Todos os planos incluem verificacao biometrica e perfis 100% reais
+          Todos os planos incluem verificação biométrica e perfis 100% reais
         </p>
       </div>
 
@@ -203,7 +203,7 @@ export default function PlanosPage() {
                   <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', display: 'block', lineHeight: 1 }}>
                     R$ {plan.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                   </span>
-                  <span style={{ fontSize: '11px', color: 'var(--muted)' }}>/mes</span>
+                  <span style={{ fontSize: '11px', color: 'var(--muted)' }}>/mês</span>
                 </div>
               </div>
 
@@ -292,7 +292,7 @@ export default function PlanosPage() {
 
       {/* Rodape */}
       <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(248,249,250,0.20)', padding: '0 20px 8px' }}>
-        Pagamento seguro via PIX ou cartao · Cancele quando quiser
+        Pagamento seguro via PIX ou cartão · Cancele quando quiser
       </p>
     </div>
   )

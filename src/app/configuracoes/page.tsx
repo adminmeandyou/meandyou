@@ -172,7 +172,7 @@ export default function ConfiguracoesPage() {
       toast.success(novo ? 'Status de atividade ativado' : 'Status de atividade ocultado')
     } catch {
       setShowLastActive(!novo)
-      toast.error('Erro ao salvar preferencia')
+      toast.error('Erro ao salvar preferência')
     }
     setSavingLastActive(false)
   }
@@ -189,7 +189,7 @@ export default function ConfiguracoesPage() {
       toast.success(novo ? 'Emails de engajamento ativados' : 'Emails de engajamento desativados')
     } catch {
       setNotifEmail(!novo)
-      toast.error('Erro ao salvar preferencia')
+      toast.error('Erro ao salvar preferência')
     }
     setSavingNotifEmail(false)
   }
@@ -203,9 +203,9 @@ export default function ConfiguracoesPage() {
         const perm = await Notification.requestPermission()
         if (perm === 'granted') {
           setNotifPush(true)
-          toast.success('Notificacoes ativadas')
+          toast.success('Notificações ativadas')
         } else {
-          toast.info('Permissao negada pelo dispositivo')
+          toast.info('Permissão negada pelo dispositivo')
         }
       }
     } finally { setSavingPush(false) }
@@ -231,7 +231,7 @@ export default function ConfiguracoesPage() {
         <button onClick={() => router.back()} style={{ width: '38px', height: '38px', borderRadius: '50%', border: 'none', backgroundColor: 'rgba(255,255,255,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <ArrowLeft size={18} color="rgba(255,255,255,0.8)" />
         </button>
-        <h1 style={{ fontFamily: 'var(--font-fraunces)', color: 'var(--text)', fontSize: '20px', margin: 0 }}>Configuracoes</h1>
+        <h1 style={{ fontFamily: 'var(--font-fraunces)', color: 'var(--text)', fontSize: '20px', margin: 0 }}>Configurações</h1>
       </div>
 
       <div style={{ maxWidth: '480px', margin: '0 auto', paddingTop: '20px' }}>
@@ -269,7 +269,7 @@ export default function ConfiguracoesPage() {
           <ToggleRow
             icon={<Eye size={17} />}
             label="Mostrar quando estou ativo"
-            sub={showLastActive ? 'Visivel para outros usuarios' : 'Oculto para voce e para outros'}
+            sub={showLastActive ? 'Visível para outros usuários' : 'Oculto para você e para outros'}
             ativo={showLastActive}
             onChange={toggleLastActive}
             loading={savingLastActive}
@@ -277,22 +277,22 @@ export default function ConfiguracoesPage() {
           <LinkRow
             href="/loja"
             icon={<EyeOff size={17} />}
-            label="Modo invisivel"
+            label="Modo invisível"
             sub="Fique oculto no feed por 7 dias"
             badge={<Badge label="Na loja" cor="rgba(255,255,255,0.35)" />}
           />
           <LinkRow
             href="/configuracoes/2fa"
             icon={<Lock size={17} />}
-            label="Verificacao em dois fatores"
+            label="Verificação em dois fatores"
             sub={twoFaAtivo ? 'Ativado' : 'Desativado — recomendamos ativar'}
             badge={twoFaAtivo ? <Badge label="Ativo" cor="#22c55e" /> : <Badge label="Inativo" cor="#f59e0b" />}
             last
           />
         </CardSection>
 
-        {/* ── NOTIFICACOES ── */}
-        <CardSection titulo="Notificacoes">
+        {/* ── NOTIFICAÇÕES ── */}
+        <CardSection titulo="Notificações">
           <ToggleRow
             icon={<Mail size={17} />}
             label="Emails de engajamento"
@@ -303,8 +303,8 @@ export default function ConfiguracoesPage() {
           />
           <ToggleRow
             icon={<Bell size={17} />}
-            label="Notificacoes push"
-            sub={notifPush ? 'Ativadas neste dispositivo' : 'Ative para receber alertas instantaneos'}
+            label="Notificações push"
+            sub={notifPush ? 'Ativadas neste dispositivo' : 'Ative para receber alertas instantâneos'}
             ativo={notifPush}
             onChange={toggleNotifPush}
             loading={savingPush}
@@ -312,13 +312,13 @@ export default function ConfiguracoesPage() {
           />
         </CardSection>
 
-        {/* ── SESSOES ── */}
-        <CardSection titulo="Sessoes">
+        {/* ── SESSÕES ── */}
+        <CardSection titulo="Sessões">
           <LinkRow
             href="/configuracoes/sessoes"
             icon={<Smartphone size={17} />}
             label="Dispositivos ativos"
-            sub="Veja e encerre sessoes abertas"
+            sub="Veja e encerre sessões abertas"
             last
           />
         </CardSection>
@@ -332,7 +332,7 @@ export default function ConfiguracoesPage() {
         {/* ── LEGAL ── */}
         <CardSection titulo="Legal">
           <LinkRow href="/termos" icon={<FileText size={17} />} label="Termos de uso" />
-          <LinkRow href="/privacidade" icon={<Shield size={17} />} label="Politica de privacidade" last />
+          <LinkRow href="/privacidade" icon={<Shield size={17} />} label="Política de privacidade" last />
         </CardSection>
 
         {/* ── ZONA DE RISCO ── */}

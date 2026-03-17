@@ -189,7 +189,7 @@ export default function MatchesPage() {
           <EmptyState
             icon={<Archive size={28} />}
             title="Nenhum arquivado"
-            description="Voce pode arquivar matches para organizar sua lista."
+            description="Você pode arquivar matches para organizar sua lista."
           />
 
         ) : matches.length === 0 ? (
@@ -340,8 +340,8 @@ function NovoMatchCard({
 function getNivel(matchedAt: string, lastMessageAt: string | null): { label: string; color: string } | null {
   if (!lastMessageAt) return null
   const daysSinceMatch = (Date.now() - new Date(matchedAt).getTime()) / 86400000
-  if (daysSinceMatch > 30) return { label: 'Historia', color: '#F59E0B' }
-  if (daysSinceMatch > 7)  return { label: 'Conexao',  color: '#10b981' }
+  if (daysSinceMatch > 30) return { label: 'História', color: '#F59E0B' }
+  if (daysSinceMatch > 7)  return { label: 'Conexão',  color: '#10b981' }
   return { label: 'Sintonia', color: '#60a5fa' }
 }
 

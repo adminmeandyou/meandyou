@@ -78,7 +78,7 @@ export default function ConversasPage() {
       const convs: Conversation[] = (data || []).map((row: any) => ({
         matchId: row.match_id,
         otherUserId: row.other_user_id,
-        otherName: row.other_name ?? 'Usuario',
+        otherName: row.other_name ?? 'Usuário',
         otherPhoto: row.other_photo ?? null,
         lastMessage: row.last_message ?? null,
         lastMessageAt: row.last_message_at ?? null,
@@ -188,7 +188,7 @@ export default function ConversasPage() {
           <EmptyState
             icon={<Archive size={28} />}
             title="Nenhuma arquivada"
-            description="Voce pode arquivar conversas para organizar sua caixa de entrada."
+            description="Você pode arquivar conversas para organizar sua caixa de entrada."
           />
         ) : loading ? (
           <div style={{ padding: '12px 0' }}>
@@ -198,7 +198,7 @@ export default function ConversasPage() {
           <EmptyState
             icon={<MessageCircle size={28} />}
             title={searchTerm ? 'Nenhuma conversa encontrada' : 'Nenhuma conversa ainda'}
-            description={searchTerm ? undefined : 'Faca um match para comecar a conversar!'}
+            description={searchTerm ? undefined : 'Faça um match para começar a conversar!'}
             action={!searchTerm ? { label: 'Explorar pessoas', onClick: () => router.push('/busca') } : undefined}
           />
         ) : (
@@ -309,7 +309,7 @@ function ConversationItem({
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
           {conv.lastMessage
-            ? `${isMyMessage ? 'Voce: ' : ''}${conv.lastMessage}`
+            ? `${isMyMessage ? 'Você: ' : ''}${conv.lastMessage}`
             : 'Nenhuma mensagem ainda'}
         </p>
       </div>

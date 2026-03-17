@@ -15,7 +15,7 @@ type Period = 'day' | 'week' | 'month'
 const PERIOD_LABELS: Record<Period, string> = {
   day: 'Hoje',
   week: 'Semana',
-  month: 'Mes',
+  month: 'Mês',
 }
 
 export default function DestaquesPage() {
@@ -60,7 +60,7 @@ export default function DestaquesPage() {
   }
 
   async function handleReveal(profileId: string) {
-    if (lupas <= 0) { toast.error('Sem lupas disponiveis. Compre na Loja.'); return }
+    if (lupas <= 0) { toast.error('Sem lupas disponíveis. Compre na Loja.'); return }
     haptics.tap()
     setRevealing(profileId)
     const { error } = await supabase.rpc('use_lupa', { p_user_id: user!.id, p_target_id: profileId })
@@ -139,7 +139,7 @@ export default function DestaquesPage() {
           <div style={{ textAlign: 'center' }}>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', color: 'var(--text)', margin: '0 0 8px' }}>Exclusivo Plus e Black</h2>
             <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: 1.5, margin: 0, maxWidth: '280px' }}>
-              Veja os perfis mais curtidos da plataforma. Disponivel a partir do plano Plus.
+              Veja os perfis mais curtidos da plataforma. Disponível a partir do plano Plus.
             </p>
           </div>
           <a

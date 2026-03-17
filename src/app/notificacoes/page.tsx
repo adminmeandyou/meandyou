@@ -60,10 +60,10 @@ export default function NotificacoesPage() {
         const data = await res.json()
         setNotifications(data.notificacoes ?? [])
       } else {
-        toast.error('Erro ao carregar notificacoes')
+        toast.error('Erro ao carregar notificações')
       }
     } catch {
-      toast.error('Erro ao carregar notificacoes')
+      toast.error('Erro ao carregar notificações')
     }
     setLoading(false)
   }
@@ -128,7 +128,7 @@ export default function NotificacoesPage() {
         <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
           <Bell size={18} color="var(--muted)" />
           <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: 0 }}>
-            Notificacoes
+            Notificações
           </h1>
           {unreadCount > 0 && (
             <span style={{
@@ -166,7 +166,7 @@ export default function NotificacoesPage() {
       ) : notifications.length === 0 ? (
         <EmptyState
           icon={<Bell size={28} />}
-          title="Nenhuma notificacao ainda"
+          title="Nenhuma notificação ainda"
           description="Matches, mensagens e SuperLikes aparecem aqui."
         />
       ) : (

@@ -120,7 +120,7 @@ export default function CurtidasPage() {
         </button>
         <div className="flex items-center gap-2 flex-1">
           <Heart size={18} className="text-[#E11D48]" />
-          <h1 className="font-fraunces text-xl text-white">Quem curtiu voce</h1>
+          <h1 className="font-fraunces text-xl text-white">Quem curtiu você</h1>
         </div>
         {canSee && !loading && likers.length > 0 && (
           <span className="text-white/35 text-sm shrink-0">
@@ -141,7 +141,7 @@ export default function CurtidasPage() {
               </div>
               <div>
                 <p className="text-white font-semibold text-sm">Pessoas curtiram seu perfil</p>
-                <p className="text-white/40 text-xs mt-0.5">Faca upgrade para ver quem sao</p>
+                <p className="text-white/40 text-xs mt-0.5">Faça upgrade para ver quem são</p>
               </div>
             </div>
 
@@ -176,8 +176,8 @@ export default function CurtidasPage() {
 
             {/* PaywallCard */}
             <PaywallCard
-              title="Veja quem curtiu voce"
-              description="Disponivel a partir do plano Plus. Responda curtidas diretamente e aumente muito suas chances de match."
+              title="Veja quem curtiu você"
+              description="Disponível a partir do plano Plus. Responda curtidas diretamente e aumente muito suas chances de match."
               ctaLabel="Assinar Plus"
             />
           </>
@@ -196,7 +196,7 @@ export default function CurtidasPage() {
               <div className="flex flex-col items-center py-16 text-center">
                 <Heart size={44} className="text-white/10 mb-4" />
                 <p className="text-white/40 font-medium">Nenhuma curtida ainda</p>
-                <p className="text-white/25 text-sm mt-1">Continue navegando e os matches virao!</p>
+                <p className="text-white/25 text-sm mt-1">Continue navegando e os matches virão!</p>
               </div>
             ) : (
               <div className="grid grid-cols-3 gap-3">
