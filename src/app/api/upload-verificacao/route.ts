@@ -43,6 +43,37 @@ export async function POST(req: NextRequest) {
     }
 
     const buffer = await file.arrayBuffer()
+
+    // Valida documento via Google Cloud Vision (apenas frente/verso, não selfie)
+    const isDocumento = caminho.includes('/frente') || caminho.includes('/verso')
+    if (isDocumento) {
+      const visionKey = process.env.GOOGLE_CLOUD_VISION_API_KEY
+      if (visionKey) {
+        const base64 = Buffer.from(buffer).toString('base64')
+        const visionRes = await fetch(
+          `https://vision.googleapis.com/v1/images:annotate?key=${visionKey}`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              requests: [{
+                image: { content: base64 },
+                features: [{ type: 'TEXT_DETECTION', maxResults: 1 }],
+              }],
+            }),
+          }
+        )
+        const visionData = await visionRes.json()
+        const textos = visionData?.responses?.[0]?.textAnnotations
+        if (!textos || textos.length === 0) {
+          return NextResponse.json(
+            { error: 'A imagem não parece ser um documento. Verifique se o documento está legível e bem enquadrado.' },
+            { status: 422 }
+          )
+        }
+      }
+    }
+
     const { error } = await supabase.storage
       .from('documentos')
       .upload(caminho, buffer, {

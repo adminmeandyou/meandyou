@@ -585,9 +585,27 @@ function Verificacao() {
       ])
     }
 
+    // Upload frente — se rejeitar como não-documento, volta à etapa para o usuário corrigir
     try {
       await comTimeout(uploadArquivo(docFrente, `${userId}/frente.jpg`))
-      if (docVerso) await comTimeout(uploadArquivo(docVerso, `${userId}/verso.jpg`))
+    } catch (e: any) {
+      setStatus('doc_frente')
+      setErroForm(e.message || 'Erro ao enviar a frente do documento.')
+      return
+    }
+
+    // Upload verso (quando aplicável)
+    if (docVerso) {
+      try {
+        await comTimeout(uploadArquivo(docVerso, `${userId}/verso.jpg`))
+      } catch (e: any) {
+        setStatus('doc_verso')
+        setErroForm(e.message || 'Erro ao enviar o verso do documento.')
+        return
+      }
+    }
+
+    try {
       await comTimeout(uploadArquivo(selfieFile, `${userId}/selfie.jpg`))
 
       const res = await comTimeout(fetch('/api/confirmar-verificacao', {
