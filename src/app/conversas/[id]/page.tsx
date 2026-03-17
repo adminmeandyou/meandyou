@@ -39,11 +39,11 @@ const CONVITE_PREFIX = '__CONVITE__:'
 const NUDGE_TOKEN = '__NUDGE__'
 
 const ICEBREAKERS = [
-  'Qual o melhor lugar que voce ja visitou?',
+  'Qual o melhor lugar que você já visitou?',
   'Se pudesse viajar agora, para onde iria?',
-  'O que voce faria num sabado perfeito?',
+  'O que você faria num sábado perfeito?',
   'Series ou filmes? Qual recomenda?',
-  'Qual superpoder voce escolheria?',
+  'Qual superpoder você escolheria?',
   'Cafe da manha ou jantar romantico?',
 ]
 
@@ -1045,12 +1045,12 @@ export default function ChatPage() {
                   <X size={18} color="var(--muted)" strokeWidth={1.5} />
                 </button>
               </div>
-              <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliacao anonima — {otherUser?.name} nao saberá quem avaliou.</p>
+              <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliação anônima — {otherUser?.name} não saberá quem avaliou.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
                   { id: 'incrivel', label: 'Pessoa incrivel!', color: '#10b981' },
                   { id: 'agradavel', label: 'Conversa agradavel', color: '#60a5fa' },
-                  { id: 'nao_interessei', label: 'Nao me interessei', color: 'rgba(248,249,250,0.45)' },
+                  { id: 'nao_interessei', label: 'Não me interessei', color: 'rgba(248,249,250,0.45)' },
                   { id: 'ignorado', label: 'Fui ignorado(a)', color: '#F43F5E' },
                 ].map(op => (
                   <button
@@ -1085,7 +1085,7 @@ export default function ChatPage() {
                   { id: 'incrivel', label: 'Foi incrivel!' },
                   { id: 'estranho', label: 'Foi estranho' },
                   { id: 'bolo', label: 'Levei um bolo' },
-                  { id: 'ainda_nao', label: 'Ainda nao aconteceu' },
+                  { id: 'ainda_nao', label: 'Ainda não aconteceu' },
                 ].map(op => (
                   <button
                     key={op.id}
@@ -1122,7 +1122,7 @@ export default function ChatPage() {
                 <div style={{ textAlign:'center',padding:'20px 0' }}>
                   <CheckCircle2 size={40} color="#10b981" style={{ margin:'0 auto 12px' }} />
                   <p style={{ color:'var(--text)',fontSize:14,fontWeight:600 }}>Encontro registrado!</p>
-                  <p style={{ color:'var(--muted-2)',fontSize:12,marginTop:4 }}>Faremos um check-in com voce depois.</p>
+                  <p style={{ color:'var(--muted-2)',fontSize:12,marginTop:4 }}>Faremos um check-in com você depois.</p>
                 </div>
               ) : (
                 <div style={{ display:'flex',flexDirection:'column',gap:12 }}>
@@ -1163,7 +1163,7 @@ export default function ChatPage() {
               <h3 style={{ fontFamily:'var(--font-fraunces)',fontSize:22,color:'var(--text)',margin:'0 0 8px' }}>Check-in de seguranca</h3>
               <p style={{ fontSize:13,color:'var(--muted)',margin:'0 0 6px',lineHeight:1.55 }}>Voce tinha um encontro com <strong style={{ color:'rgba(248,249,250,0.75)' }}>{otherUser?.name}</strong></p>
               <p style={{ fontSize:12,color:'var(--muted-2)',margin:'0 0 28px' }}>{checkinMeeting.local} · {new Date(checkinMeeting.date).toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
-              <p style={{ fontSize:14,color:'var(--text)',fontWeight:600,margin:'0 0 20px' }}>Como voce esta?</p>
+              <p style={{ fontSize:14,color:'var(--text)',fontWeight:600,margin:'0 0 20px' }}>Como você está?</p>
               <div style={{ display:'flex',flexDirection:'column',gap:10 }}>
                 <button onClick={handleCheckinBem} style={{ width:'100%',padding:'15px 0',borderRadius:14,background:'#10b981',border:'none',color:'#fff',fontFamily:'var(--font-jakarta)',fontSize:15,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:10 }}>
                   <CheckCircle2 size={18} />
@@ -1202,7 +1202,7 @@ export default function ChatPage() {
                 {/* Desfazer match */}
                 {unmatchConfirm ? (
                   <div style={{ padding:'14px 16px',borderRadius:16,background:'rgba(225,29,72,0.08)',border:'1px solid rgba(225,29,72,0.25)' }}>
-                    <p style={{ fontSize:13,color:'var(--text)',margin:'0 0 12px',textAlign:'center' }}>Tem certeza? O chat sera encerrado.</p>
+                    <p style={{ fontSize:13,color:'var(--text)',margin:'0 0 12px',textAlign:'center' }}>Tem certeza? O chat será encerrado.</p>
                     <div style={{ display:'flex',gap:8 }}>
                       <button onClick={() => setUnmatchConfirm(false)} style={{ flex:1,padding:'10px',borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',color:'var(--muted)',fontSize:13,cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>Cancelar</button>
                       <button onClick={handleUnmatch} style={{ flex:1,padding:'10px',borderRadius:12,background:'var(--accent)',border:'none',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>Desfazer</button>

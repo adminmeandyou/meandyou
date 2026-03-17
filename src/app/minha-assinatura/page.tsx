@@ -273,7 +273,7 @@ export default function MinhaAssinaturaPage() {
               Voce continuara com acesso ao plano <strong style={{ color: 'var(--text)' }}>{PLAN_LABELS[active?.plan ?? '']}</strong> ate{' '}
               <strong style={{ color: 'var(--text)' }}>{active ? formatDate(active.ends_at) : ''}</strong>.
             </p>
-            <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.30)', textAlign: 'center', margin: '0 0 24px' }}>Apos essa data, voce perdera o acesso as funcionalidades do plano. Para voltar a usa-las, sera necessario assinar novamente.</p>
+            <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.30)', textAlign: 'center', margin: '0 0 24px' }}>Após essa data, você perderá o acesso às funcionalidades do plano. Para voltar a usá-las, será necessário assinar novamente.</p>
             <div style={{ display: 'flex', gap: '10px' }}>
               <button
                 onClick={() => setShowConfirm(false)}

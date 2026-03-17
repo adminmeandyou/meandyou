@@ -854,7 +854,7 @@ export default function VerPerfilPage() {
                     <X size={20} color="rgba(248,249,250,0.35)" strokeWidth={1.5} />
                   </button>
                 </div>
-                <p style={{ color: 'rgba(248,249,250,0.45)', fontSize: '13px', marginBottom: '14px', marginTop: 0 }}>Por que voce esta denunciando este perfil?</p>
+                <p style={{ color: 'rgba(248,249,250,0.45)', fontSize: '13px', marginBottom: '14px', marginTop: 0 }}>Por que você está denunciando este perfil?</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
                   {[
                     { id: 'fake', label: 'Perfil falso ou fotos enganosas' },
@@ -969,9 +969,9 @@ function getAparenciaTags(f: any): string[] {
 
 function getEstiloTags(f: any): string[] {
   const tags: string[] = []
-  if (f.smoke_no) tags.push('Nao fuma')
+  if (f.smoke_no) tags.push('Não fuma')
   if (f.smoke_yes) tags.push('Fumante')
-  if (f.drink_no) tags.push('Nao bebe')
+  if (f.drink_no) tags.push('Não bebe')
   if (f.drink_socially) tags.push('Bebe socialmente')
   if (f.routine_gym) tags.push('Academia')
   if (f.routine_homebody) tags.push('Caseiro(a)')

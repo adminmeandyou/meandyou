@@ -554,7 +554,7 @@ const MOCK_ROOMS = [
   { id: '2', title: 'Geeks & Gamers',     desc: 'Para quem joga e ama tecnologia',       count: 8,  emoji: '🎮' },
   { id: '3', title: 'Trilhas e Aventuras',desc: 'Apaixonados por natureza',              count: 23, emoji: '🏕' },
   { id: '4', title: 'Cinema & Series',    desc: 'Discussoes sem spoiler (ou com)',       count: 17, emoji: '🎬' },
-  { id: '5', title: 'Esportes ao Vivo',   desc: 'Torcedores que curtem jogar tambem',   count: 9,  emoji: '⚽' },
+  { id: '5', title: 'Esportes ao Vivo',   desc: 'Torcedores que curtem jogar também',   count: 9,  emoji: '⚽' },
   { id: '6', title: 'Culinaria & Bares',  desc: 'Onde comer bem esta cidade?',          count: 14, emoji: '🍻' },
 ]
 
@@ -1137,7 +1137,7 @@ export default function BuscaPage() {
             <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <Users size={28} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
             </div>
-            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: 0 }}>Por enquanto e so isso!</h2>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: 0 }}>Por enquanto é só isso!</h2>
             <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
               Novos perfis aparecem o tempo todo. Amplie o raio de busca ou ajuste os filtros para descobrir mais pessoas.
             </p>
@@ -1903,7 +1903,7 @@ export default function BuscaPage() {
             <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 22px', lineHeight: 1.5 }}>
               {upgradeReason === 'superlike'
                 ? userPlan === 'essencial'
-                  ? 'Voce esgotou suas SuperCurtidas. Faca upgrade ou compre mais na loja.'
+                  ? 'Você esgotou suas SuperCurtidas. Faça upgrade ou compre mais na loja.'
                   : 'Voce esgotou suas SuperCurtidas de hoje e seu saldo avulso. Compre mais na loja ou aguarde amanha.'
                 : 'Filtros de Fetiche, BDSM e Sugar sao exclusivos do plano Black.'}
             </p>
