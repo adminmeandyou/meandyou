@@ -154,9 +154,19 @@ export default function Perfil() {
   const [discreto, setDiscreto] = useState<string[]>([])
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.push('/login'); return }
       setUserId(user.id)
+      // Se perfil já foi preenchido (tem nome + foto), redireciona para edição
+      const { data: p } = await supabase
+        .from('profiles')
+        .select('name, photo_best')
+        .eq('id', user.id)
+        .single()
+      if (p?.name && p?.photo_best) {
+        router.replace('/configuracoes/editar-perfil')
+        return
+      }
     })
   }, [])
 
