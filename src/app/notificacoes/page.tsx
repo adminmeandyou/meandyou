@@ -179,7 +179,7 @@ export default function NotificacoesPage() {
                 onClick={() => handleClick(n)}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', gap: 14,
-                  padding: '14px 20px', borderBottom: '1px solid var(--border-soft)',
+                  padding: '14px 20px',
                   textAlign: 'left', background: n.read ? 'transparent' : 'rgba(255,255,255,0.018)',
                   cursor: 'pointer', transition: 'background 0.15s',
                   border: 'none', borderBottom: '1px solid var(--border-soft)',
