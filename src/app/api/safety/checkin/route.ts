@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 // Marca check-in de um registro de segurança
 // Body: { recordId: string }
 export async function POST(req: Request) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user }, error: authErr } = await supabase.auth.getUser()
   if (authErr || !user) {

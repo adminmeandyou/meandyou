@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 // Concede um badge ao usuário autenticado
 // Body: { badgeId: string, expiresAt?: string }
 export async function POST(req: Request) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user }, error: authErr } = await supabase.auth.getUser()
   if (authErr || !user) {

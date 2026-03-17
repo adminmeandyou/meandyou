@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 // Cria um convite de encontro estruturado
 // Body: { matchId, receiverId, local, meetingDate }
 export async function POST(req: Request) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user }, error: authErr } = await supabase.auth.getUser()
   if (authErr || !user) {
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
 // Responde a um convite (aceitar, recusar, reagendar)
 // Body: { inviteId, action: 'accepted' | 'declined' | 'rescheduled', rescheduleNote? }
 export async function PATCH(req: Request) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user }, error: authErr } = await supabase.auth.getUser()
   if (authErr || !user) {

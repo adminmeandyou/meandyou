@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 // Salva um registro de segurança privado no banco
 // Body: { matchId: string, matchName: string, local: string, meetingDate: string }
 export async function POST(req: Request) {
-  const supabase = createClient()
+  const supabase = await createClient()
 
   const { data: { user }, error: authErr } = await supabase.auth.getUser()
   if (authErr || !user) {

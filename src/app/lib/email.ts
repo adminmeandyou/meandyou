@@ -92,7 +92,7 @@ const alertBox = (text: string, cor = '#f59e0b') =>
 export async function sendWelcomeEmail(email: string, nome: string) {
   const content = `
     ${badge('Conta criada com sucesso')}
-    ${heading(`Olá, ${nome}! Bem-vindo(a) 💚`)}
+    ${heading(`Olá, ${nome}! Bem-vindo(a) ao MeAndYou`)}
     ${sub('Sua conta foi criada. Complete seu perfil para começar a aparecer para outras pessoas.')}
     ${infoBox('Próximos passos:', [
       '📷 Adicione pelo menos 3 fotos',
@@ -608,7 +608,7 @@ export async function sendPhotoRejectedEmail(email: string, nome: string, motivo
 // 24. Novo match
 export async function sendNewMatchEmail(email: string, nome: string, nomeMatch: string) {
   const content = `
-    ${badge('💚 Novo Match!')}
+    ${badge('❤️ Novo Match!')}
     ${heading(`Você deu match com ${nomeMatch}!`)}
     ${sub(`Boa notícia, ${nome}! Você e <strong style="color:#ffffff;">${nomeMatch}</strong> se curtiram. Agora vocês podem conversar!`)}
     ${btn(`${APP_URL}/conversas`, 'Iniciar conversa')}
@@ -616,7 +616,7 @@ export async function sendNewMatchEmail(email: string, nome: string, nomeMatch: 
   `
   await enviar({
     from: FROM, to: email,
-    subject: `💚 Você deu match com ${nomeMatch}!`,
+    subject: `❤️ Você deu match com ${nomeMatch}!`,
     html: base(content, `Você e ${nomeMatch} se curtiram. Inicie a conversa agora!`),
   })
 }
@@ -627,7 +627,7 @@ export async function sendNewLikeEmail(email: string, nome: string, qtd: number)
     ${badge('❤️ Você recebeu curtidas')}
     ${heading(`${qtd} ${qtd === 1 ? 'pessoa curtiu' : 'pessoas curtiram'} você!`)}
     ${sub(`Olá, ${nome}! <strong style="color:#ffffff;">${qtd} ${qtd === 1 ? 'pessoa curtiu' : 'pessoas curtiram'} seu perfil</strong>. Curta de volta para criar um match!`)}
-    ${btn(`${APP_URL}/busca`, 'Ver e curtir de volta')}
+    ${btn(`${APP_URL}/curtidas`, 'Ver quem me curtiu')}
     ${note('Use o Destaque para ver quem curtiu você antes de dar match.')}
   `
   await enviar({
@@ -727,7 +727,7 @@ export async function sendReactivationLikesEmail(email: string, nome: string, qt
     ${badge('👀 Você foi curtido(a)')}
     ${heading(`${qtd} ${qtd === 1 ? 'pessoa curtiu' : 'pessoas curtiram'} você!`)}
     ${sub(`Olá, ${nome}. Enquanto você estava fora, <strong style="color:#ffffff;">${qtd} ${qtd === 1 ? 'pessoa curtiu' : 'pessoas curtiram'} seu perfil</strong>. Volte para criar matches!`)}
-    ${btn(`${APP_URL}/busca`, 'Ver quem me curtiu')}
+    ${btn(`${APP_URL}/curtidas`, 'Ver quem me curtiu')}
     ${note('As curtidas ficam salvas — mas não espere demais!')}
   `
   await enviar({
@@ -756,7 +756,7 @@ export async function sendReactivationStreakEmail(email: string, nome: string) {
 // 33. Reativação — matches esperando (10 dias inativo)
 export async function sendReactivationMatchesEmail(email: string, nome: string) {
   const content = `
-    ${badge('💚 Seus matches estão esperando')}
+    ${badge('❤️ Seus matches estão esperando')}
     ${heading('Sentimos sua falta!')}
     ${sub(`Olá, ${nome}. Faz um tempo que você não aparece. Seus matches estão esperando uma mensagem sua.`)}
     ${btn(`${APP_URL}/conversas`, 'Ver minhas conversas')}
@@ -764,7 +764,7 @@ export async function sendReactivationMatchesEmail(email: string, nome: string) 
   `
   await enviar({
     from: FROM, to: email,
-    subject: '💚 Seus matches estão esperando por você',
+    subject: '❤️ Seus matches estão esperando por você',
     html: base(content, 'Seus matches estão esperando sua mensagem.'),
   })
 }
@@ -822,7 +822,7 @@ export async function sendBoostExpiredEmail(email: string, nome: string) {
     ${heading('Seu Boost acabou')}
     ${sub(`Olá, ${nome}. Seu Boost de visibilidade expirou. Ative outro para continuar aparecendo para mais pessoas!`)}
     ${btn(`${APP_URL}/loja`, 'Ativar novo Boost')}
-    ${note('Plano Black tem até 2 Boosts simultâneos ativos. Confira o plano Black!')}
+    ${note('Ative Boosts com frequência para aparecer para mais pessoas. Confira o plano Black para mais benefícios!')}
   `
   await enviar({
     from: FROM, to: email,
