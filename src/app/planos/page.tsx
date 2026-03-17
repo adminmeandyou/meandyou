@@ -140,7 +140,7 @@ export default function PlanosPage() {
       </p>
 
       {/* Cards — scroll horizontal com snap */}
-      <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '4px 20px 16px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
+      <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', scrollSnapType: 'x mandatory', padding: '4px 20px 16px', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', touchAction: 'pan-x' } as React.CSSProperties}>
         {PLANS.map((plan) => {
           const Icon = plan.icon
           const isActive = currentPlan === plan.id

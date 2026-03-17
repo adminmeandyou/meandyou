@@ -1727,7 +1727,7 @@ export default function BuscaPage() {
 
       {/* ─── Modal de Upgrade ────────────────────────────────────────────────── */}
       {showUpgradeModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
           <div
             onClick={() => setShowUpgradeModal(false)}
             style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}

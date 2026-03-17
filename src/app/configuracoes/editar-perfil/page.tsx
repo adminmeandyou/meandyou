@@ -171,7 +171,7 @@ export default function EditarPerfilPage() {
       {/* Header */}
       <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'sticky', top: 0, backgroundColor: '#08090E', zIndex: 10 }}>
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push('/configuracoes')}
           style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', backgroundColor: 'rgba(255,255,255,0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
         >
           <ArrowLeft size={20} color="#fff" />
@@ -540,11 +540,12 @@ function FotosBioSection({ userId, profileData, onSaved }: {
     try {
       const perguntaFinal = pergunta.trim() || null
       const respostaFinal = perguntaFinal ? (resposta.trim() || null) : null
-      await supabase.from('profiles').upsert({ id: userId, bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, ...update })
+      const { error: saveErr } = await supabase.from('profiles').upsert({ id: userId, bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, ...update })
+      if (saveErr) throw saveErr
       onSaved({ bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, photo_best: update['photo_best'], ...Object.fromEntries(fotoSlots.map((s, i) => [s, fotosUrls[i]])) } as any)
       setSucesso(true)
       setTimeout(() => setSucesso(false), 3000)
-    } catch (err) { console.error('[editar-perfil] fotos-bio', err); setErro('Erro ao salvar.') }
+    } catch (err) { console.error('[editar-perfil] fotos-bio', err); setErro('Erro ao salvar. Verifique sua conexao e tente novamente.') }
     setSalvando(false)
   }
 

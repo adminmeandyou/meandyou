@@ -37,8 +37,12 @@ export default function OnboardingPage() {
   const concluirOnboarding = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    await supabase.from('profiles').update({ onboarding_done: true }).eq('id', user.id)
-    router.push('/busca')
+    const { error } = await supabase.from('profiles').update({ onboarding_done: true }).eq('id', user.id)
+    if (error) {
+      // fallback: tenta upsert
+      await supabase.from('profiles').upsert({ id: user.id, onboarding_done: true })
+    }
+    router.push('/configuracoes/editar-perfil')
   }
 
   const pedirGps = async () => {
