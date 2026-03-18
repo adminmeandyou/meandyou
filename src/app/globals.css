@@ -292,6 +292,13 @@ input::placeholder, textarea::placeholder {
   display: none;
 }
 
+/* ── Impede scrollbar da janela quando o shell está ativo ── */
+html:has(.app-shell-outer),
+html:has(.app-shell-outer) body {
+  overflow: hidden;
+  height: 100%;
+}
+
 /* ─────────────────────────────────────────────
    Layout responsivo — AppShell
    Mobile-first: frame estreito centralizado

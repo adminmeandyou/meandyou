@@ -30,6 +30,7 @@ const SHELL_PREFIXES = [
   '/indicar',
   '/notificacoes',
   '/backstage',
+  '/emblemas',
 ]
 
 function usesShell(pathname: string): boolean {
@@ -38,10 +39,10 @@ function usesShell(pathname: string): boolean {
   )
 }
 
-/** Lê o modeSelector do contexto e passa para o AppHeader */
+/** Lê o modeSelector, backHref e pageTitle do contexto e passa para o AppHeader */
 function AppHeaderConnected() {
-  const { modeSelector } = useAppHeader()
-  return <AppHeader modeSelector={modeSelector} />
+  const { modeSelector, backHref, pageTitle } = useAppHeader()
+  return <AppHeader modeSelector={modeSelector} backHref={backHref} pageTitle={pageTitle} />
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {

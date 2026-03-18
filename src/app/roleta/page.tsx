@@ -5,7 +5,8 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Ticket, Loader2, Star, Zap, Search, RotateCcw, Gift, Crown, Trophy } from 'lucide-react'
+import { ArrowLeft, Ticket, Loader2, Star, Zap, Search, RotateCcw, Gift, Crown, Trophy, TrendingUp } from 'lucide-react'
+import { useAppHeader } from '@/contexts/AppHeaderContext'
 
 // Configuracao visual dos premios
 const PRIZE_CONFIG: Record<string, {
@@ -55,6 +56,12 @@ export default function RoletaPage() {
   const { user } = useAuth()
   const { limits } = usePlan()
   const router = useRouter()
+  const { setBackHref } = useAppHeader()
+
+  useEffect(() => {
+    setBackHref('/dashboard')
+    return () => setBackHref(null)
+  }, [setBackHref])
 
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const particleRef = useRef<HTMLCanvasElement>(null)
@@ -66,6 +73,9 @@ export default function RoletaPage() {
   const [tickets, setTickets] = useState(0)
   const [spinsToday, setSpinsToday] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [userXp, setUserXp] = useState(0)
+  const [userLevel, setUserLevel] = useState(0)
+  const [xpBonusActive, setXpBonusActive] = useState(false)
   const [spinning, setSpinning] = useState(false)
   const [result, setResult] = useState<SpinResult | null>(null)
   const [history, setHistory] = useState<any[]>([])
@@ -102,13 +112,14 @@ export default function RoletaPage() {
     setLoading(true)
     const today = new Date().toISOString().split('T')[0]
 
-    const [{ data: tk }, { data: hist }] = await Promise.all([
+    const [{ data: tk }, { data: hist }, { data: profile }] = await Promise.all([
       supabase.from('user_tickets').select('amount').eq('user_id', user!.id).single(),
       supabase.from('roleta_history')
         .select('reward_type, reward_amount, created_at')
         .eq('user_id', user!.id)
         .order('created_at', { ascending: false })
         .limit(10),
+      supabase.from('profiles').select('xp, xp_level, xp_bonus_until').eq('id', user!.id).single(),
     ])
 
     const { count } = await supabase
@@ -120,6 +131,9 @@ export default function RoletaPage() {
     setTickets(tk?.amount ?? 0)
     setSpinsToday(count ?? 0)
     setHistory(hist ?? [])
+    setUserXp(profile?.xp ?? 0)
+    setUserLevel(profile?.xp_level ?? 0)
+    setXpBonusActive(profile?.xp_bonus_until ? new Date(profile.xp_bonus_until) > new Date() : false)
     setLoading(false)
   }
 
@@ -459,6 +473,38 @@ export default function RoletaPage() {
           <span style={{ fontSize: '13px', color: '#eab308', fontWeight: 700 }}>{loading ? '…' : tickets}</span>
         </div>
       </header>
+
+      {/* XP / Nivel */}
+      {!loading && (() => {
+        const XP_THRESHOLDS = [0, 5000, 10000, 25000, 50000, 100000]
+        const levelXpStart = XP_THRESHOLDS[userLevel] ?? 0
+        const levelXpEnd   = XP_THRESHOLDS[userLevel + 1] ?? XP_THRESHOLDS[XP_THRESHOLDS.length - 1]
+        const progress     = userLevel >= 5 ? 100 : Math.round(((userXp - levelXpStart) / (levelXpEnd - levelXpStart)) * 100)
+        return (
+          <div style={{ margin: '0 20px', padding: '14px 16px', backgroundColor: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.20)', borderRadius: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <TrendingUp size={14} color="#10b981" strokeWidth={1.5} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: '#10b981' }}>
+                  Nivel {userLevel}{userLevel < 5 ? ` → ${userLevel + 1}` : ' MAX'}
+                </span>
+                {xpBonusActive && <span style={{ fontSize: 10, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.30)', borderRadius: 100, padding: '1px 7px' }}>XP x2</span>}
+              </div>
+              <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.40)' }}>
+                {userXp.toLocaleString('pt-BR')} XP
+              </span>
+            </div>
+            <div style={{ height: 6, backgroundColor: 'rgba(255,255,255,0.07)', borderRadius: 100, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${progress}%`, backgroundColor: '#10b981', borderRadius: 100, transition: 'width 0.6s ease' }} />
+            </div>
+            {userLevel < 5 && (
+              <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.30)', margin: '6px 0 0', textAlign: 'right' }}>
+                {(levelXpEnd - userXp).toLocaleString('pt-BR')} XP para nivel {userLevel + 1}
+              </p>
+            )}
+          </div>
+        )
+      })()}
 
       <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px', maxWidth: '600px', margin: '0 auto' }}>
 

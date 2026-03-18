@@ -64,36 +64,14 @@ const GENDER_OPTIONS = [
   { value: 'fluid', label: 'Gênero Fluido' },
 ]
 
-const BR_STATES = [
-  { value: '', label: 'Qualquer estado' },
-  { value: 'AC', label: 'Acre' },
-  { value: 'AL', label: 'Alagoas' },
-  { value: 'AM', label: 'Amazonas' },
-  { value: 'AP', label: 'Amapá' },
-  { value: 'BA', label: 'Bahia' },
-  { value: 'CE', label: 'Ceará' },
-  { value: 'DF', label: 'Distrito Federal' },
-  { value: 'ES', label: 'Espírito Santo' },
-  { value: 'GO', label: 'Goiás' },
-  { value: 'MA', label: 'Maranhão' },
-  { value: 'MG', label: 'Minas Gerais' },
-  { value: 'MS', label: 'Mato Grosso do Sul' },
-  { value: 'MT', label: 'Mato Grosso' },
-  { value: 'PA', label: 'Pará' },
-  { value: 'PB', label: 'Paraíba' },
-  { value: 'PE', label: 'Pernambuco' },
-  { value: 'PI', label: 'Piauí' },
-  { value: 'PR', label: 'Paraná' },
-  { value: 'RJ', label: 'Rio de Janeiro' },
-  { value: 'RN', label: 'Rio Grande do Norte' },
-  { value: 'RO', label: 'Rondônia' },
-  { value: 'RR', label: 'Roraima' },
-  { value: 'RS', label: 'Rio Grande do Sul' },
-  { value: 'SC', label: 'Santa Catarina' },
-  { value: 'SE', label: 'Sergipe' },
-  { value: 'SP', label: 'São Paulo' },
-  { value: 'TO', label: 'Tocantins' },
-]
+const STATE_NAMES: Record<string, string> = {
+  AC: 'Acre', AL: 'Alagoas', AM: 'Amazonas', AP: 'Amapá', BA: 'Bahia',
+  CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás',
+  MA: 'Maranhão', MG: 'Minas Gerais', MS: 'Mato Grosso do Sul', MT: 'Mato Grosso',
+  PA: 'Pará', PB: 'Paraíba', PE: 'Pernambuco', PI: 'Piauí', PR: 'Paraná',
+  RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RO: 'Rondônia', RR: 'Roraima',
+  RS: 'Rio Grande do Sul', SC: 'Santa Catarina', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins',
+}
 
 const FILTER_CATEGORIES = [
   {
@@ -272,6 +250,131 @@ const FILTER_CATEGORIES = [
     ]}]
   },
 ]
+
+// ─── Location Autocomplete ────────────────────────────────────────────────────
+
+type IbgeMunicipio = { nome: string; microrregiao: { mesorregiao: { UF: { sigla: string; nome: string } } } }
+let ibgeCache: IbgeMunicipio[] | null = null
+
+async function buscarMunicipios(query: string): Promise<{ label: string; city: string; state: string }[]> {
+  if (!ibgeCache) {
+    try {
+      const r = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome')
+      ibgeCache = await r.json()
+    } catch { return [] }
+  }
+  const q = query.toLowerCase().trim()
+  if (!q) return []
+  return (ibgeCache ?? [])
+    .filter(m => m.nome.toLowerCase().startsWith(q) || m.nome.toLowerCase().includes(q))
+    .slice(0, 7)
+    .map(m => ({
+      city: m.nome,
+      state: m.microrregiao.mesorregiao.UF.sigla,
+      label: `${m.nome}, ${m.microrregiao.mesorregiao.UF.nome}`,
+    }))
+}
+
+function LocationAutocomplete({
+  displayValue,
+  onSelect,
+}: {
+  displayValue: string
+  onSelect: (city: string, state: string, display: string) => void
+}) {
+  const [query, setQuery] = useState(displayValue)
+  const [suggestions, setSuggestions] = useState<{ label: string; city: string; state: string }[]>([])
+  const [loadingLoc, setLoadingLoc] = useState(false)
+  const [open, setOpen] = useState(false)
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => { setQuery(displayValue) }, [displayValue])
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const q = e.target.value
+    setQuery(q)
+    setOpen(false)
+    if (timerRef.current) clearTimeout(timerRef.current)
+    if (!q.trim()) {
+      setSuggestions([])
+      onSelect('', '', '')
+      return
+    }
+    timerRef.current = setTimeout(async () => {
+      setLoadingLoc(true)
+      const results = await buscarMunicipios(q)
+      setSuggestions(results)
+      setOpen(results.length > 0)
+      setLoadingLoc(false)
+    }, 300)
+  }
+
+  function handleSelect(s: { label: string; city: string; state: string }) {
+    setQuery(s.label)
+    setSuggestions([])
+    setOpen(false)
+    onSelect(s.city, s.state, s.label)
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative' }}>
+        <MapPin size={15} strokeWidth={1.5} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }} />
+        <input
+          value={query}
+          onChange={handleChange}
+          onFocus={() => suggestions.length > 0 && setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          placeholder="Buscar cidade ou estado..."
+          style={{
+            width: '100%', paddingLeft: 36, paddingRight: query ? 32 : 12,
+            paddingTop: 10, paddingBottom: 10,
+            borderRadius: 12, border: '1px solid var(--border)',
+            backgroundColor: 'var(--bg-card)', color: 'var(--text)',
+            fontSize: 14, fontFamily: 'var(--font-jakarta)', outline: 'none',
+          }}
+        />
+        {loadingLoc && (
+          <div className="ui-spinner" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: 'var(--muted)' }} />
+        )}
+        {!loadingLoc && query && (
+          <button
+            onMouseDown={() => { setQuery(''); setSuggestions([]); setOpen(false); onSelect('', '', '') }}
+            style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}
+          >
+            <X size={13} color="var(--muted)" strokeWidth={1.5} />
+          </button>
+        )}
+      </div>
+      {open && suggestions.length > 0 && (
+        <div style={{
+          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
+          backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)',
+          borderRadius: 12, marginTop: 4, overflow: 'hidden',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
+        }}>
+          {suggestions.map((s, i) => (
+            <div
+              key={`${s.city}-${s.state}`}
+              onMouseDown={() => handleSelect(s)}
+              style={{
+                padding: '10px 14px', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 8,
+                fontSize: 13, color: 'var(--text)',
+                borderBottom: i < suggestions.length - 1 ? '1px solid var(--border-soft)' : 'none',
+              }}
+              onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}
+            >
+              <MapPin size={13} color="var(--muted)" strokeWidth={1.5} />
+              {s.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -819,6 +922,7 @@ export default function BuscaPage() {
   const [viewMode, setViewMode] = useState<ViewMode>('discovery')
   const [photoIdx, setPhotoIdx] = useState(0)
   const [userGender, setUserGender] = useState<string>('')
+  const [locationDisplay, setLocationDisplay] = useState<string>('')
 
   // ── Refs ──────────────────────────────────────────────────────────────────
   const dragStartX = useRef(0)
@@ -885,6 +989,8 @@ export default function BuscaPage() {
         const merged = { ...DEFAULT_FILTERS, ...filtersRes.data }
         setLocalFilters(merged)
         setFiltersConfigured(true)
+        const stateCode = filtersRes.data?.search_state as string || ''
+        if (stateCode && STATE_NAMES[stateCode]) setLocationDisplay(`${STATE_NAMES[stateCode]} — ${stateCode}`)
         await loadDeck(merged, user.id)
       } else {
         if (filtersRes.data) setLocalFilters({ ...DEFAULT_FILTERS, ...filtersRes.data })
@@ -1614,33 +1720,21 @@ export default function BuscaPage() {
             </div>
           </div>
 
-          {/* Estado */}
+          {/* Localização */}
           <div style={{ marginTop: 16 }}>
-            <span style={{ fontSize: 13, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Estado</span>
-            <select
-              value={localFilters.search_state as string}
-              onChange={(e) => setLocalFilters(p => ({ ...p, search_state: e.target.value }))}
-              style={{
-                width: '100%',
-                padding: '10px 14px',
-                borderRadius: 12,
-                border: '1px solid var(--border)',
-                backgroundColor: 'var(--bg-card)',
-                color: localFilters.search_state ? 'var(--text)' : 'var(--muted)',
-                fontSize: 14,
-                fontFamily: 'var(--font-jakarta)',
-                cursor: 'pointer',
-                outline: 'none',
-                appearance: 'none',
-                WebkitAppearance: 'none',
+            <span style={{ fontSize: 13, color: 'var(--muted)', display: 'block', marginBottom: 8 }}>Cidade ou estado</span>
+            <LocationAutocomplete
+              displayValue={locationDisplay}
+              onSelect={(city, state, display) => {
+                setLocationDisplay(display)
+                setLocalFilters(p => ({ ...p, search_state: state }))
               }}
-            >
-              {BR_STATES.map((s) => (
-                <option key={s.value} value={s.value} style={{ backgroundColor: '#0F1117' }}>
-                  {s.label}
-                </option>
-              ))}
-            </select>
+            />
+            {localFilters.search_state && (
+              <p style={{ fontSize: 11, color: 'var(--muted-2)', marginTop: 6 }}>
+                Filtrando por: {STATE_NAMES[localFilters.search_state as string] ?? localFilters.search_state}
+              </p>
+            )}
           </div>
         </div>
 

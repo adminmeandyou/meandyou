@@ -259,6 +259,7 @@ export default function LojaPage() {
   const [activating, setActivating]       = useState(false)
   const [openItem, setOpenItem]           = useState<StoreItem | null>(null)
   const [purchasing, setPurchasing]       = useState(false)
+  const [lojaTab, setLojaTab]             = useState<'recargas' | 'compras'>('recargas')
 
   const plan = limits.plan
   const getPrice = (item: StoreItem) => applyDiscount(item.baseFichas, plan)
@@ -414,8 +415,27 @@ export default function LojaPage() {
           </button>
         )}
 
+        {/* ─── Tabs Recargas / Compras ────────────────────────────────── */}
+        <div style={{ display: 'flex', backgroundColor: 'var(--bg-card)', borderRadius: 12, padding: 4, border: '1px solid var(--border)' }}>
+          {(['recargas', 'compras'] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setLojaTab(tab)}
+              style={{
+                flex: 1, padding: '10px', borderRadius: 9, border: 'none', cursor: 'pointer',
+                fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-jakarta)',
+                transition: 'all 0.2s',
+                backgroundColor: lojaTab === tab ? 'var(--accent)' : 'transparent',
+                color: lojaTab === tab ? '#fff' : 'var(--muted)',
+              }}
+            >
+              {tab === 'recargas' ? 'Recargar fichas' : 'Gastar fichas'}
+            </button>
+          ))}
+        </div>
+
         {/* ─── Pacotes de fichas ─────────────────────────────────────── */}
-        <div>
+        {lojaTab === 'recargas' && <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <Coins size={15} strokeWidth={1.5} color="#F59E0B" />
             <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Comprar fichas</p>
@@ -448,10 +468,10 @@ export default function LojaPage() {
               </a>
             ))}
           </div>
-        </div>
+        </div>}
 
         {/* ─── Itens (pago com fichas) ──────────────────────────────── */}
-        <div>
+        {lojaTab === 'compras' && <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <Package size={15} strokeWidth={1.5} color="var(--muted)" />
             <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Gastar fichas</p>
@@ -488,10 +508,10 @@ export default function LojaPage() {
               </div>
             ))}
           </div>
-        </div>
+        </div>}
 
         <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(248,249,250,0.20)', paddingBottom: '8px' }}>
-          Fichas adquiridas via Cakto. Pagamento único, sem reembolso.
+          {lojaTab === 'recargas' ? 'Fichas adquiridas via Cakto. Pagamento unico, sem reembolso.' : 'Itens debitados do saldo de fichas da conta.'}
         </p>
       </div>
 
