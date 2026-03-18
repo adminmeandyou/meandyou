@@ -8,6 +8,7 @@ import { usePlan } from '@/hooks/usePlan'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Ticket, Loader2, Star, Zap, Search, RotateCcw, Gift, Crown, Trophy, TrendingUp, Eye, X } from 'lucide-react'
 import { useAppHeader } from '@/contexts/AppHeaderContext'
+import { useToast } from '@/components/Toast'
 
 // Configuracao visual dos premios
 const PRIZE_CONFIG: Record<string, {
@@ -59,6 +60,7 @@ export default function RoletaPage() {
   const { limits } = usePlan()
   const router = useRouter()
   const { setBackHref } = useAppHeader()
+  const toast = useToast()
 
   useEffect(() => {
     setBackHref('/dashboard')
@@ -128,6 +130,11 @@ export default function RoletaPage() {
   useEffect(() => {
     if (wheelSize > 0) drawWheel(rotRef.current)
   }, [wheelSize])
+
+  // Garante redesenho quando o canvas montar (ex: após hidratação)
+  useEffect(() => {
+    if (canvasRef.current && wheelSize > 0) drawWheel(rotRef.current)
+  })
 
   async function loadData() {
     setLoading(true)
@@ -405,6 +412,7 @@ export default function RoletaPage() {
     if (error || !data) {
       setSpinning(false)
       spinningRef.current = false
+      toast.error('Erro ao girar. Tente novamente.')
       return
     }
 
@@ -427,10 +435,23 @@ export default function RoletaPage() {
       return map[prize.reward_type] ?? 0
     })()
 
-    const naturalStop = -Math.PI / 2 - (segIdx + 0.5) * segAngle
-    const currentRot = rotRef.current
-    const delta = ((naturalStop - currentRot) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI)
-    const targetRotation = currentRot + 7 * 2 * Math.PI + delta
+    // Ponteiro esta no topo (angulo -PI/2).
+    // Para o segmento segIdx ficar sob o ponteiro, o meio do segmento
+    // precisa estar em -PI/2. Calculamos o angulo de parada exato.
+    const segAngleStart = segIdx * segAngle
+    const midOffset = segAngle / 2
+    // angulo do meio do segmento quando rotacao = 0
+    const segMid0 = segAngleStart + midOffset
+    // queremos: rotFinal + segMid0 = -PI/2 + 2k*PI
+    // => rotFinal = -PI/2 - segMid0 + 2k*PI
+    const naturalStop = -Math.PI / 2 - segMid0
+    const currentRot = rotRef.current % (2 * Math.PI)
+    // delta positivo minimo para ir de currentRot ate naturalStop
+    let delta = ((naturalStop - currentRot) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI)
+    if (delta < 0.05) delta += 2 * Math.PI // evita parar quase imediatamente
+    // giros extras aleatorios: entre 3 e 6 voltas completas
+    const extraTurns = 3 + Math.floor(Math.random() * 4)
+    const targetRotation = currentRot + extraTurns * 2 * Math.PI + delta
 
     animateSpin(targetRotation, () => {
       setResult(prize)

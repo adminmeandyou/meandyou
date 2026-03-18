@@ -8,18 +8,21 @@ import { useRouter } from 'next/navigation'
 import {
   Star, Zap, ArrowLeft, CheckCircle, Loader2, ShoppingBag,
   Search, RotateCcw, Coins, Plus, Ghost, Eye, Gift, BadgeCheck,
-  TrendingUp, X, Package, ChevronRight,
+  TrendingUp, X, Package, ChevronRight, ChevronDown, Backpack,
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
 
+// ─── Itens premium (compra direta via Cakto, sem fichas) ──────────────────
+const PACOTE_LENDARIO_URL  = 'https://pay.cakto.com.br/pacote_lendario'  // R$ 179,97
+
 // ─── Pacotes de fichas (compra via Cakto) ─────────────────────────────────
 // ATENÇÃO: substitua as URLs pelos links reais da Cakto após criar os produtos
 const FICHAS_PACKAGES = [
-  { label: '500 fichas',    price: 'R$ 7,97',   url: 'https://pay.cakto.com.br/fichas_500',   highlight: false },
-  { label: '1.500 fichas',  price: 'R$ 19,97',  url: 'https://pay.cakto.com.br/fichas_1500',  highlight: true  },
-  { label: '4.000 fichas',  price: 'R$ 44,97',  url: 'https://pay.cakto.com.br/fichas_4000',  highlight: false },
-  { label: '10.000 fichas', price: 'R$ 99,97',  url: 'https://pay.cakto.com.br/fichas_10000', highlight: false },
+  { label: '50 fichas',   price: 'R$ 5,97',  url: 'https://pay.cakto.com.br/fichas_50',   highlight: false, tag: null },
+  { label: '150 fichas',  price: 'R$ 14,97', url: 'https://pay.cakto.com.br/fichas_150',  highlight: true,  tag: 'Mais popular' },
+  { label: '400 fichas',  price: 'R$ 34,97', url: 'https://pay.cakto.com.br/fichas_400',  highlight: false, tag: null },
+  { label: '900 fichas',  price: 'R$ 59,97', url: 'https://pay.cakto.com.br/fichas_900',  highlight: false, tag: 'Melhor valor' },
 ]
 
 // Preço fixo — igual para todos os planos
@@ -29,110 +32,101 @@ function applyDiscount(base: number, _plan: string | null): number {
 
 // ─── Itens compraveis com fichas ──────────────────────────────────────────
 type ItemKey =
-  | 'superlike_1' | 'superlike_5'
-  | 'boost_1' | 'boost_5'
-  | 'lupa_1' | 'lupa_5'
-  | 'rewind_1' | 'rewind_5'
+  | 'superlike' | 'boost' | 'lupa' | 'rewind'
   | 'ghost_7d' | 'ghost_35d'
-  | 'reveals_24h' | 'xp_bonus_3d' | 'verified_plus' | 'caixa_surpresa'
+  | 'reveals_5' | 'xp_bonus_3d' | 'verified_plus' | 'caixa_surpresa' | 'caixa_lendaria'
 
 interface StoreItem {
   key: ItemKey
   label: string
   description: string
+  unit: string           // ex: "SuperLike", "Boost", "perfis revelados"
   icon: React.ReactNode
-  baseFichas: number   // preco base (Essencial)
+  baseFichas: number     // preco por unidade
   accentColor: string
   accentBg: string
   accentBorder: string
   balanceKey?: string
+  maxQty: number         // maximo selecionavel
   new?: boolean
 }
 
 const STORE_ITEMS: StoreItem[] = [
   {
-    key: 'superlike_1', label: '1 SuperLike', description: 'Se destaque para quem você mais quer',
-    icon: <Star size={20} strokeWidth={1.5} />, baseFichas: 50,
+    key: 'superlike', label: 'SuperLike', description: 'Se destaque para quem você mais quer',
+    unit: 'SuperLike',
+    icon: <Star size={20} strokeWidth={1.5} />, baseFichas: 30, maxQty: 10,
     accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.25)',
     balanceKey: 'superlikes',
   },
   {
-    key: 'superlike_5', label: '5 SuperLikes', description: 'Pacote econômico',
-    icon: <Star size={20} strokeWidth={1.5} />, baseFichas: 200,
-    accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.25)',
-    balanceKey: 'superlikes',
-  },
-  {
-    key: 'boost_1', label: '1 Boost', description: '30 min em destaque na sua região',
-    icon: <Zap size={20} strokeWidth={1.5} />, baseFichas: 60,
+    key: 'boost', label: 'Boost', description: '30 min em destaque na sua região',
+    unit: 'Boost',
+    icon: <Zap size={20} strokeWidth={1.5} />, baseFichas: 40, maxQty: 5,
     accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
     balanceKey: 'boosts',
   },
   {
-    key: 'boost_5', label: '5 Boosts', description: 'Estoque para o mês — 250 fichas',
-    icon: <Zap size={20} strokeWidth={1.5} />, baseFichas: 250,
-    accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
-    balanceKey: 'boosts',
-  },
-  {
-    key: 'lupa_1', label: '1 Lupa', description: 'Revele perfis borrados na aba Destaque',
-    icon: <Search size={20} strokeWidth={1.5} />, baseFichas: 70,
+    key: 'lupa', label: 'Lupa', description: 'Revele perfis borrados na aba Destaque',
+    unit: 'Lupa',
+    icon: <Search size={20} strokeWidth={1.5} />, baseFichas: 25, maxQty: 10,
     accentColor: '#3b82f6', accentBg: 'rgba(59,130,246,0.10)', accentBorder: 'rgba(59,130,246,0.25)',
     balanceKey: 'lupas',
   },
   {
-    key: 'lupa_5', label: '5 Lupas', description: 'Pacote com desconto — 290 fichas',
-    icon: <Search size={20} strokeWidth={1.5} />, baseFichas: 290,
-    accentColor: '#3b82f6', accentBg: 'rgba(59,130,246,0.10)', accentBorder: 'rgba(59,130,246,0.25)',
-    balanceKey: 'lupas',
-  },
-  {
-    key: 'rewind_1', label: '1 Desfazer', description: 'Volte atrás em perfis que passou',
-    icon: <RotateCcw size={20} strokeWidth={1.5} />, baseFichas: 50,
-    accentColor: '#a855f7', accentBg: 'rgba(168,85,247,0.10)', accentBorder: 'rgba(168,85,247,0.25)',
-    balanceKey: 'rewinds',
-  },
-  {
-    key: 'rewind_5', label: '5 Desfazer', description: 'Pacote com desconto — 200 fichas',
-    icon: <RotateCcw size={20} strokeWidth={1.5} />, baseFichas: 200,
+    key: 'rewind', label: 'Desfazer', description: 'Volte atrás em perfis que passou',
+    unit: 'Desfazer',
+    icon: <RotateCcw size={20} strokeWidth={1.5} />, baseFichas: 20, maxQty: 10,
     accentColor: '#a855f7', accentBg: 'rgba(168,85,247,0.10)', accentBorder: 'rgba(168,85,247,0.25)',
     balanceKey: 'rewinds',
   },
   {
     key: 'ghost_7d', label: 'Fantasma 7 dias', description: 'Fique invisível nas buscas por 7 dias',
-    icon: <Ghost size={20} strokeWidth={1.5} />, baseFichas: 90,
+    unit: 'ativação',
+    icon: <Ghost size={20} strokeWidth={1.5} />, baseFichas: 60, maxQty: 1,
     accentColor: '#6b7280', accentBg: 'rgba(107,114,128,0.10)', accentBorder: 'rgba(107,114,128,0.25)',
     balanceKey: 'ghost',
   },
   {
     key: 'ghost_35d', label: 'Fantasma 35 dias', description: 'Invisibilidade por mais de um mês',
-    icon: <Ghost size={20} strokeWidth={1.5} />, baseFichas: 350,
+    unit: 'ativação',
+    icon: <Ghost size={20} strokeWidth={1.5} />, baseFichas: 220, maxQty: 1,
     accentColor: '#6b7280', accentBg: 'rgba(107,114,128,0.10)', accentBorder: 'rgba(107,114,128,0.25)',
     balanceKey: 'ghost',
   },
-  // Novos itens exclusivos de fichas
   {
-    key: 'reveals_24h', label: 'Ver quem curtiu (24h)', description: 'Veja todos os seus admiradores por 24 horas',
-    icon: <Eye size={20} strokeWidth={1.5} />, baseFichas: 200,
+    key: 'reveals_5', label: 'Ver quem curtiu', description: 'Revela 5 perfis da fila de admiradores',
+    unit: 'revelação (5 perfis)',
+    icon: <Eye size={20} strokeWidth={1.5} />, baseFichas: 50, maxQty: 5,
     accentColor: '#ec4899', accentBg: 'rgba(236,72,153,0.10)', accentBorder: 'rgba(236,72,153,0.25)',
     new: true,
   },
   {
     key: 'xp_bonus_3d', label: 'Bônus de XP (3 dias)', description: 'Ganhe o dobro de XP no streak por 3 dias',
-    icon: <TrendingUp size={20} strokeWidth={1.5} />, baseFichas: 150,
+    unit: 'ativação',
+    icon: <TrendingUp size={20} strokeWidth={1.5} />, baseFichas: 50, maxQty: 1,
     accentColor: '#10b981', accentBg: 'rgba(16,185,129,0.10)', accentBorder: 'rgba(16,185,129,0.25)',
     new: true,
   },
   {
-    key: 'verified_plus', label: 'Selo Verificado Plus', description: 'Exibe um selo especial no seu perfil',
-    icon: <BadgeCheck size={20} strokeWidth={1.5} />, baseFichas: 500,
+    key: 'verified_plus', label: 'Selo Verificado Plus', description: 'Selo especial no perfil por 30 dias',
+    unit: 'ativação',
+    icon: <BadgeCheck size={20} strokeWidth={1.5} />, baseFichas: 200, maxQty: 1,
     accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.25)',
     new: true,
   },
   {
-    key: 'caixa_surpresa', label: 'Caixa Surpresa', description: 'Prêmio aleatório — pode ser raro!',
-    icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 100,
+    key: 'caixa_surpresa', label: 'Caixa Surpresa', description: 'Premio aleatorio — pode ser raro!',
+    unit: 'caixa',
+    icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 35, maxQty: 5,
     accentColor: '#8b5cf6', accentBg: 'rgba(139,92,246,0.10)', accentBorder: 'rgba(139,92,246,0.25)',
+    new: true,
+  },
+  {
+    key: 'caixa_lendaria', label: 'Caixa Super Lendária', description: 'Recompensas exclusivas e raras — itens que nao existem em outro lugar',
+    unit: 'caixa',
+    icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 2250, maxQty: 1,
+    accentColor: '#F59E0B', accentBg: 'rgba(139,92,246,0.15)', accentBorder: 'rgba(245,158,11,0.50)',
     new: true,
   },
 ]
@@ -141,44 +135,31 @@ const STORE_ITEMS: StoreItem[] = [
 
 function PurchaseSheet({
   item,
-  price,
+  qty,
   fichas,
-  plan,
   onConfirm,
   onClose,
   loading,
 }: {
   item: StoreItem
-  price: number
+  qty: number
   fichas: number
-  plan: string | null
   onConfirm: () => void
   onClose: () => void
   loading: boolean
 }) {
-  const discount = 0
-  const canAfford = fichas >= price
+  const total = item.baseFichas * qty
+  const canAfford = fichas >= total
+  const qtyLabel = qty > 1 ? `${qty}x ${item.unit}` : `1 ${item.unit}`
 
   return (
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 40, backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }} />
-      <div style={{
-        position: 'fixed', inset: '0 0 0 0', zIndex: 50,
-        display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
-        pointerEvents: 'none',
-      }}>
-        <div style={{
-          pointerEvents: 'all',
-          backgroundColor: 'var(--bg-card)',
-          borderRadius: '20px 20px 0 0',
-          borderTop: '1px solid var(--border)',
-          padding: '20px 20px 40px',
-          animation: 'slideUp 0.25s ease-out',
-        }}>
-          {/* Handle */}
+      <div style={{ position: 'fixed', inset: '0 0 0 0', zIndex: 50, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pointerEvents: 'none' }}>
+        <div style={{ pointerEvents: 'all', backgroundColor: 'var(--bg-card)', borderRadius: '20px 20px 0 0', borderTop: '1px solid var(--border)', padding: '20px 20px 40px', animation: 'slideUp 0.25s ease-out' }}>
           <div style={{ width: 36, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 auto 20px' }} />
 
-          {/* Header do item */}
+          {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
             <div style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: item.accentBg, border: `1px solid ${item.accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: item.accentColor, flexShrink: 0 }}>
               {item.icon}
@@ -192,19 +173,25 @@ function PurchaseSheet({
             </button>
           </div>
 
-          {/* Custo com desconto */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 14, backgroundColor: canAfford ? 'rgba(245,158,11,0.08)' : 'rgba(225,29,72,0.08)', border: `1px solid ${canAfford ? 'rgba(245,158,11,0.25)' : 'rgba(225,29,72,0.25)'}`, marginBottom: 16 }}>
-            <span style={{ fontSize: 14, color: 'var(--muted)' }}>Custo</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Coins size={15} color="#F59E0B" strokeWidth={1.5} />
-              <span style={{ fontSize: 16, fontWeight: 700, color: '#F59E0B' }}>{price} fichas</span>
+          {/* Resumo */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 14, backgroundColor: canAfford ? 'rgba(245,158,11,0.08)' : 'rgba(225,29,72,0.08)', border: `1px solid ${canAfford ? 'rgba(245,158,11,0.25)' : 'rgba(225,29,72,0.25)'}`, marginBottom: 12 }}>
+            <div>
+              <span style={{ fontSize: 13, color: 'var(--muted)' }}>Comprando</span>
+              <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', margin: '2px 0 0' }}>{qtyLabel}</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <span style={{ fontSize: 13, color: 'var(--muted)' }}>Total</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'flex-end', marginTop: 2 }}>
+                <Coins size={15} color="#F59E0B" strokeWidth={1.5} />
+                <span style={{ fontSize: 18, fontWeight: 800, color: '#F59E0B' }}>{total}</span>
+                <span style={{ fontSize: 12, color: 'rgba(245,158,11,0.6)' }}>fichas</span>
+              </div>
+              {qty > 1 && <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.30)' }}>{item.baseFichas} cada</span>}
             </div>
           </div>
 
-
-          {/* Saldo */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-            <span style={{ fontSize: 13, color: 'var(--muted)' }}>Seu saldo atual</span>
+            <span style={{ fontSize: 13, color: 'var(--muted)' }}>Seu saldo</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
               <Coins size={13} color={canAfford ? '#F59E0B' : '#f87171'} strokeWidth={1.5} />
               <span style={{ fontSize: 14, fontWeight: 600, color: canAfford ? '#F59E0B' : '#f87171' }}>{fichas} fichas</span>
@@ -215,20 +202,17 @@ function PurchaseSheet({
             <button
               onClick={onConfirm}
               disabled={loading}
-              style={{ width: '100%', padding: '16px', borderRadius: 14, border: 'none', backgroundColor: loading ? 'rgba(225,29,72,0.40)' : '#E11D48', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'opacity 0.2s' }}
+              style={{ width: '100%', padding: '16px', borderRadius: 14, border: 'none', backgroundColor: loading ? 'rgba(225,29,72,0.40)' : '#E11D48', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
             >
               {loading ? <Loader2 size={18} strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Coins size={18} strokeWidth={1.5} />}
-              {loading ? 'Processando...' : `Confirmar — ${price} fichas`}
+              {loading ? 'Processando...' : `Confirmar — ${total} fichas`}
             </button>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <p style={{ textAlign: 'center', fontSize: 13, color: '#f87171', margin: 0 }}>
-                Fichas insuficientes — precisa de mais {price - fichas} fichas
+                Fichas insuficientes — faltam {total - fichas} fichas
               </p>
-              <button
-                onClick={onClose}
-                style={{ width: '100%', padding: '14px', borderRadius: 14, border: '1px solid var(--accent-border)', backgroundColor: 'var(--accent-light)', color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
-              >
+              <button onClick={onClose} style={{ width: '100%', padding: '14px', borderRadius: 14, border: '1px solid var(--accent-border)', backgroundColor: 'var(--accent-light)', color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>
                 Comprar fichas acima
               </button>
             </div>
@@ -261,9 +245,13 @@ export default function LojaPage() {
   const [purchasing, setPurchasing]       = useState(false)
   const [lojaTab, setLojaTab]             = useState<'recargas' | 'compras'>('recargas')
   const [selectedPackage, setSelectedPackage] = useState<typeof FICHAS_PACKAGES[0] | null>(null)
+  const [mochilaAberta, setMochilaAberta] = useState(false)
+  const [qtys, setQtys] = useState<Record<string, number>>(
+    () => Object.fromEntries(STORE_ITEMS.map(i => [i.key, 1]))
+  )
+  const [openQty, setOpenQty] = useState(1)
 
   const plan = limits.plan
-  const getPrice = (item: StoreItem) => applyDiscount(item.baseFichas, plan)
 
   useEffect(() => {
     if (!user) return
@@ -313,7 +301,7 @@ export default function LojaPage() {
     setActivating(false)
   }
 
-  async function handlePurchase(item: StoreItem) {
+  async function handlePurchase(item: StoreItem, qty: number = 1) {
     if (purchasing) return
     setPurchasing(true)
     haptics.medium()
@@ -322,12 +310,12 @@ export default function LojaPage() {
       const res = await fetch('/api/loja/gastar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token ?? ''}` },
-        body: JSON.stringify({ item_key: item.key, plan }),
+        body: JSON.stringify({ item_key: item.key, plan, qty }),
       })
       const data = await res.json()
       if (data.success) {
         haptics.success()
-        setFichas(f => f - getPrice(item))
+        setFichas(f => f - item.baseFichas * qty)
         toast.success(`${item.label} adicionado ao seu saldo!`)
         if (data.surpresa) {
           toast.info(`Caixa Surpresa: você ganhou ${data.surpresa.reward_amount}x ${data.surpresa.reward_type}!`)
@@ -393,20 +381,39 @@ export default function LojaPage() {
 
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-        {/* Saldo resumido */}
-        {!loading && (
-          <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '16px' }}>
-            <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '12px' }}>Seu saldo</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
-              <BalanceItem icon={<Coins size={16} strokeWidth={1.5} color="#F59E0B" />} label="Fichas" value={fichas} />
-              <BalanceItem icon={<Star size={16} strokeWidth={1.5} color="#F59E0B" />} label="SuperLikes" value={superlikes} />
-              <BalanceItem icon={<Zap size={16} strokeWidth={1.5} color="var(--accent)" />} label="Boosts" value={boosts} active={!!boostIsActive} countdown={boostIsActive && boostActiveUntil ? boostActiveUntil : undefined} />
-              <BalanceItem icon={<Search size={16} strokeWidth={1.5} color="#3b82f6" />} label="Lupas" value={lupas} />
-              <BalanceItem icon={<RotateCcw size={16} strokeWidth={1.5} color="#a855f7" />} label="Rewinds" value={rewinds} />
-              <BalanceItem icon={<Ghost size={16} strokeWidth={1.5} color="#6b7280" />} label="Fantasma" value={ghostDaysLeft} suffix="d" active={!!ghostIsActive} countdown={ghostIsActive && ghostModeUntil ? ghostModeUntil : undefined} />
+        {/* Mochila colapsavel */}
+        <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
+          <button
+            onClick={() => setMochilaAberta(v => !v)}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+          >
+            <div style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Backpack size={16} color="#F59E0B" strokeWidth={1.5} />
             </div>
-          </div>
-        )}
+            <span style={{ flex: 1, fontSize: '14px', fontWeight: '600', color: 'var(--text)' }}>Minha mochila</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              {!mochilaAberta && !loading && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Coins size={13} color="#F59E0B" strokeWidth={1.5} />
+                  <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: '700' }}>{fichas} fichas</span>
+                </div>
+              )}
+              <ChevronDown size={16} color="rgba(248,249,250,0.35)" strokeWidth={1.5} style={{ transition: 'transform 0.2s', transform: mochilaAberta ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+            </div>
+          </button>
+          {mochilaAberta && !loading && (
+            <div style={{ padding: '0 16px 16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', paddingTop: '12px' }}>
+                <BalanceItem icon={<Coins size={16} strokeWidth={1.5} color="#F59E0B" />} label="Fichas" value={fichas} />
+                <BalanceItem icon={<Star size={16} strokeWidth={1.5} color="#F59E0B" />} label="SuperLikes" value={superlikes} />
+                <BalanceItem icon={<Zap size={16} strokeWidth={1.5} color="var(--accent)" />} label="Boosts" value={boosts} active={!!boostIsActive} countdown={boostIsActive && boostActiveUntil ? boostActiveUntil : undefined} />
+                <BalanceItem icon={<Search size={16} strokeWidth={1.5} color="#3b82f6" />} label="Lupas" value={lupas} />
+                <BalanceItem icon={<RotateCcw size={16} strokeWidth={1.5} color="#a855f7" />} label="Rewinds" value={rewinds} />
+                <BalanceItem icon={<Ghost size={16} strokeWidth={1.5} color="#6b7280" />} label="Fantasma" value={ghostDaysLeft} suffix="d" active={!!ghostIsActive} countdown={ghostIsActive && ghostModeUntil ? ghostModeUntil : undefined} />
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Boost ativo ou botao de ativar */}
         {boostIsActive ? (
@@ -425,6 +432,71 @@ export default function LojaPage() {
           </button>
         )}
 
+        {/* ─── Seção Premium / Lendária ───────────────────────────────── */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
+            <span style={{ fontSize: 14 }}>✦</span>
+            <p style={{ fontSize: '11px', fontWeight: '700', color: '#F59E0B', textTransform: 'uppercase', letterSpacing: '0.10em', margin: 0 }}>Exclusivo — Lendário</p>
+          </div>
+
+          {/* Pacote Lendário */}
+          <a
+            href={PACOTE_LENDARIO_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => haptics.success()}
+            style={{ display: 'block', textDecoration: 'none' }}
+          >
+            <div style={{
+              borderRadius: 18,
+              padding: '18px 20px',
+              background: 'linear-gradient(135deg, #0f1a00 0%, #1a3000 50%, #0f1a00 100%)',
+              border: '1px solid rgba(245,158,11,0.40)',
+              boxShadow: '0 0 32px rgba(245,158,11,0.12), inset 0 1px 0 rgba(255,255,255,0.05)',
+              position: 'relative',
+              overflow: 'hidden',
+            }}>
+              <div style={{ position: 'absolute', top: -20, right: 10, width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(245,158,11,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                <div style={{ width: 52, height: 52, borderRadius: 14, background: 'linear-gradient(135deg, #F59E0B, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 16px rgba(245,158,11,0.40)' }}>
+                  <Coins size={24} strokeWidth={1.5} color="#fff" />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                    <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 17, color: '#fff', margin: 0 }}>Pacote Lendário</p>
+                    <span style={{ fontSize: 9, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.40)', borderRadius: 100, padding: '2px 8px' }}>MELHOR DEAL</span>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <Coins size={12} color="#F59E0B" strokeWidth={1.5} />
+                      <span style={{ fontSize: 13, color: '#F8F9FA', fontWeight: 600 }}>3.510 fichas</span>
+                      <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.35)', textDecoration: 'line-through' }}>2.700</span>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 100, padding: '1px 6px' }}>+30%</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                      <Gift size={12} color="#8b5cf6" strokeWidth={1.5} />
+                      <span style={{ fontSize: 13, color: '#F8F9FA', fontWeight: 600 }}>1 Caixa Super Lendária</span>
+                      <span style={{ fontSize: 10, color: 'rgba(248,249,250,0.35)' }}>grátis</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(245,158,11,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.40)' }}>Economize vs. comprar separado</span>
+                  <p style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600, margin: '2px 0 0' }}>Valeria R$ 209,94 — voce paga menos</p>
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: '#F59E0B', margin: 0, lineHeight: 1 }}>R$ 179,97</p>
+                  <p style={{ fontSize: 10, color: 'rgba(248,249,250,0.35)', margin: '2px 0 0' }}>pagamento único</p>
+                </div>
+              </div>
+            </div>
+          </a>
+        </div>
+
         {/* ─── Tabs Recargas / Compras ────────────────────────────────── */}
         <div style={{ display: 'flex', backgroundColor: 'var(--bg-card)', borderRadius: 12, padding: 4, border: '1px solid var(--border)' }}>
           {(['recargas', 'compras'] as const).map((tab) => (
@@ -439,7 +511,7 @@ export default function LojaPage() {
                 color: lojaTab === tab ? '#fff' : 'var(--muted)',
               }}
             >
-              {tab === 'recargas' ? 'Recargar fichas' : 'Usar fichas'}
+              {tab === 'recargas' ? 'Recarregar fichas' : 'Usar fichas'}
             </button>
           ))}
         </div>
@@ -454,10 +526,10 @@ export default function LojaPage() {
             {FICHAS_PACKAGES.map((pkg) => {
               const isSelected = selectedPackage?.label === pkg.label
               return (
-                <div key={pkg.label} style={{ position: 'relative', paddingTop: pkg.highlight ? 14 : 0 }}>
-                  {pkg.highlight && (
+                <div key={pkg.label} style={{ position: 'relative', paddingTop: pkg.tag ? 14 : 0 }}>
+                  {pkg.tag && (
                     <span style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', fontSize: 10, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', borderRadius: 100, padding: '2px 10px', whiteSpace: 'nowrap', zIndex: 1 }}>
-                      Mais popular
+                      {pkg.tag}
                     </span>
                   )}
                 <div
@@ -466,7 +538,7 @@ export default function LojaPage() {
                     display: 'flex', flexDirection: 'column', padding: '14px', borderRadius: 14,
                     border: isSelected
                       ? '1.5px solid rgba(245,158,11,0.80)'
-                      : pkg.highlight
+                      : pkg.tag
                         ? '1px solid rgba(245,158,11,0.30)'
                         : '1px solid var(--border)',
                     backgroundColor: isSelected
@@ -528,36 +600,63 @@ export default function LojaPage() {
             <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Usar fichas</p>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {STORE_ITEMS.map((item) => (
-              <div
-                key={item.key}
-                onClick={() => { haptics.tap(); setOpenItem(item) }}
-                style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', cursor: 'pointer', transition: 'background-color 0.15s' }}
-              >
-                {/* Icone */}
-                <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: item.accentBg, border: `1px solid ${item.accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: item.accentColor }}>
-                  {item.icon}
-                </div>
-
-                {/* Info */}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--text)', margin: 0 }}>{item.label}</p>
-                    {item.new && (
-                      <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent)', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: 100, padding: '1px 6px' }}>NOVO</span>
-                    )}
+            {STORE_ITEMS.map((item) => {
+              const qty = qtys[item.key] ?? 1
+              const total = item.baseFichas * qty
+              const canAfford = fichas >= total
+              return (
+                <div
+                  key={item.key}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
+                >
+                  {/* Icone */}
+                  <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: item.accentBg, border: `1px solid ${item.accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: item.accentColor }}>
+                    {item.icon}
                   </div>
-                  <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.description}</p>
-                </div>
 
-                {/* Preco em fichas */}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                  <Coins size={13} color="#F59E0B" strokeWidth={1.5} />
-                  <span style={{ fontSize: 13, fontWeight: 700, color: fichas >= getPrice(item) ? '#F59E0B' : 'rgba(248,249,250,0.35)' }}>{getPrice(item)}</span>
-                  <ChevronRight size={14} strokeWidth={1.5} color="rgba(248,249,250,0.25)" />
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', margin: 0 }}>{item.label}</p>
+                      {item.new && (
+                        <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent)', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: 100, padding: '1px 6px' }}>NOVO</span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
+                      <Coins size={11} color="#F59E0B" strokeWidth={1.5} />
+                      <span style={{ fontSize: '12px', fontWeight: 700, color: canAfford ? '#F59E0B' : '#f87171' }}>{total}</span>
+                      {qty > 1 && <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.30)' }}>({item.baseFichas} cada)</span>}
+                    </div>
+                  </div>
+
+                  {/* Seletor +/- */}
+                  {item.maxQty > 1 && (
+                    <div
+                      style={{ display: 'flex', alignItems: 'center', gap: 0, backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <button
+                        onClick={() => setQtys(q => ({ ...q, [item.key]: Math.max(1, (q[item.key] ?? 1) - 1) }))}
+                        style={{ width: 30, height: 30, border: 'none', background: 'none', color: qty <= 1 ? 'rgba(248,249,250,0.20)' : 'var(--text)', fontSize: 16, cursor: qty <= 1 ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >−</button>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', minWidth: 18, textAlign: 'center' }}>{qty}</span>
+                      <button
+                        onClick={() => setQtys(q => ({ ...q, [item.key]: Math.min(item.maxQty, (q[item.key] ?? 1) + 1) }))}
+                        style={{ width: 30, height: 30, border: 'none', background: 'none', color: qty >= item.maxQty ? 'rgba(248,249,250,0.20)' : 'var(--text)', fontSize: 16, cursor: qty >= item.maxQty ? 'default' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >+</button>
+                    </div>
+                  )}
+
+                  {/* Botao comprar */}
+                  <button
+                    onClick={() => { haptics.tap(); setOpenItem(item); setOpenQty(qty) }}
+                    style={{ flexShrink: 0, padding: '7px 12px', borderRadius: 10, border: 'none', backgroundColor: canAfford ? '#E11D48' : 'rgba(255,255,255,0.06)', color: canAfford ? '#fff' : 'rgba(248,249,250,0.35)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+                  >
+                    Comprar
+                  </button>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>}
 
@@ -570,10 +669,9 @@ export default function LojaPage() {
       {openItem && (
         <PurchaseSheet
           item={openItem}
-          price={getPrice(openItem)}
+          qty={openQty}
           fichas={fichas}
-          plan={plan}
-          onConfirm={() => handlePurchase(openItem)}
+          onConfirm={() => handlePurchase(openItem, openQty)}
           onClose={() => setOpenItem(null)}
           loading={purchasing}
         />
