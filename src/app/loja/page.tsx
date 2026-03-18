@@ -450,12 +450,17 @@ export default function LojaPage() {
             <Coins size={15} strokeWidth={1.5} color="#F59E0B" />
             <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Selecione um pacote</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16, paddingTop: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16, paddingTop: 4 }}>
             {FICHAS_PACKAGES.map((pkg) => {
               const isSelected = selectedPackage?.label === pkg.label
               return (
+                <div key={pkg.label} style={{ position: 'relative', paddingTop: pkg.highlight ? 14 : 0 }}>
+                  {pkg.highlight && (
+                    <span style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', fontSize: 10, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', borderRadius: 100, padding: '2px 10px', whiteSpace: 'nowrap', zIndex: 1 }}>
+                      Mais popular
+                    </span>
+                  )}
                 <div
-                  key={pkg.label}
                   onClick={() => { haptics.tap(); setSelectedPackage(isSelected ? null : pkg) }}
                   style={{
                     display: 'flex', flexDirection: 'column', padding: '14px', borderRadius: 14,
@@ -470,15 +475,9 @@ export default function LojaPage() {
                         ? 'rgba(245,158,11,0.08)'
                         : 'var(--bg-card)',
                     cursor: 'pointer', transition: 'all 0.15s',
-                    position: 'relative',
                     boxShadow: isSelected ? '0 0 0 3px rgba(245,158,11,0.15)' : 'none',
                   }}
                 >
-                  {pkg.highlight && (
-                    <span style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', fontSize: 10, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', borderRadius: 100, padding: '2px 10px', whiteSpace: 'nowrap' }}>
-                      Mais popular
-                    </span>
-                  )}
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
                     <Coins size={14} color="#F59E0B" strokeWidth={1.5} />
                     <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{pkg.label}</span>
@@ -491,6 +490,7 @@ export default function LojaPage() {
                       </div>
                     )}
                   </div>
+                </div>
                 </div>
               )
             })}
