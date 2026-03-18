@@ -367,26 +367,10 @@ input::placeholder, textarea::placeholder {
   display: none;
 }
 
-/* ── TABLET/DESKTOP (768px+) — scroll natural da janela ── */
+/* ── TABLET/DESKTOP (768px+) — frame expande mas continua fixo na tela ── */
 @media (min-width: 768px) {
-  .app-shell-outer {
-    height: auto;
-    min-height: 100vh;
-    overflow: visible;
-  }
-
   .app-frame {
     max-width: 680px;
-    height: auto;
-    min-height: 100vh;
-    overflow-x: clip;
-    overflow-y: visible;
-  }
-
-  .app-main-content {
-    overflow-y: visible;
-    overflow-x: clip;
-    flex: unset;
   }
 }
 
