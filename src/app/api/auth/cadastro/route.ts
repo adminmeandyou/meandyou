@@ -104,10 +104,17 @@ export async function POST(req: NextRequest) {
 
     const userId = data.user.id
 
+    // Helper: desfaz o usuário do Auth se algo falhar (evita conta fantasma)
+    async function rollback(motivo: string) {
+      console.error(`[cadastro] rollback — ${motivo}`)
+      try { await supabase.auth.admin.deleteUser(userId) } catch (e) {
+        console.error('[cadastro] falha ao deletar usuário no rollback:', e)
+      }
+    }
+
     // 3. Atualizar tabela users com CPF e telefone
     // O trigger handle_new_user cria a linha em public.users logo após o insert em auth.users.
-    // Aguardamos até 5 tentativas × 500ms (2,5s). Se ainda assim falhar, fazemos upsert direto
-    // para garantir que o CPF não se perca — o trigger vai ignorar o insert posterior via ON CONFLICT.
+    // Aguardamos até 5 tentativas × 500ms (2,5s). Se ainda assim falhar, fazemos upsert direto.
     let cpfSalvo = false
     for (let tentativa = 0; tentativa < 5; tentativa++) {
       const { data: updatedUser } = await supabase
@@ -120,17 +127,17 @@ export async function POST(req: NextRequest) {
       await new Promise(r => setTimeout(r, 500))
     }
     if (!cpfSalvo) {
-      // Fallback: upsert direto — garante o CPF mesmo se o trigger ainda não criou a linha
+      // Fallback: upsert direto
       console.warn('Trigger lento — usando upsert direto para userId:', userId)
-      try {
-        await supabase.from('users').upsert(
-          { id: userId, email, phone: telefone, nome_completo: nomeCompleto, cpf, verified: false, banned: false },
-          { onConflict: 'id' }
-        )
-        cpfSalvo = true
-      } catch (upsertErr) {
-        console.error('Upsert de fallback falhou para userId:', userId, upsertErr)
+      const { error: upsertErr } = await supabase.from('users').upsert(
+        { id: userId, email, phone: telefone, nome_completo: nomeCompleto, cpf, verified: false, banned: false },
+        { onConflict: 'id' }
+      )
+      if (upsertErr) {
+        await rollback('upsert de users falhou: ' + upsertErr.message)
+        return NextResponse.json({ error: 'Erro ao salvar dados. Tente novamente.' }, { status: 500 })
       }
+      cpfSalvo = true
     }
 
     // 4. Inicializar saldos zerados
