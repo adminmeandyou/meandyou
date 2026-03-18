@@ -8,7 +8,7 @@ import Image from 'next/image'
 import {
   ArrowLeft, ChevronRight, User, HelpCircle, FileText, Shield, Trash2,
   LogOut, CreditCard, Headphones, ShieldCheck, Monitor, Mail, Bell,
-  Eye, EyeOff, Lock, Smartphone,
+  Eye, EyeOff, Lock, Smartphone, Bug, Paperclip, X,
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
@@ -119,6 +119,12 @@ export default function ConfiguracoesPage() {
   const [loading, setLoading]   = useState(true)
   const [twoFaAtivo, set2FA]    = useState(false)
 
+  const [bugModal, setBugModal] = useState(false)
+  const [bugDescricao, setBugDescricao] = useState('')
+  const [bugFile, setBugFile] = useState<File | null>(null)
+  const [bugEnviando, setBugEnviando] = useState(false)
+  const [bugEnviado, setBugEnviado] = useState(false)
+
   // toggles
   const [showLastActive, setShowLastActive]         = useState(true)
   const [notifEmail, setNotifEmail]                 = useState(true)
@@ -210,6 +216,21 @@ export default function ConfiguracoesPage() {
         }
       }
     } finally { setSavingPush(false) }
+  }
+
+  async function enviarBug() {
+    if (bugDescricao.trim().length < 20) return
+    setBugEnviando(true)
+    const fd = new FormData()
+    fd.append('descricao', bugDescricao)
+    if (bugFile) fd.append('screenshot', bugFile)
+    const res = await fetch('/api/bugs/reportar', { method: 'POST', body: fd })
+    setBugEnviando(false)
+    if (res.ok) {
+      setBugEnviado(true)
+      setBugDescricao('')
+      setBugFile(null)
+    }
   }
 
   const planLabel = profile?.plan === 'black' ? 'Black' : profile?.plan === 'plus' ? 'Plus' : 'Essencial'
@@ -327,7 +348,21 @@ export default function ConfiguracoesPage() {
         {/* ── SUPORTE ── */}
         <CardSection titulo="Suporte">
           <LinkRow href="/ajuda" icon={<HelpCircle size={17} />} label="Central de ajuda" sub="Perguntas frequentes" />
-          <LinkRow href="/suporte" icon={<Headphones size={17} />} label="Abrir chamado" sub="Falar com o suporte" last />
+          <LinkRow href="/suporte" icon={<Headphones size={17} />} label="Abrir chamado" sub="Falar com o suporte" />
+          <button onClick={() => { setBugModal(true); setBugEnviado(false) }} style={{
+            display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px',
+            width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+            borderBottom: 'none', textAlign: 'left',
+          }}>
+            <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Bug size={18} color="rgba(255,255,255,0.55)" strokeWidth={1.5} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ color: '#fff', fontSize: '15px', fontWeight: 500, margin: 0 }}>Reportar problema</p>
+              <p style={{ color: 'rgba(255,255,255,0.30)', fontSize: '12px', margin: '2px 0 0' }}>Encontrou um bug? Nos avise</p>
+            </div>
+            <ChevronRight size={16} color="rgba(255,255,255,0.20)" />
+          </button>
         </CardSection>
 
         {/* ── LEGAL ── */}
@@ -353,6 +388,61 @@ export default function ConfiguracoesPage() {
       </div>
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+
+      {/* Modal de reporte de bugs */}
+      {bugModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 100 }}>
+          <div style={{ backgroundColor: '#0F1117', borderRadius: '20px 20px 0 0', width: '100%', maxWidth: '430px', padding: '24px 20px 36px' }}>
+            {bugEnviado ? (
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
+                <p style={{ fontSize: '40px', marginBottom: '12px' }}>🙏</p>
+                <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', marginBottom: '8px' }}>Obrigado pela sua contribuicao!</h3>
+                <p style={{ color: 'rgba(255,255,255,0.50)', fontSize: '14px', lineHeight: 1.6 }}>
+                  Nossa equipe ira analisar o problema. Se for constatado, voce recebera uma recompensa especial.
+                </p>
+                <button onClick={() => setBugModal(false)} style={{ marginTop: '20px', padding: '12px 24px', backgroundColor: '#e11d48', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: '600', cursor: 'pointer', width: '100%' }}>
+                  Fechar
+                </button>
+              </div>
+            ) : (
+              <>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                  <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '18px' }}>Reportar problema</h3>
+                  <button onClick={() => setBugModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.40)', padding: '4px' }}>
+                    <X size={20} />
+                  </button>
+                </div>
+                <textarea
+                  placeholder="O que aconteceu? Descreva com detalhes (minimo 20 caracteres)..."
+                  value={bugDescricao}
+                  onChange={e => setBugDescricao(e.target.value)}
+                  rows={5}
+                  style={{ width: '100%', backgroundColor: '#13161F', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '12px', color: '#fff', fontSize: '14px', resize: 'none', outline: 'none', marginBottom: '12px', boxSizing: 'border-box' }}
+                />
+                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '12px', backgroundColor: '#13161F', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', cursor: 'pointer', marginBottom: '16px' }}>
+                  <Paperclip size={16} color="rgba(255,255,255,0.40)" strokeWidth={1.5} />
+                  <span style={{ color: bugFile ? '#fff' : 'rgba(255,255,255,0.40)', fontSize: '14px' }}>
+                    {bugFile ? bugFile.name : 'Anexar print (opcional)'}
+                  </span>
+                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => setBugFile(e.target.files?.[0] ?? null)} />
+                </label>
+                <button
+                  onClick={enviarBug}
+                  disabled={bugEnviando || bugDescricao.trim().length < 20}
+                  style={{
+                    width: '100%', padding: '14px', backgroundColor: '#e11d48', color: '#fff',
+                    border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: '600',
+                    cursor: bugDescricao.trim().length < 20 ? 'not-allowed' : 'pointer',
+                    opacity: bugDescricao.trim().length < 20 ? 0.5 : 1,
+                  }}
+                >
+                  {bugEnviando ? 'Enviando...' : 'Enviar reporte'}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
