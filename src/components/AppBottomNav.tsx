@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { MessageCircle, Compass, Zap, ShoppingBag, User } from 'lucide-react'
+import { useHaptics } from '@/hooks/useHaptics'
 
 interface NavItem {
   href: string
@@ -26,6 +27,7 @@ function isActive(pathname: string, href: string): boolean {
 
 export function AppBottomNav() {
   const pathname = usePathname()
+  const haptics = useHaptics()
 
   return (
     <nav
@@ -47,6 +49,7 @@ export function AppBottomNav() {
             <Link
               key={href}
               href={href}
+              onClick={() => haptics.tap()}
               style={{
                 flex: 1,
                 display: 'flex',
@@ -73,7 +76,7 @@ export function AppBottomNav() {
                   marginBottom: 2,
                 }}
               >
-                <Icon size={22} strokeWidth={1.5} />
+                <Icon size={22} strokeWidth={active ? 2.5 : 1.5} />
               </div>
             </Link>
           )
@@ -83,6 +86,7 @@ export function AppBottomNav() {
           <Link
             key={href}
             href={href}
+            onClick={() => haptics.tap()}
             style={{
               flex: 1,
               display: 'flex',
@@ -97,7 +101,20 @@ export function AppBottomNav() {
             }}
             aria-label={label}
           >
-            <Icon size={22} strokeWidth={active ? 2 : 1.5} />
+            <div
+              style={{
+                width: 40,
+                height: 24,
+                borderRadius: 12,
+                backgroundColor: active ? 'var(--accent-light)' : 'transparent',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background-color 0.18s',
+              }}
+            >
+              <Icon size={22} strokeWidth={active ? 2.5 : 1.5} />
+            </div>
             <span
               style={{
                 fontSize: 10,

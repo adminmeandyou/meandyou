@@ -219,8 +219,14 @@ input::placeholder, textarea::placeholder {
 
 /* ── Classes utilitárias dos componentes ── */
 .ui-skeleton {
-  animation: ui-pulse 1.5s ease-in-out infinite;
-  background: rgba(255,255,255,0.07);
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.04) 25%,
+    rgba(255,255,255,0.09) 50%,
+    rgba(255,255,255,0.04) 75%
+  );
+  background-size: 400% 100%;
+  animation: shimmer 1.6s ease-in-out infinite;
   border-radius: 8px;
 }
 
@@ -421,3 +427,35 @@ html:has(.app-shell-outer) body {
     max-width: 960px;
   }
 }
+
+/* ── Transicao suave de entrada de pagina ── */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.app-main-content > * {
+  animation: page-enter 0.22s ease-out;
+}
+
+/* ── Active state para todos os botoes inline (via style attribute) ── */
+/* Aplica feedback tativo em qualquer botao que nao usa .btn-primary */
+button:active:not(:disabled) {
+  transform: scale(0.96);
+  transition: transform 0.1s;
+}
+
+/* ── Melhoria de acessibilidade: focus visivel ── */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+/* ── Glow animado para botoes CTA quando ativos ── */
+@keyframes btn-glow-pulse {
+  0%, 100% { box-shadow: 0 8px 32px rgba(225,29,72,0.35); }
+  50%       { box-shadow: 0 8px 40px rgba(225,29,72,0.55); }
+}
+

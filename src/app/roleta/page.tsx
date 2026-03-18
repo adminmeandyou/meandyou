@@ -81,6 +81,24 @@ export default function RoletaPage() {
   const [history, setHistory] = useState<any[]>([])
   const [showCelebration, setShowCelebration] = useState(false)
   const [wheelSize, setWheelSize] = useState(300)
+  const [countdown, setCountdown] = useState('')
+
+  useEffect(() => {
+    function calcCountdown() {
+      const now = new Date()
+      const midnight = new Date()
+      midnight.setDate(midnight.getDate() + 1)
+      midnight.setHours(0, 0, 0, 0)
+      const diff = midnight.getTime() - now.getTime()
+      const h = Math.floor(diff / 3600000).toString().padStart(2, '0')
+      const m = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0')
+      const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0')
+      setCountdown(`${h}:${m}:${s}`)
+    }
+    calcCountdown()
+    const id = setInterval(calcCountdown, 1000)
+    return () => clearInterval(id)
+  }, [])
 
   const dailyTickets = limits.isBlack ? 3 : limits.isPlus ? 2 : 1
   const spinsLeft = Math.max(0, dailyTickets - spinsToday)
@@ -619,10 +637,13 @@ export default function RoletaPage() {
             ) : tickets === 0 ? (
               <>
                 <Ticket size={16} strokeWidth={1.5} />
-                Sem tickets — ganhe amanha
+                Proximo giro em {countdown}
               </>
             ) : spinsLeft === 0 ? (
-              'Limite diario atingido'
+              <>
+                <Ticket size={16} strokeWidth={1.5} />
+                Limite diario — renova em {countdown}
+              </>
             ) : (
               <>
                 <Zap size={16} strokeWidth={2} />
