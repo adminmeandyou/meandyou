@@ -4,6 +4,10 @@
 -- Execute no Supabase SQL Editor
 -- =============================================
 
+-- 0. Adicionar coluna onboarding_done se nao existir (usada no dashboard/proxy)
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS onboarding_done boolean DEFAULT false;
+
 -- 1. Tabela users (plano Black + dados basicos)
 INSERT INTO public.users (id, email, phone, nome_completo, cpf, verified, banned, plan)
 VALUES (
@@ -17,24 +21,26 @@ VALUES (
   'black'
 )
 ON CONFLICT (id) DO UPDATE SET
-  plan          = 'black',
-  verified      = true,
-  banned        = false,
-  email         = EXCLUDED.email;
+  plan     = 'black',
+  verified = true,
+  banned   = false,
+  email    = EXCLUDED.email;
 
--- 2. Tabela profiles (role admin + onboarding completo)
-INSERT INTO public.profiles (id, name, onboarding_done, role, bio)
+-- 2. Tabela profiles (role admin + onboarding completo + plano Black)
+INSERT INTO public.profiles (id, name, onboarding_done, role, plan, bio)
 VALUES (
   'd242ae09-5777-42fd-8b1b-93646f4c605e',
   'Dev Admin',
   true,
   'admin',
+  'black',
   'Perfil de desenvolvimento e testes.'
 )
 ON CONFLICT (id) DO UPDATE SET
-  name           = EXCLUDED.name,
+  name            = EXCLUDED.name,
   onboarding_done = true,
-  role           = 'admin';
+  role            = 'admin',
+  plan            = 'black';
 
 -- 3. Saldos (999 de tudo para testar sem limitacoes)
 INSERT INTO public.user_tickets (user_id, amount)
