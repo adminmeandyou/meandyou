@@ -95,7 +95,8 @@ export async function POST(req: NextRequest) {
     })
 
     if (error) {
-      const msg = error.message.includes('already registered')
+      const m = error.message.toLowerCase()
+      const msg = (m.includes('already registered') || m.includes('already been registered') || m.includes('already exists') || m.includes('user already'))
         ? 'Este email já está cadastrado.'
         : error.message
       return NextResponse.json({ error: msg }, { status: 400 })

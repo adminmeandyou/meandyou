@@ -145,6 +145,21 @@ function CadastroInner() {
     setStep(s => s + 1)
   }
 
+  function resetTurnstile() {
+    if (!TURNSTILE_SITE_KEY || !turnstileRef.current) return
+    const win = window as any
+    if (win.turnstile) {
+      try { win.turnstile.remove(turnstileRef.current) } catch {}
+      setCfToken('')
+      win.turnstile.render(turnstileRef.current, {
+        sitekey: TURNSTILE_SITE_KEY,
+        callback: (token: string) => setCfToken(token),
+        'expired-callback': () => setCfToken(''),
+        theme: 'dark',
+      })
+    }
+  }
+
   const handleCadastro = async () => {
     setErro('')
     if (TURNSTILE_SITE_KEY && !cfToken) {
@@ -168,7 +183,11 @@ function CadastroInner() {
         }),
       })
       const data = await res.json()
-      if (!res.ok) { setErro(data.error || 'Erro ao criar conta'); return }
+      if (!res.ok) {
+        setErro(data.error || 'Erro ao criar conta')
+        resetTurnstile() // token já foi consumido — gera um novo
+        return
+      }
 
       const loginRes = await fetch('/api/auth/login', {
         method:  'POST',
@@ -182,6 +201,7 @@ function CadastroInner() {
       }
     } catch {
       setErro('Erro de conexão. Tente novamente.')
+      resetTurnstile()
     } finally {
       setLoading(false)
     }
