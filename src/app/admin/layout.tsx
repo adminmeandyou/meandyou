@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { LayoutDashboard, Users, DollarSign, Flag, ShieldAlert, TrendingUp, LogOut, XCircle, UserCog, Award, BarChart2 } from 'lucide-react'
+import { LayoutDashboard, Users, DollarSign, Flag, ShieldAlert, TrendingUp, LogOut, XCircle, UserCog, Award, BarChart2, Bug } from 'lucide-react'
 import { supabase } from '@/app/lib/supabase'
 
 type NavItem = { href: string; label: string; icon: React.ElementType }
@@ -19,6 +19,7 @@ const ALL_NAV: NavItem[] = [
   { href: '/admin/insights',       label: 'Perfil Clientes', icon: BarChart2       },
   { href: '/admin/equipe',         label: 'Equipe',          icon: UserCog         },
   { href: '/admin/emblemas',       label: 'Emblemas',        icon: Award           },
+  { href: '/admin/bugs',           label: 'Bugs',            icon: Bug             },
 ]
 
 const STAFF_PERMISSIONS: Record<string, string[]> = {
