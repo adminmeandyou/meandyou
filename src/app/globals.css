@@ -126,7 +126,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .btn-primary:active {
-  transform: scale(0.97);
+  transform: scale(0.95);
   opacity: 0.92;
   box-shadow: 0 4px 16px rgba(225,29,72,0.25);
 }

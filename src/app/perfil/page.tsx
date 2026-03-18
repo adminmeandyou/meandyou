@@ -12,8 +12,22 @@ export default function PerfilPage() {
   const router = useRouter()
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.replace('/login'); return }
+
+      // Verifica se o row de perfil existe antes de redirecionar
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single()
+
+      if (!profile) {
+        // Conta existe no Auth mas perfil nao foi criado — manda para onboarding
+        router.replace('/onboarding')
+        return
+      }
+
       router.replace(`/perfil/${user.id}`)
     })
   }, [])

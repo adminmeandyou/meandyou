@@ -260,6 +260,7 @@ export default function LojaPage() {
   const [openItem, setOpenItem]           = useState<StoreItem | null>(null)
   const [purchasing, setPurchasing]       = useState(false)
   const [lojaTab, setLojaTab]             = useState<'recargas' | 'compras'>('recargas')
+  const [selectedPackage, setSelectedPackage] = useState<typeof FICHAS_PACKAGES[0] | null>(null)
 
   const plan = limits.plan
   const getPrice = (item: StoreItem) => applyDiscount(item.baseFichas, plan)
@@ -438,36 +439,79 @@ export default function LojaPage() {
         {lojaTab === 'recargas' && <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <Coins size={15} strokeWidth={1.5} color="#F59E0B" />
-            <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Comprar fichas</p>
+            <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Selecione um pacote</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            {FICHAS_PACKAGES.map((pkg) => (
-              <a
-                key={pkg.label}
-                href={pkg.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'flex', flexDirection: 'column', padding: '14px', borderRadius: 14,
-                  border: pkg.highlight ? '1px solid rgba(245,158,11,0.40)' : '1px solid var(--border)',
-                  backgroundColor: pkg.highlight ? 'rgba(245,158,11,0.08)' : 'var(--bg-card)',
-                  textDecoration: 'none', cursor: 'pointer', transition: 'all 0.15s',
-                  position: 'relative',
-                }}
-              >
-                {pkg.highlight && (
-                  <span style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', fontSize: 10, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', borderRadius: 100, padding: '2px 10px', whiteSpace: 'nowrap' }}>
-                    Mais popular
-                  </span>
-                )}
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-                  <Coins size={14} color="#F59E0B" strokeWidth={1.5} />
-                  <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{pkg.label}</span>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
+            {FICHAS_PACKAGES.map((pkg) => {
+              const isSelected = selectedPackage?.label === pkg.label
+              return (
+                <div
+                  key={pkg.label}
+                  onClick={() => { haptics.tap(); setSelectedPackage(isSelected ? null : pkg) }}
+                  style={{
+                    display: 'flex', flexDirection: 'column', padding: '14px', borderRadius: 14,
+                    border: isSelected
+                      ? '1.5px solid rgba(245,158,11,0.80)'
+                      : pkg.highlight
+                        ? '1px solid rgba(245,158,11,0.40)'
+                        : '1px solid var(--border)',
+                    backgroundColor: isSelected
+                      ? 'rgba(245,158,11,0.14)'
+                      : pkg.highlight
+                        ? 'rgba(245,158,11,0.08)'
+                        : 'var(--bg-card)',
+                    cursor: 'pointer', transition: 'all 0.15s',
+                    position: 'relative',
+                    boxShadow: isSelected ? '0 0 0 3px rgba(245,158,11,0.15)' : 'none',
+                  }}
+                >
+                  {pkg.highlight && (
+                    <span style={{ position: 'absolute', top: -8, left: '50%', transform: 'translateX(-50%)', fontSize: 10, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', borderRadius: 100, padding: '2px 10px', whiteSpace: 'nowrap' }}>
+                      Mais popular
+                    </span>
+                  )}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                    <Coins size={14} color="#F59E0B" strokeWidth={1.5} />
+                    <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{pkg.label}</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: isSelected ? '#F59E0B' : pkg.highlight ? '#F59E0B' : 'var(--muted)' }}>{pkg.price}</span>
+                    {isSelected && (
+                      <div style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <CheckCircle size={12} color="#000" strokeWidth={2.5} />
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <span style={{ fontSize: 15, fontWeight: 800, color: pkg.highlight ? '#F59E0B' : 'var(--muted)' }}>{pkg.price}</span>
-              </a>
-            ))}
+              )
+            })}
           </div>
+          {/* Botao de adquirir fichas */}
+          <a
+            href={selectedPackage?.url ?? '#'}
+            target={selectedPackage ? '_blank' : undefined}
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              if (!selectedPackage) { e.preventDefault(); toast.info('Selecione um pacote acima.'); return }
+              haptics.medium()
+            }}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              width: '100%', padding: '16px', borderRadius: 14, border: 'none',
+              backgroundColor: selectedPackage ? '#E11D48' : 'rgba(225,29,72,0.25)',
+              color: '#fff', fontSize: 15, fontWeight: 700,
+              cursor: selectedPackage ? 'pointer' : 'not-allowed',
+              textDecoration: 'none', transition: 'all 0.2s',
+              boxShadow: selectedPackage ? '0 8px 24px rgba(225,29,72,0.35)' : 'none',
+              fontFamily: 'var(--font-jakarta)',
+              opacity: selectedPackage ? 1 : 0.6,
+            }}
+          >
+            <Coins size={18} strokeWidth={1.5} />
+            {selectedPackage
+              ? `Adquirir ${selectedPackage.label} por ${selectedPackage.price}`
+              : 'Selecione um pacote para continuar'}
+          </a>
         </div>}
 
         {/* ─── Itens (pago com fichas) ──────────────────────────────── */}
