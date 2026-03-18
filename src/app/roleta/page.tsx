@@ -451,8 +451,10 @@ export default function RoletaPage() {
         setTimeout(() => confetti({ particleCount: 200, spread: 120, origin: { y: 0.4 }, colors: ['#F59E0B','#fbbf24','#fff','#E11D48'] }), 400)
       }
       setTimeout(() => setShowCelebration(false), 3000)
-      // Recarrega dados do servidor para refletir saldo atualizado
+      // Recarrega dados do servidor para refletir saldo atualizado (tickets + premios)
       setTimeout(() => loadData(), 1500)
+      // Segunda recarga apos animacao para garantir premios creditados
+      setTimeout(() => loadData(), 3500)
 
       if (navigator.vibrate) {
         if (prize.reward_type === 'plan_black_1d' || prize.reward_type === 'plan_plus_1d') {

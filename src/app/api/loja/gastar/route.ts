@@ -18,11 +18,42 @@ const FICHAS_COST: Record<string, { amount: number; fichas: number; label: strin
   rewind_5:     { amount: 5,  fichas: 200, label: '5 Desfazer' },
   ghost_7d:     { amount: 7,  fichas: 90,  label: '7 dias Fantasma' },
   ghost_35d:    { amount: 35, fichas: 350, label: '35 dias Fantasma' },
-  // Novos itens exclusivos de fichas
   reveals_24h:  { amount: 1,  fichas: 200, label: 'Ver quem curtiu (24h)' },
   xp_bonus_3d:  { amount: 3,  fichas: 150, label: 'Bonus de XP (3 dias)' },
   verified_plus:{ amount: 1,  fichas: 500, label: 'Selo Verificado Plus' },
   caixa_surpresa:{ amount: 1, fichas: 100, label: 'Caixa Surpresa' },
+}
+
+// Incrementa saldo em uma tabela de itens (superlike, boost, lupa, rewind)
+async function incrementarSaldo(
+  tabela: string,
+  userId: string,
+  amount: number
+): Promise<void> {
+  // Tenta via RPC especifica (pode nao existir)
+  const rpcName = `credit_${tabela.replace('user_', '')}`
+  const { error: rpcErr } = await supabaseAdmin.rpc(rpcName, {
+    p_user_id:   userId,
+    p_amount:    amount,
+    p_order_id:  `fichas_${Date.now()}`,
+    p_item_type: tabela,
+  })
+
+  if (!rpcErr) return
+
+  // Fallback: leitura + upsert direto na tabela
+  const { data: cur } = await supabaseAdmin
+    .from(tabela)
+    .select('amount')
+    .eq('user_id', userId)
+    .single()
+
+  await supabaseAdmin
+    .from(tabela)
+    .upsert(
+      { user_id: userId, amount: (cur?.amount ?? 0) + amount },
+      { onConflict: 'user_id' }
+    )
 }
 
 export async function POST(req: NextRequest) {
@@ -44,10 +75,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Item desconhecido' }, { status: 400 })
     }
 
-    // Tenta debitar fichas
+    // Debita fichas
     const { data: spent, error: spendErr } = await supabaseAdmin.rpc('spend_fichas', {
-      p_user_id:    user.id,
-      p_amount:     item.fichas,
+      p_user_id:     user.id,
+      p_amount:      item.fichas,
       p_description: `Compra: ${item.label}`,
     })
 
@@ -60,59 +91,55 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Fichas insuficientes' }, { status: 402 })
     }
 
-    // Credita o item comprado
+    // Credita o item comprado com fallback garantido
     const type = item_key.split('_')[0] as string
 
     if (type === 'superlike') {
-      await supabaseAdmin.rpc('credit_superlikes', {
-        p_user_id:   user.id,
-        p_amount:    item.amount,
-        p_order_id:  `fichas_${Date.now()}`,
-        p_item_type: item_key,
-      })
+      await incrementarSaldo('user_superlikes', user.id, item.amount)
+
     } else if (type === 'boost') {
-      await supabaseAdmin.rpc('credit_boosts', {
-        p_user_id:   user.id,
-        p_amount:    item.amount,
-        p_order_id:  `fichas_${Date.now()}`,
-        p_item_type: item_key,
-      })
+      await incrementarSaldo('user_boosts', user.id, item.amount)
+
     } else if (type === 'lupa') {
-      await supabaseAdmin.rpc('credit_lupas', {
-        p_user_id:   user.id,
-        p_amount:    item.amount,
-        p_order_id:  `fichas_${Date.now()}`,
-        p_item_type: item_key,
-      })
+      await incrementarSaldo('user_lupas', user.id, item.amount)
+
     } else if (type === 'rewind') {
-      await supabaseAdmin.rpc('credit_rewinds', {
-        p_user_id:   user.id,
-        p_amount:    item.amount,
-        p_order_id:  `fichas_${Date.now()}`,
-        p_item_type: item_key,
-      })
+      await incrementarSaldo('user_rewinds', user.id, item.amount)
+
     } else if (type === 'ghost') {
-      await supabaseAdmin.rpc('activate_ghost_mode', {
+      // Tenta via RPC, fallback direto em profiles
+      const { error: ghostErr } = await supabaseAdmin.rpc('activate_ghost_mode', {
         p_user_id: user.id,
         p_days:    item.amount,
       })
+      if (ghostErr) {
+        const until = new Date(Date.now() + item.amount * 24 * 60 * 60 * 1000).toISOString()
+        await supabaseAdmin
+          .from('profiles')
+          .update({ ghost_mode_until: until })
+          .eq('id', user.id)
+      }
+
     } else if (item_key === 'reveals_24h') {
       const until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
       await supabaseAdmin
         .from('profiles')
         .update({ curtidas_reveals_until: until })
         .eq('id', user.id)
+
     } else if (item_key === 'xp_bonus_3d') {
       const until = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
       await supabaseAdmin
         .from('profiles')
         .update({ xp_bonus_until: until })
         .eq('id', user.id)
+
     } else if (item_key === 'verified_plus') {
       await supabaseAdmin
         .from('profiles')
         .update({ verified_plus: true })
         .eq('id', user.id)
+
     } else if (item_key === 'caixa_surpresa') {
       const { data: spinResult } = await supabaseAdmin.rpc('spin_roleta', { p_user_id: user.id })
       return NextResponse.json({ success: true, surpresa: spinResult })

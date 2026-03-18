@@ -81,6 +81,8 @@ export default function StreakPage() {
         const cfg = REWARD_CONFIG[entry.reward_type]
         setClaimMsg({ day: dayNumber, text: `+${entry.reward_amount} ${cfg?.label ?? entry.reward_type} adicionado!` })
       }
+      // Recarrega dados para refletir desconto do streak e credito do premio
+      await loadData()
     }
     setClaiming(null)
     setTimeout(() => setClaimMsg(null), 3000)
