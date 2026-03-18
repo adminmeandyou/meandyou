@@ -987,14 +987,35 @@ export default function BuscaPage() {
       setSuperlikesAvulso(avulsoRes.data?.amount ?? 0)
 
       if (filtersRes.data?.search_saved) {
-        const merged = { ...DEFAULT_FILTERS, ...filtersRes.data }
+        // Tenta restaurar do localStorage (backup quando colunas do banco estão ausentes)
+        let localBackup: Partial<FiltersState> = {}
+        try {
+          const saved = localStorage.getItem(`filters_${user.id}`)
+          if (saved) localBackup = JSON.parse(saved)
+        } catch {}
+        const merged = { ...DEFAULT_FILTERS, ...filtersRes.data, ...localBackup }
         setLocalFilters(merged)
         setFiltersConfigured(true)
-        const stateCode = filtersRes.data?.search_state as string || ''
+        const stateCode = (merged.search_state as string) || ''
         if (stateCode && STATE_NAMES[stateCode]) setLocationDisplay(`${STATE_NAMES[stateCode]} — ${stateCode}`)
         await loadDeck(merged, user.id)
       } else {
-        if (filtersRes.data) setLocalFilters({ ...DEFAULT_FILTERS, ...filtersRes.data })
+        // Verifica se tem backup local mesmo sem search_saved no banco
+        let localBackup: Partial<FiltersState> = {}
+        try {
+          const saved = localStorage.getItem(`filters_${user.id}`)
+          if (saved) localBackup = JSON.parse(saved)
+        } catch {}
+        if (filtersRes.data || Object.keys(localBackup).length > 0) {
+          const merged = { ...DEFAULT_FILTERS, ...filtersRes.data, ...localBackup }
+          setLocalFilters(merged)
+          if (Object.keys(localBackup).length > 0) {
+            // Tem backup local — considera configurado
+            setFiltersConfigured(true)
+            await loadDeck(merged, user.id)
+            return
+          }
+        }
         setOpenCategories({ objetivos: true })
         setShowFilters(true)
         setLoadingDeck(false)
@@ -1148,6 +1169,8 @@ export default function BuscaPage() {
         ...localFilters, user_id: userId, search_saved: true,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
+      // Backup em localStorage para persistir mesmo com colunas ausentes no banco
+      try { localStorage.setItem(`filters_${userId}`, JSON.stringify(localFilters)) } catch {}
       setFiltersConfigured(true); setShowFilters(false)
       await loadDeck(localFilters)
     } catch { setError('Erro ao salvar filtros.') }
@@ -1816,7 +1839,8 @@ export default function BuscaPage() {
               </button>
 
               {/* Opções expandidas */}
-              {isOpen && !isLocked && (
+              {!isLocked && (
+                <div style={{ overflow: 'hidden', maxHeight: isOpen ? '600px' : '0', transition: 'max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1)' }}>
                 <div style={{ padding: '10px 14px 14px', backgroundColor: 'rgba(8,9,14,0.50)' }}>
                   {cat.groups.map((group) => (
                     <div key={group.label} style={{ marginBottom: 14 }}>
@@ -1838,6 +1862,7 @@ export default function BuscaPage() {
                       </div>
                     </div>
                   ))}
+                </div>
                 </div>
               )}
             </div>

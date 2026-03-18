@@ -374,11 +374,20 @@ export default function LojaPage() {
             <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0, marginTop: '2px' }}>Itens e recursos extras</p>
           </div>
         </div>
-        {/* Saldo de fichas */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '100px', backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)' }}>
-          <Coins size={13} color="#F59E0B" strokeWidth={1.5} />
-          <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: '700' }}>{loading ? '…' : fichas}</span>
-          <span style={{ fontSize: '11px', color: 'rgba(245,158,11,0.6)' }}>fichas</span>
+        {/* Botão recarregar + Saldo de fichas */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            onClick={() => { setLojaTab('recargas'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+            style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '6px 12px', borderRadius: '100px', border: '1px solid var(--accent-border)', backgroundColor: 'var(--accent-light)', color: 'var(--accent)', fontSize: '12px', fontWeight: '700', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+          >
+            <Plus size={12} strokeWidth={2.5} />
+            Recarregar
+          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '100px', backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)' }}>
+            <Coins size={13} color="#F59E0B" strokeWidth={1.5} />
+            <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: '700' }}>{loading ? '…' : fichas}</span>
+            <span style={{ fontSize: '11px', color: 'rgba(245,158,11,0.6)' }}>fichas</span>
+          </div>
         </div>
       </header>
 
@@ -391,10 +400,10 @@ export default function LojaPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px' }}>
               <BalanceItem icon={<Coins size={16} strokeWidth={1.5} color="#F59E0B" />} label="Fichas" value={fichas} />
               <BalanceItem icon={<Star size={16} strokeWidth={1.5} color="#F59E0B" />} label="SuperLikes" value={superlikes} />
-              <BalanceItem icon={<Zap size={16} strokeWidth={1.5} color="var(--accent)" />} label="Boosts" value={boosts} active={!!boostIsActive} />
+              <BalanceItem icon={<Zap size={16} strokeWidth={1.5} color="var(--accent)" />} label="Boosts" value={boosts} active={!!boostIsActive} countdown={boostIsActive && boostActiveUntil ? boostActiveUntil : undefined} />
               <BalanceItem icon={<Search size={16} strokeWidth={1.5} color="#3b82f6" />} label="Lupas" value={lupas} />
               <BalanceItem icon={<RotateCcw size={16} strokeWidth={1.5} color="#a855f7" />} label="Rewinds" value={rewinds} />
-              <BalanceItem icon={<Ghost size={16} strokeWidth={1.5} color="#6b7280" />} label="Fantasma" value={ghostDaysLeft} suffix="d" active={!!ghostIsActive} />
+              <BalanceItem icon={<Ghost size={16} strokeWidth={1.5} color="#6b7280" />} label="Fantasma" value={ghostDaysLeft} suffix="d" active={!!ghostIsActive} countdown={ghostIsActive && ghostModeUntil ? ghostModeUntil : undefined} />
             </div>
           </div>
         )}
@@ -430,7 +439,7 @@ export default function LojaPage() {
                 color: lojaTab === tab ? '#fff' : 'var(--muted)',
               }}
             >
-              {tab === 'recargas' ? 'Recargar fichas' : 'Gastar fichas'}
+              {tab === 'recargas' ? 'Recargar fichas' : 'Usar fichas'}
             </button>
           ))}
         </div>
@@ -518,7 +527,7 @@ export default function LojaPage() {
         {lojaTab === 'compras' && <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <Package size={15} strokeWidth={1.5} color="var(--muted)" />
-            <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Gastar fichas</p>
+            <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Usar fichas</p>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {STORE_ITEMS.map((item) => (
@@ -580,13 +589,36 @@ export default function LojaPage() {
   )
 }
 
-function BalanceItem({ icon, label, value, active, suffix }: {
+function useCountdownStr(until?: string): string {
+  const [str, setStr] = useState('')
+  useEffect(() => {
+    if (!until) return
+    const update = () => {
+      const diff = new Date(until).getTime() - Date.now()
+      if (diff <= 0) { setStr('Expirando'); return }
+      const h = Math.floor(diff / 3600000)
+      const m = Math.floor((diff % 3600000) / 60000)
+      const s = Math.floor((diff % 60000) / 1000)
+      if (h > 24) setStr(`${Math.floor(h / 24)}d ${h % 24}h`)
+      else if (h > 0) setStr(`${h}h ${m}m`)
+      else setStr(`${m}m ${s}s`)
+    }
+    update()
+    const id = setInterval(update, 1000)
+    return () => clearInterval(id)
+  }, [until])
+  return str
+}
+
+function BalanceItem({ icon, label, value, active, suffix, countdown }: {
   icon: React.ReactNode
   label: string
   value: number
   active?: boolean
   suffix?: string
+  countdown?: string
 }) {
+  const timeLeft = useCountdownStr(countdown)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 8px', borderRadius: '12px', backgroundColor: active ? 'var(--accent-light)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? 'var(--accent-border)' : 'rgba(255,255,255,0.05)'}` }}>
       <div style={{ marginBottom: '6px' }}>{icon}</div>
@@ -594,6 +626,9 @@ function BalanceItem({ icon, label, value, active, suffix }: {
         {value}{suffix && <span style={{ fontSize: '11px', fontWeight: '400', marginLeft: '1px' }}>{suffix}</span>}
       </p>
       <p style={{ fontSize: '10px', color: 'var(--muted)', margin: 0, marginTop: '3px', textAlign: 'center', lineHeight: 1.2 }}>{label}</p>
+      {active && timeLeft && (
+        <p style={{ fontSize: '9px', color: active ? 'var(--accent)' : '#6b7280', margin: 0, marginTop: '2px', textAlign: 'center', fontWeight: 600, letterSpacing: '0.02em' }}>{timeLeft}</p>
+      )}
     </div>
   )
 }

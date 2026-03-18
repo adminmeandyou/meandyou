@@ -55,6 +55,27 @@ function CadastroInner() {
     ;(window as any).onTurnstileExpired = () => setCfToken('')
   }, [])
 
+  // Renderiza Turnstile imperativamente quando temCodigo muda de null para não-null
+  useEffect(() => {
+    if (temCodigo === null || !TURNSTILE_SITE_KEY || !turnstileRef.current) return
+    // Pequeno delay para garantir que o DOM atualizou
+    const timer = setTimeout(() => {
+      const win = window as any
+      if (win.turnstile && turnstileRef.current) {
+        // Remove widget anterior se existir
+        try { win.turnstile.remove(turnstileRef.current) } catch {}
+        setCfToken('')
+        win.turnstile.render(turnstileRef.current, {
+          sitekey: TURNSTILE_SITE_KEY,
+          callback: (token: string) => setCfToken(token),
+          'expired-callback': () => setCfToken(''),
+          theme: 'dark',
+        })
+      }
+    }, 100)
+    return () => clearTimeout(timer)
+  }, [temCodigo])
+
   const formatarTelefone = (valor: string) => {
     const nums = valor.replace(/\D/g, '').slice(0, 11)
     if (nums.length <= 2) return nums
@@ -354,9 +375,10 @@ function CadastroInner() {
             Continuar <ChevronRight size={20} />
           </button>
         ) : (
-          <button onClick={handleCadastro} disabled={loading || temCodigo === null}
-            style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: loading || temCodigo === null ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: loading || temCodigo === null ? 0.6 : 1, boxShadow: '0 8px 24px rgba(225,29,72,0.25)' }}>
-            {loading ? 'Criando conta...' : 'Criar conta'}
+          <button onClick={handleCadastro}
+            disabled={loading || temCodigo === null || (!!TURNSTILE_SITE_KEY && !cfToken)}
+            style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: (loading || temCodigo === null || (!!TURNSTILE_SITE_KEY && !cfToken)) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: (loading || temCodigo === null || (!!TURNSTILE_SITE_KEY && !cfToken)) ? 0.6 : 1, boxShadow: '0 8px 24px rgba(225,29,72,0.25)' }}>
+            {loading ? 'Criando conta...' : (!!TURNSTILE_SITE_KEY && !cfToken && temCodigo !== null) ? 'Aguardando verificação...' : 'Criar conta'}
           </button>
         )}
 
