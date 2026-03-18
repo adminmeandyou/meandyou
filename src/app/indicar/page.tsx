@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { Gift, Copy, Check, Users, Share2, ArrowLeft, Ticket, Star, Zap } from 'lucide-react'
+import { Gift, Copy, Check, Users, Share2, ArrowLeft, Ticket, TrendingUp, Zap } from 'lucide-react'
 
 export default function IndicarPage() {
   const router = useRouter()
@@ -65,7 +65,7 @@ export default function IndicarPage() {
     if (navigator.share) {
       await navigator.share({
         title: 'MeAndYou',
-        text: 'Te convidei para o MeAndYou! Se cadastra pelo meu link e a gente ganha tickets de bonus:',
+        text: 'Te convidei para o MeAndYou! Se cadastra pelo meu link e a gente ganha 5 tickets + 1000 XP de bonus:',
         url: getReferralLink(),
       })
     } else {
@@ -109,19 +109,19 @@ export default function IndicarPage() {
         <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
           <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px' }}>O que voces ganham</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '14px 12px', textAlign: 'center', border: '1px solid var(--border-soft)' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px', color: '#F59E0B' }}>
+            <div style={{ backgroundColor: 'rgba(234,179,8,0.08)', borderRadius: '12px', padding: '14px 12px', textAlign: 'center', border: '1px solid rgba(234,179,8,0.25)' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px', color: '#eab308' }}>
                 <Ticket size={22} strokeWidth={1.5} />
               </div>
-              <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', margin: 0 }}>3 Tickets</p>
+              <p style={{ fontSize: '16px', fontWeight: 800, color: '#eab308', margin: 0 }}>5 Tickets</p>
               <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>cada um</p>
             </div>
-            <div style={{ backgroundColor: 'rgba(255,255,255,0.04)', borderRadius: '12px', padding: '14px 12px', textAlign: 'center', border: '1px solid var(--border-soft)' }}>
-              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px', color: 'var(--accent)' }}>
-                <Star size={22} strokeWidth={1.5} />
+            <div style={{ backgroundColor: 'rgba(16,185,129,0.08)', borderRadius: '12px', padding: '14px 12px', textAlign: 'center', border: '1px solid rgba(16,185,129,0.25)' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px', color: '#10b981' }}>
+                <TrendingUp size={22} strokeWidth={1.5} />
               </div>
-              <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', margin: 0 }}>1 SuperLike</p>
-              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>quem indicou</p>
+              <p style={{ fontSize: '16px', fontWeight: 800, color: '#10b981', margin: 0 }}>1.000 XP</p>
+              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>cada um</p>
             </div>
           </div>
           <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.20)', textAlign: 'center', margin: '12px 0 0' }}>
