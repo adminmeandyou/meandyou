@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
-import { Search, Ban, CheckCircle, Eye } from 'lucide-react'
+import { Search, Ban, CheckCircle, Eye, Download } from 'lucide-react'
 
 const FILTERS = ['todos', 'ativos', 'banidos', 'nao_verificados', 'excluidos', 'essencial', 'plus', 'black']
 const FILTER_LABELS: Record<string, string> = {
@@ -19,6 +19,9 @@ export default function AdminUsuarios() {
   const [loading, setLoading] = useState(true)
   const [banModal, setBanModal] = useState<{ id: string; name: string } | null>(null)
   const [banReason, setBanReason] = useState('')
+  const [exporting, setExporting] = useState(false)
+  const [exportFormat, setExportFormat] = useState<'csv' | 'txt'>('csv')
+  const [dateRange, setDateRange] = useState({ inicio: '', fim: '' })
 
   useEffect(() => { loadUsers() }, [filter, search])
 
@@ -55,6 +58,28 @@ export default function AdminUsuarios() {
     loadUsers()
   }
 
+  async function exportUsers() {
+    setExporting(true)
+    const params = new URLSearchParams()
+    if (['essencial', 'plus', 'black'].includes(filter)) params.set('plano', filter)
+    else if (filter !== 'todos') params.set('status', filter)
+    if (dateRange.inicio) params.set('data_inicio', dateRange.inicio)
+    if (dateRange.fim)    params.set('data_fim', dateRange.fim)
+    params.set('formato', exportFormat)
+
+    const res = await fetch(`/api/admin/usuarios/export?${params}`)
+    if (res.ok) {
+      const blob = await res.blob()
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = exportFormat === 'csv' ? 'usuarios.csv' : 'usuarios.txt'
+      a.click()
+      URL.revokeObjectURL(url)
+    }
+    setExporting(false)
+  }
+
   return (
     <div style={{ padding: '32px' }}>
       <h1 style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'var(--font-fraunces)', marginBottom: '24px' }}>Usuários</h1>
@@ -80,6 +105,41 @@ export default function AdminUsuarios() {
               {FILTER_LABELS[f]}
             </button>
           ))}
+        </div>
+      </div>
+
+      {/* Barra de export */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+        <input
+          type="date"
+          value={dateRange.inicio}
+          onChange={e => setDateRange(d => ({ ...d, inicio: e.target.value }))}
+          style={{ padding: '8px 12px', backgroundColor: '#111', border: '1px solid #222', borderRadius: '8px', color: '#fff', fontSize: '13px', outline: 'none' }}
+        />
+        <span style={{ color: '#444', fontSize: '13px' }}>até</span>
+        <input
+          type="date"
+          value={dateRange.fim}
+          onChange={e => setDateRange(d => ({ ...d, fim: e.target.value }))}
+          style={{ padding: '8px 12px', backgroundColor: '#111', border: '1px solid #222', borderRadius: '8px', color: '#fff', fontSize: '13px', outline: 'none' }}
+        />
+        <div style={{ display: 'flex', gap: '4px', marginLeft: 'auto', alignItems: 'center' }}>
+          {(['csv', 'txt'] as const).map(fmt => (
+            <button key={fmt} onClick={() => setExportFormat(fmt)} style={{
+              padding: '8px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px',
+              backgroundColor: exportFormat === fmt ? '#1a1a1a' : 'transparent',
+              color: exportFormat === fmt ? '#fff' : '#555',
+            }}>.{fmt}</button>
+          ))}
+          <button onClick={exportUsers} disabled={exporting} style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            padding: '8px 18px', borderRadius: '8px', border: 'none', cursor: exporting ? 'not-allowed' : 'pointer',
+            backgroundColor: '#e11d48', color: '#fff', fontSize: '13px', fontWeight: '600',
+            opacity: exporting ? 0.6 : 1,
+          }}>
+            <Download size={14} />
+            {exporting ? 'Exportando...' : 'Exportar'}
+          </button>
         </div>
       </div>
 
