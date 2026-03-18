@@ -291,3 +291,138 @@ input::placeholder, textarea::placeholder {
 #app-main-content::-webkit-scrollbar {
   display: none;
 }
+
+/* ─────────────────────────────────────────────
+   Layout responsivo — AppShell
+   Mobile-first: frame estreito centralizado
+   Tablet/Desktop: expansão real do layout
+───────────────────────────────────────────── */
+
+/* Outer wrapper */
+.app-shell-outer {
+  min-height: 100vh;
+  background: radial-gradient(ellipse 140% 70% at 20% -5%, rgba(225,29,72,0.09) 0%, #08090E 55%);
+  display: flex;
+  overflow: hidden;
+}
+
+/* Frame central — mobile */
+.app-frame {
+  width: 100%;
+  max-width: 430px;
+  height: 100dvh;
+  position: relative;
+  background-color: var(--bg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Main content — mobile: scroll interno */
+.app-main-content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: clip;
+  min-height: 0;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+/* Sidebar — mobile escondida (md:flex via Tailwind) */
+.app-sidebar {
+  width: 72px;
+  height: 100vh;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  border-right: 1px solid var(--border);
+  background-color: var(--bg-card);
+  padding: 16px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  overflow: hidden;
+  transition: width 0.2s ease;
+}
+
+.sidebar-logo {
+  font-family: var(--font-fraunces);
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  display: flex;
+  flex-shrink: 0;
+}
+
+/* Em mobile/tablet: apenas ícone na sidebar — ocultar labels */
+.sidebar-label {
+  display: none;
+}
+
+/* ── TABLET (768px – 1023px) ── */
+@media (min-width: 768px) {
+  .app-shell-outer {
+    overflow: visible;
+  }
+
+  .app-frame {
+    max-width: 680px;
+    height: auto;
+    min-height: 100vh;
+    overflow-x: clip;
+    overflow-y: visible;
+  }
+
+  .app-main-content {
+    overflow-y: visible;
+    overflow-x: clip;
+    min-height: 0;
+    flex: 1;
+  }
+}
+
+/* ── DESKTOP (1024px+) — sidebar ainda icon-only, frame maior ── */
+@media (min-width: 1024px) {
+  .app-frame {
+    max-width: 900px;
+  }
+}
+
+/* ── DESKTOP LARGO (1280px+) — sidebar expande com labels ── */
+@media (min-width: 1280px) {
+  .app-frame {
+    max-width: 840px;
+  }
+
+  .app-sidebar {
+    width: 220px;
+    align-items: flex-start;
+    padding: 20px 16px;
+  }
+
+  .sidebar-logo {
+    font-size: 15px;
+    margin-bottom: 28px;
+    padding-left: 4px;
+  }
+
+  .sidebar-label {
+    display: block;
+  }
+
+  .sidebar-link {
+    justify-content: flex-start !important;
+  }
+}
+
+/* ── DESKTOP EXTRA (1536px+) ── */
+@media (min-width: 1536px) {
+  .app-frame {
+    max-width: 960px;
+  }
+}

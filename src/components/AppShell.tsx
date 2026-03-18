@@ -54,15 +54,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <ToastProvider>
     <AppHeaderProvider>
-      <div
-        style={{
-          minHeight: '100vh',
-          background:
-            'radial-gradient(ellipse 140% 70% at 20% -5%, rgba(225,29,72,0.09) 0%, #08090E 55%)',
-          display: 'flex',
-          overflow: 'hidden',
-        }}
-      >
+      <div className="app-shell-outer">
         {/* Sidebar — visível apenas em md+ */}
         <AppSidebar />
 
@@ -75,34 +67,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             minWidth: 0,
           }}
         >
-          <div
-            style={{
-              width: '100%',
-              maxWidth: '430px',
-              height: '100dvh',
-              position: 'relative',
-              backgroundColor: 'var(--bg)',
-              display: 'flex',
-              flexDirection: 'column',
-              overflow: 'hidden',
-            }}
-          >
+          <div className="app-frame">
             {/* Header — visível apenas em mobile (< md) */}
             <div className="block md:hidden">
               <AppHeaderConnected />
             </div>
 
-            {/* Área de conteúdo — scroll interno */}
+            {/* Área de conteúdo — scroll interno no mobile, scroll da janela no desktop */}
             <main
               id="app-main-content"
-              style={{
-                flex: 1,
-                overflowY: 'auto',
-                overflowX: 'clip',
-                minHeight: 0,
-                WebkitOverflowScrolling: 'touch',
-                scrollbarWidth: 'none',
-              }}
+              className="app-main-content"
             >
               {children}
             </main>
@@ -114,9 +88,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* Painel direito — visível apenas em lg+ */}
+        {/* Painel direito — visível apenas em 2xl+ para evitar conflito de espaço */}
         <div
-          className="hidden lg:flex"
+          className="hidden 2xl:flex"
           style={{
             width: 280,
             flexShrink: 0,
