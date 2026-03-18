@@ -367,9 +367,11 @@ input::placeholder, textarea::placeholder {
   display: none;
 }
 
-/* ── TABLET (768px – 1023px) ── */
+/* ── TABLET/DESKTOP (768px+) — scroll natural da janela ── */
 @media (min-width: 768px) {
   .app-shell-outer {
+    height: auto;
+    min-height: 100vh;
     overflow: visible;
   }
 
@@ -384,8 +386,7 @@ input::placeholder, textarea::placeholder {
   .app-main-content {
     overflow-y: visible;
     overflow-x: clip;
-    min-height: 0;
-    flex: 1;
+    flex: unset;
   }
 }
 
