@@ -243,8 +243,7 @@ export default function VerPerfilPage() {
       .eq('id', profileId)
       .single()
 
-    // Fallback: se a query falhou (colunas novas ausentes no banco — rodar migrations),
-    // tenta sem colunas opcionais para nao quebrar a pagina
+    // Fallback 1: sem colunas opcionais novas
     if (!profileData) {
       const { data: fallback } = await supabase
         .from('profiles')
@@ -252,6 +251,16 @@ export default function VerPerfilPage() {
         .eq('id', profileId)
         .single()
       profileData = fallback as typeof profileData
+    }
+
+    // Fallback 2: colunas minimas garantidas — evita redirect indevido pro onboarding
+    if (!profileData) {
+      const { data: fallback2 } = await supabase
+        .from('profiles')
+        .select('id, name, birthdate, bio, gender, city, state, photo_best')
+        .eq('id', profileId)
+        .single()
+      profileData = fallback2 as typeof profileData
     }
 
     const { data: filtersData } = await supabase
@@ -404,9 +413,9 @@ export default function VerPerfilPage() {
   }
 
   if (!profile) {
-    // Se e o proprio usuario sem perfil, redireciona para onboarding
+    // Se e o proprio usuario, manda para editar perfil (nao para onboarding — evita loop)
     if (profileId === userId) {
-      router.replace('/onboarding')
+      router.replace('/configuracoes/editar-perfil')
       return null
     }
     return (
