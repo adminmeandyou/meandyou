@@ -125,19 +125,6 @@ export default function EquipePage() {
     }
   }
 
-  const SQL_TABLES = `-- Tabela de membros da equipe
-CREATE TABLE IF NOT EXISTS staff_members (
-  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id     uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  role        text NOT NULL CHECK (role IN ('gerente','suporte_financeiro','suporte_tecnico','suporte_chat')),
-  active      boolean NOT NULL DEFAULT true,
-  created_at  timestamptz NOT NULL DEFAULT now(),
-  UNIQUE (user_id)
-);
-
--- RLS: apenas admins acessam
-ALTER TABLE staff_members ENABLE ROW LEVEL SECURITY;`
-
   return (
     <div style={{ padding: '32px', backgroundColor: '#0a0a0a', minHeight: '100vh', color: '#fff' }}>
 
@@ -347,31 +334,6 @@ ALTER TABLE staff_members ENABLE ROW LEVEL SECURITY;`
         </div>
       )}
 
-      {/* Card SQL */}
-      <div style={{
-        backgroundColor: '#0d0d0d',
-        border: '1px solid #1e1e1e',
-        borderRadius: '14px',
-        padding: '20px',
-      }}>
-        <h3 style={{ fontSize: '14px', fontWeight: '600', margin: '0 0 12px', color: '#666' }}>
-          SQL para criar as tabelas necessárias
-        </h3>
-        <pre style={{
-          margin: 0,
-          padding: '16px',
-          backgroundColor: '#000',
-          borderRadius: '8px',
-          border: '1px solid #1a1a1a',
-          fontSize: '12px',
-          color: '#aaa',
-          overflowX: 'auto',
-          lineHeight: '1.6',
-          fontFamily: 'monospace',
-        }}>
-          {SQL_TABLES}
-        </pre>
-      </div>
     </div>
   )
 }
