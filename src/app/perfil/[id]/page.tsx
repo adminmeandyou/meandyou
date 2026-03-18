@@ -251,7 +251,7 @@ export default function VerPerfilPage() {
         .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_back, photo_best, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, highlight_tags, status_temp, status_temp_expires_at')
         .eq('id', profileId)
         .single()
-      profileData = fallback
+      profileData = fallback as typeof profileData
     }
 
     const { data: filtersData } = await supabase
