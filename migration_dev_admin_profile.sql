@@ -4,9 +4,12 @@
 -- Execute no Supabase SQL Editor
 -- =============================================
 
--- 0. Adicionar coluna onboarding_done se nao existir (usada no dashboard/proxy)
+-- 0. Adicionar colunas que faltam no profiles (usadas no codigo mas ausentes no banco)
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS onboarding_done boolean DEFAULT false;
+
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS plan text DEFAULT 'essencial';
 
 -- 1. Tabela users (plano Black + dados basicos)
 INSERT INTO public.users (id, email, phone, nome_completo, cpf, verified, banned, plan)
