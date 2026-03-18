@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef, useCallback } from 'react'
+import confetti from 'canvas-confetti'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
@@ -438,6 +439,16 @@ export default function RoletaPage() {
       // Celebracao para premios raros ou qualquer premio
       setShowCelebration(true)
       spawnParticles()
+      // Confetti principal — burst do centro
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, colors: ['#E11D48','#F59E0B','#10b981','#3b82f6','#a855f7','#fff'] })
+      // Confetti lateral esquerda
+      setTimeout(() => confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors: ['#E11D48','#F59E0B','#fff'] }), 200)
+      // Confetti lateral direita
+      setTimeout(() => confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors: ['#E11D48','#F59E0B','#fff'] }), 200)
+      if (prize.reward_type === 'plan_black_1d' || prize.reward_type === 'plan_plus_1d') {
+        // Jackpot: confetti extra intenso
+        setTimeout(() => confetti({ particleCount: 200, spread: 120, origin: { y: 0.4 }, colors: ['#F59E0B','#fbbf24','#fff','#E11D48'] }), 400)
+      }
       setTimeout(() => setShowCelebration(false), 3000)
 
       if (navigator.vibrate) {

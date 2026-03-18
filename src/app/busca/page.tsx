@@ -912,6 +912,7 @@ export default function BuscaPage() {
   const [limitReached, setLimitReached] = useState(false)
   const [swipeDir, setSwipeDir] = useState<'left' | 'right' | 'up' | null>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [isSnapping, setIsSnapping] = useState(false)
   const [dragX, setDragX] = useState(0)
   const [dragY, setDragY] = useState(0)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
@@ -1073,7 +1074,12 @@ export default function BuscaPage() {
     if (dragX > threshold) triggerSwipe('right')
     else if (dragX < -threshold) triggerSwipe('left')
     else if (dragY < -threshold) triggerSwipe('up')
-    else { setDragX(0); setDragY(0) }
+    else {
+      // Spring: anima de volta ao centro com overshoot
+      setIsSnapping(true)
+      setDragX(0); setDragY(0)
+      setTimeout(() => setIsSnapping(false), 600)
+    }
   }
 
   async function triggerSwipe(dir: 'left' | 'right' | 'up') {
@@ -1157,9 +1163,12 @@ export default function BuscaPage() {
   const cardRotation = isDragging ? dragX * 0.08 : swipeDir === 'left' ? -25 : swipeDir === 'right' ? 25 : 0
   const cardX = isDragging ? dragX : swipeDir ? (swipeDir === 'left' ? -700 : swipeDir === 'right' ? 700 : 0) : 0
   const cardY = isDragging ? dragY : swipeDir === 'up' ? -700 : 0
-  const showLikeIndicator = isDragging && dragX > 40
-  const showPassIndicator = isDragging && dragX < -40
-  const showSuperIndicator = isDragging && dragY < -40
+  const showLikeIndicator = isDragging && dragX > 20
+  const showPassIndicator = isDragging && dragX < -20
+  const showSuperIndicator = isDragging && dragY < -20
+  const likeOpacity = isDragging ? Math.min(1, (dragX - 20) / 80) : 0
+  const passOpacity = isDragging ? Math.min(1, (-dragX - 20) / 80) : 0
+  const superOpacity = isDragging ? Math.min(1, (-dragY - 20) / 80) : 0
 
   // ── Foto atual do card ────────────────────────────────────────────────────
 
@@ -1339,7 +1348,7 @@ export default function BuscaPage() {
                   cursor: isDragging ? 'grabbing' : 'grab',
                   userSelect: 'none',
                   transform: `translateX(${cardX}px) translateY(${cardY}px) rotate(${cardRotation}deg)`,
-                  transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
+                  transition: isDragging ? 'none' : isSnapping ? 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1)' : 'transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)',
                   willChange: 'transform',
                 }}
                 onMouseDown={(e) => onDragStart(e.clientX, e.clientY)}
@@ -1419,6 +1428,7 @@ export default function BuscaPage() {
                       borderRadius: 10, padding: '6px 14px',
                       transform: 'rotate(-14deg)',
                       pointerEvents: 'none',
+                      opacity: likeOpacity,
                     }}
                   >
                     <span style={{ color: '#10b981', fontWeight: 800, fontSize: 20, letterSpacing: 2 }}>CURTIR</span>
@@ -1434,6 +1444,7 @@ export default function BuscaPage() {
                       borderRadius: 10, padding: '6px 14px',
                       transform: 'rotate(14deg)',
                       pointerEvents: 'none',
+                      opacity: passOpacity,
                     }}
                   >
                     <span style={{ color: '#E11D48', fontWeight: 800, fontSize: 20, letterSpacing: 2 }}>NOPE</span>
@@ -1448,6 +1459,7 @@ export default function BuscaPage() {
                       border: '3px solid rgba(96,165,250,0.90)',
                       borderRadius: 10, padding: '6px 14px',
                       pointerEvents: 'none',
+                      opacity: superOpacity,
                     }}
                   >
                     <span style={{ color: '#60a5fa', fontWeight: 800, fontSize: 20, letterSpacing: 2 }}>SUPER</span>
