@@ -2,7 +2,7 @@
   "name": "MeAndYou",
   "short_name": "MeAndYou",
   "description": "O app de relacionamentos com verificação real de identidade e os filtros mais completos do Brasil.",
-  "start_url": "/",
+  "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
   "background_color": "#08090E",

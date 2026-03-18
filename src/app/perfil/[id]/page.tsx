@@ -237,11 +237,22 @@ export default function VerPerfilPage() {
     setLoading(true)
 
     // CORRECAO: NUNCA selecionar lat/lng/cep/rua/bairro em selects publicos
-    const { data: profileData } = await supabase
+    let { data: profileData } = await supabase
       .from('profiles')
       .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_back, photo_best, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, highlight_tags, status_temp, status_temp_expires_at, profile_question, profile_question_answer, blur_photos')
       .eq('id', profileId)
       .single()
+
+    // Fallback: se a query falhou (colunas novas ausentes no banco — rodar migrations),
+    // tenta sem colunas opcionais para nao quebrar a pagina
+    if (!profileData) {
+      const { data: fallback } = await supabase
+        .from('profiles')
+        .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_back, photo_best, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, highlight_tags, status_temp, status_temp_expires_at')
+        .eq('id', profileId)
+        .single()
+      profileData = fallback
+    }
 
     const { data: filtersData } = await supabase
       .from('filters')
@@ -393,6 +404,11 @@ export default function VerPerfilPage() {
   }
 
   if (!profile) {
+    // Se e o proprio usuario sem perfil, redireciona para onboarding
+    if (profileId === userId) {
+      router.replace('/onboarding')
+      return null
+    }
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#08090E', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
         <p style={{ color: 'rgba(248,249,250,0.30)', fontFamily: 'var(--font-jakarta)' }}>Perfil nao encontrado.</p>
