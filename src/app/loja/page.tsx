@@ -467,13 +467,11 @@ export default function LojaPage() {
                     border: isSelected
                       ? '1.5px solid rgba(245,158,11,0.80)'
                       : pkg.highlight
-                        ? '1px solid rgba(245,158,11,0.40)'
+                        ? '1px solid rgba(245,158,11,0.30)'
                         : '1px solid var(--border)',
                     backgroundColor: isSelected
                       ? 'rgba(245,158,11,0.14)'
-                      : pkg.highlight
-                        ? 'rgba(245,158,11,0.08)'
-                        : 'var(--bg-card)',
+                      : 'var(--bg-card)',
                     cursor: 'pointer', transition: 'all 0.15s',
                     boxShadow: isSelected ? '0 0 0 3px rgba(245,158,11,0.15)' : 'none',
                   }}
@@ -483,7 +481,7 @@ export default function LojaPage() {
                     <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{pkg.label}</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: isSelected ? '#F59E0B' : pkg.highlight ? '#F59E0B' : 'var(--muted)' }}>{pkg.price}</span>
+                    <span style={{ fontSize: 15, fontWeight: 800, color: isSelected ? '#F59E0B' : 'var(--muted)' }}>{pkg.price}</span>
                     {isSelected && (
                       <div style={{ width: 18, height: 18, borderRadius: '50%', backgroundColor: '#F59E0B', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <CheckCircle size={12} color="#000" strokeWidth={2.5} />
