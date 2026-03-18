@@ -1291,7 +1291,7 @@ export default function BuscaPage() {
               Novos perfis aparecem o tempo todo. Amplie o raio de busca ou ajuste os filtros para descobrir mais pessoas.
             </p>
             <button
-              onClick={() => setShowFilters(true)}
+              onClick={openFilters}
               style={{
                 width: '100%',
                 padding: '14px 0',
