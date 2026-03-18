@@ -16,11 +16,17 @@ export default function PerfilPage() {
       if (!user) { router.replace('/login'); return }
 
       // Verifica se o row de perfil existe antes de redirecionar
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, onboarding_done')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
+
+      // Se deu erro (ex: RLS), vai direto ao perfil — evita loop de onboarding indevido
+      if (profileError) {
+        router.replace(`/perfil/${user.id}`)
+        return
+      }
 
       if (!profile) {
         // Conta existe no Auth mas perfil nao foi criado — manda para onboarding

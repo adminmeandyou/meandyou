@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Ticket, Loader2, Star, Zap, Search, RotateCcw, Gift, Crown, Trophy, TrendingUp } from 'lucide-react'
+import { ArrowLeft, Ticket, Loader2, Star, Zap, Search, RotateCcw, Gift, Crown, Trophy, TrendingUp, ChevronDown } from 'lucide-react'
 import { useAppHeader } from '@/contexts/AppHeaderContext'
 
 // Configuracao visual dos premios
@@ -31,14 +31,14 @@ const PRIZE_CONFIG: Record<string, {
 
 // Segmentos da roleta com gradientes premium
 const WHEEL_SEGMENTS = [
-  { type: 'ticket',       label: '1 Ticket',    colorA: '#92600A', colorB: '#eab308' },
-  { type: 'supercurtida', label: 'SuperLike',   colorA: '#831843', colorB: '#ec4899' },
-  { type: 'ticket',       label: '2 Tickets',   colorA: '#92600A', colorB: '#f59e0b' },
-  { type: 'lupa',         label: 'Lupa',        colorA: '#1e3a8a', colorB: '#3b82f6' },
-  { type: 'ticket',       label: '1 Ticket',    colorA: '#92600A', colorB: '#eab308' },
-  { type: 'boost',        label: 'Boost',       colorA: '#881337', colorB: '#E11D48' },
+  { type: 'ticket',       label: '1 Ticket',    colorA: '#78350f', colorB: '#d97706' },
+  { type: 'supercurtida', label: 'SuperLike',   colorA: '#7f1d1d', colorB: '#E11D48' },
+  { type: 'ticket',       label: '2 Tickets',   colorA: '#78350f', colorB: '#f59e0b' },
+  { type: 'lupa',         label: 'Lupa',        colorA: '#1e2a4a', colorB: '#4f7fba' },
+  { type: 'ticket',       label: '1 Ticket',    colorA: '#78350f', colorB: '#d97706' },
+  { type: 'boost',        label: 'Boost',       colorA: '#7f1d1d', colorB: '#E11D48' },
   { type: 'ticket',       label: '3 Tickets',   colorA: '#78350f', colorB: '#f59e0b' },
-  { type: 'rewind',       label: 'Desfazer',    colorA: '#4c1d95', colorB: '#a855f7' },
+  { type: 'rewind',       label: 'Desfazer',    colorA: '#2e1a4a', colorB: '#7c5cbf' },
 ]
 
 type SpinResult = {
@@ -74,6 +74,7 @@ export default function RoletaPage() {
   const [tickets, setTickets] = useState(0)
   const [spinsToday, setSpinsToday] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [showPrizes, setShowPrizes] = useState(false)
   const [userXp, setUserXp] = useState(0)
   const [userLevel, setUserLevel] = useState(0)
   const [xpBonusActive, setXpBonusActive] = useState(false)
@@ -450,6 +451,8 @@ export default function RoletaPage() {
         setTimeout(() => confetti({ particleCount: 200, spread: 120, origin: { y: 0.4 }, colors: ['#F59E0B','#fbbf24','#fff','#E11D48'] }), 400)
       }
       setTimeout(() => setShowCelebration(false), 3000)
+      // Recarrega dados do servidor para refletir saldo atualizado
+      setTimeout(() => loadData(), 1500)
 
       if (navigator.vibrate) {
         if (prize.reward_type === 'plan_black_1d' || prize.reward_type === 'plan_plus_1d') {
@@ -725,26 +728,40 @@ export default function RoletaPage() {
           )
         })()}
 
-        {/* Tabela de premios */}
+        {/* Tabela de premios — colapsável */}
         <div style={{ width: '100%' }}>
-          <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '10px' }}>Premios possiveis</p>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '8px' }}>
-            {Object.entries(PRIZE_CONFIG).map(([type, cfg]) => (
-              <div key={type} style={{
-                display: 'flex', alignItems: 'center', gap: '10px',
-                padding: '12px 14px', borderRadius: '14px',
-                border: `1px solid ${cfg.border}`, backgroundColor: cfg.bg,
-              }}>
-                <div style={{ color: cfg.color, display: 'flex', flexShrink: 0 }}>{cfg.icon}</div>
-                <div style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: '13px', fontWeight: 600, color: cfg.color, display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cfg.label}</span>
-                  {cfg.rarity && (
-                    <span style={{ fontSize: '10px', color: cfg.color, opacity: 0.7 }}>{cfg.rarity}</span>
-                  )}
+          <button
+            onClick={() => setShowPrizes(p => !p)}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '12px 14px', borderRadius: showPrizes ? '14px 14px 0 0' : '14px',
+              backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+              cursor: 'pointer', color: 'var(--muted)', fontFamily: 'var(--font-jakarta)',
+            }}
+          >
+            <span style={{ fontSize: '13px', fontWeight: 600 }}>O que posso ganhar?</span>
+            <ChevronDown size={15} strokeWidth={1.5} style={{ transition: 'transform 0.2s', transform: showPrizes ? 'rotate(180deg)' : 'none' }} />
+          </button>
+          {showPrizes && (
+            <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderTop: 'none', borderRadius: '0 0 14px 14px', padding: '10px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '6px' }}>
+              {Object.entries(PRIZE_CONFIG).map(([type, cfg]) => (
+                <div key={type} style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  padding: '10px 12px', borderRadius: '10px',
+                  border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)',
+                }}>
+                  <div style={{ color: cfg.color, display: 'flex', flexShrink: 0 }}>{cfg.icon}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cfg.label}</span>
+                    {cfg.rarity && (
+                      <span style={{ fontSize: '10px', color: cfg.color }}>{cfg.rarity}</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', margin: '4px 0 0', gridColumn: '1/-1', textAlign: 'center' }}>Quanto mais dias seguidos, maior a chance de prêmios raros</p>
+            </div>
+          )}
         </div>
 
         {/* Historico */}

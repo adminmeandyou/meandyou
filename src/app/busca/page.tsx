@@ -946,7 +946,7 @@ export default function BuscaPage() {
       <ModeSelectorTabs
         viewMode={viewMode}
         onChange={setViewMode}
-        onFilterClick={() => setShowFilters(true)}
+        onFilterClick={openFilters}
       />
     )
   }, [viewMode, setModeSelector])
@@ -1179,6 +1179,17 @@ export default function BuscaPage() {
 
   function toggleBool(key: string) {
     setLocalFilters(prev => ({ ...prev, [key]: !prev[key] }))
+  }
+
+  function openFilters() {
+    // Expande categorias que já têm seleções para o usuário ver o que foi configurado
+    const expanded: Record<string, boolean> = {}
+    FILTER_CATEGORIES.forEach(cat => {
+      const hasAny = cat.groups.flatMap(g => g.options).some(o => localFilters[o.key])
+      if (hasAny) expanded[cat.id] = true
+    })
+    if (Object.keys(expanded).length > 0) setOpenCategories(expanded)
+    setShowFilters(true)
   }
 
   // ── Computed swipe values ─────────────────────────────────────────────────
@@ -1840,7 +1851,8 @@ export default function BuscaPage() {
 
               {/* Opções expandidas */}
               {!isLocked && (
-                <div style={{ overflow: 'hidden', maxHeight: isOpen ? '600px' : '0', transition: 'max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+                <div style={{ display: 'grid', gridTemplateRows: isOpen ? '1fr' : '0fr', transition: 'grid-template-rows 0.25s ease' }}>
+                <div style={{ overflow: 'hidden' }}>
                 <div style={{ padding: '10px 14px 14px', backgroundColor: 'rgba(8,9,14,0.50)' }}>
                   {cat.groups.map((group) => (
                     <div key={group.label} style={{ marginBottom: 14 }}>
@@ -1862,6 +1874,7 @@ export default function BuscaPage() {
                       </div>
                     </div>
                   ))}
+                </div>
                 </div>
                 </div>
               )}

@@ -450,7 +450,7 @@ export default function LojaPage() {
             <Coins size={15} strokeWidth={1.5} color="#F59E0B" />
             <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Selecione um pacote</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16, paddingTop: 16 }}>
             {FICHAS_PACKAGES.map((pkg) => {
               const isSelected = selectedPackage?.label === pkg.label
               return (

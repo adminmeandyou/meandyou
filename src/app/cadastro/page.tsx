@@ -55,14 +55,12 @@ function CadastroInner() {
     ;(window as any).onTurnstileExpired = () => setCfToken('')
   }, [])
 
-  // Renderiza Turnstile imperativamente quando temCodigo muda de null para não-null
+  // Renderiza Turnstile quando chega no step 6 — só uma vez, independente da escolha do código
   useEffect(() => {
-    if (temCodigo === null || !TURNSTILE_SITE_KEY || !turnstileRef.current) return
-    // Pequeno delay para garantir que o DOM atualizou
+    if (step !== 6 || !TURNSTILE_SITE_KEY || !turnstileRef.current) return
     const timer = setTimeout(() => {
       const win = window as any
       if (win.turnstile && turnstileRef.current) {
-        // Remove widget anterior se existir
         try { win.turnstile.remove(turnstileRef.current) } catch {}
         setCfToken('')
         win.turnstile.render(turnstileRef.current, {
@@ -72,9 +70,9 @@ function CadastroInner() {
           theme: 'dark',
         })
       }
-    }, 100)
+    }, 150)
     return () => clearTimeout(timer)
-  }, [temCodigo])
+  }, [step])
 
   const formatarTelefone = (valor: string) => {
     const nums = valor.replace(/\D/g, '').slice(0, 11)
@@ -350,7 +348,7 @@ function CadastroInner() {
               </div>
             )}
 
-            {temCodigo !== null && TURNSTILE_SITE_KEY && (
+            {TURNSTILE_SITE_KEY && (
               <div
                 ref={turnstileRef}
                 className="cf-turnstile"
