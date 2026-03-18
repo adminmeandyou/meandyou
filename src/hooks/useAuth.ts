@@ -15,11 +15,12 @@ export function useAuth() {
       setUser(user)
       setLoading(false)
       if (user) {
-        // fire-and-forget: registra atividade sem bloquear carregamento da sessão
+        // fire-and-forget: registra atividade + atualiza streak diário
         supabase.from('profiles')
           .update({ last_seen: new Date().toISOString() })
           .eq('id', user.id)
           .then(() => {})
+        supabase.rpc('update_daily_streak', { p_user_id: user.id }).then(() => {})
       }
     })
 

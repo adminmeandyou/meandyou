@@ -51,20 +51,26 @@ export default function StreakPage() {
       supabase.from('daily_streaks').select('current_streak, longest_streak, last_login_date').eq('user_id', user!.id).single(),
       supabase.from('streak_calendar').select('day_number, reward_type, reward_amount, claimed').eq('user_id', user!.id).order('day_number', { ascending: true }),
     ])
-    setStreak(st ?? { current_streak: 0, longest_streak: 0, last_login_date: null })
+    const streakData = st ?? { current_streak: 0, longest_streak: 0, last_login_date: null }
+    setStreak(streakData)
 
-    // Gerar calendário automaticamente se ainda não existe
+    const currentStreak = streakData.current_streak ?? 0
+    const maxDay = cal && cal.length > 0 ? Math.max(...cal.map(e => e.day_number)) : 0
+
+    // Gera calendário se vazio, ou estende quando streak está chegando ao fim do ciclo
     if (!cal || cal.length === 0) {
       await supabase.rpc('generate_streak_calendar', { p_user_id: user!.id })
-      const { data: calNovo } = await supabase
-        .from('streak_calendar')
-        .select('day_number, reward_type, reward_amount, claimed')
-        .eq('user_id', user!.id)
-        .order('day_number', { ascending: true })
-      setCalendar(calNovo ?? [])
-    } else {
-      setCalendar(cal)
+    } else if (currentStreak + 5 >= maxDay) {
+      await supabase.rpc('extend_streak_calendar', { p_user_id: user!.id })
     }
+
+    // Recarrega calendário atualizado
+    const { data: calFinal } = await supabase
+      .from('streak_calendar')
+      .select('day_number, reward_type, reward_amount, claimed')
+      .eq('user_id', user!.id)
+      .order('day_number', { ascending: true })
+    setCalendar(calFinal ?? [])
     setLoading(false)
   }
 
@@ -89,6 +95,13 @@ export default function StreakPage() {
   }
 
   const currentDay = streak?.current_streak ?? 0
+
+  // Ciclo atual: bloco de 30 dias baseado no streak
+  const cycleNumber   = Math.floor(currentDay / 30) + 1
+  const cycleStart    = (cycleNumber - 1) * 30 + 1
+  const cycleEnd      = cycleStart + 29
+  const cycleCalendar = calendar.filter(e => e.day_number >= cycleStart && e.day_number <= cycleEnd)
+
   function canClaim(entry: CalendarEntry) { return entry.day_number <= currentDay && !entry.claimed }
   const phase = getPhaseInfo(currentDay)
 
@@ -137,7 +150,7 @@ export default function StreakPage() {
             {currentDay > 0 && (
               <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(249,115,22,0.10)', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
                 <AlertTriangle size={12} color="rgba(248,249,250,0.30)" strokeWidth={1.5} />
-                <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0 }}>Fique mais de 7 dias sem entrar e o streak reseta para 0</p>
+                <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0 }}>Fique 30 dias sem entrar e o streak reseta para 0</p>
               </div>
             )}
           </div>
@@ -151,9 +164,14 @@ export default function StreakPage() {
 
           {/* Calendário */}
           <div>
-            <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '10px' }}>Calendário do mês — 1 prêmio por dia</p>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', margin: 0 }}>
+                Ciclo {cycleNumber} — dias {cycleStart} a {cycleEnd}
+              </p>
+              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>Premios mudam a cada ciclo</span>
+            </div>
 
-            {calendar.length === 0 ? (
+            {cycleCalendar.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
                 <Lock size={28} color="rgba(255,255,255,0.15)" strokeWidth={1.5} />
                 <p style={{ color: 'var(--muted)', fontSize: '14px', margin: 0 }}>Continue entrando no app todo dia</p>
@@ -161,7 +179,7 @@ export default function StreakPage() {
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-                {calendar.map((entry) => {
+                {cycleCalendar.map((entry) => {
                   const cfg = REWARD_CONFIG[entry.reward_type] ?? REWARD_CONFIG['ticket']
                   const reached = entry.day_number <= currentDay
                   const claimable = canClaim(entry)
@@ -180,7 +198,7 @@ export default function StreakPage() {
                         cursor: claimable ? 'pointer' : 'default', transition: 'opacity 0.15s',
                       }}
                     >
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>Dia {entry.day_number}</span>
+                      <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>Dia {entry.day_number - cycleStart + 1}</span>
 
                       {entry.claimed ? (
                         <CheckCircle size={20} color="rgba(255,255,255,0.30)" strokeWidth={1.5} />
