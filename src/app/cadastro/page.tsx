@@ -22,19 +22,35 @@ function ProgressBar({ atual, total }: { atual: number; total: number }) {
   )
 }
 
+const DRAFT_KEY = 'meandyou_cadastro_draft'
+
+function salvarRascunho(dados: Record<string, unknown>) {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(dados)) } catch {}
+}
+function limparRascunho() {
+  try { localStorage.removeItem(DRAFT_KEY) } catch {}
+}
+function carregarRascunho() {
+  try { const raw = localStorage.getItem(DRAFT_KEY); return raw ? JSON.parse(raw) : null } catch { return null }
+}
+
 function CadastroInner() {
   const searchParams = useSearchParams()
-  const [step, setStep] = useState(0)
 
-  const [email, setEmail]               = useState('')
+  // Carrega rascunho salvo (se existir)
+  const draft = typeof window !== 'undefined' ? carregarRascunho() : null
+
+  const [step, setStep] = useState<number>(draft?.step ?? 0)
+
+  const [email, setEmail]               = useState<string>(draft?.email ?? '')
   const [senha, setSenha]               = useState('')
   const [verSenha, setVerSenha]         = useState(false)
-  const [nomeCompleto, setNomeCompleto] = useState('')
-  const [nomeExibicao, setNomeExibicao] = useState('')
-  const [cpf, setCpf]                   = useState('')
-  const [telefone, setTelefone]         = useState('')
-  const [temCodigo, setTemCodigo]       = useState<boolean | null>(null)
-  const [refCode, setRefCode]           = useState(searchParams.get('ref') ?? '')
+  const [nomeCompleto, setNomeCompleto] = useState<string>(draft?.nomeCompleto ?? '')
+  const [nomeExibicao, setNomeExibicao] = useState<string>(draft?.nomeExibicao ?? '')
+  const [cpf, setCpf]                   = useState<string>(draft?.cpf ?? '')
+  const [telefone, setTelefone]         = useState<string>(draft?.telefone ?? '')
+  const [temCodigo, setTemCodigo]       = useState<boolean | null>(draft?.temCodigo ?? null)
+  const [refCode, setRefCode]           = useState<string>(draft?.refCode ?? searchParams.get('ref') ?? '')
 
   const [loading, setLoading] = useState(false)
   const [erro, setErro]       = useState('')
@@ -101,6 +117,12 @@ function CadastroInner() {
     if (nums.length <= 9) return `${nums.slice(0, 3)}.${nums.slice(3, 6)}.${nums.slice(6)}`
     return `${nums.slice(0, 3)}.${nums.slice(3, 6)}.${nums.slice(6, 9)}-${nums.slice(9)}`
   }
+
+  // Salva rascunho sempre que um campo muda (exceto senha e token)
+  useEffect(() => {
+    if (step === 0 && !email) return // não salva vazio
+    salvarRascunho({ step, email, nomeCompleto, nomeExibicao, cpf, telefone, temCodigo, refCode })
+  }, [step, email, nomeCompleto, nomeExibicao, cpf, telefone, temCodigo, refCode])
 
   const avancar = () => {
     setErro('')
@@ -194,6 +216,7 @@ function CadastroInner() {
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ email: email.trim().toLowerCase(), password: senha }),
       })
+      limparRascunho()
       if (loginRes.ok) {
         window.location.href = '/onboarding'
       } else {
