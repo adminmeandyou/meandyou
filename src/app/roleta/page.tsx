@@ -1,12 +1,12 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import confetti from 'canvas-confetti'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Ticket, Loader2, Star, Zap, Search, RotateCcw, Gift, Crown, Trophy, TrendingUp, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Ticket, Loader2, Star, Zap, Search, RotateCcw, Gift, Crown, Trophy, TrendingUp, Eye, X } from 'lucide-react'
 import { useAppHeader } from '@/contexts/AppHeaderContext'
 
 // Configuracao visual dos premios
@@ -19,26 +19,27 @@ const PRIZE_CONFIG: Record<string, {
   icon: React.ReactNode
   rarity?: string
 }> = {
-  ticket:        { label: 'Ticket',           color: '#eab308', bg: 'rgba(234,179,8,0.12)',    border: 'rgba(234,179,8,0.35)',    glow: 'rgba(234,179,8,0.5)',    icon: <Ticket size={22} strokeWidth={1.5} /> },
-  supercurtida:  { label: 'SuperLike',        color: '#ec4899', bg: 'rgba(236,72,153,0.12)',   border: 'rgba(236,72,153,0.35)',   glow: 'rgba(236,72,153,0.5)',   icon: <Star size={22} strokeWidth={1.5} /> },
-  boost:         { label: 'Boost',            color: '#E11D48', bg: 'rgba(225,29,72,0.12)',    border: 'rgba(225,29,72,0.35)',    glow: 'rgba(225,29,72,0.5)',    icon: <Zap size={22} strokeWidth={1.5} /> },
-  lupa:          { label: 'Lupa',             color: '#3b82f6', bg: 'rgba(59,130,246,0.12)',   border: 'rgba(59,130,246,0.35)',   glow: 'rgba(59,130,246,0.5)',   icon: <Search size={22} strokeWidth={1.5} /> },
-  rewind:        { label: 'Desfazer',         color: '#a855f7', bg: 'rgba(168,85,247,0.12)',   border: 'rgba(168,85,247,0.35)',   glow: 'rgba(168,85,247,0.5)',   icon: <RotateCcw size={22} strokeWidth={1.5} /> },
-  invisivel_1d:  { label: 'Invisivel 1 dia',  color: '#9ca3af', bg: 'rgba(156,163,175,0.12)',  border: 'rgba(156,163,175,0.35)',  glow: 'rgba(156,163,175,0.5)',  icon: <Gift size={22} strokeWidth={1.5} /> },
-  plan_plus_1d:  { label: '1 dia Plus',       color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)',   border: 'rgba(139,92,246,0.45)',   glow: 'rgba(139,92,246,0.7)',   icon: <Crown size={22} strokeWidth={1.5} />, rarity: 'Raro' },
-  plan_black_1d: { label: '1 dia Black',      color: '#F59E0B', bg: 'rgba(245,158,11,0.15)',   border: 'rgba(245,158,11,0.45)',   glow: 'rgba(245,158,11,0.7)',   icon: <Trophy size={22} strokeWidth={1.5} />, rarity: 'Lendario' },
+  ticket:          { label: 'Ticket',          color: '#eab308', bg: 'rgba(234,179,8,0.12)',   border: 'rgba(234,179,8,0.35)',   glow: 'rgba(234,179,8,0.5)',   icon: <Ticket size={22} strokeWidth={1.5} /> },
+  supercurtida:    { label: 'SuperLike',       color: '#ec4899', bg: 'rgba(236,72,153,0.12)',  border: 'rgba(236,72,153,0.35)',  glow: 'rgba(236,72,153,0.5)',  icon: <Star size={22} strokeWidth={1.5} /> },
+  boost:           { label: 'Boost',           color: '#E11D48', bg: 'rgba(225,29,72,0.12)',   border: 'rgba(225,29,72,0.35)',   glow: 'rgba(225,29,72,0.5)',   icon: <Zap size={22} strokeWidth={1.5} /> },
+  lupa:            { label: 'Lupa',            color: '#ea580c', bg: 'rgba(234,88,12,0.12)',   border: 'rgba(234,88,12,0.35)',   glow: 'rgba(234,88,12,0.5)',   icon: <Search size={22} strokeWidth={1.5} /> },
+  rewind:          { label: 'Desfazer',        color: '#be185d', bg: 'rgba(190,24,93,0.12)',   border: 'rgba(190,24,93,0.35)',   glow: 'rgba(190,24,93,0.5)',   icon: <RotateCcw size={22} strokeWidth={1.5} /> },
+  ver_quem_curtiu: { label: 'Ver quem curtiu', color: '#F43F5E', bg: 'rgba(244,63,94,0.12)',   border: 'rgba(244,63,94,0.35)',   glow: 'rgba(244,63,94,0.5)',   icon: <Eye size={22} strokeWidth={1.5} /> },
+  invisivel_1d:    { label: 'Invisivel 1 dia', color: '#9ca3af', bg: 'rgba(156,163,175,0.12)', border: 'rgba(156,163,175,0.35)', glow: 'rgba(156,163,175,0.5)', icon: <Gift size={22} strokeWidth={1.5} /> },
+  plan_plus_1d:    { label: '1 dia Plus',      color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)',  border: 'rgba(139,92,246,0.45)',  glow: 'rgba(139,92,246,0.7)',  icon: <Crown size={22} strokeWidth={1.5} />, rarity: 'Raro' },
+  plan_black_1d:   { label: '1 dia Black',     color: '#F59E0B', bg: 'rgba(245,158,11,0.15)',  border: 'rgba(245,158,11,0.45)',  glow: 'rgba(245,158,11,0.7)',  icon: <Trophy size={22} strokeWidth={1.5} />, rarity: 'Lendario' },
 }
 
-// Segmentos da roleta com gradientes premium
+// Segmentos da roleta — paleta coesa dentro da identidade dark romantic
 const WHEEL_SEGMENTS = [
-  { type: 'ticket',       label: '1 Ticket',    colorA: '#78350f', colorB: '#d97706' },
-  { type: 'supercurtida', label: 'SuperLike',   colorA: '#7f1d1d', colorB: '#E11D48' },
-  { type: 'ticket',       label: '2 Tickets',   colorA: '#78350f', colorB: '#f59e0b' },
-  { type: 'lupa',         label: 'Lupa',        colorA: '#1e2a4a', colorB: '#4f7fba' },
-  { type: 'ticket',       label: '1 Ticket',    colorA: '#78350f', colorB: '#d97706' },
-  { type: 'boost',        label: 'Boost',       colorA: '#7f1d1d', colorB: '#E11D48' },
-  { type: 'ticket',       label: '3 Tickets',   colorA: '#78350f', colorB: '#f59e0b' },
-  { type: 'rewind',       label: 'Desfazer',    colorA: '#2e1a4a', colorB: '#7c5cbf' },
+  { type: 'ticket',          label: '1 Ticket',     colorA: '#78350f', colorB: '#d97706' },
+  { type: 'supercurtida',    label: 'SuperLike',    colorA: '#831843', colorB: '#ec4899' },
+  { type: 'ticket',          label: '2 Tickets',    colorA: '#78350f', colorB: '#f59e0b' },
+  { type: 'lupa',            label: 'Lupa',         colorA: '#7c2d12', colorB: '#ea580c' },
+  { type: 'ver_quem_curtiu', label: 'Ver Curtidas', colorA: '#4c0519', colorB: '#F43F5E' },
+  { type: 'boost',           label: 'Boost',        colorA: '#7f1d1d', colorB: '#E11D48' },
+  { type: 'ticket',          label: '3 Tickets',    colorA: '#78350f', colorB: '#f59e0b' },
+  { type: 'rewind',          label: 'Desfazer',     colorA: '#500724', colorB: '#be185d' },
 ]
 
 type SpinResult = {
@@ -245,7 +246,7 @@ export default function RoletaPage() {
       ctx.fillText(seg.label, innerR - 14, 4)
       ctx.restore()
 
-      // Ícone/ponto colorido próximo ao centro
+      // Ponto colorido proximo ao centro
       const iconDist = innerR * 0.32
       const ix = cx + iconDist * Math.cos(midAngle)
       const iy = cy + iconDist * Math.sin(midAngle)
@@ -309,7 +310,6 @@ export default function RoletaPage() {
       const elapsed = now - start
       const progress = Math.min(elapsed / duration, 1)
 
-      // easeOutBack apenas nos ultimos 20% para o bounce
       let ease: number
       if (progress < 0.8) {
         ease = 1 - Math.pow(1 - progress / 0.8, 2.5)
@@ -338,7 +338,7 @@ export default function RoletaPage() {
   function spawnParticles() {
     const canvas = particleRef.current
     if (!canvas) return
-    const colors = ['#E11D48', '#F59E0B', '#10b981', '#3b82f6', '#a855f7', '#ec4899', '#eab308']
+    const colors = ['#E11D48', '#F59E0B', '#ec4899', '#ea580c', '#eab308']
     const pts: Particle[] = []
     const cx = canvas.width / 2
     const cy = canvas.height / 2
@@ -413,11 +413,17 @@ export default function RoletaPage() {
     const segAngle = (2 * Math.PI) / WHEEL_SEGMENTS.length
     const segIdx = (() => {
       if (prize.reward_type === 'ticket') {
+        if (prize.reward_amount >= 3) return 6
         if (prize.reward_amount === 2) return 2
-        if (prize.reward_amount === 3) return 6
         return 0
       }
-      const map: Record<string, number> = { supercurtida: 1, lupa: 3, boost: 5, rewind: 7 }
+      const map: Record<string, number> = {
+        supercurtida:    1,
+        lupa:            3,
+        ver_quem_curtiu: 4,
+        boost:           5,
+        rewind:          7,
+      }
       return map[prize.reward_type] ?? 0
     })()
 
@@ -437,23 +443,16 @@ export default function RoletaPage() {
       setSpinning(false)
       spinningRef.current = false
 
-      // Celebracao para premios raros ou qualquer premio
       setShowCelebration(true)
       spawnParticles()
-      // Confetti principal — burst do centro
-      confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, colors: ['#E11D48','#F59E0B','#10b981','#3b82f6','#a855f7','#fff'] })
-      // Confetti lateral esquerda
-      setTimeout(() => confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors: ['#E11D48','#F59E0B','#fff'] }), 200)
-      // Confetti lateral direita
-      setTimeout(() => confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors: ['#E11D48','#F59E0B','#fff'] }), 200)
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, colors: ['#E11D48', '#F59E0B', '#ec4899', '#ea580c', '#fff'] })
+      setTimeout(() => confetti({ particleCount: 60, angle: 60, spread: 55, origin: { x: 0, y: 0.6 }, colors: ['#E11D48', '#F59E0B', '#fff'] }), 200)
+      setTimeout(() => confetti({ particleCount: 60, angle: 120, spread: 55, origin: { x: 1, y: 0.6 }, colors: ['#E11D48', '#F59E0B', '#fff'] }), 200)
       if (prize.reward_type === 'plan_black_1d' || prize.reward_type === 'plan_plus_1d') {
-        // Jackpot: confetti extra intenso
-        setTimeout(() => confetti({ particleCount: 200, spread: 120, origin: { y: 0.4 }, colors: ['#F59E0B','#fbbf24','#fff','#E11D48'] }), 400)
+        setTimeout(() => confetti({ particleCount: 200, spread: 120, origin: { y: 0.4 }, colors: ['#F59E0B', '#fbbf24', '#fff', '#E11D48'] }), 400)
       }
       setTimeout(() => setShowCelebration(false), 3000)
-      // Recarrega dados do servidor para refletir saldo atualizado (tickets + premios)
       setTimeout(() => loadData(), 1500)
-      // Segunda recarga apos animacao para garantir premios creditados
       setTimeout(() => loadData(), 3500)
 
       if (navigator.vibrate) {
@@ -473,7 +472,8 @@ export default function RoletaPage() {
     return `${amount}x ${config.label}`
   }
 
-  const isRare = result && (result.reward_type === 'plan_plus_1d' || result.reward_type === 'plan_black_1d')
+  const commonPrizes = Object.entries(PRIZE_CONFIG).filter(([, cfg]) => !cfg.rarity)
+  const rarePrizes = Object.entries(PRIZE_CONFIG).filter(([, cfg]) => cfg.rarity)
 
   return (
     <div style={{
@@ -545,6 +545,24 @@ export default function RoletaPage() {
         {/* Roleta */}
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0', width: '100%' }}>
 
+          {/* Botao "O que posso ganhar?" — canto superior direito */}
+          <button
+            onClick={() => setShowPrizes(true)}
+            style={{
+              alignSelf: 'flex-end',
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '6px 12px', borderRadius: 100,
+              backgroundColor: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              cursor: 'pointer', color: 'rgba(248,249,250,0.55)',
+              fontFamily: 'var(--font-jakarta)', fontSize: 11, fontWeight: 600,
+              marginBottom: 10,
+            }}
+          >
+            <Gift size={12} strokeWidth={1.5} />
+            O que posso ganhar?
+          </button>
+
           {/* Container da roleta com glow de fundo */}
           <div style={{
             position: 'relative',
@@ -574,7 +592,7 @@ export default function RoletaPage() {
               style={{ position: 'absolute', top: 0, left: 0, pointerEvents: 'none', zIndex: 20 }}
             />
 
-            {/* Ponteiro aprimorado */}
+            {/* Ponteiro */}
             <div style={{
               position: 'absolute',
               top: 8,
@@ -585,7 +603,6 @@ export default function RoletaPage() {
               flexDirection: 'column',
               alignItems: 'center',
             }}>
-              {/* Sombra/glow do ponteiro */}
               <div style={{
                 width: 0, height: 0,
                 borderLeft: '10px solid transparent',
@@ -730,42 +747,6 @@ export default function RoletaPage() {
           )
         })()}
 
-        {/* Tabela de premios — colapsável */}
-        <div style={{ width: '100%' }}>
-          <button
-            onClick={() => setShowPrizes(p => !p)}
-            style={{
-              width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '12px 14px', borderRadius: showPrizes ? '14px 14px 0 0' : '14px',
-              backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-              cursor: 'pointer', color: 'var(--muted)', fontFamily: 'var(--font-jakarta)',
-            }}
-          >
-            <span style={{ fontSize: '13px', fontWeight: 600 }}>O que posso ganhar?</span>
-            <ChevronDown size={15} strokeWidth={1.5} style={{ transition: 'transform 0.2s', transform: showPrizes ? 'rotate(180deg)' : 'none' }} />
-          </button>
-          {showPrizes && (
-            <div style={{ border: '1px solid rgba(255,255,255,0.08)', borderTop: 'none', borderRadius: '0 0 14px 14px', padding: '10px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '6px' }}>
-              {Object.entries(PRIZE_CONFIG).map(([type, cfg]) => (
-                <div key={type} style={{
-                  display: 'flex', alignItems: 'center', gap: '8px',
-                  padding: '10px 12px', borderRadius: '10px',
-                  border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.02)',
-                }}>
-                  <div style={{ color: cfg.color, display: 'flex', flexShrink: 0 }}>{cfg.icon}</div>
-                  <div style={{ minWidth: 0 }}>
-                    <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cfg.label}</span>
-                    {cfg.rarity && (
-                      <span style={{ fontSize: '10px', color: cfg.color }}>{cfg.rarity}</span>
-                    )}
-                  </div>
-                </div>
-              ))}
-              <p style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)', margin: '4px 0 0', gridColumn: '1/-1', textAlign: 'center' }}>Quanto mais dias seguidos, maior a chance de prêmios raros</p>
-            </div>
-          )}
-        </div>
-
         {/* Historico */}
         {history.length > 0 && (
           <div style={{ width: '100%' }}>
@@ -812,6 +793,102 @@ export default function RoletaPage() {
         </div>
 
       </div>
+
+      {/* Modal de premios */}
+      {showPrizes && (
+        <div
+          onClick={() => setShowPrizes(false)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 100,
+            backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: '600px',
+              backgroundColor: '#0F1117',
+              borderRadius: '24px 24px 0 0',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderBottom: 'none',
+              padding: '20px 20px 48px',
+              maxHeight: '85vh', overflowY: 'auto',
+            }}
+          >
+            {/* Handle */}
+            <div style={{ width: 36, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 auto 20px' }} />
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)', margin: 0 }}>Premios possiveis</h3>
+              <button
+                onClick={() => setShowPrizes(false)}
+                style={{ width: 32, height: 32, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--muted)' }}
+              >
+                <X size={15} strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {/* Info de streak */}
+            <div style={{
+              backgroundColor: 'rgba(225,29,72,0.07)', border: '1px solid rgba(225,29,72,0.18)',
+              borderRadius: 12, padding: '12px 14px', marginBottom: 20,
+              display: 'flex', gap: 10, alignItems: 'flex-start',
+            }}>
+              <TrendingUp size={15} color="#E11D48" strokeWidth={1.5} style={{ flexShrink: 0, marginTop: 2 }} />
+              <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.65)', margin: 0, lineHeight: 1.6 }}>
+                Quanto mais dias seguidos voce entrar no app, maior a chance de sortear premios raros e lendarios. Mantenha seu streak ativo!
+              </p>
+            </div>
+
+            {/* Premios comuns */}
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(248,249,250,0.35)', margin: '0 0 10px' }}>Comuns</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginBottom: 20 }}>
+              {commonPrizes.map(([type, cfg]) => (
+                <div key={type} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px', borderRadius: 12,
+                  border: `1px solid ${cfg.border}`, backgroundColor: cfg.bg,
+                }}>
+                  <div style={{ color: cfg.color, flexShrink: 0 }}>{cfg.icon}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{cfg.label}</span>
+                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)' }}>1 a 5 unidades</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Premios raros */}
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(248,249,250,0.35)', margin: '0 0 10px' }}>Raros e Lendarios</p>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 6, marginBottom: 20 }}>
+              {rarePrizes.map(([type, cfg]) => (
+                <div key={type} style={{
+                  display: 'flex', alignItems: 'center', gap: 10,
+                  padding: '10px 12px', borderRadius: 12,
+                  border: `1px solid ${cfg.border}`, backgroundColor: cfg.bg,
+                }}>
+                  <div style={{ color: cfg.color, flexShrink: 0 }}>{cfg.icon}</div>
+                  <div style={{ minWidth: 0 }}>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', display: 'block' }}>{cfg.label}</span>
+                    <span style={{ fontSize: 10, color: cfg.color, fontWeight: 600 }}>{cfg.rarity}!</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Nota sobre Super Lendaria */}
+            <div style={{
+              backgroundColor: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)',
+              borderRadius: 10, padding: '10px 14px',
+            }}>
+              <p style={{ fontSize: 11, color: 'rgba(248,249,250,0.28)', margin: 0, lineHeight: 1.5 }}>
+                A Caixa Super Lendaria e exclusiva da Loja e nao e sorteada na roleta.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes spin-anim { to { transform: rotate(360deg); } }
