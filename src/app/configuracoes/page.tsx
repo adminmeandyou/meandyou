@@ -154,10 +154,11 @@ export default function ConfiguracoesPage() {
 
   async function handleLogout() {
     haptics.medium()
+    await supabase.auth.signOut()
     await fetch('/api/auth/logout', { method: 'POST' })
     document.cookie = 'sb-access-token=; Max-Age=0; path=/'
     document.cookie = 'sb-refresh-token=; Max-Age=0; path=/'
-    router.push('/login')
+    window.location.href = '/login'
   }
 
   async function toggleLastActive() {

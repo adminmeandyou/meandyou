@@ -3,7 +3,10 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Trash2, AlertTriangle, Eye, EyeOff, Loader2, ShieldAlert, Pause, MessageCircle } from 'lucide-react'
+import {
+  ArrowLeft, Trash2, AlertTriangle, Eye, EyeOff, Loader2,
+  ShieldAlert, Pause, MessageCircle, CheckCircle,
+} from 'lucide-react'
 
 type Step = 'aviso' | 'pausar' | 'motivo' | 'confirmar'
 
@@ -18,17 +21,25 @@ const MOTIVOS = [
 
 export default function DeletarContaPage() {
   const router = useRouter()
-  const [step, setStep]         = useState<Step>('aviso')
-  const [senha, setSenha]       = useState('')
+  const [step, setStep]           = useState<Step>('aviso')
+  const [senha, setSenha]         = useState('')
   const [showSenha, setShowSenha] = useState(false)
-  const [loading, setLoading]   = useState(false)
-  const [error, setError]       = useState<string | null>(null)
-  const [motivo, setMotivo]     = useState('')
-  const [pausando, setPausando] = useState(false)
+  const [loading, setLoading]     = useState(false)
+  const [error, setError]         = useState<string | null>(null)
+  const [motivo, setMotivo]       = useState('')
+  const [pausando, setPausando]   = useState(false)
+
+  const steps: Step[] = ['aviso', 'pausar', 'motivo', 'confirmar']
+
+  function handleBack() {
+    if (step === 'pausar') setStep('aviso')
+    else if (step === 'motivo') setStep('pausar')
+    else if (step === 'confirmar') setStep('motivo')
+    else router.back()
+  }
 
   async function handlePausar() {
     setPausando(true)
-    // Pausa usando incognito_until por 30 dias — oculta o perfil da busca
     const { data: { user } } = await supabase.auth.getUser()
     if (user) {
       const until = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
@@ -73,7 +84,7 @@ export default function DeletarContaPage() {
     if (res.ok) {
       document.cookie = 'sb-access-token=; Max-Age=0; path=/'
       document.cookie = 'sb-refresh-token=; Max-Age=0; path=/'
-      router.replace('/')
+      window.location.href = '/'
     } else {
       const data = await res.json().catch(() => ({}))
       setError(data?.error ?? 'Erro ao excluir conta. Tente novamente ou contate o suporte.')
@@ -81,161 +92,236 @@ export default function DeletarContaPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] font-jakarta pb-24">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
-      <header className="sticky top-0 z-30 bg-[var(--bg)]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
-        <button onClick={() => {
-          if (step === 'pausar') setStep('aviso')
-          else if (step === 'motivo') setStep('pausar')
-          else if (step === 'confirmar') setStep('motivo')
-          else router.back()
-        }} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-          <ArrowLeft size={18} className="text-white/60" />
+      {/* Header */}
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 30,
+        backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)',
+        borderBottom: '1px solid var(--border)', padding: '14px 16px',
+        display: 'flex', alignItems: 'center', gap: '12px',
+      }}>
+        <button
+          onClick={handleBack}
+          style={{
+            width: '36px', height: '36px', borderRadius: '50%',
+            backgroundColor: 'rgba(255,255,255,0.06)', border: 'none',
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}
+        >
+          <ArrowLeft size={18} color="rgba(255,255,255,0.7)" />
         </button>
-        <div className="flex-1">
-          <h1 className="font-fraunces text-xl text-white">Excluir conta</h1>
-          <p className="text-white/30 text-xs">Ação permanente e irreversível</p>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <h1 style={{ fontFamily: 'var(--font-fraunces)', color: 'var(--text)', fontSize: '19px', margin: 0 }}>
+            Excluir conta
+          </h1>
+          <p style={{ color: 'rgba(255,255,255,0.30)', fontSize: '11px', margin: '1px 0 0' }}>
+            Acao permanente e irreversivel
+          </p>
         </div>
         {/* Indicador de etapa */}
-        <div className="flex gap-1">
-          {(['aviso', 'pausar', 'motivo', 'confirmar'] as Step[]).map((s, i) => (
-            <div key={i} className="w-2 h-2 rounded-full transition-all" style={{ backgroundColor: s === step ? '#E11D48' : 'rgba(255,255,255,0.12)' }} />
+        <div style={{ display: 'flex', gap: '5px' }}>
+          {steps.map((s) => (
+            <div
+              key={s}
+              style={{
+                width: '7px', height: '7px', borderRadius: '50%',
+                backgroundColor: s === step ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
+                transition: 'background-color 0.2s',
+              }}
+            />
           ))}
         </div>
       </header>
 
-      <div className="px-5 pt-8 max-w-sm mx-auto space-y-6">
+      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '32px 16px 0' }}>
 
         {/* ── ETAPA 1: Aviso ── */}
         {step === 'aviso' && (
-          <>
-            <div className="flex flex-col items-center gap-4 py-4">
-              <div className="w-20 h-20 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
-                <Trash2 size={36} className="text-red-400" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', paddingTop: '8px' }}>
+              <div style={{
+                width: '80px', height: '80px', borderRadius: '50%',
+                backgroundColor: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.20)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Trash2 size={36} color="#f87171" />
               </div>
-              <div className="text-center">
-                <h2 className="font-fraunces text-2xl text-white mb-2">Tem certeza?</h2>
-                <p className="text-white/40 text-sm leading-relaxed">
-                  Ao excluir sua conta, todos os seus dados serão removidos permanentemente, incluindo matches, conversas e fotos.
+              <div style={{ textAlign: 'center' }}>
+                <h2 style={{ fontFamily: 'var(--font-fraunces)', color: 'var(--text)', fontSize: '24px', margin: '0 0 8px' }}>
+                  Tem certeza?
+                </h2>
+                <p style={{ color: 'rgba(255,255,255,0.40)', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>
+                  Ao excluir sua conta, todos os seus dados serao removidos permanentemente, incluindo matches, conversas e fotos.
                 </p>
               </div>
             </div>
 
-            <div className="rounded-2xl p-4 bg-red-500/5 border border-red-500/20 space-y-2">
-              <p className="text-red-400 text-xs font-semibold uppercase tracking-widest mb-3 flex items-center gap-2">
-                <ShieldAlert size={12} /> O que será excluído permanentemente
+            <div style={{
+              borderRadius: '16px', padding: '16px',
+              backgroundColor: 'rgba(239,68,68,0.05)', border: '1px solid rgba(239,68,68,0.20)',
+              display: 'flex', flexDirection: 'column', gap: '8px',
+            }}>
+              <p style={{ color: '#f87171', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.4px', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <ShieldAlert size={12} /> O que sera excluido permanentemente
               </p>
               {[
                 'Perfil e fotos',
                 'Todos os matches e conversas',
-                'Histórico de curtidas',
+                'Historico de curtidas',
                 'Saldo de SuperLikes, Boosts, Lupas e tickets',
                 'Assinatura ativa (sem reembolso)',
-                'Indicações e bônus pendentes',
+                'Indicacoes e bonus pendentes',
               ].map((item) => (
-                <div key={item} className="flex items-center gap-2">
-                  <AlertTriangle size={12} className="text-red-400 shrink-0" />
-                  <span className="text-white/50 text-xs">{item}</span>
+                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <AlertTriangle size={12} color="#f87171" style={{ flexShrink: 0 }} />
+                  <span style={{ color: 'rgba(255,255,255,0.50)', fontSize: '13px' }}>{item}</span>
                 </div>
               ))}
             </div>
 
-            <p className="text-white/20 text-xs text-center leading-relaxed">
-              Em conformidade com a LGPD, todos os seus dados pessoais serão removidos de nossos servidores após a exclusão.
+            <p style={{ color: 'rgba(255,255,255,0.20)', fontSize: '12px', textAlign: 'center', lineHeight: '1.6', margin: 0 }}>
+              Em conformidade com a LGPD, todos os seus dados pessoais serao removidos de nossos servidores apos a exclusao.
             </p>
 
-            <div className="flex flex-col gap-3 pt-2">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button
                 onClick={() => setStep('pausar')}
-                className="w-full py-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 font-bold text-sm hover:bg-red-500/20 transition"
+                style={{
+                  width: '100%', padding: '15px 16px', borderRadius: '14px',
+                  backgroundColor: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)',
+                  color: '#f87171', fontWeight: 700, fontSize: '14px', cursor: 'pointer',
+                  fontFamily: 'var(--font-jakarta)',
+                }}
               >
-                Continuar com a exclusão
+                Continuar com a exclusao
               </button>
               <button
                 onClick={() => router.back()}
-                className="w-full py-3.5 rounded-2xl border border-white/10 text-white/50 text-sm hover:text-white transition"
+                style={{
+                  width: '100%', padding: '14px 16px', borderRadius: '14px',
+                  backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.10)',
+                  color: 'rgba(255,255,255,0.50)', fontSize: '14px', cursor: 'pointer',
+                  fontFamily: 'var(--font-jakarta)',
+                }}
               >
-                Cancelar — manter minha conta
+                Cancelar - manter minha conta
               </button>
             </div>
-          </>
+          </div>
         )}
 
         {/* ── ETAPA 2: Pausar ── */}
         {step === 'pausar' && (
-          <>
-            <div className="flex flex-col items-center gap-4 py-4 text-center">
-              <div className="w-20 h-20 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-                <Pause size={36} className="text-blue-400" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', paddingTop: '8px', textAlign: 'center' }}>
+              <div style={{
+                width: '80px', height: '80px', borderRadius: '50%',
+                backgroundColor: 'rgba(59,130,246,0.10)', border: '1px solid rgba(59,130,246,0.20)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <Pause size={36} color="#60a5fa" />
               </div>
               <div>
-                <h2 className="font-fraunces text-2xl text-white mb-2">Antes de ir...</h2>
-                <p className="text-white/40 text-sm leading-relaxed">
-                  Você pode pausar sua conta por 30 dias. Seu perfil fica oculto e ninguém te vê — mas seus dados continuam salvos quando voltar.
+                <h2 style={{ fontFamily: 'var(--font-fraunces)', color: 'var(--text)', fontSize: '24px', margin: '0 0 8px' }}>
+                  Antes de ir...
+                </h2>
+                <p style={{ color: 'rgba(255,255,255,0.40)', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>
+                  Voce pode pausar sua conta por 30 dias. Seu perfil fica oculto e ninguem te ve - mas seus dados continuam salvos quando voltar.
                 </p>
               </div>
             </div>
 
-            {/* Benefícios de pausar */}
-            <div className="rounded-2xl p-4 bg-blue-500/5 border border-blue-500/15 space-y-3">
-              <p className="text-blue-400 text-xs font-semibold uppercase tracking-widest">Se você pausar, mantém:</p>
+            <div style={{
+              borderRadius: '16px', padding: '16px',
+              backgroundColor: 'rgba(59,130,246,0.05)', border: '1px solid rgba(59,130,246,0.15)',
+              display: 'flex', flexDirection: 'column', gap: '10px',
+            }}>
+              <p style={{ color: '#60a5fa', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.4px', margin: '0 0 2px' }}>
+                Se voce pausar, mantem:
+              </p>
               {[
                 'Seus matches e conversas intactos',
                 'Saldo de SuperLikes, Lupas e Tickets',
                 'Seu perfil e todas as fotos',
-                'Histórico de indicações e bônus',
+                'Historico de indicacoes e bonus',
               ].map((item) => (
-                <div key={item} className="flex items-center gap-2">
-                  <div className="w-4 h-4 rounded-full bg-blue-500/20 flex items-center justify-center shrink-0">
-                    <div className="w-1.5 h-1.5 rounded-full bg-blue-400" />
+                <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <div style={{
+                    width: '18px', height: '18px', borderRadius: '50%',
+                    backgroundColor: 'rgba(59,130,246,0.20)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  }}>
+                    <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#60a5fa' }} />
                   </div>
-                  <span className="text-white/60 text-xs">{item}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.60)', fontSize: '13px' }}>{item}</span>
                 </div>
               ))}
             </div>
 
-            <div className="flex flex-col gap-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button
                 onClick={handlePausar}
                 disabled={pausando}
-                className="w-full py-4 rounded-2xl bg-blue-600 text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-700 transition disabled:opacity-50"
+                style={{
+                  width: '100%', padding: '15px 16px', borderRadius: '14px',
+                  backgroundColor: '#2563eb', border: 'none',
+                  color: '#fff', fontWeight: 700, fontSize: '14px', cursor: pausando ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  opacity: pausando ? 0.6 : 1, fontFamily: 'var(--font-jakarta)',
+                }}
               >
-                {pausando ? <Loader2 size={16} className="animate-spin" /> : <Pause size={16} />}
+                {pausando ? <Loader2 size={16} color="#fff" style={{ animation: 'spin 0.8s linear infinite' }} /> : <Pause size={16} color="#fff" />}
                 {pausando ? 'Pausando...' : 'Pausar minha conta por 30 dias'}
               </button>
               <button
                 onClick={() => setStep('motivo')}
-                className="w-full py-3.5 rounded-2xl border border-red-500/20 text-red-400/70 text-sm hover:text-red-400 transition"
+                style={{
+                  width: '100%', padding: '14px 16px', borderRadius: '14px',
+                  backgroundColor: 'transparent', border: '1px solid rgba(239,68,68,0.20)',
+                  color: 'rgba(248,113,113,0.70)', fontSize: '14px', cursor: 'pointer',
+                  fontFamily: 'var(--font-jakarta)',
+                }}
               >
-                Não, quero excluir mesmo assim
+                Nao, quero excluir mesmo assim
               </button>
             </div>
-          </>
+          </div>
         )}
 
         {/* ── ETAPA 3: Motivo ── */}
         {step === 'motivo' && (
-          <>
-            <div className="flex flex-col items-center gap-4 py-4 text-center">
-              <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                <MessageCircle size={28} className="text-white/40" />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px', paddingTop: '8px', textAlign: 'center' }}>
+              <div style={{
+                width: '64px', height: '64px', borderRadius: '50%',
+                backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <MessageCircle size={28} color="rgba(255,255,255,0.40)" />
               </div>
               <div>
-                <h2 className="font-fraunces text-xl text-white mb-2">Por que você está saindo?</h2>
-                <p className="text-white/30 text-sm">Seu feedback nos ajuda a melhorar.</p>
+                <h2 style={{ fontFamily: 'var(--font-fraunces)', color: 'var(--text)', fontSize: '20px', margin: '0 0 6px' }}>
+                  Por que voce esta saindo?
+                </h2>
+                <p style={{ color: 'rgba(255,255,255,0.30)', fontSize: '13px', margin: 0 }}>
+                  Seu feedback nos ajuda a melhorar.
+                </p>
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
               {MOTIVOS.map((m) => (
                 <button
                   key={m}
-                  onClick={() => setMotivo(m)}
-                  className="py-2.5 px-4 rounded-full text-sm font-medium transition-all"
+                  onClick={() => setMotivo(motivo === m ? '' : m)}
                   style={{
-                    border: `1.5px solid ${motivo === m ? '#E11D48' : 'rgba(255,255,255,0.1)'}`,
+                    padding: '10px 16px', borderRadius: '100px', fontSize: '13px', fontWeight: 500,
+                    border: `1.5px solid ${motivo === m ? 'var(--accent)' : 'rgba(255,255,255,0.10)'}`,
                     backgroundColor: motivo === m ? 'rgba(225,29,72,0.12)' : 'transparent',
-                    color: motivo === m ? '#F43F5E' : 'rgba(255,255,255,0.4)',
+                    color: motivo === m ? '#F43F5E' : 'rgba(255,255,255,0.40)',
+                    cursor: 'pointer', transition: 'all 0.15s',
+                    fontFamily: 'var(--font-jakarta)',
                   }}
                 >
                   {m}
@@ -243,43 +329,58 @@ export default function DeletarContaPage() {
               ))}
             </div>
 
-            <div className="flex flex-col gap-3 pt-2">
-              <button
-                onClick={() => setStep('confirmar')}
-                className="w-full py-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 font-bold text-sm hover:bg-red-500/20 transition"
-              >
-                {motivo ? 'Continuar' : 'Pular e continuar'}
-              </button>
-            </div>
-          </>
+            <button
+              onClick={() => setStep('confirmar')}
+              style={{
+                width: '100%', padding: '15px 16px', borderRadius: '14px',
+                backgroundColor: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.30)',
+                color: '#f87171', fontWeight: 700, fontSize: '14px', cursor: 'pointer',
+                fontFamily: 'var(--font-jakarta)',
+              }}
+            >
+              {motivo ? 'Continuar' : 'Pular e continuar'}
+            </button>
+          </div>
         )}
 
         {/* ── ETAPA 4: Confirmar senha ── */}
         {step === 'confirmar' && (
-          <>
-            <div className="flex flex-col items-center gap-3 py-4 text-center">
-              <AlertTriangle size={32} className="text-red-400" />
-              <h2 className="font-fraunces text-xl text-white">Confirme sua senha</h2>
-              <p className="text-white/40 text-sm">
-                Digite sua senha para confirmar a exclusão definitiva da conta.
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', paddingTop: '8px', textAlign: 'center' }}>
+              <AlertTriangle size={32} color="#f87171" />
+              <h2 style={{ fontFamily: 'var(--font-fraunces)', color: 'var(--text)', fontSize: '20px', margin: 0 }}>
+                Confirme sua senha
+              </h2>
+              <p style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px', lineHeight: '1.5', margin: 0 }}>
+                Digite sua senha para confirmar a exclusao definitiva da conta.
               </p>
             </div>
 
             <div>
-              <label className="text-xs text-white/30 uppercase tracking-widest block mb-2">Sua senha</label>
-              <div className="relative">
+              <label style={{ color: 'rgba(255,255,255,0.30)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.2px', display: 'block', marginBottom: '8px' }}>
+                Sua senha
+              </label>
+              <div style={{ position: 'relative' }}>
                 <input
                   type={showSenha ? 'text' : 'password'}
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleDelete()}
                   placeholder="Digite sua senha"
-                  className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 pr-12 text-white text-sm placeholder-white/20 focus:outline-none focus:border-red-500/40"
                   autoFocus
+                  style={{
+                    width: '100%', padding: '13px 48px 13px 16px', borderRadius: '12px',
+                    backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)',
+                    color: 'var(--text)', fontSize: '14px', fontFamily: 'var(--font-jakarta)',
+                    outline: 'none', boxSizing: 'border-box',
+                  }}
                 />
                 <button
                   onClick={() => setShowSenha(!showSenha)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60"
+                  style={{
+                    position: 'absolute', right: '14px', top: '50%', transform: 'translateY(-50%)',
+                    background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: 'rgba(255,255,255,0.30)',
+                  }}
                 >
                   {showSenha ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -287,32 +388,56 @@ export default function DeletarContaPage() {
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-                <AlertTriangle size={14} className="text-red-400 shrink-0" />
-                <p className="text-red-400 text-xs">{error}</p>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 14px',
+                borderRadius: '12px', backgroundColor: 'rgba(239,68,68,0.10)', border: '1px solid rgba(239,68,68,0.20)',
+              }}>
+                <AlertTriangle size={14} color="#f87171" style={{ flexShrink: 0 }} />
+                <p style={{ color: '#f87171', fontSize: '13px', margin: 0 }}>{error}</p>
               </div>
             )}
 
-            <div className="flex flex-col gap-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
               <button
                 onClick={handleDelete}
                 disabled={loading || !senha.trim()}
-                className="w-full py-4 rounded-2xl bg-red-500 text-white font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-600 transition disabled:opacity-40 disabled:cursor-not-allowed"
+                style={{
+                  width: '100%', padding: '15px 16px', borderRadius: '14px',
+                  backgroundColor: loading || !senha.trim() ? 'rgba(239,68,68,0.40)' : '#dc2626',
+                  border: 'none', color: '#fff', fontWeight: 700, fontSize: '14px',
+                  cursor: loading || !senha.trim() ? 'not-allowed' : 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                  fontFamily: 'var(--font-jakarta)',
+                }}
               >
-                {loading ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-                {loading ? 'Excluindo…' : 'Excluir minha conta definitivamente'}
+                {loading
+                  ? <><Loader2 size={16} color="#fff" style={{ animation: 'spin 0.8s linear infinite' }} /> Excluindo...</>
+                  : <><Trash2 size={16} color="#fff" /> Excluir minha conta definitivamente</>
+                }
               </button>
               <button
                 onClick={() => { setStep('aviso'); setSenha(''); setError(null) }}
-                className="w-full py-3.5 rounded-2xl border border-white/10 text-white/50 text-sm hover:text-white transition"
+                style={{
+                  width: '100%', padding: '14px 16px', borderRadius: '14px',
+                  backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.10)',
+                  color: 'rgba(255,255,255,0.50)', fontSize: '14px', cursor: 'pointer',
+                  fontFamily: 'var(--font-jakarta)',
+                }}
               >
                 Cancelar
               </button>
             </div>
-          </>
+          </div>
         )}
 
       </div>
+
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        input::placeholder { color: rgba(255,255,255,0.20); }
+        input:focus { border-color: rgba(225,29,72,0.40) !important; }
+        button:hover { opacity: 0.88; }
+      `}</style>
     </div>
   )
 }
