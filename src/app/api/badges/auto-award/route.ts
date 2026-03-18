@@ -51,9 +51,10 @@ export async function POST(req: NextRequest) {
     }
 
     case 'invited_gte': {
-      const { data } = await supabase.rpc('get_users_with_referrals', { min_count: count }).catch(() => ({ data: null }))
-      if (data) {
-        userIds = (data ?? []).map((r: any) => r.user_id)
+      let rpcData: any = null
+      try { const { data } = await supabase.rpc('get_users_with_referrals', { min_count: count }); rpcData = data } catch {}
+      if (rpcData) {
+        userIds = (rpcData ?? []).map((r: any) => r.user_id)
       } else {
         // fallback: manual count via referrals table
         const { data: refs } = await supabase.from('referrals').select('referrer_id')
