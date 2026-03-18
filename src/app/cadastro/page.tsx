@@ -44,21 +44,28 @@ function CadastroInner() {
 
   useEffect(() => {
     if (!TURNSTILE_SITE_KEY) return
+    ;(window as any).onTurnstileSuccess = (token: string) => setCfToken(token)
+    ;(window as any).onTurnstileExpired  = () => setCfToken('')
+    ;(window as any).__cfTurnstileReady  = false
+    ;(window as any).__cfTurnstileOnLoad = () => { ;(window as any).__cfTurnstileReady = true }
+
     if (!document.getElementById('cf-turnstile-script')) {
       const script = document.createElement('script')
-      script.id = 'cf-turnstile-script'
-      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js'
+      script.id   = 'cf-turnstile-script'
+      script.src  = 'https://challenges.cloudflare.com/turnstile/v0/api.js?onload=__cfTurnstileOnLoad'
       script.async = true
       document.head.appendChild(script)
     }
-    ;(window as any).onTurnstileSuccess = (token: string) => setCfToken(token)
-    ;(window as any).onTurnstileExpired = () => setCfToken('')
   }, [])
 
-  // Renderiza Turnstile quando chega no step 6 — só uma vez, independente da escolha do código
+  // Renderiza Turnstile quando chega no step 6 — tenta até o script estar pronto
   useEffect(() => {
-    if (step !== 6 || !TURNSTILE_SITE_KEY || !turnstileRef.current) return
-    const timer = setTimeout(() => {
+    if (step !== 6 || !TURNSTILE_SITE_KEY) return
+
+    let attempts = 0
+    const MAX = 40 // 20 segundos (40 × 500ms)
+
+    function tryRender() {
       const win = window as any
       if (win.turnstile && turnstileRef.current) {
         try { win.turnstile.remove(turnstileRef.current) } catch {}
@@ -69,8 +76,14 @@ function CadastroInner() {
           'expired-callback': () => setCfToken(''),
           theme: 'dark',
         })
+      } else if (attempts < MAX) {
+        attempts++
+        setTimeout(tryRender, 500)
       }
-    }, 150)
+    }
+
+    // Pequena espera inicial para o DOM estabilizar
+    const timer = setTimeout(tryRender, 100)
     return () => clearTimeout(timer)
   }, [step])
 
