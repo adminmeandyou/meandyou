@@ -351,11 +351,6 @@ function CadastroInner() {
             {TURNSTILE_SITE_KEY && (
               <div
                 ref={turnstileRef}
-                className="cf-turnstile"
-                data-sitekey={TURNSTILE_SITE_KEY}
-                data-callback="onTurnstileSuccess"
-                data-expired-callback="onTurnstileExpired"
-                data-theme="dark"
                 style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}
               />
             )}
@@ -373,9 +368,10 @@ function CadastroInner() {
             Continuar <ChevronRight size={20} />
           </button>
         ) : (
-          <button onClick={handleCadastro}
-            disabled={loading || temCodigo === null || (!!TURNSTILE_SITE_KEY && !cfToken)}
-            style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: (loading || temCodigo === null || (!!TURNSTILE_SITE_KEY && !cfToken)) ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: (loading || temCodigo === null || (!!TURNSTILE_SITE_KEY && !cfToken)) ? 0.6 : 1, boxShadow: '0 8px 24px rgba(225,29,72,0.25)' }}>
+          <button
+            onClick={temCodigo === null ? () => setErro('Escolha uma das opções acima para continuar') : handleCadastro}
+            disabled={loading || (!!TURNSTILE_SITE_KEY && !cfToken && temCodigo !== null)}
+            style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: (loading || (!!TURNSTILE_SITE_KEY && !cfToken && temCodigo !== null)) ? 0.6 : 1, boxShadow: '0 8px 24px rgba(225,29,72,0.25)' }}>
             {loading ? 'Criando conta...' : (!!TURNSTILE_SITE_KEY && !cfToken && temCodigo !== null) ? 'Aguardando verificação...' : 'Criar conta'}
           </button>
         )}
