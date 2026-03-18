@@ -206,7 +206,7 @@ export async function POST(req: NextRequest) {
     Promise.all([
       supabaseAdmin.rpc('update_streak', { p_user_id: userId }),
       supabaseAdmin.from('profiles')
-        .update({ last_active_at: new Date().toISOString() })
+        .update({ last_seen: new Date().toISOString() })
         .eq('id', userId),
     ]).catch(err => console.error('Erro ao atualizar streak/last_active:', err))
 

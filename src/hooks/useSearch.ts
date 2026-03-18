@@ -80,7 +80,7 @@ export function useSearch() {
           const { latitude: lat, longitude: lng } = pos.coords
           await supabase
             .from('profiles')
-            .update({ lat, lng, last_active_at: new Date().toISOString() })
+            .update({ lat, lng, last_seen: new Date().toISOString() })
             .eq('id', user.id)
           setLocationGranted(true)
           resolve(true)

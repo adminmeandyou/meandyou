@@ -67,7 +67,7 @@ function getStatusPills(userRow: any): StatusPill[] {
   if (!userRow) return []
   const pills: StatusPill[] = []
   const now = Date.now()
-  const lastActive = userRow.last_active_at ? new Date(userRow.last_active_at).getTime() : 0
+  const lastActive = userRow.last_seen ? new Date(userRow.last_seen).getTime() : 0
   const createdAt = userRow.created_at ? new Date(userRow.created_at).getTime() : 0
   if (lastActive && (now - lastActive) < 5 * 60 * 1000) {
     pills.push({ label: 'Online agora', bg: 'rgba(16,185,129,0.18)', color: '#10b981' })
@@ -274,8 +274,8 @@ export default function VerPerfilPage() {
 
     // Busca dados de status para StatusPills
     const { data: userData } = await supabase
-      .from('users')
-      .select('verified, last_active_at, created_at')
+      .from('profiles')
+      .select('verified, last_seen, created_at')
       .eq('id', profileId)
       .single()
     setUserRow(userData)

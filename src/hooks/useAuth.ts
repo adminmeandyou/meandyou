@@ -17,7 +17,7 @@ export function useAuth() {
       if (user) {
         // fire-and-forget: registra atividade sem bloquear carregamento da sessão
         supabase.from('profiles')
-          .update({ last_active_at: new Date().toISOString() })
+          .update({ last_seen: new Date().toISOString() })
           .eq('id', user.id)
           .then(() => {})
       }

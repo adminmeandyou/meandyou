@@ -136,14 +136,7 @@ export default function ChatPage() {
     // Busca perfil do outro — sem campos sensíveis
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, name, photo_best, show_last_active')
-      .eq('id', otherId)
-      .single()
-
-    // Busca se é verificado + last_active_at (tabela users)
-    const { data: userRow } = await supabase
-      .from('users')
-      .select('verified, last_active_at')
+      .select('id, name, photo_best, verified, last_seen')
       .eq('id', otherId)
       .single()
 
@@ -151,10 +144,9 @@ export default function ChatPage() {
       id: otherId,
       name: profile?.name ?? 'Usuario',
       photo_best: profile?.photo_best ?? null,
-      // ✅ verified fica em users, não profiles
-      verified: userRow?.verified ?? false,
-      last_active_at: userRow?.last_active_at ?? null,
-      show_last_active: profile?.show_last_active ?? true,
+      verified: profile?.verified ?? false,
+      last_active_at: profile?.last_seen ?? null,
+      show_last_active: true,
     })
 
     // Carrega mensagens

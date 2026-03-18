@@ -137,24 +137,20 @@ export function usePlan() {
     const today = new Date().toISOString().split('T')[0]
 
     // Buscar tudo em paralelo
-    const [profileRes, likesRes, superlikesRes, boostsRes, lupasRes, ticketsRes, rewindsRes] =
+    const [userRes, likesRes, superlikesRes, boostsRes] =
       await Promise.all([
-        supabase.from('profiles').select('plan').eq('id', user.id).single(),
-        // likes usados hoje — coluna from_user (não user_id)
+        supabase.from('users').select('plan').eq('id', user.id).single(),
         supabase
           .from('likes')
           .select('*', { count: 'exact', head: true })
-          .eq('from_user', user.id)
-          .eq('type', 'like')
+          .eq('user_id', user.id)
+          .eq('is_superlike', false)
           .gte('created_at', `${today}T00:00:00`),
         supabase.from('user_superlikes').select('amount').eq('user_id', user.id).single(),
         supabase.from('user_boosts').select('amount').eq('user_id', user.id).single(),
-        supabase.from('user_lupas').select('amount').eq('user_id', user.id).single(),
-        supabase.from('user_tickets').select('amount').eq('user_id', user.id).single(),
-        supabase.from('user_rewinds').select('amount').eq('user_id', user.id).single(),
       ])
 
-    const plan = (profileRes.data?.plan as PlanType) ?? 'essencial'
+    const plan = (userRes.data?.plan as PlanType) ?? 'essencial'
     const config = PLAN_CONFIG[plan] ?? PLAN_CONFIG.essencial
 
     const likesUsedToday = likesRes.count ?? 0
@@ -170,9 +166,9 @@ export function usePlan() {
       likesRemaining,
       superlikesBalance:     superlikesRes.data?.amount ?? 0,
       boostsBalance:         boostsRes.data?.amount     ?? 0,
-      lupasBalance:          lupasRes.data?.amount      ?? 0,
-      ticketsBalance:        ticketsRes.data?.amount    ?? 0,
-      rewindsBalance:        rewindsRes.data?.amount    ?? 0,
+      lupasBalance:          0,
+      ticketsBalance:        0,
+      rewindsBalance:        0,
       ...config,
     } as PlanLimits)
 
