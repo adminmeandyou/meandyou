@@ -298,12 +298,12 @@ input::placeholder, textarea::placeholder {
    Tablet/Desktop: expansão real do layout
 ───────────────────────────────────────────── */
 
-/* Outer wrapper */
+/* Outer wrapper — mobile: trava o scroll da janela, tudo rola dentro do frame */
 .app-shell-outer {
-  min-height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   background: radial-gradient(ellipse 140% 70% at 20% -5%, rgba(225,29,72,0.09) 0%, #08090E 55%);
   display: flex;
-  overflow: hidden;
 }
 
 /* Frame central — mobile */
@@ -318,7 +318,7 @@ input::placeholder, textarea::placeholder {
   overflow: hidden;
 }
 
-/* Main content — mobile: scroll interno */
+/* Main content — mobile: scroll interno sem barra visivel */
 .app-main-content {
   flex: 1;
   overflow-y: auto;
@@ -326,6 +326,9 @@ input::placeholder, textarea::placeholder {
   min-height: 0;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
+}
+.app-main-content::-webkit-scrollbar {
+  display: none;
 }
 
 /* Sidebar — mobile escondida (md:flex via Tailwind) */
