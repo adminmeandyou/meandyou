@@ -33,11 +33,11 @@ export default function Dashboard() {
         .eq('id', user.id)
         .single()
 
-      // Sem perfil criado ainda (primeira vez) → onboarding
-      if (!profile?.name) { router.push('/onboarding'); return }
+      // Nunca completou o onboarding → mostrar boas-vindas (1x só)
+      if (!profile?.onboarding_done) { router.push('/onboarding'); return }
 
-      // Perfil existe → mostrar dashboard normalmente
-      setNome(profile.name)
+      // Onboarding feito → mostrar dashboard normalmente
+      setNome(profile.name ?? '')
       setCarregando(false)
     }
 

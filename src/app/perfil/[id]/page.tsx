@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase'
 import Image from 'next/image'
 import {
   ArrowLeft, MapPin, Heart, Star, X,
-  Eye, Calendar, Ruler, Weight, Crown, ShieldAlert, Award
+  Eye, Calendar, Ruler, Weight, Crown, ShieldAlert, Award, Settings
 } from 'lucide-react'
 import { SwipeButton } from '@/components/ui/SwipeButton'
 import { BadgePill } from '@/components/ui/BadgePill'
@@ -706,22 +706,45 @@ export default function VerPerfilPage() {
           </>
         )}
 
-        {/* Denunciar */}
-        <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '4px' }}>
-          <button
-            onClick={() => { setDenunciaModal(true); setDenunciaEnviado(false); setDenunciaCategoria(''); setDenunciaTexto('') }}
-            style={{ color: 'rgba(248,249,250,0.30)', background: 'none', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '100px', padding: '8px 20px', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
-          >
-            Denunciar perfil
-          </button>
-        </div>
+        {/* Denunciar — oculto no proprio perfil */}
+        {profileId !== userId && (
+          <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '4px' }}>
+            <button
+              onClick={() => { setDenunciaModal(true); setDenunciaEnviado(false); setDenunciaCategoria(''); setDenunciaTexto('') }}
+              style={{ color: 'rgba(248,249,250,0.30)', background: 'none', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '100px', padding: '8px 20px', fontSize: '13px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+            >
+              Denunciar perfil
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── Action bar fixa (sticky FABs) ── */}
       <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.07)', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', zIndex: 30 }}>
-        <SwipeButton variant="danger" size="lg" onClick={() => handleSwipe('dislike')} icon={<X size={26} strokeWidth={1.5} />} />
-        <SwipeButton variant="info" size="md" onClick={() => handleSwipe('superlike')} icon={<Star size={20} strokeWidth={1.5} />} />
-        <SwipeButton variant="primary" size="lg" onClick={() => handleSwipe('like')} icon={<Heart size={26} strokeWidth={1.5} />} />
+        {profileId === userId ? (
+          /* Perfil proprio — botao de editar */
+          <button
+            onClick={() => router.push('/configuracoes/editar-perfil')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '14px 32px', borderRadius: '100px',
+              backgroundColor: 'var(--accent)', color: '#fff',
+              border: 'none', cursor: 'pointer',
+              fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '15px',
+              boxShadow: '0 8px 28px rgba(225,29,72,0.35)',
+            }}
+          >
+            <Settings size={18} strokeWidth={1.5} />
+            Editar perfil
+          </button>
+        ) : (
+          /* Perfil de outra pessoa — like/dislike/superlike */
+          <>
+            <SwipeButton variant="danger" size="lg" onClick={() => handleSwipe('dislike')} icon={<X size={26} strokeWidth={1.5} />} />
+            <SwipeButton variant="info" size="md" onClick={() => handleSwipe('superlike')} icon={<Star size={20} strokeWidth={1.5} />} />
+            <SwipeButton variant="primary" size="lg" onClick={() => handleSwipe('like')} icon={<Heart size={26} strokeWidth={1.5} />} />
+          </>
+        )}
       </div>
 
       {/* ── Modal Pokédex ── */}
