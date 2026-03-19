@@ -26,12 +26,6 @@
 ## 🟡 AJUSTES DE FUNCIONALIDADE
 
 - [ ] **Perfil: substituir tela de edição por pré-visualização + edição inline** — mostrar perfil como outras pessoas veem; botões de editar foto, bio, tags, emblemas, características ao lado
-- [ ] **Loja: itens com tempo — exibir contador de expiração** — buscar `curtidas_reveals_until` e `xp_bonus_until` do perfil e mostrar countdown
-- [ ] **Loja: mochila — comportamento toggle** — quando mochila está aberta, ocultar seção de pacotes de fichas; pacotes só aparecem quando mochila fechada ou ao clicar em "Adquirir fichas"
-- [ ] **Loja: Boost — remover da loja** — mover para dashboard acima dos cards; se tiver boost ativo, mostrar botão de usar; se não tiver, mostrar CTA "Dê um boost agora e apareça para mais pessoas"
-- [ ] **Loja: Pacote Lendário — reduzir exagero visual** — remover exibição de "economiza X" e "valeria Y"
-- [ ] **Loja: Caixa Super Lendária — ajustes** — badge dourado "Promoção Exclusiva" (substituir "Melhor deal"); preço = R$ 174,62; bônus variável (20-70% de fichas); quantidade de caixas variável (1 ou 2)
-- [ ] **Loja: Caixa Super Lendária — aparecer só em períodos estratégicos** — semana de pagamento = aparece quase todos os dias; fora da semana = aparece aleatório, dura 6h com contador regressivo
 - [ ] **Emblemas: painel do usuário** — mostrar só emblemas que o usuário TEM (sem cadeado); permitir ativar/desativar; escolher 3 para exibir no perfil; demais ficam em "Ver todos os emblemas"
 - [ ] **Emblemas: admin — corrigir envio automático** — emblema criado no painel admin com condição de data de cadastro não está sendo enviado; deixar funcional
 
@@ -66,13 +60,10 @@
 
 ---
 
-## ⚪ ESCLARECIMENTOS / DEFINIÇÕES
-
-- [ ] **Busca vs Descobrir: diferenciar claramente** — Descobrir = estilo Tinder (só filtro de idade e localização); Busca = filtros avançados completos (todos os filtros existentes)
-
----
-
 ## ✅ CONCLUÍDO
+
+- **Busca vs Descobrir: diferenciar claramente** — já implementado: modo Descobrir mostra aviso e oculta filtros avançados; modo Busca exibe todas as categorias de filtro (busca/page.tsx:1797)
+- **Loja: mochila — itens com tempo (Ver curtidas + Bônus XP)** — adicionados `curtidas_reveals_until` e `xp_bonus_until` ao query do perfil; dois novos BalanceItem com countdown na mochila
 
 - **next.config.ts: imagens Supabase não apareciam** — adicionado remotePatterns para domínio do Supabase (commit 06a74c1)
 - **Dashboard: redirecionava para onboarding** — removida dependência da coluna `onboarding_done` que não existia (commit 06a74c1)

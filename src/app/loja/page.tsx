@@ -237,8 +237,10 @@ export default function LojaPage() {
   const [boosts, setBoosts]               = useState(0)
   const [lupas, setLupas]                 = useState(0)
   const [rewinds, setRewinds]             = useState(0)
-  const [boostActiveUntil, setBoostActiveUntil] = useState<string | null>(null)
-  const [ghostModeUntil, setGhostModeUntil]     = useState<string | null>(null)
+  const [boostActiveUntil, setBoostActiveUntil]       = useState<string | null>(null)
+  const [ghostModeUntil, setGhostModeUntil]           = useState<string | null>(null)
+  const [curtidasRevealsUntil, setCurtidasRevealsUntil] = useState<string | null>(null)
+  const [xpBonusUntil, setXpBonusUntil]               = useState<string | null>(null)
   const [loading, setLoading]             = useState(true)
   const [activating, setActivating]       = useState(false)
   const [openItem, setOpenItem]           = useState<StoreItem | null>(null)
@@ -266,7 +268,7 @@ export default function LojaPage() {
         supabase.from('user_boosts').select('amount, active_until').eq('user_id', user!.id).single(),
         supabase.from('user_lupas').select('amount').eq('user_id', user!.id).single(),
         supabase.from('user_rewinds').select('amount').eq('user_id', user!.id).single(),
-        supabase.from('profiles').select('ghost_mode_until').eq('id', user!.id).single(),
+        supabase.from('profiles').select('ghost_mode_until, curtidas_reveals_until, xp_bonus_until').eq('id', user!.id).single(),
       ])
 
     setFichas(fc?.amount ?? 0)
@@ -276,6 +278,8 @@ export default function LojaPage() {
     setLupas(lp?.amount ?? 0)
     setRewinds(rw?.amount ?? 0)
     setGhostModeUntil(gh?.ghost_mode_until ?? null)
+    setCurtidasRevealsUntil(gh?.curtidas_reveals_until ?? null)
+    setXpBonusUntil(gh?.xp_bonus_until ?? null)
     setLoading(false)
   }
 
@@ -336,8 +340,10 @@ export default function LojaPage() {
     setPurchasing(false)
   }
 
-  const boostIsActive = boostActiveUntil && new Date(boostActiveUntil) > new Date()
-  const ghostIsActive = ghostModeUntil && new Date(ghostModeUntil) > new Date()
+  const boostIsActive   = boostActiveUntil && new Date(boostActiveUntil) > new Date()
+  const ghostIsActive   = ghostModeUntil && new Date(ghostModeUntil) > new Date()
+  const revealsIsActive = curtidasRevealsUntil && new Date(curtidasRevealsUntil) > new Date()
+  const xpBonusIsActive = xpBonusUntil && new Date(xpBonusUntil) > new Date()
   const ghostDaysLeft = ghostIsActive
     ? Math.ceil((new Date(ghostModeUntil!).getTime() - Date.now()) / 86400000)
     : 0
@@ -434,6 +440,8 @@ export default function LojaPage() {
                 <BalanceItem icon={<Search size={16} strokeWidth={1.5} color="#3b82f6" />} label="Lupas" value={lupas} />
                 <BalanceItem icon={<RotateCcw size={16} strokeWidth={1.5} color="#a855f7" />} label="Rewinds" value={rewinds} />
                 <BalanceItem icon={<Ghost size={16} strokeWidth={1.5} color="#6b7280" />} label="Fantasma" value={ghostDaysLeft} suffix="d" active={!!ghostIsActive} countdown={ghostIsActive && ghostModeUntil ? ghostModeUntil : undefined} />
+                <BalanceItem icon={<Eye size={16} strokeWidth={1.5} color="#ec4899" />} label="Ver curtidas" value={revealsIsActive ? 1 : 0} active={!!revealsIsActive} countdown={revealsIsActive && curtidasRevealsUntil ? curtidasRevealsUntil : undefined} />
+                <BalanceItem icon={<TrendingUp size={16} strokeWidth={1.5} color="#10b981" />} label="Bonus XP" value={xpBonusIsActive ? 1 : 0} active={!!xpBonusIsActive} countdown={xpBonusIsActive && xpBonusUntil ? xpBonusUntil : undefined} />
               </div>
             </div>
           )}
