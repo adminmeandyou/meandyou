@@ -962,6 +962,30 @@ function SearchGrid({ deck }: { deck: Profile[] }) {
   )
 }
 
+// ─── Filtro client-side para modo Busca ──────────────────────────────────────
+
+// Para cada categoria, se o usuário marcou alguma opção, o perfil precisa ter
+// pelo menos uma delas (AND entre categorias, OR dentro de cada categoria).
+function applyCompatFilters(
+  profiles: Profile[],
+  userFilters: FiltersState,
+  profileFiltersMap: Record<string, Record<string, unknown>>
+): Profile[] {
+  return profiles.filter(profile => {
+    const theirFilters = profileFiltersMap[profile.id]
+    if (!theirFilters) return true // sem dados de filtro — inclui de qualquer forma
+
+    for (const cat of FILTER_CATEGORIES) {
+      const catKeys = cat.groups.flatMap(g => g.options.map(o => o.key))
+      const userSelected = catKeys.filter(k => userFilters[k] === true)
+      if (userSelected.length === 0) continue // usuário não filtrou essa categoria
+      const hasMatch = userSelected.some(k => theirFilters[k] === true)
+      if (!hasMatch) return false
+    }
+    return true
+  })
+}
+
 // ─── Página principal ─────────────────────────────────────────────────────────
 
 export default function BuscaPage() {
@@ -1034,9 +1058,9 @@ export default function BuscaPage() {
   useEffect(() => {
     if (!filtersConfigured || !userId) return
     if (viewMode === 'discovery') {
-      loadDeck(DEFAULT_FILTERS, userId)
+      loadDeck(DEFAULT_FILTERS, userId, false)
     } else if (viewMode === 'search') {
-      loadDeck(localFilters, userId)
+      loadDeck(localFilters, userId, true)
     }
   }, [viewMode])
 
@@ -1115,7 +1139,7 @@ export default function BuscaPage() {
     })
   }
 
-  async function loadDeck(filters: FiltersState, uid?: string) {
+  async function loadDeck(filters: FiltersState, uid?: string, searchMode = false) {
     setLoadingDeck(true)
     try {
       const id = uid ?? userId
@@ -1129,7 +1153,24 @@ export default function BuscaPage() {
         min_age:         filters.search_min_age,
         max_age:         filters.search_max_age >= 60 ? 120 : filters.search_max_age,
       })
-      setDeck(data ?? [])
+      let profiles = (data ?? []) as Profile[]
+
+      // Modo Busca: aplica filtros de compatibilidade client-side
+      if (searchMode && profiles.length) {
+        const profileIds = profiles.map(p => p.id)
+        const { data: filtersData } = await supabase
+          .from('filters')
+          .select('*')
+          .in('user_id', profileIds)
+        if (filtersData?.length) {
+          const profileFiltersMap = Object.fromEntries(
+            filtersData.map(f => [f.user_id, f as Record<string, unknown>])
+          )
+          profiles = applyCompatFilters(profiles, filters, profileFiltersMap)
+        }
+      }
+
+      setDeck(profiles)
       setCurrentIdx(0)
     } catch { setError('Não foi possível carregar perfis.') }
     finally { setLoadingDeck(false) }
@@ -1254,7 +1295,7 @@ export default function BuscaPage() {
       // Backup em localStorage para persistir mesmo com colunas ausentes no banco
       try { localStorage.setItem(`filters_${userId}`, JSON.stringify(localFilters)) } catch {}
       setFiltersConfigured(true); setShowFilters(false)
-      await loadDeck(localFilters)
+      await loadDeck(localFilters, undefined, viewMode === 'search')
     } catch { setError('Erro ao salvar filtros.') }
     finally { setSaving(false) }
   }
