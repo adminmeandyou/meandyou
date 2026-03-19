@@ -122,6 +122,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, caixa_lendaria: true })
     }
 
+    // Conceder XP pela compra (fire-and-forget)
+    supabaseAdmin.rpc('award_xp', { p_user_id: user.id, p_event_type: 'purchase', p_base_xp: 50 }).then(() => {}).catch(() => {})
+
     return NextResponse.json({ success: true })
   } catch (err) {
     console.error('Erro em /api/loja/gastar:', err)

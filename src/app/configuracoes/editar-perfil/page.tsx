@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '@/app/lib/supabase'
+import { awardXp } from '@/app/lib/xp'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { ArrowLeft, Camera, X, Lock, ChevronDown, ChevronUp, Check, Clock } from 'lucide-react'
@@ -152,6 +153,17 @@ export default function EditarPerfilPage() {
       setLoading(false)
     })
   }, [])
+
+  // Disparar XP de perfil completo uma vez quando chegar a 100%
+  const [xpCompleteDisparado, setXpCompleteDisparado] = useState(false)
+  useEffect(() => {
+    if (!userId || loading || xpCompleteDisparado) return
+    const completude = calcCompletude(profileData, filtersData)
+    if (completude >= 100) {
+      awardXp(userId, 'profile_complete')
+      setXpCompleteDisparado(true)
+    }
+  }, [profileData, filtersData, userId, loading])
 
   function toggle(secao: string) {
     setSecaoAberta(prev => prev === secao ? null : secao)

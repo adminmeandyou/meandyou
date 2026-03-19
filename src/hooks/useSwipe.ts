@@ -4,6 +4,7 @@
 import { useState, useCallback, useRef } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { awardXp } from '@/app/lib/xp'
 import type { ProfileResult } from '@/hooks/useSearch'
 
 export type SwipeAction = 'like' | 'dislike' | 'superlike'
@@ -68,6 +69,7 @@ export function useSwipe(profiles: ProfileResult[], onRefresh: () => void) {
           )
           .then(({ error }) => { if (error) console.error('Erro ao gravar dislike:', error) })
 
+        awardXp(user.id, 'dislike')
         setCurrentIndex(i => i + 1)
         setProcessing(false)
         return
@@ -82,7 +84,10 @@ export function useSwipe(profiles: ProfileResult[], onRefresh: () => void) {
 
       if (error) throw error
 
+      awardXp(user.id, action === 'superlike' ? 'superlike' : 'like')
+
       if (data?.is_match) {
+        awardXp(user.id, 'match')
         setMatchResult({
           isMatch:        true,
           matchId:        data.match_id,

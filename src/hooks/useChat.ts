@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { awardXp } from '@/app/lib/xp'
 
 export interface Message {
   id: string
@@ -170,6 +171,7 @@ export function useChat(matchId: string) {
       setMessages(prev => prev.map(m => m.id === tempId ? json.message : m))
       rl.count++
       rl.waitingReply = true
+      if (user) awardXp(user.id, 'message_sent')
     }
 
     setSending(false)

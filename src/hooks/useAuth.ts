@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/app/lib/supabase'
+import { awardXp } from '@/app/lib/xp'
 import type { User } from '@supabase/supabase-js'
 
 export function useAuth() {
@@ -20,7 +21,9 @@ export function useAuth() {
           .update({ last_seen: new Date().toISOString() })
           .eq('id', user.id)
           .then(() => {})
-        supabase.rpc('update_daily_streak', { p_user_id: user.id }).then(() => {})
+        supabase.rpc('update_daily_streak', { p_user_id: user.id }).then(() => {
+          awardXp(user.id, 'login_streak')
+        })
       }
     })
 
