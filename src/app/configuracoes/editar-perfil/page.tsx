@@ -27,12 +27,9 @@ interface ProfileData {
   photo_face: string | null
   photo_body: string | null
   photo_side: string | null
-  photo_back: string | null
   photo_extra1: string | null
   photo_extra2: string | null
   photo_extra3: string | null
-  photo_extra4: string | null
-  photo_extra5: string | null
   photo_best: string | null
   highlight_tags: string[]
   highlight_tags_edited_at: string | null
@@ -111,9 +108,9 @@ function getAllTags(f: any): string[] {
 
 function calcCompletude(profileData: ProfileData | null, filtersData: any): number {
   let pts = 0, total = 0
-  const fotoSlots = ['photo_face', 'photo_body', 'photo_side', 'photo_back', 'photo_extra1', 'photo_extra2', 'photo_extra3', 'photo_extra4', 'photo_extra5']
+  const fotoSlots = ['photo_face', 'photo_body', 'photo_side', 'photo_extra1', 'photo_extra2', 'photo_extra3']
   const fotos = fotoSlots.filter(s => (profileData as any)?.[s]).length
-  total += 9; pts += fotos
+  total += 6; pts += fotos
   total += 1; if (profileData?.bio && profileData.bio.length >= 30) pts += 1
   total += 1; if ((profileData?.highlight_tags?.length ?? 0) > 0) pts += 1
   total += 1; if (filtersData) pts += 1
@@ -137,16 +134,16 @@ export default function EditarPerfilPage() {
       setUserId(user.id)
       const [{ data: p, error: pErr }, { data: f }, { data: bData }] = await Promise.all([
         supabase.from('profiles')
-          .select('bio, photo_face, photo_body, photo_side, photo_back, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at, profile_question, profile_question_answer, blur_photos')
+          .select('bio, photo_face, photo_body, photo_side, photo_extra1, photo_extra2, photo_extra3, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at, profile_question, profile_question_answer, blur_photos')
           .eq('id', user.id).single(),
         supabase.from('filters').select('*').eq('user_id', user.id).single(),
         supabase.from('user_badges').select('badges(name)').eq('user_id', user.id),
       ])
       if (pErr) console.error('[editar-perfil] profiles query error:', pErr)
       const profileDefault: ProfileData = {
-        bio: '', photo_face: null, photo_body: null, photo_side: null, photo_back: null,
-        photo_extra1: null, photo_extra2: null, photo_extra3: null, photo_extra4: null,
-        photo_extra5: null, photo_best: null, highlight_tags: [], highlight_tags_edited_at: null,
+        bio: '', photo_face: null, photo_body: null, photo_side: null,
+        photo_extra1: null, photo_extra2: null, photo_extra3: null,
+        photo_best: null, highlight_tags: [], highlight_tags_edited_at: null,
         profile_edited_at: null, status_temp: null, status_temp_expires_at: null,
         profile_question: null, profile_question_answer: null, blur_photos: false,
       }
@@ -493,8 +490,8 @@ function FotosBioSection({ userId, profileData, onSaved }: {
   profileData: ProfileData
   onSaved: (updated: Partial<ProfileData>) => void
 }) {
-  const fotoSlots = ['photo_face', 'photo_body', 'photo_side', 'photo_back', 'photo_extra1', 'photo_extra2', 'photo_extra3', 'photo_extra4', 'photo_extra5']
-  const fotoNomes = ['Rosto', 'Corpo', 'Lateral', 'Costas', 'Extra 1', 'Extra 2', 'Extra 3', 'Extra 4', 'Extra 5']
+  const fotoSlots = ['photo_face', 'photo_body', 'photo_side', 'photo_extra1', 'photo_extra2', 'photo_extra3']
+  const fotoNomes = ['Rosto', 'Corpo inteiro', 'Lateral', 'Extra 1', 'Extra 2', 'Extra 3']
 
   const [fotosUrls, setFotosUrls] = useState<(string | null)[]>(
     fotoSlots.map(slot => (profileData as any)[slot] ?? null)
@@ -576,6 +573,13 @@ function FotosBioSection({ userId, profileData, onSaved }: {
           </button>
         </div>
       )}
+
+      {/* Instrucao de fotos */}
+      <div style={{ marginBottom: '12px', padding: '10px 12px', backgroundColor: 'rgba(225,29,72,0.06)', border: '1px solid rgba(225,29,72,0.15)', borderRadius: '12px' }}>
+        <p style={{ color: 'rgba(248,249,250,0.65)', fontSize: '12px', lineHeight: '1.5', margin: 0 }}>
+          <strong style={{ color: '#F8F9FA' }}>Adicione ate 6 fotos.</strong> As 3 primeiras sao sugeridas: rosto, corpo inteiro de frente e corpo inteiro de lado. As demais sao opcionais.
+        </p>
+      </div>
 
       {/* Grade de fotos */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '16px' }}>

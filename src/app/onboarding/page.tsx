@@ -221,7 +221,7 @@ export default function OnboardingPage() {
 
             <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '16px', padding: '16px', marginBottom: '32px', textAlign: 'left' }}>
               <p style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: '700', marginBottom: '8px' }}>Vai preencher:</p>
-              {['Suas fotos', 'Aparencia e personalidade', 'Valores e estilo de vida', 'O que voce busca'].map((item, i) => (
+              {['3 fotos (rosto, corpo inteiro e lateral)', 'Aparencia e personalidade', 'Valores e estilo de vida', 'O que voce busca'].map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: i < 3 ? '6px' : 0 }}>
                   <Check size={14} color="var(--accent)" />
                   <span style={{ fontSize: '13px', color: 'var(--text)' }}>{item}</span>
