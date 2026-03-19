@@ -19,7 +19,6 @@
 - [ ] **Bônus de XP: implementar funcionalidade** — multiplicador de XP por tempo
 - [ ] **Selo verificado: implementar** — ao comprar/conquistar, ganha automaticamente emblema de verificado
 - [ ] **Caixa Super Lendária: implementar animação de abertura** — caixa treme, salta, explode, aparece o prêmio aleatório
-- [ ] **Streak → renomear para "Prêmios diários" em todo o app**
 - [ ] **Streak: RPC `claim_streak_reward` não credita saldo** — verificar e corrigir
 
 ---
