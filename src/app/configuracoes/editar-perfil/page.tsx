@@ -583,7 +583,7 @@ function FotosBioSection({ userId, profileData, onSaved }: {
           <div key={i} style={{ position: 'relative', aspectRatio: '3/4', borderRadius: '12px', overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.03)', border: fotoPrincipal === i ? '2px solid #E11D48' : '1.5px dashed rgba(255,255,255,0.10)' }}>
             {fotosUrls[i] ? (
               <>
-                <Image src={fotosUrls[i]!} alt={fotoNomes[i]} fill className="object-cover" sizes="150px" />
+                <Image src={fotosUrls[i]!} alt={fotoNomes[i]} fill sizes="150px" style={{ objectFit: 'cover' }} />
                 <button
                   onClick={() => removerFoto(i)}
                   style={{ position: 'absolute', top: '6px', right: '6px', width: '22px', height: '22px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.65)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}

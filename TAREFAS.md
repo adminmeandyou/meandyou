@@ -6,8 +6,6 @@
 
 ## 🔴 CRÍTICO — Quebra funcionalidade principal
 
-- [ ] **Roleta: "Ganhar via streak" não faz nada** — corrigir o botão/função de resgate via streak
-- [ ] **Perfil: imagem não aparece na pré-visualização** — corrigir exibição da foto de perfil
 
 ---
 
@@ -89,3 +87,4 @@
 - **Roleta: erro "tente novamente" para sem animação** — agora desacelera suavemente antes de mostrar o toast de erro
 - **Roleta: não mostra o prêmio ganho** — corrigido handling de data[0] vs data no retorno do RPC
 - **Perfil: redireciona para onboarding ao clicar em Perfil** — removida coluna `onboarding_done` do SELECT (não existe na tabela); igual ao fix do dashboard
+- **Perfil: imagem não aparece na pré-visualização** — substituido `className="object-cover"` por `style={{ objectFit: 'cover' }}` (Tailwind v4 sem config pode não gerar a classe); adicionado `priority` no hero image para carregamento imediato; `alt` com fallback `''` para evitar erro TypeScript

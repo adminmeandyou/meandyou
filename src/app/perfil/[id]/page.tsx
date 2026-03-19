@@ -463,11 +463,14 @@ export default function VerPerfilPage() {
         {photos.length > 0 ? (
           <Image
             src={photos[activePhoto]}
-            alt={profile.name}
+            alt={profile.name ?? ''}
             fill
-            className="object-cover"
+            priority
             sizes="100vw"
-            style={blurLevel < 2 ? { filter: `blur(${blurLevel === 0 ? 18 : 9}px)`, transform: 'scale(1.05)' } : undefined}
+            style={{
+              objectFit: 'cover',
+              ...(blurLevel < 2 ? { filter: `blur(${blurLevel === 0 ? 18 : 9}px)`, transform: 'scale(1.05)' } : {}),
+            }}
           />
         ) : (
           <div style={{ position: 'absolute', inset: 0, backgroundColor: '#0F1117', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(248,249,250,0.15)', fontSize: '64px' }}>?</div>
