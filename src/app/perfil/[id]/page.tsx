@@ -219,7 +219,6 @@ export default function VerPerfilPage() {
   const [dbBadges, setDbBadges] = useState<{ badge_id: string; earned_at: string; badges: { name: string; description: string; icon: string; rarity: string } }[]>([])
   const [ratings, setRatings] = useState<{ total: number; positive: number } | null>(null)
   // 0 = totalmente borrado, 1 = metade, 2 = foto revelada, 3 = perfil completo
-  const [blurLevel, setBlurLevel] = useState(3)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -239,7 +238,7 @@ export default function VerPerfilPage() {
     // CORRECAO: NUNCA selecionar lat/lng/cep/rua/bairro em selects publicos
     let { data: profileData } = await supabase
       .from('profiles')
-      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_back, photo_best, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, highlight_tags, status_temp, status_temp_expires_at, profile_question, profile_question_answer, blur_photos')
+      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_best, photo_extra1, photo_extra2, photo_extra3, highlight_tags, status_temp, status_temp_expires_at, profile_question, profile_question_answer')
       .eq('id', profileId)
       .single()
 
@@ -247,7 +246,7 @@ export default function VerPerfilPage() {
     if (!profileData) {
       const { data: fallback } = await supabase
         .from('profiles')
-        .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_back, photo_best, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, highlight_tags, status_temp, status_temp_expires_at')
+        .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_best, photo_extra1, photo_extra2, photo_extra3, highlight_tags, status_temp, status_temp_expires_at')
         .eq('id', profileId)
         .single()
       profileData = fallback as typeof profileData
@@ -318,31 +317,6 @@ export default function VerPerfilPage() {
         r.rating === 'Pessoa incrivel!' || r.rating === 'Conversa agradavel'
       ).length
       setRatings({ total, positive })
-    }
-
-    // Revelação gradual: calcula blur com base em mensagens trocadas
-    if (profileData?.blur_photos && userId && profileId !== userId) {
-      const { data: matchRow } = await supabase
-        .from('matches')
-        .select('id')
-        .or(`and(user1.eq.${userId},user2.eq.${profileId}),and(user1.eq.${profileId},user2.eq.${userId})`)
-        .eq('status', 'active')
-        .single()
-
-      if (!matchRow) {
-        setBlurLevel(0) // sem match = totalmente borrado
-      } else {
-        const { count } = await supabase
-          .from('messages')
-          .select('id', { count: 'exact', head: true })
-          .eq('match_id', matchRow.id)
-
-        const msgs = count ?? 0
-        if (msgs >= 20) setBlurLevel(3)
-        else if (msgs >= 10) setBlurLevel(2)
-        else if (msgs >= 5) setBlurLevel(1)
-        else setBlurLevel(0)
-      }
     }
 
     if (userId) {
@@ -437,12 +411,9 @@ export default function VerPerfilPage() {
     profile.photo_face,
     profile.photo_body,
     profile.photo_side,
-    profile.photo_back,
     profile.photo_extra1,
     profile.photo_extra2,
     profile.photo_extra3,
-    profile.photo_extra4,
-    profile.photo_extra5,
   ].filter(Boolean) as string[]
 
   const trustScore = calcTrustScore(profile, photos, filters)
@@ -469,7 +440,6 @@ export default function VerPerfilPage() {
             sizes="100vw"
             style={{
               objectFit: 'cover',
-              ...(blurLevel < 2 ? { filter: `blur(${blurLevel === 0 ? 18 : 9}px)`, transform: 'scale(1.05)' } : {}),
             }}
           />
         ) : (
@@ -593,30 +563,6 @@ export default function VerPerfilPage() {
       <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
         {/* Banner de revelação gradual */}
-        {profile.blur_photos && blurLevel < 3 && (
-          <div style={{ backgroundColor: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', borderRadius: 14, padding: '12px 16px' }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: '#F43F5E', marginBottom: 6 }}>
-              {blurLevel === 0 && 'Foto bloqueada — comece a conversar para revelar'}
-              {blurLevel === 1 && 'Continue conversando para revelar mais'}
-              {blurLevel === 2 && 'Foto revelada — mais 10 msgs para ver o perfil completo'}
-            </p>
-            <div style={{ display: 'flex', gap: 6 }}>
-              {[
-                { label: '5 msgs', done: blurLevel >= 1 },
-                { label: '10 msgs', done: blurLevel >= 2 },
-                { label: '20 msgs', done: blurLevel >= 3 },
-              ].map(step => (
-                <div key={step.label} style={{ flex: 1, height: 4, borderRadius: 100, backgroundColor: step.done ? '#E11D48' : 'rgba(255,255,255,0.10)' }} />
-              ))}
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
-              {['Metade', 'Foto', 'Perfil'].map((l, i) => (
-                <span key={l} style={{ fontSize: 10, color: blurLevel > i ? 'rgba(248,249,250,0.50)' : 'rgba(248,249,250,0.25)' }}>{l}</span>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Pergunta do perfil */}
         {profile.profile_question && profile.profile_question_answer && (
           <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '16px 18px' }}>

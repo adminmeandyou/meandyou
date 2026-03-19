@@ -193,7 +193,7 @@ export async function POST(req: NextRequest) {
     }
 
     case 'photos_gte': {
-      const photoColumns = ['photo_face', 'photo_body', 'photo_side', 'photo_back', 'photo_extra1', 'photo_extra2', 'photo_extra3', 'photo_extra4', 'photo_extra5']
+      const photoColumns = ['photo_face', 'photo_body', 'photo_side', 'photo_extra1', 'photo_extra2', 'photo_extra3']
       const { data } = await supabase.from('profiles').select('id, ' + photoColumns.join(', '))
       userIds = (data ?? []).filter((r: any) => {
         const filled = photoColumns.filter(col => r[col] != null).length

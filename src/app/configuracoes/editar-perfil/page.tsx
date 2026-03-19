@@ -38,7 +38,6 @@ interface ProfileData {
   status_temp_expires_at: string | null
   profile_question: string | null
   profile_question_answer: string | null
-  blur_photos: boolean
 }
 
 // ─── Utils de conversão filters → estado UI ──────────────────────────────────
@@ -134,7 +133,7 @@ export default function EditarPerfilPage() {
       setUserId(user.id)
       const [{ data: p, error: pErr }, { data: f }, { data: bData }] = await Promise.all([
         supabase.from('profiles')
-          .select('bio, photo_face, photo_body, photo_side, photo_extra1, photo_extra2, photo_extra3, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at, profile_question, profile_question_answer, blur_photos')
+          .select('bio, photo_face, photo_body, photo_side, photo_extra1, photo_extra2, photo_extra3, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at, profile_question, profile_question_answer')
           .eq('id', user.id).single(),
         supabase.from('filters').select('*').eq('user_id', user.id).single(),
         supabase.from('user_badges').select('badges(name)').eq('user_id', user.id),
@@ -145,7 +144,7 @@ export default function EditarPerfilPage() {
         photo_extra1: null, photo_extra2: null, photo_extra3: null,
         photo_best: null, highlight_tags: [], highlight_tags_edited_at: null,
         profile_edited_at: null, status_temp: null, status_temp_expires_at: null,
-        profile_question: null, profile_question_answer: null, blur_photos: false,
+        profile_question: null, profile_question_answer: null,
       }
       setProfileData(p ? (p as ProfileData) : profileDefault)
       setFiltersData(f)
@@ -235,57 +234,6 @@ export default function EditarPerfilPage() {
           )}
         </Acordeao>
 
-        {/* ── Revelação gradual de fotos ── */}
-        <Acordeao
-          id="revelacao-gradual"
-          titulo="Revelação gradual"
-          badge="Livre"
-          badgeCor="#10b981"
-          aberto={secaoAberta === 'revelacao-gradual'}
-          onToggle={() => toggle('revelacao-gradual')}
-        >
-          {userId && profileData !== null && (
-            <div style={{ padding: '4px 0 12px' }}>
-              <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.55)', lineHeight: 1.6, marginBottom: 16 }}>
-                Quando ativado, suas fotos aparecem borradas para quem ainda não conversou com você.
-                À medida que trocam mensagens, as fotos vão sendo reveladas progressivamente.
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 16, fontSize: 12, color: 'rgba(248,249,250,0.40)' }}>
-                <span>0 mensagem — foto totalmente borrada</span>
-                <span>5 mensagens — foto revelada pela metade</span>
-                <span>10 mensagens — foto completamente visível</span>
-                <span>20 mensagens — perfil completamente revelado</span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: '14px 16px' }}>
-                <div>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: '#F8F9FA', margin: '0 0 2px' }}>Ativar revelação gradual</p>
-                  <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.40)', margin: 0 }}>
-                    {profileData.blur_photos ? 'Fotos borradas para desconhecidos' : 'Fotos visíveis para todos'}
-                  </p>
-                </div>
-                <button
-                  onClick={async () => {
-                    const novo = !profileData.blur_photos
-                    setProfileData(prev => prev ? { ...prev, blur_photos: novo } : prev)
-                    await supabase.from('profiles').update({ blur_photos: novo }).eq('id', userId)
-                  }}
-                  style={{
-                    width: 44, height: 24, borderRadius: 100, border: 'none', cursor: 'pointer',
-                    backgroundColor: profileData.blur_photos ? '#E11D48' : 'rgba(255,255,255,0.12)',
-                    position: 'relative', transition: 'background-color 0.2s', flexShrink: 0,
-                  }}
-                >
-                  <span style={{
-                    position: 'absolute', top: 2, left: profileData.blur_photos ? 22 : 2,
-                    width: 20, height: 20, borderRadius: '50%', backgroundColor: '#fff',
-                    transition: 'left 0.2s', display: 'block',
-                  }} />
-                </button>
-              </div>
-            </div>
-          )}
-        </Acordeao>
-
         {/* ── Tags de destaque (6h) ── */}
         <Acordeao
           id="tags-destaque"
@@ -324,12 +272,12 @@ export default function EditarPerfilPage() {
           aberto={secaoAberta === 'status-civil'}
           onToggle={() => toggle('status-civil')}
         >
-          {userId && filtersData && (
+          {userId && (
             <StatusCivilSection
               userId={userId}
-              filtersData={filtersData}
+              filtersData={filtersData ?? {}}
               bloqueado={diasCamposBloqueados > 0}
-              onSaved={() => setProfileData(prev => prev ? { ...prev, profile_edited_at: new Date().toISOString() } : prev)}
+              onSaved={() => { setProfileData(prev => prev ? { ...prev, profile_edited_at: new Date().toISOString() } : prev); setFiltersData((prev: any) => prev ?? {}) }}
             />
           )}
         </Acordeao>
@@ -342,12 +290,12 @@ export default function EditarPerfilPage() {
           aberto={secaoAberta === 'fisico'}
           onToggle={() => toggle('fisico')}
         >
-          {userId && filtersData && (
+          {userId && (
             <FisicoSection
               userId={userId}
-              filtersData={filtersData}
+              filtersData={filtersData ?? {}}
               bloqueado={diasCamposBloqueados > 0}
-              onSaved={() => setProfileData(prev => prev ? { ...prev, profile_edited_at: new Date().toISOString() } : prev)}
+              onSaved={() => { setProfileData(prev => prev ? { ...prev, profile_edited_at: new Date().toISOString() } : prev); setFiltersData((prev: any) => prev ?? {}) }}
             />
           )}
         </Acordeao>
@@ -360,12 +308,12 @@ export default function EditarPerfilPage() {
           aberto={secaoAberta === 'estilo-vida'}
           onToggle={() => toggle('estilo-vida')}
         >
-          {userId && filtersData && (
+          {userId && (
             <EstiloVidaSection
               userId={userId}
-              filtersData={filtersData}
+              filtersData={filtersData ?? {}}
               bloqueado={diasCamposBloqueados > 0}
-              onSaved={() => setProfileData(prev => prev ? { ...prev, profile_edited_at: new Date().toISOString() } : prev)}
+              onSaved={() => { setProfileData(prev => prev ? { ...prev, profile_edited_at: new Date().toISOString() } : prev); setFiltersData((prev: any) => prev ?? {}) }}
             />
           )}
         </Acordeao>
@@ -378,12 +326,12 @@ export default function EditarPerfilPage() {
           aberto={secaoAberta === 'valores'}
           onToggle={() => toggle('valores')}
         >
-          {userId && filtersData && (
+          {userId && (
             <ValoresSection
               userId={userId}
-              filtersData={filtersData}
+              filtersData={filtersData ?? {}}
               bloqueado={diasCamposBloqueados > 0}
-              onSaved={() => setProfileData(prev => prev ? { ...prev, profile_edited_at: new Date().toISOString() } : prev)}
+              onSaved={() => { setProfileData(prev => prev ? { ...prev, profile_edited_at: new Date().toISOString() } : prev); setFiltersData((prev: any) => prev ?? {}) }}
             />
           )}
         </Acordeao>
@@ -396,12 +344,12 @@ export default function EditarPerfilPage() {
           aberto={secaoAberta === 'objetivos'}
           onToggle={() => toggle('objetivos')}
         >
-          {userId && filtersData && (
+          {userId && (
             <ObjetivosSection
               userId={userId}
-              filtersData={filtersData}
+              filtersData={filtersData ?? {}}
               bloqueado={diasCamposBloqueados > 0}
-              onSaved={() => setProfileData(prev => prev ? { ...prev, profile_edited_at: new Date().toISOString() } : prev)}
+              onSaved={() => { setProfileData(prev => prev ? { ...prev, profile_edited_at: new Date().toISOString() } : prev); setFiltersData((prev: any) => prev ?? {}) }}
             />
           )}
         </Acordeao>
