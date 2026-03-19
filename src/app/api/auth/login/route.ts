@@ -204,7 +204,7 @@ export async function POST(req: NextRequest) {
 
     // 7b. Atualizar streak e last_active_at (fire-and-forget — não bloqueia o login)
     Promise.all([
-      supabaseAdmin.rpc('update_streak', { p_user_id: userId }),
+      supabaseAdmin.rpc('update_streak_on_login', { p_user_id: userId }),
       supabaseAdmin.from('profiles')
         .update({ last_seen: new Date().toISOString() })
         .eq('id', userId),
