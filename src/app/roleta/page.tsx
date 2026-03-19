@@ -360,13 +360,28 @@ export default function RoletaPage() {
     cancelAnimationFrame(fastSpinIdRef.current)
 
     if (error || !data) {
-      setSpinning(false)
-      spinningRef.current = false
-      toast.error('Erro ao girar. Tente novamente.')
+      // Desacelera suavemente antes de mostrar o erro (sem parar bruscamente)
+      const randomTarget = rotRef.current + Math.PI * 2 + Math.random() * Math.PI * 2
+      animateDecelerate(randomTarget, 2000, () => {
+        setSpinning(false)
+        spinningRef.current = false
+        toast.error('Erro ao girar. Tente novamente.')
+      })
       return
     }
 
-    const prize = data as SpinResult
+    // Supabase pode retornar array ou objeto dependendo da função RPC
+    const prize = (Array.isArray(data) ? data[0] : data) as SpinResult
+
+    if (!prize?.reward_type) {
+      const randomTarget = rotRef.current + Math.PI * 2 + Math.random() * Math.PI * 2
+      animateDecelerate(randomTarget, 2000, () => {
+        setSpinning(false)
+        spinningRef.current = false
+        toast.error('Erro ao girar. Tente novamente.')
+      })
+      return
+    }
 
     // ── FASE 2: Desacelera e para exatamente no prêmio sorteado ──────
     const segCount  = WHEEL_SEGMENTS.length

@@ -6,13 +6,7 @@
 
 ## 🔴 CRÍTICO — Quebra funcionalidade principal
 
-- [ ] **Loja: compra não desconta fichas nem atualiza saldo** — verificar RPC `spend_fichas` no Supabase; garantir que o frontend chama corretamente e atualiza saldo após compra
-- [ ] **Roleta: para de uma vez (sem desaceleração)** — animação precisa de easing de desaceleração gradual
-- [ ] **Roleta: erro "tente novamente" aparece ao girar** — investigar e corrigir a chamada de API/RPC da roleta
-- [ ] **Roleta: não mostra o prêmio ganho** — exibir resultado do prêmio após parar
 - [ ] **Roleta: "Ganhar via streak" não faz nada** — corrigir o botão/função de resgate via streak
-- [ ] **Perfil: redireciona para onboarding ao clicar em Perfil** — corrigir verificação de onboarding; perfil deve abrir pré-visualização
-- [ ] **Logo MeAndYou: redireciona para onboarding** — deve redirecionar para home do dashboard
 - [ ] **Perfil: imagem não aparece na pré-visualização** — corrigir exibição da foto de perfil
 
 ---
@@ -83,4 +77,15 @@
 
 ## ✅ CONCLUÍDO
 
-_(itens resolvidos serão movidos aqui antes de serem apagados)_
+- **next.config.ts: imagens Supabase não apareciam** — adicionado remotePatterns para domínio do Supabase (commit 06a74c1)
+- **Dashboard: redirecionava para onboarding** — removida dependência da coluna `onboarding_done` que não existia (commit 06a74c1)
+- **Logo MeAndYou redirecionava para onboarding** — era consequência do bug do dashboard, corrigido junto (commit 06a74c1)
+- **Loja: compra não descontava fichas** — corrigido mismatch de item_key entre frontend (`superlike`) e backend (`superlike_1`). API reescrita para alinhar com STORE_ITEMS (commit 06a74c1)
+- **"Streak" renomeado para "Prêmios diários"** — em roleta, streak/page.tsx e AppShell (commit 06a74c1)
+- **Loja: Boost removido** — não aparece mais na loja (commit 06a74c1)
+- **Loja: mochila oculta fichas quando aberta** — tabs e conteúdo somem quando mochila está aberta (commit 06a74c1)
+- **Loja: Pacote Lendário ajustado** — sem "economize/valeria", badge "PROMOÇÃO EXCLUSIVA", preço R$ 174,62, bonus variável 20-70%, caixas variáveis 1-2, aparece só em semanas de pagamento ou slot de 6h (commit 06a74c1)
+- **Roleta: para de uma vez (sem desaceleração)** — adicionado animateDecelerate no caminho de erro; trata data como array (gotcha Supabase)
+- **Roleta: erro "tente novamente" para sem animação** — agora desacelera suavemente antes de mostrar o toast de erro
+- **Roleta: não mostra o prêmio ganho** — corrigido handling de data[0] vs data no retorno do RPC
+- **Perfil: redireciona para onboarding ao clicar em Perfil** — removida coluna `onboarding_done` do SELECT (não existe na tabela); igual ao fix do dashboard

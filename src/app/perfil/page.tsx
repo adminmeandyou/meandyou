@@ -18,7 +18,7 @@ export default function PerfilPage() {
       // Verifica se o row de perfil existe antes de redirecionar
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('id, onboarding_done')
+        .select('id')
         .eq('id', user.id)
         .maybeSingle()
 
