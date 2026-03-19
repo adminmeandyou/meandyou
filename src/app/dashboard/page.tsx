@@ -26,18 +26,17 @@ export default function Dashboard() {
       if (userData?.banned) { router.push('/banido'); return }
       if (!userData?.verified) { router.push('/verificacao'); return }
 
-      // Busca perfil
+      // Busca perfil (usa maybeSingle para nao errar se row nao existe)
       const { data: profile } = await supabase
         .from('profiles')
-        .select('name, onboarding_done')
+        .select('name')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
-      // Nunca completou o onboarding E ainda nao tem nome → usuario novo, mostrar boas-vindas
-      if (!profile?.onboarding_done && !profile?.name) { router.push('/onboarding'); return }
+      // Sem nome = onboarding nao concluido
+      if (!profile?.name) { router.push('/onboarding'); return }
 
-      // Onboarding feito → mostrar dashboard normalmente
-      setNome(profile.name ?? '')
+      setNome(profile.name)
       setCarregando(false)
     }
 

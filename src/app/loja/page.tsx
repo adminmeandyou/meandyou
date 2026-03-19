@@ -243,7 +243,7 @@ export default function LojaPage() {
   const [activating, setActivating]       = useState(false)
   const [openItem, setOpenItem]           = useState<StoreItem | null>(null)
   const [purchasing, setPurchasing]       = useState(false)
-  const [lojaTab, setLojaTab]             = useState<'recargas' | 'compras'>('recargas')
+  const [lojaTab, setLojaTab]             = useState<'recargas' | 'compras'>('compras')
   const [selectedPackage, setSelectedPackage] = useState<typeof FICHAS_PACKAGES[0] | null>(null)
   const [mochilaAberta, setMochilaAberta] = useState(false)
   const [qtys, setQtys] = useState<Record<string, number>>(
@@ -342,6 +342,30 @@ export default function LojaPage() {
     ? Math.ceil((new Date(ghostModeUntil!).getTime() - Date.now()) / 86400000)
     : 0
 
+  // Config diaria do Pacote Lendario — varia bonus (20-70%) e caixas (1-2) por dia
+  const lendariaConfig = (() => {
+    const now = new Date()
+    const day = now.getDate()
+    const month = now.getMonth()
+    const bonusOpcoes = [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70]
+    const bonus = bonusOpcoes[((day * 13) + (month * 7)) % bonusOpcoes.length]
+    const caixas = day % 3 === 0 ? 2 : 1
+    const fichas = Math.round(2700 * (1 + bonus / 100) / 100) * 100
+    // Semanas de pagamento: dias 1-7 e 21-27 do mes
+    const isPaymentWeek = (day >= 1 && day <= 7) || (day >= 21 && day <= 27)
+    // Fora da semana: slot de 6h por dia baseado no dia/mes
+    const slotStart = ((day * 13) + (month * 7)) % 18
+    const currentHour = now.getHours()
+    const isInSlot = currentHour >= slotStart && currentHour < slotStart + 6
+    const show = isPaymentWeek || isInSlot
+    let expiresAt: Date | null = null
+    if (!isPaymentWeek && isInSlot) {
+      expiresAt = new Date(now)
+      expiresAt.setHours(slotStart + 6, 0, 0, 0)
+    }
+    return { bonus, caixas, fichas, show, expiresAt }
+  })()
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
@@ -415,89 +439,72 @@ export default function LojaPage() {
           )}
         </div>
 
-        {/* Boost ativo ou botao de ativar */}
-        {boostIsActive ? (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px', borderRadius: '14px', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)' }}>
-            <CheckCircle size={18} color="var(--accent)" strokeWidth={1.5} />
-            <span style={{ fontSize: '14px', color: 'var(--accent)', fontWeight: '600' }}>Boost ativo — perfil em destaque agora!</span>
+        {/* Boost: removido da loja — aparece no dashboard */}
+
+        {/* ─── Pacote Lendário (aparece em periodos estratégicos) ───── */}
+        {lendariaConfig.show && (
+          <div>
+            <a
+              href={PACOTE_LENDARIO_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => haptics.success()}
+              style={{ display: 'block', textDecoration: 'none' }}
+            >
+              <div style={{
+                borderRadius: 18, padding: '18px 20px',
+                background: 'linear-gradient(135deg, #1a1000 0%, #2a1a00 50%, #1a1000 100%)',
+                border: '1px solid rgba(245,158,11,0.45)',
+                boxShadow: '0 0 24px rgba(245,158,11,0.10)',
+                position: 'relative', overflow: 'hidden',
+              }}>
+                <div style={{ position: 'absolute', top: -20, right: 10, width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(245,158,11,0.12) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
+                  <div style={{ width: 52, height: 52, borderRadius: 14, background: 'linear-gradient(135deg, #F59E0B, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 16px rgba(245,158,11,0.35)' }}>
+                    <Coins size={24} strokeWidth={1.5} color="#fff" />
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
+                      <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 17, color: '#fff', margin: 0 }}>Pacote Lendário</p>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.20)', border: '1px solid rgba(245,158,11,0.50)', borderRadius: 100, padding: '2px 8px' }}>PROMOÇÃO EXCLUSIVA</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <Coins size={12} color="#F59E0B" strokeWidth={1.5} />
+                        <span style={{ fontSize: 13, color: '#F8F9FA', fontWeight: 600 }}>{lendariaConfig.fichas.toLocaleString('pt-BR')} fichas</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 100, padding: '1px 6px' }}>+{lendariaConfig.bonus}%</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                        <Gift size={12} color="#F59E0B" strokeWidth={1.5} />
+                        <span style={{ fontSize: 13, color: '#F8F9FA', fontWeight: 600 }}>{lendariaConfig.caixas === 2 ? '2 Caixas Super Lendárias' : '1 Caixa Super Lendária'}</span>
+                        <span style={{ fontSize: 10, color: 'rgba(248,249,250,0.35)' }}>grátis</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  {lendariaConfig.expiresAt ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <span style={{ fontSize: 11, color: '#F59E0B' }}>Expira em</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#F59E0B', fontFamily: 'monospace' }}>
+                        <CountdownText until={lendariaConfig.expiresAt.toISOString()} />
+                      </span>
+                    </div>
+                  ) : <div />}
+                  <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                    <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: '#F59E0B', margin: 0, lineHeight: 1 }}>R$ 174,62</p>
+                    <p style={{ fontSize: 10, color: 'rgba(248,249,250,0.35)', margin: '2px 0 0' }}>pagamento único</p>
+                  </div>
+                </div>
+              </div>
+            </a>
           </div>
-        ) : boosts > 0 && (
-          <button
-            onClick={handleActivateBoost}
-            disabled={activating}
-            style={{ width: '100%', padding: '14px', borderRadius: '14px', border: '1px solid var(--accent-border)', backgroundColor: 'var(--accent-light)', color: 'var(--accent)', fontSize: '14px', fontWeight: '700', cursor: activating ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-jakarta)', opacity: activating ? 0.6 : 1, transition: 'opacity 0.2s' }}
-          >
-            {activating ? <Loader2 size={16} strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Zap size={16} strokeWidth={1.5} />}
-            Ativar Boost agora
-          </button>
         )}
 
-        {/* ─── Seção Premium / Lendária ───────────────────────────────── */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <span style={{ fontSize: 14 }}>✦</span>
-            <p style={{ fontSize: '11px', fontWeight: '700', color: '#F59E0B', textTransform: 'uppercase', letterSpacing: '0.10em', margin: 0 }}>Exclusivo — Lendário</p>
-          </div>
-
-          {/* Pacote Lendário */}
-          <a
-            href={PACOTE_LENDARIO_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => haptics.success()}
-            style={{ display: 'block', textDecoration: 'none' }}
-          >
-            <div style={{
-              borderRadius: 18,
-              padding: '18px 20px',
-              background: 'linear-gradient(135deg, #0f1a00 0%, #1a3000 50%, #0f1a00 100%)',
-              border: '1px solid rgba(245,158,11,0.40)',
-              boxShadow: '0 0 32px rgba(245,158,11,0.12), inset 0 1px 0 rgba(255,255,255,0.05)',
-              position: 'relative',
-              overflow: 'hidden',
-            }}>
-              <div style={{ position: 'absolute', top: -20, right: 10, width: 100, height: 100, borderRadius: '50%', background: 'radial-gradient(circle, rgba(245,158,11,0.18) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 14 }}>
-                <div style={{ width: 52, height: 52, borderRadius: 14, background: 'linear-gradient(135deg, #F59E0B, #d97706)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: '0 4px 16px rgba(245,158,11,0.40)' }}>
-                  <Coins size={24} strokeWidth={1.5} color="#fff" />
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
-                    <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 17, color: '#fff', margin: 0 }}>Pacote Lendário</p>
-                    <span style={{ fontSize: 9, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.40)', borderRadius: 100, padding: '2px 8px' }}>MELHOR DEAL</span>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                      <Coins size={12} color="#F59E0B" strokeWidth={1.5} />
-                      <span style={{ fontSize: 13, color: '#F8F9FA', fontWeight: 600 }}>3.510 fichas</span>
-                      <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.35)', textDecoration: 'line-through' }}>2.700</span>
-                      <span style={{ fontSize: 10, fontWeight: 700, color: '#10b981', backgroundColor: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: 100, padding: '1px 6px' }}>+30%</span>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-                      <Gift size={12} color="#8b5cf6" strokeWidth={1.5} />
-                      <span style={{ fontSize: 13, color: '#F8F9FA', fontWeight: 600 }}>1 Caixa Super Lendária</span>
-                      <span style={{ fontSize: 10, color: 'rgba(248,249,250,0.35)' }}>grátis</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px solid rgba(245,158,11,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.40)' }}>Economize vs. comprar separado</span>
-                  <p style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600, margin: '2px 0 0' }}>Valeria R$ 209,94 — voce paga menos</p>
-                </div>
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: '#F59E0B', margin: 0, lineHeight: 1 }}>R$ 179,97</p>
-                  <p style={{ fontSize: 10, color: 'rgba(248,249,250,0.35)', margin: '2px 0 0' }}>pagamento único</p>
-                </div>
-              </div>
-            </div>
-          </a>
-        </div>
-
-        {/* ─── Tabs Recargas / Compras ────────────────────────────────── */}
+        {/* ─── Tabs e conteúdo (ocultos quando mochila está aberta) ─── */}
+        {!mochilaAberta && <>
         <div style={{ display: 'flex', backgroundColor: 'var(--bg-card)', borderRadius: 12, padding: 4, border: '1px solid var(--border)' }}>
           {(['recargas', 'compras'] as const).map((tab) => (
             <button
@@ -663,6 +670,8 @@ export default function LojaPage() {
         <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(248,249,250,0.20)', paddingBottom: '8px' }}>
           {lojaTab === 'recargas' ? 'Fichas adquiridas via Cakto. Pagamento unico, sem reembolso.' : 'Itens debitados do saldo de fichas da conta.'}
         </p>
+        </>}
+
       </div>
 
       {/* Sheet de confirmacao de compra */}
@@ -683,6 +692,11 @@ export default function LojaPage() {
       `}</style>
     </div>
   )
+}
+
+function CountdownText({ until }: { until: string }) {
+  const str = useCountdownStr(until)
+  return <>{str}</>
 }
 
 function useCountdownStr(until?: string): string {

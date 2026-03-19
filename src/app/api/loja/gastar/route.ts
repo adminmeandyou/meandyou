@@ -6,42 +6,22 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Custo em fichas por item
-const FICHAS_COST: Record<string, { amount: number; fichas: number; label: string }> = {
-  superlike_1:  { amount: 1,  fichas: 50,  label: '1 SuperLike' },
-  superlike_5:  { amount: 5,  fichas: 200, label: '5 SuperLikes' },
-  boost_1:      { amount: 1,  fichas: 60,  label: '1 Boost' },
-  boost_5:      { amount: 5,  fichas: 250, label: '5 Boosts' },
-  lupa_1:       { amount: 1,  fichas: 70,  label: '1 Lupa' },
-  lupa_5:       { amount: 5,  fichas: 290, label: '5 Lupas' },
-  rewind_1:     { amount: 1,  fichas: 50,  label: '1 Desfazer' },
-  rewind_5:     { amount: 5,  fichas: 200, label: '5 Desfazer' },
-  ghost_7d:     { amount: 7,  fichas: 90,  label: '7 dias Fantasma' },
-  ghost_35d:    { amount: 35, fichas: 350, label: '35 dias Fantasma' },
-  reveals_24h:  { amount: 1,  fichas: 200, label: 'Ver quem curtiu (24h)' },
-  xp_bonus_3d:  { amount: 3,  fichas: 150, label: 'Bonus de XP (3 dias)' },
-  verified_plus:{ amount: 1,  fichas: 500, label: 'Selo Verificado Plus' },
-  caixa_surpresa:{ amount: 1, fichas: 100, label: 'Caixa Surpresa' },
+// Custo em fichas por unidade — alinhado com STORE_ITEMS no frontend (loja/page.tsx)
+const ITEM_CONFIG: Record<string, { fichasPorUnidade: number; label: string }> = {
+  superlike:     { fichasPorUnidade: 30,   label: 'SuperLike' },
+  boost:         { fichasPorUnidade: 40,   label: 'Boost' },
+  lupa:          { fichasPorUnidade: 25,   label: 'Lupa' },
+  rewind:        { fichasPorUnidade: 20,   label: 'Desfazer' },
+  ghost_7d:      { fichasPorUnidade: 60,   label: 'Fantasma 7 dias' },
+  ghost_35d:     { fichasPorUnidade: 220,  label: 'Fantasma 35 dias' },
+  reveals_5:     { fichasPorUnidade: 50,   label: 'Ver quem curtiu (5 perfis)' },
+  xp_bonus_3d:   { fichasPorUnidade: 50,   label: 'Bonus de XP (3 dias)' },
+  verified_plus: { fichasPorUnidade: 200,  label: 'Selo Verificado Plus' },
+  caixa_surpresa:{ fichasPorUnidade: 35,   label: 'Caixa Surpresa' },
+  caixa_lendaria:{ fichasPorUnidade: 2250, label: 'Caixa Super Lendaria' },
 }
 
-// Incrementa saldo em uma tabela de itens (superlike, boost, lupa, rewind)
-async function incrementarSaldo(
-  tabela: string,
-  userId: string,
-  amount: number
-): Promise<void> {
-  // Tenta via RPC especifica (pode nao existir)
-  const rpcName = `credit_${tabela.replace('user_', '')}`
-  const { error: rpcErr } = await supabaseAdmin.rpc(rpcName, {
-    p_user_id:   userId,
-    p_amount:    amount,
-    p_order_id:  `fichas_${Date.now()}`,
-    p_item_type: tabela,
-  })
-
-  if (!rpcErr) return
-
-  // Fallback: leitura + upsert direto na tabela
+async function incrementarSaldo(tabela: string, userId: string, amount: number): Promise<void> {
   const { data: cur } = await supabaseAdmin
     .from(tabela)
     .select('amount')
@@ -69,80 +49,77 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Token invalido' }, { status: 401 })
     }
 
-    const { item_key } = await req.json()
-    const item = FICHAS_COST[item_key]
-    if (!item) {
-      return NextResponse.json({ error: 'Item desconhecido' }, { status: 400 })
+    const body = await req.json()
+    const item_key: string = body.item_key
+    const qty: number = typeof body.qty === 'number' && body.qty >= 1 ? Math.floor(body.qty) : 1
+
+    const itemConfig = ITEM_CONFIG[item_key]
+    if (!itemConfig) {
+      return NextResponse.json({ error: 'Item desconhecido', item_key }, { status: 400 })
     }
 
-    // Debita fichas
+    const totalFichas = itemConfig.fichasPorUnidade * qty
+    const label = qty > 1 ? `${qty}x ${itemConfig.label}` : itemConfig.label
+
+    // Debita fichas via RPC spend_fichas
     const { data: spent, error: spendErr } = await supabaseAdmin.rpc('spend_fichas', {
       p_user_id:     user.id,
-      p_amount:      item.fichas,
-      p_description: `Compra: ${item.label}`,
+      p_amount:      totalFichas,
+      p_description: `Compra: ${label}`,
     })
 
     if (spendErr) {
-      console.error('Erro ao gastar fichas:', spendErr)
-      return NextResponse.json({ error: 'Erro ao processar compra' }, { status: 500 })
+      console.error('spend_fichas error:', spendErr)
+      return NextResponse.json({ error: 'Erro ao debitar fichas', detail: spendErr.message }, { status: 500 })
     }
 
     if (!spent) {
       return NextResponse.json({ error: 'Fichas insuficientes' }, { status: 402 })
     }
 
-    // Credita o item comprado com fallback garantido
-    const type = item_key.split('_')[0] as string
+    // Credita o item comprado
+    if (item_key === 'superlike') {
+      await incrementarSaldo('user_superlikes', user.id, qty)
 
-    if (type === 'superlike') {
-      await incrementarSaldo('user_superlikes', user.id, item.amount)
+    } else if (item_key === 'boost') {
+      await incrementarSaldo('user_boosts', user.id, qty)
 
-    } else if (type === 'boost') {
-      await incrementarSaldo('user_boosts', user.id, item.amount)
+    } else if (item_key === 'lupa') {
+      await incrementarSaldo('user_lupas', user.id, qty)
 
-    } else if (type === 'lupa') {
-      await incrementarSaldo('user_lupas', user.id, item.amount)
+    } else if (item_key === 'rewind') {
+      await incrementarSaldo('user_rewinds', user.id, qty)
 
-    } else if (type === 'rewind') {
-      await incrementarSaldo('user_rewinds', user.id, item.amount)
-
-    } else if (type === 'ghost') {
-      // Tenta via RPC, fallback direto em profiles
+    } else if (item_key === 'ghost_7d' || item_key === 'ghost_35d') {
+      const days = item_key === 'ghost_7d' ? 7 : 35
       const { error: ghostErr } = await supabaseAdmin.rpc('activate_ghost_mode', {
         p_user_id: user.id,
-        p_days:    item.amount,
+        p_days:    days,
       })
       if (ghostErr) {
-        const until = new Date(Date.now() + item.amount * 24 * 60 * 60 * 1000).toISOString()
-        await supabaseAdmin
-          .from('profiles')
-          .update({ ghost_mode_until: until })
-          .eq('id', user.id)
+        const until = new Date(Date.now() + days * 86400000).toISOString()
+        await supabaseAdmin.from('profiles').update({ ghost_mode_until: until }).eq('id', user.id)
       }
 
-    } else if (item_key === 'reveals_24h') {
-      const until = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-      await supabaseAdmin
-        .from('profiles')
-        .update({ curtidas_reveals_until: until })
-        .eq('id', user.id)
+    } else if (item_key === 'reveals_5') {
+      // Abre janela de 24h para ver quem curtiu
+      const until = new Date(Date.now() + 86400000).toISOString()
+      await supabaseAdmin.from('profiles').update({ curtidas_reveals_until: until }).eq('id', user.id)
 
     } else if (item_key === 'xp_bonus_3d') {
-      const until = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString()
-      await supabaseAdmin
-        .from('profiles')
-        .update({ xp_bonus_until: until })
-        .eq('id', user.id)
+      const until = new Date(Date.now() + 3 * 86400000).toISOString()
+      await supabaseAdmin.from('profiles').update({ xp_bonus_until: until }).eq('id', user.id)
 
     } else if (item_key === 'verified_plus') {
-      await supabaseAdmin
-        .from('profiles')
-        .update({ verified_plus: true })
-        .eq('id', user.id)
+      await supabaseAdmin.from('profiles').update({ verified_plus: true }).eq('id', user.id)
 
     } else if (item_key === 'caixa_surpresa') {
       const { data: spinResult } = await supabaseAdmin.rpc('spin_roleta', { p_user_id: user.id })
       return NextResponse.json({ success: true, surpresa: spinResult })
+
+    } else if (item_key === 'caixa_lendaria') {
+      // Premio aleatorio lendario — implementacao completa via caixa_lendaria futuramente
+      return NextResponse.json({ success: true, caixa_lendaria: true })
     }
 
     return NextResponse.json({ success: true })

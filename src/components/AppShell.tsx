@@ -119,7 +119,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             {[
               { href: '/busca',          label: 'Descobrir perfis' },
               { href: '/matches',        label: 'Meus matches' },
-              { href: '/streak',         label: 'Calendario de streak' },
+              { href: '/streak',         label: 'Prêmios diários' },
               { href: '/loja',           label: 'Loja' },
               { href: '/planos',         label: 'Planos' },
               { href: '/configuracoes',  label: 'Configuracoes' },

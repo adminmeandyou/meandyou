@@ -114,7 +114,7 @@ export default function StreakPage() {
           <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>Sequência diária</h1>
+          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>Prêmios diários</h1>
           <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Entre todo dia e ganhe prêmios</p>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '100px', backgroundColor: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.25)', flexShrink: 0 }}>

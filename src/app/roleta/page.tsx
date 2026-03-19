@@ -674,7 +674,7 @@ export default function RoletaPage() {
               Indicar amigos (+5 tickets)
             </a>
             <a href="/streak" style={{ padding: '9px 18px', borderRadius: '12px', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', color: 'var(--accent)', fontSize: '13px', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', fontWeight: 600 }}>
-              Ganhar via streak
+              Prêmios diários
             </a>
           </div>
         </div>

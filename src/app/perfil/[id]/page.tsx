@@ -669,29 +669,37 @@ export default function VerPerfilPage() {
               <Award size={14} color="rgba(248,249,250,0.50)" strokeWidth={1.5} />
               <span style={{ fontSize: '12px', color: 'rgba(248,249,250,0.50)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Emblemas</span>
             </div>
-            <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>{emblemas.filter(e => e.desbloqueado).length}/{emblemas.length}</span>
+            {emblemas.filter(e => e.desbloqueado).length > 0 && (
+              <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>{emblemas.filter(e => e.desbloqueado).length}</span>
+            )}
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-            {emblemas.map((emblema) => (
-              <button
-                key={emblema.id}
-                onClick={() => setSelectedBadge(emblema)}
-                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
-              >
-                <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: emblema.desbloqueado ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)', border: `1px solid ${emblema.desbloqueado ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.04)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', transition: 'all 0.15s' }}>
-                  <EmblemaSvg id={emblema.id} desbloqueado={emblema.desbloqueado} />
-                  {!emblema.desbloqueado && (
-                    <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,9,14,0.55)' }}>
-                      <span style={{ fontSize: '16px', opacity: 0.4 }}>🔒</span>
-                    </div>
-                  )}
-                </div>
-                <span style={{ fontSize: '9px', color: emblema.desbloqueado ? 'rgba(248,249,250,0.60)' : 'rgba(248,249,250,0.25)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                  {emblema.name}
-                </span>
-              </button>
-            ))}
-          </div>
+          {emblemas.filter(e => e.desbloqueado).length === 0 ? (
+            <div style={{ padding: '16px 0 4px', textAlign: 'center' }}>
+              <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '13px', margin: '0 0 4px', lineHeight: 1.5 }}>
+                Nenhum emblema desbloqueado ainda.
+              </p>
+              <p style={{ color: 'rgba(248,249,250,0.25)', fontSize: '12px', margin: 0, lineHeight: 1.5 }}>
+                Continue usando e interagindo no app para desbloquear conquistas.
+              </p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+              {emblemas.filter(e => e.desbloqueado).map((emblema) => (
+                <button
+                  key={emblema.id}
+                  onClick={() => setSelectedBadge(emblema)}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
+                >
+                  <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden', transition: 'all 0.15s' }}>
+                    <EmblemaSvg id={emblema.id} desbloqueado={true} />
+                  </div>
+                  <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.60)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                    {emblema.name}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Badges do banco (fundador, pioneiro, etc) */}
           {dbBadges.length > 0 && (

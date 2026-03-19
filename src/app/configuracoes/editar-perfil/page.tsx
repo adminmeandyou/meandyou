@@ -135,14 +135,22 @@ export default function EditarPerfilPage() {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
       if (!user) { router.push('/login'); return }
       setUserId(user.id)
-      const [{ data: p }, { data: f }, { data: bData }] = await Promise.all([
+      const [{ data: p, error: pErr }, { data: f }, { data: bData }] = await Promise.all([
         supabase.from('profiles')
           .select('bio, photo_face, photo_body, photo_side, photo_back, photo_extra1, photo_extra2, photo_extra3, photo_extra4, photo_extra5, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at, profile_question, profile_question_answer, blur_photos')
           .eq('id', user.id).single(),
         supabase.from('filters').select('*').eq('user_id', user.id).single(),
         supabase.from('user_badges').select('badges(name)').eq('user_id', user.id),
       ])
-      setProfileData(p as ProfileData)
+      if (pErr) console.error('[editar-perfil] profiles query error:', pErr)
+      const profileDefault: ProfileData = {
+        bio: '', photo_face: null, photo_body: null, photo_side: null, photo_back: null,
+        photo_extra1: null, photo_extra2: null, photo_extra3: null, photo_extra4: null,
+        photo_extra5: null, photo_best: null, highlight_tags: [], highlight_tags_edited_at: null,
+        profile_edited_at: null, status_temp: null, status_temp_expires_at: null,
+        profile_question: null, profile_question_answer: null, blur_photos: false,
+      }
+      setProfileData(p ? (p as ProfileData) : profileDefault)
       setFiltersData(f)
       setEmblemasTitulos(((bData ?? []) as any[]).map((ub: any) => ub.badges?.name).filter(Boolean))
       setLoading(false)
