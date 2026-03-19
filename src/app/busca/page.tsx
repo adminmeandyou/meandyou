@@ -958,6 +958,16 @@ export default function BuscaPage() {
   // Reset photoIdx quando o card muda
   useEffect(() => { setPhotoIdx(0) }, [currentIdx])
 
+  // Recarrega deck ao trocar entre discovery e search
+  useEffect(() => {
+    if (!filtersConfigured || !userId) return
+    if (viewMode === 'discovery') {
+      loadDeck(DEFAULT_FILTERS, userId)
+    } else if (viewMode === 'search') {
+      loadDeck(localFilters, userId)
+    }
+  }, [viewMode])
+
   // ── Init ──────────────────────────────────────────────────────────────────
 
   useEffect(() => { init() }, [])
@@ -1784,8 +1794,15 @@ export default function BuscaPage() {
           </div>
         </div>
 
-        {/* Categorias de filtros */}
-        {FILTER_CATEGORIES.map((cat) => {
+        {/* Categorias de filtros avancados — visíveis apenas no modo Busca */}
+        {viewMode === 'discovery' && (
+          <div style={{ padding: '12px 16px', backgroundColor: 'rgba(225,29,72,0.06)', border: '1px solid rgba(225,29,72,0.15)', borderRadius: 12, marginBottom: 12 }}>
+            <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.65)', margin: 0 }}>
+              Modo <strong style={{ color: '#F8F9FA' }}>Descobrir</strong> usa apenas idade e distância. Mude para <strong style={{ color: '#F8F9FA' }}>Busca</strong> para usar filtros avançados.
+            </p>
+          </div>
+        )}
+        {viewMode !== 'discovery' && FILTER_CATEGORIES.map((cat) => {
           const isLocked = cat.locked && userPlan !== 'black'
           const isOpen = openCategories[cat.id]
           const activeCount = cat.groups.flatMap(g => g.options).filter(o => localFilters[o.key]).length
