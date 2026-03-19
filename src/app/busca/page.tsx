@@ -499,11 +499,24 @@ function ModeSelectorTabs({
 
 // ─── Match do Dia ─────────────────────────────────────────────────────────────
 
+// Todas as chaves de filtro de compatibilidade (exceto search_* e campos de controle)
+const COMPAT_KEYS = FILTER_CATEGORIES.flatMap(cat =>
+  cat.groups.flatMap(g => g.options.map(o => o.key))
+)
+
+function calcCompatibility(myFilters: Record<string, boolean>, theirFilters: Record<string, boolean>): number {
+  const myKeys = COMPAT_KEYS.filter(k => myFilters[k] === true)
+  if (myKeys.length === 0) return 0
+  const matches = myKeys.filter(k => theirFilters[k] === true).length
+  return Math.round((matches / myKeys.length) * 100)
+}
+
 function DailyMatchView({ userId, localFilters }: { userId: string | null; localFilters: FiltersState }) {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [liked, setLiked] = useState<Record<string, boolean>>({})
   const [passed, setPassed] = useState<Record<string, boolean>>({})
+  const [scores, setScores] = useState<Record<string, number>>({})
   const toast = useToast()
   const haptics = useHaptics()
 
@@ -517,20 +530,48 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
     const today = new Date().toISOString().slice(0, 10)
     const cacheKey = `daily_match_${userId}_${today}`
     const cached = localStorage.getItem(cacheKey)
+    let daily: Profile[] = []
+
     if (cached) {
-      try { setProfiles(JSON.parse(cached)); setLoading(false); return } catch {}
+      try {
+        daily = JSON.parse(cached)
+        setProfiles(daily)
+      } catch {}
     }
-    try {
-      const { data } = await supabase.rpc('search_profiles', {
-        current_user_id: userId,
-        max_distance_km: localFilters.search_max_distance_km,
-        min_age:         localFilters.search_min_age,
-        max_age:         localFilters.search_max_age >= 60 ? 120 : localFilters.search_max_age,
-      })
-      const daily = (data ?? []).slice(0, 5) as Profile[]
-      setProfiles(daily)
-      localStorage.setItem(cacheKey, JSON.stringify(daily))
-    } catch {}
+
+    if (!daily.length) {
+      try {
+        const { data } = await supabase.rpc('search_profiles', {
+          current_user_id: userId,
+          max_distance_km: localFilters.search_max_distance_km,
+          min_age:         localFilters.search_min_age,
+          max_age:         localFilters.search_max_age >= 60 ? 120 : localFilters.search_max_age,
+        })
+        daily = (data ?? []).slice(0, 5) as Profile[]
+        setProfiles(daily)
+        localStorage.setItem(cacheKey, JSON.stringify(daily))
+      } catch {}
+    }
+
+    // Calcular scores de compatibilidade
+    if (daily.length && userId) {
+      try {
+        const profileIds = daily.map(p => p.id)
+        const [myRes, theirRes] = await Promise.all([
+          supabase.from('filters').select('*').eq('user_id', userId).single(),
+          supabase.from('filters').select('*').in('user_id', profileIds),
+        ])
+        if (myRes.data && theirRes.data) {
+          const myFilters = myRes.data as Record<string, boolean>
+          const scoreMap: Record<string, number> = {}
+          for (const row of theirRes.data) {
+            scoreMap[row.user_id] = calcCompatibility(myFilters, row as Record<string, boolean>)
+          }
+          setScores(scoreMap)
+        }
+      } catch {}
+    }
+
     setLoading(false)
   }
 
@@ -600,47 +641,78 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
         {active.map((profile) => {
           const photos = profile.photos?.length ? profile.photos : profile.photo_best ? [profile.photo_best] : []
           const photo = photos[0]
+          const score = scores[profile.id]
+          const hasScore = score !== undefined
+          const isGoodMatch = hasScore && score >= 60
+
           return (
             <div
               key={profile.id}
               style={{
-                backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)',
+                backgroundColor: 'var(--bg-card)',
+                border: isGoodMatch ? '1px solid rgba(225,29,72,0.30)' : '1px solid var(--border)',
                 borderRadius: 16, overflow: 'hidden',
-                display: 'flex', alignItems: 'center', gap: 14, padding: '12px 14px',
               }}
             >
-              <div style={{ width: 64, height: 64, borderRadius: 12, overflow: 'hidden', flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.05)' }}>
-                {photo ? (
-                  <Image src={photo} alt={profile.name} width={64} height={64} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Heart size={20} color="rgba(255,255,255,0.20)" strokeWidth={1} />
+              {/* Badge de compatibilidade */}
+              {hasScore && (
+                <div style={{
+                  padding: '8px 14px 0',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}>
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 5,
+                    padding: '3px 10px', borderRadius: 100,
+                    backgroundColor: isGoodMatch ? 'rgba(225,29,72,0.12)' : 'rgba(255,255,255,0.06)',
+                    border: isGoodMatch ? '1px solid rgba(225,29,72,0.25)' : '1px solid rgba(255,255,255,0.08)',
+                  }}>
+                    <Heart size={10} strokeWidth={2} style={{ color: isGoodMatch ? 'var(--accent)' : 'var(--muted)' }} fill={isGoodMatch ? 'var(--accent)' : 'none'} />
+                    <span style={{ fontSize: 11, fontWeight: 600, color: isGoodMatch ? 'var(--accent)' : 'var(--muted)' }}>
+                      {score}% de acordo com o que voce procura
+                    </span>
                   </div>
-                )}
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 15, color: 'var(--text)', marginBottom: 2 }}>
-                  {profile.name}{profile.age ? `, ${profile.age}` : ''}
-                </p>
-                {profile.city && (
-                  <p style={{ fontSize: 12, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 3 }}>
-                    <MapPin size={10} strokeWidth={1.5} /> {profile.city}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 14px 12px' }}>
+                <div style={{ width: 64, height: 64, borderRadius: 12, overflow: 'hidden', flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.05)' }}>
+                  {photo ? (
+                    <Image src={photo} alt={profile.name} width={64} height={64} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Heart size={20} color="rgba(255,255,255,0.20)" strokeWidth={1} />
+                    </div>
+                  )}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 15, color: 'var(--text)', marginBottom: 2 }}>
+                    {profile.name}{profile.age ? `, ${profile.age}` : ''}
                   </p>
-                )}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
-                <button
-                  onClick={() => handleLike(profile)}
-                  style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(16,185,129,0.30)', backgroundColor: 'rgba(16,185,129,0.10)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                >
-                  <Heart size={16} strokeWidth={2} />
-                </button>
-                <button
-                  onClick={() => handlePass(profile.id)}
-                  style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'transparent', color: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                >
-                  <X size={16} strokeWidth={2} />
-                </button>
+                  {profile.city && (
+                    <p style={{ fontSize: 12, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 3, marginBottom: isGoodMatch ? 4 : 0 }}>
+                      <MapPin size={10} strokeWidth={1.5} /> {profile.city}
+                    </p>
+                  )}
+                  {isGoodMatch && (
+                    <p style={{ fontSize: 11, color: 'var(--muted-2)', fontStyle: 'italic' }}>
+                      Que tal conversar e ver no que isso pode dar?
+                    </p>
+                  )}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
+                  <button
+                    onClick={() => handleLike(profile)}
+                    style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(16,185,129,0.30)', backgroundColor: 'rgba(16,185,129,0.10)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                  >
+                    <Heart size={16} strokeWidth={2} />
+                  </button>
+                  <button
+                    onClick={() => handlePass(profile.id)}
+                    style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'transparent', color: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                  >
+                    <X size={16} strokeWidth={2} />
+                  </button>
+                </div>
               </div>
             </div>
           )
