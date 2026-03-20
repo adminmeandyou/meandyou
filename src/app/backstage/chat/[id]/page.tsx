@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '../../../lib/supabase'
 import Image from 'next/image'
-import { ArrowLeft, Crown, Send, Loader2, Lock, Clock } from 'lucide-react'
+import { ArrowLeft, Crown, Send, Loader2, Lock, Clock, Star, ThumbsUp, ThumbsDown, HeartHandshake, Trophy, Flag, X } from 'lucide-react'
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
@@ -20,6 +20,14 @@ const CATEGORIAS: Record<string, string> = {
 }
 
 const MAX_CHARS = 500
+
+const RATING_OPTIONS = [
+  { key: 'bom_papo',  label: 'Bom de papo',               icon: ThumbsUp,       color: '#2ec4a0' },
+  { key: 'sairam',    label: 'Sairam para se conhecer',   icon: HeartHandshake, color: '#E11D48' },
+  { key: 'objetivo',  label: 'Alcancaram o objetivo',     icon: Trophy,         color: G         },
+  { key: 'bolo',      label: 'Levou bolo',                icon: ThumbsDown,     color: 'rgba(248,249,250,0.40)' },
+  { key: 'denuncia',  label: 'Denunciar',                 icon: Flag,           color: '#f87171' },
+]
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -52,24 +60,30 @@ export default function CamaroteChatPage() {
   const requestId = params.id as string
   const router = useRouter()
 
-  const [userId, setUserId] = useState<string | null>(null)
-  const [request, setRequest] = useState<RequestData | null>(null)
-  const [other, setOther] = useState<OtherProfile | null>(null)
-  const [messages, setMessages] = useState<Message[]>([])
-  const [input, setInput] = useState('')
-  const [loading, setLoading] = useState(true)
-  const [sending, setSending] = useState(false)
-  const [error, setError] = useState('')
-  const [expired, setExpired] = useState(false)
+  const [userId, setUserId]       = useState<string | null>(null)
+  const [request, setRequest]     = useState<RequestData | null>(null)
+  const [other, setOther]         = useState<OtherProfile | null>(null)
+  const [messages, setMessages]   = useState<Message[]>([])
+  const [input, setInput]         = useState('')
+  const [loading, setLoading]     = useState(true)
+  const [sending, setSending]     = useState(false)
+  const [error, setError]         = useState('')
+  const [expired, setExpired]     = useState(false)
+  const [showRating, setShowRating] = useState(false)
+  const [ratingDone, setRatingDone] = useState(false)
+  const [ratingSubmitting, setRatingSubmitting] = useState(false)
 
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
-  const msgTimestamps = useRef<number[]>([])
+  const bottomRef      = useRef<HTMLDivElement>(null)
+  const channelRef     = useRef<ReturnType<typeof supabase.channel> | null>(null)
+  const msgTimestamps  = useRef<number[]>([])
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push('/login'); return }
       setUserId(user.id)
+      // Checar se já avaliou (localStorage)
+      const done = localStorage.getItem(`camarote_rating_${requestId}`)
+      if (done) setRatingDone(true)
       init(user.id)
     })
     return () => { channelRef.current?.unsubscribe() }
@@ -180,6 +194,29 @@ export default function CamaroteChatPage() {
     setSending(false)
   }
 
+  async function submitRating(ratingKey: string) {
+    if (!userId || !request || ratingSubmitting) return
+    setRatingSubmitting(true)
+
+    const otherId = request.requester_id === userId ? request.rescued_by : request.requester_id
+
+    try {
+      await supabase.from('camarote_ratings').insert({
+        request_id: requestId,
+        rater_id:   userId,
+        rated_id:   otherId,
+        rating:     ratingKey,
+      })
+    } catch {
+      // silencioso — avaliação não é bloqueante
+    }
+
+    localStorage.setItem(`camarote_rating_${requestId}`, ratingKey)
+    setRatingDone(true)
+    setShowRating(false)
+    setRatingSubmitting(false)
+  }
+
   function daysLeft() {
     if (!request?.expires_at) return 0
     const diff = new Date(request.expires_at).getTime() - Date.now()
@@ -189,6 +226,8 @@ export default function CamaroteChatPage() {
   function formatTime(iso: string) {
     return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
   }
+
+  const canRate = messages.length >= 5 && !ratingDone
 
   // ─── Loading ────────────────────────────────────────────────────────────────
 
@@ -212,6 +251,58 @@ export default function CamaroteChatPage() {
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.40)', textAlign: 'center', lineHeight: 1.6, margin: '0 0 28px' }}>
           O periodo de 30 dias desta conversa do Camarote expirou.
         </p>
+
+        {/* Avaliacao na tela de expirado */}
+        {!ratingDone ? (
+          <div style={{ width: '100%', maxWidth: 360, background: BG_CARD, borderRadius: 20, border: `1px solid ${G_BORDER}`, padding: '24px 20px', marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+              <Star size={16} color={G} strokeWidth={1.5} />
+              <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 16, color: '#fff', fontWeight: 700 }}>
+                Como foi essa conversa?
+              </span>
+            </div>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.40)', margin: '0 0 16px' }}>
+              Sua avaliacao e anonima e ajuda a melhorar o Camarote.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {RATING_OPTIONS.map((opt) => {
+                const Icon = opt.icon
+                return (
+                  <button
+                    key={opt.key}
+                    onClick={() => submitRating(opt.key)}
+                    disabled={ratingSubmitting}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '12px 16px', borderRadius: 12,
+                      background: 'rgba(255,255,255,0.03)',
+                      border: '1px solid rgba(255,255,255,0.07)',
+                      cursor: 'pointer', textAlign: 'left', width: '100%',
+                      transition: 'background 0.15s',
+                    }}
+                  >
+                    <Icon size={16} color={opt.color} strokeWidth={1.5} />
+                    <span style={{ fontSize: 14, color: '#fff', fontFamily: 'var(--font-jakarta)' }}>
+                      {opt.label}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+            <button
+              onClick={() => { setRatingDone(true); localStorage.setItem(`camarote_rating_${requestId}`, 'skip') }}
+              style={{ marginTop: 12, width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'rgba(255,255,255,0.30)', fontFamily: 'var(--font-jakarta)' }}
+            >
+              Pular avaliacao
+            </button>
+          </div>
+        ) : (
+          <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Star size={14} color={G} strokeWidth={1.5} />
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.40)' }}>Avaliacao enviada</span>
+          </div>
+        )}
+
         <button
           onClick={() => router.push('/backstage')}
           style={{ padding: '13px 28px', borderRadius: 14, background: `linear-gradient(135deg, #c9a84c, ${G})`, color: '#000', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
@@ -228,7 +319,7 @@ export default function CamaroteChatPage() {
   const catLabel = CATEGORIAS[request?.category ?? ''] ?? request?.category ?? ''
 
   return (
-    <div style={{ height: '100vh', background: BG, display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', maxWidth: 480, margin: '0 auto' }}>
+    <div style={{ height: '100vh', background: BG, display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', maxWidth: 480, margin: '0 auto', position: 'relative' }}>
 
       {/* Header */}
       <header style={{ flexShrink: 0, background: 'rgba(8,9,14,0.97)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${G_BORDER}`, padding: '12px 16px', display: 'flex', alignItems: 'center', gap: 12 }}>
@@ -266,11 +357,21 @@ export default function CamaroteChatPage() {
           </div>
         </div>
 
-        {/* Badge Black */}
-        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 100, background: G_SOFT, border: `1px solid ${G_BORDER}` }}>
-          <Crown size={12} color={G} strokeWidth={1.5} />
-          <span style={{ fontSize: 11, color: G, fontWeight: 700 }}>Black</span>
-        </div>
+        {/* Botao avaliar ou badge Black */}
+        {canRate ? (
+          <button
+            onClick={() => setShowRating(true)}
+            style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '6px 12px', borderRadius: 100, background: G_SOFT, border: `1px solid ${G_BORDER}`, cursor: 'pointer' }}
+          >
+            <Star size={12} color={G} strokeWidth={1.5} />
+            <span style={{ fontSize: 11, color: G, fontWeight: 700 }}>Avaliar</span>
+          </button>
+        ) : (
+          <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '4px 10px', borderRadius: 100, background: G_SOFT, border: `1px solid ${G_BORDER}` }}>
+            <Crown size={12} color={G} strokeWidth={1.5} />
+            <span style={{ fontSize: 11, color: G, fontWeight: 700 }}>Black</span>
+          </div>
+        )}
       </header>
 
       {/* Mensagens */}
@@ -361,6 +462,93 @@ export default function CamaroteChatPage() {
           }
         </button>
       </div>
+
+      {/* Painel de avaliacao (slide up) */}
+      {showRating && (
+        <>
+          {/* Backdrop */}
+          <div
+            onClick={() => setShowRating(false)}
+            style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.60)', backdropFilter: 'blur(4px)', zIndex: 10 }}
+          />
+          {/* Sheet */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 11,
+            background: BG_CARD,
+            borderTop: `1px solid ${G_BORDER}`,
+            borderRadius: '20px 20px 0 0',
+            padding: '20px 20px 32px',
+          }}>
+            {/* Handle */}
+            <div style={{ width: 36, height: 4, borderRadius: 100, background: 'rgba(255,255,255,0.12)', margin: '0 auto 20px' }} />
+
+            {/* Titulo */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Star size={16} color={G} strokeWidth={1.5} />
+                <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: '#fff', fontWeight: 700 }}>
+                  Como foi essa conversa?
+                </span>
+              </div>
+              <button
+                onClick={() => setShowRating(false)}
+                style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <X size={14} color="rgba(255,255,255,0.50)" strokeWidth={1.5} />
+              </button>
+            </div>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '0 0 20px' }}>
+              Sua avaliacao e anonima. Ajuda outros usuarios e melhora o Camarote.
+            </p>
+
+            {/* Opcoes */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {RATING_OPTIONS.map((opt) => {
+                const Icon = opt.icon
+                return (
+                  <button
+                    key={opt.key}
+                    onClick={() => submitRating(opt.key)}
+                    disabled={ratingSubmitting}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 14,
+                      padding: '14px 16px', borderRadius: 14,
+                      background: 'rgba(255,255,255,0.03)',
+                      border: opt.key === 'denuncia'
+                        ? '1px solid rgba(248,113,113,0.20)'
+                        : '1px solid rgba(255,255,255,0.07)',
+                      cursor: ratingSubmitting ? 'default' : 'pointer',
+                      textAlign: 'left', width: '100%',
+                      transition: 'background 0.15s',
+                      opacity: ratingSubmitting ? 0.5 : 1,
+                    }}
+                  >
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${opt.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon size={18} color={opt.color} strokeWidth={1.5} />
+                    </div>
+                    <span style={{ fontSize: 15, color: opt.key === 'denuncia' ? '#f87171' : '#fff', fontFamily: 'var(--font-jakarta)', fontWeight: 500 }}>
+                      {opt.label}
+                    </span>
+                    {ratingSubmitting && <Loader2 size={14} className="animate-spin" style={{ color: 'rgba(255,255,255,0.30)', marginLeft: 'auto' }} />}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* Pular */}
+            <button
+              onClick={() => {
+                setShowRating(false)
+                localStorage.setItem(`camarote_rating_${requestId}`, 'skip')
+                setRatingDone(true)
+              }}
+              style={{ marginTop: 14, width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(255,255,255,0.30)', fontFamily: 'var(--font-jakarta)' }}
+            >
+              Pular avaliacao
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }
