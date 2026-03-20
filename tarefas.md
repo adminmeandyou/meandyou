@@ -9,9 +9,10 @@
 
 ## 🔴 CRÍTICO
 
-### C1 — Perfil: edição inline no próprio perfil
-- Clicar em "Perfil" na nav mostra a pré-visualização (como outras pessoas veem) — redirect corrigido
-- Falta: botões de edição inline por seção (fotos, bio, tags, emblemas, características) direto na pré-visualização
+### ~~C1 — Perfil: edição inline no próprio perfil~~ ✅
+- Botão lápis no topo-direito do hero substitui o de emergência → vai para editar-perfil
+- Seções bio, emblemas, características e tags têm botão "Editar" inline quando usuário vê o próprio perfil
+- Bio vazia mostra placeholder "Adicione uma bio..." quando é o próprio usuário
 
 ### ~~C3 — Roleta: não toca som de efeito ao girar/parar~~ ✅
 - Sons implementados via Web Audio API (sem arquivos externos): ticks ao iniciar, jingle ao ganhar (jackpot = jingle mais épico)
@@ -55,9 +56,9 @@
 #### ~~M1d — Fantasma (modo invisível)~~ ✅
 - `useSearch` e `loadDeck` filtram profiles com `ghost_mode_until > now()` após a RPC
 
-#### M1e — Bônus de XP
-- Quando ativo (`xp_bonus_until` setado), multiplicador de XP em todas as ações por X horas
-- Verificar se a RPC `award_xp` já aplica o bônus ou se precisa passar o multiplicador pelo frontend
+#### ~~M1e — Bônus de XP~~ ✅
+- `awardXp` em `xp.ts` consulta `xp_bonus_until` antes de chamar a RPC e aplica 2x no `p_base_xp` se ativo
+- API route `/api/xp/award` faz o mesmo para chamadas server-side
 
 #### ~~M1f — Selo verificado~~ ✅
 - Ao comprar `verified_plus`, agora também concede automaticamente o emblema de Identidade Verificada (busca por `condition_type=on_verify` nos badges)

@@ -18,9 +18,28 @@ const XP_TABLE: Record<string, number> = {
 export function awardXp(userId: string, eventType: string): void {
   const baseXp = XP_TABLE[eventType]
   if (!baseXp || !userId) return
-  supabase.rpc('award_xp', {
-    p_user_id:    userId,
-    p_event_type: eventType,
-    p_base_xp:    baseXp,
-  }).then(() => {}).catch(() => {})
+
+  // Verifica se bonus de XP esta ativo e aplica multiplicador 2x
+  supabase
+    .from('profiles')
+    .select('xp_bonus_until')
+    .eq('id', userId)
+    .single()
+    .then(({ data }) => {
+      const bonusAtivo = data?.xp_bonus_until && new Date(data.xp_bonus_until) > new Date()
+      const finalXp = bonusAtivo ? baseXp * 2 : baseXp
+      supabase.rpc('award_xp', {
+        p_user_id:    userId,
+        p_event_type: eventType,
+        p_base_xp:    finalXp,
+      }).then(() => {}).catch(() => {})
+    })
+    .catch(() => {
+      // fallback sem bonus se falhar a consulta
+      supabase.rpc('award_xp', {
+        p_user_id:    userId,
+        p_event_type: eventType,
+        p_base_xp:    baseXp,
+      }).then(() => {}).catch(() => {})
+    })
 }

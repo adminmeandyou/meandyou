@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase'
 import Image from 'next/image'
 import {
   ArrowLeft, MapPin, Heart, Star, X,
-  Eye, Calendar, Ruler, Weight, Crown, ShieldAlert, Award, Settings
+  Eye, Calendar, Ruler, Weight, Crown, ShieldAlert, Award, Settings, Pencil
 } from 'lucide-react'
 import { SwipeButton } from '@/components/ui/SwipeButton'
 import { BadgePill } from '@/components/ui/BadgePill'
@@ -416,6 +416,8 @@ export default function VerPerfilPage() {
     profile.photo_extra3,
   ].filter(Boolean) as string[]
 
+  const isOwnProfile = profileId === userId
+
   const trustScore = calcTrustScore(profile, photos, filters)
   const conquistas = getConquistas(profile, photos)
   const statusPills = getStatusPills(userRow)
@@ -479,14 +481,24 @@ export default function VerPerfilPage() {
           <ArrowLeft size={18} color="#fff" strokeWidth={1.5} />
         </button>
 
-        {/* Botao emergencia */}
-        <button
-          onClick={() => setEmergencyModal(true)}
-          style={{ position: 'absolute', top: '28px', right: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}
-          title="Emergencia"
-        >
-          <ShieldAlert size={17} color="rgba(255,255,255,0.22)" strokeWidth={1.5} />
-        </button>
+        {/* Botao emergencia / editar fotos (proprio perfil) */}
+        {isOwnProfile ? (
+          <button
+            onClick={() => router.push('/configuracoes/editar-perfil')}
+            style={{ position: 'absolute', top: '28px', right: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.18)', cursor: 'pointer' }}
+            title="Editar fotos"
+          >
+            <Pencil size={16} color="#fff" strokeWidth={1.5} />
+          </button>
+        ) : (
+          <button
+            onClick={() => setEmergencyModal(true)}
+            style={{ position: 'absolute', top: '28px', right: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}
+            title="Emergencia"
+          >
+            <ShieldAlert size={17} color="rgba(255,255,255,0.22)" strokeWidth={1.5} />
+          </button>
+        )}
 
         {/* Toque nas bordas para navegar */}
         {photos.length > 1 && (
@@ -572,8 +584,23 @@ export default function VerPerfilPage() {
         )}
 
         {/* Bio */}
-        {profile.bio && (
-          <p style={{ color: 'rgba(248,249,250,0.80)', fontSize: '14px', lineHeight: '1.75', margin: 0 }}>{profile.bio}</p>
+        {(profile.bio || isOwnProfile) && (
+          <div>
+            {isOwnProfile && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(248,249,250,0.30)' }}>Sobre mim</span>
+                <button onClick={() => router.push('/configuracoes/editar-perfil')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 100, padding: '3px 10px', color: 'rgba(248,249,250,0.45)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>
+                  <Pencil size={10} strokeWidth={1.5} />
+                  Editar
+                </button>
+              </div>
+            )}
+            {profile.bio ? (
+              <p style={{ color: 'rgba(248,249,250,0.80)', fontSize: '14px', lineHeight: '1.75', margin: 0 }}>{profile.bio}</p>
+            ) : (
+              <p style={{ color: 'rgba(248,249,250,0.25)', fontSize: '14px', margin: 0, fontStyle: 'italic' }}>Adicione uma bio para se apresentar...</p>
+            )}
+          </div>
         )}
 
         {/* Trust Score */}
@@ -618,9 +645,17 @@ export default function VerPerfilPage() {
               <Award size={14} color="rgba(248,249,250,0.50)" strokeWidth={1.5} />
               <span style={{ fontSize: '12px', color: 'rgba(248,249,250,0.50)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Emblemas</span>
             </div>
-            {emblemas.filter(e => e.desbloqueado).length > 0 && (
-              <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>{emblemas.filter(e => e.desbloqueado).length}</span>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {emblemas.filter(e => e.desbloqueado).length > 0 && (
+                <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>{emblemas.filter(e => e.desbloqueado).length}</span>
+              )}
+              {isOwnProfile && (
+                <button onClick={() => router.push('/configuracoes/editar-perfil')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 100, padding: '3px 10px', color: 'rgba(248,249,250,0.45)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>
+                  <Pencil size={10} strokeWidth={1.5} />
+                  Editar
+                </button>
+              )}
+            </div>
           </div>
           {emblemas.filter(e => e.desbloqueado).length === 0 ? (
             <div style={{ padding: '16px 0 4px', textAlign: 'center' }}>
@@ -669,19 +704,30 @@ export default function VerPerfilPage() {
         </div>
 
         {/* Stats rapidos */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-          {filters?.height_cm && <StatCard icon={<Ruler size={14} strokeWidth={1.5} />} label="Altura" value={`${filters.height_cm} cm`} />}
-          {filters?.weight_kg && <StatCard icon={<Weight size={14} strokeWidth={1.5} />} label="Peso" value={`${filters.weight_kg} kg`} />}
-          {profile.gender && <StatCard icon={<Eye size={14} strokeWidth={1.5} />} label="Genero" value={profile.gender} />}
-          {age && <StatCard icon={<Calendar size={14} strokeWidth={1.5} />} label="Idade" value={`${age} anos`} />}
+        <div>
+          {isOwnProfile && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(248,249,250,0.30)' }}>Caracteristicas</span>
+              <button onClick={() => router.push('/configuracoes/editar-perfil')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 100, padding: '3px 10px', color: 'rgba(248,249,250,0.45)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>
+                <Pencil size={10} strokeWidth={1.5} />
+                Editar
+              </button>
+            </div>
+          )}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            {filters?.height_cm && <StatCard icon={<Ruler size={14} strokeWidth={1.5} />} label="Altura" value={`${filters.height_cm} cm`} />}
+            {filters?.weight_kg && <StatCard icon={<Weight size={14} strokeWidth={1.5} />} label="Peso" value={`${filters.weight_kg} kg`} />}
+            {profile.gender && <StatCard icon={<Eye size={14} strokeWidth={1.5} />} label="Genero" value={profile.gender} />}
+            {age && <StatCard icon={<Calendar size={14} strokeWidth={1.5} />} label="Idade" value={`${age} anos`} />}
+          </div>
         </div>
 
         {/* Tags do perfil */}
         {profile.highlight_tags?.length > 0 ? (
-          <TagSection title="Destaques" tags={profile.highlight_tags} />
+          <TagSection title="Destaques" tags={profile.highlight_tags} onEdit={isOwnProfile ? () => router.push('/configuracoes/editar-perfil') : undefined} />
         ) : filters && (
           <>
-            <TagSection title="Aparencia" tags={getAparenciaTags(filters)} />
+            <TagSection title="Aparencia" tags={getAparenciaTags(filters)} onEdit={isOwnProfile ? () => router.push('/configuracoes/editar-perfil') : undefined} />
             <TagSection title="Estilo de vida" tags={getEstiloTags(filters)} />
             <TagSection title="Personalidade" tags={getPersonalidadeTags(filters)} />
             <TagSection title="O que busca" tags={getObjetivosTags(filters)} />
@@ -932,11 +978,19 @@ function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string
   )
 }
 
-function TagSection({ title, tags }: { title: string; tags: string[] }) {
+function TagSection({ title, tags, onEdit }: { title: string; tags: string[]; onEdit?: () => void }) {
   if (tags.length === 0) return null
   return (
     <div>
-      <h3 style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(248,249,250,0.30)', marginBottom: '12px', marginTop: 0 }}>{title}</h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <h3 style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(248,249,250,0.30)', margin: 0 }}>{title}</h3>
+        {onEdit && (
+          <button onClick={onEdit} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 100, padding: '3px 10px', color: 'rgba(248,249,250,0.45)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>
+            <Pencil size={10} strokeWidth={1.5} />
+            Editar
+          </button>
+        )}
+      </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
         {tags.map((tag) => (
           <span key={tag} style={{ padding: '6px 14px', borderRadius: '100px', fontSize: '12px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(248,249,250,0.50)' }}>

@@ -36,10 +36,20 @@ export async function POST(req: NextRequest) {
     }
 
     const baseXp = XP_TABLE[event_type]
+
+    // Verifica se bonus de XP esta ativo e aplica multiplicador 2x
+    const { data: profileBonus } = await supabase
+      .from('profiles')
+      .select('xp_bonus_until')
+      .eq('id', user.id)
+      .single()
+    const bonusAtivo = profileBonus?.xp_bonus_until && new Date(profileBonus.xp_bonus_until) > new Date()
+    const finalXp = bonusAtivo ? baseXp * 2 : baseXp
+
     const { data: xpAwarded, error } = await supabase.rpc('award_xp', {
       p_user_id:    user.id,
       p_event_type: event_type,
-      p_base_xp:    baseXp,
+      p_base_xp:    finalXp,
     })
 
     if (error) {
