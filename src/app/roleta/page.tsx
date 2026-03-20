@@ -65,6 +65,49 @@ function getSegIdx(rewardType: string, rewardAmount: number): number {
 type SpinResult = { reward_type: string; reward_amount: number; was_jackpot?: boolean }
 type Particle = { x: number; y: number; vx: number; vy: number; size: number; color: string; life: number; maxLife: number; rotation: number; rotSpeed: number }
 
+// ── Sons via Web Audio API (sem arquivos externos) ───────────────────────
+function playSpinSound() {
+  try {
+    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    // Tick acelerado simulando a roleta girando
+    const ticks = 12
+    for (let i = 0; i < ticks; i++) {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain); gain.connect(ctx.destination)
+      osc.type = 'triangle'
+      osc.frequency.value = 320 + i * 18
+      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.06)
+      gain.gain.linearRampToValueAtTime(0.18, ctx.currentTime + i * 0.06 + 0.01)
+      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + i * 0.06 + 0.06)
+      osc.start(ctx.currentTime + i * 0.06)
+      osc.stop(ctx.currentTime + i * 0.06 + 0.07)
+    }
+  } catch {}
+}
+
+function playWinSound(jackpot = false) {
+  try {
+    const ctx = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    const notes = jackpot
+      ? [523, 659, 784, 1047, 1319]  // Dó Mi Sol Dó Mi (mais épico)
+      : [523, 659, 784, 1047]         // Dó Mi Sol Dó
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain); gain.connect(ctx.destination)
+      osc.type = 'sine'
+      osc.frequency.value = freq
+      const t = ctx.currentTime + i * 0.13
+      gain.gain.setValueAtTime(0, t)
+      gain.gain.linearRampToValueAtTime(0.25, t + 0.04)
+      gain.gain.linearRampToValueAtTime(0, t + 0.25)
+      osc.start(t)
+      osc.stop(t + 0.26)
+    })
+  } catch {}
+}
+
 export default function RoletaPage() {
   const { user } = useAuth()
   const { limits } = usePlan()
@@ -322,6 +365,7 @@ export default function RoletaPage() {
     setSpinning(true)
     setResult(null)
     setShowCelebration(false)
+    playSpinSound()
 
     // ── FASE 1: Gira imediatamente (antes da API responder) ───────────
     const spinStart   = performance.now()
@@ -407,6 +451,7 @@ export default function RoletaPage() {
     const decelDuration = 3000 + Math.random() * 1500
 
     animateDecelerate(targetRotation, decelDuration, () => {
+      playWinSound(prize.was_jackpot)
       setResult(prize)
       setTickets(t => t - 1)
       setSpinsToday(s => s + 1)

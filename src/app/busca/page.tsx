@@ -407,6 +407,29 @@ function useCountdown() {
   return timeLeft
 }
 
+// ─── Boost Active Banner ─────────────────────────────────────────────────────
+
+function BoostActiveBanner({ until }: { until: Date }) {
+  const [timeLeft, setTimeLeft] = useState('')
+  useEffect(() => {
+    const tick = () => {
+      const diff = until.getTime() - Date.now()
+      if (diff <= 0) { setTimeLeft('00:00'); return }
+      const m = Math.floor(diff / 60000)
+      const s = Math.floor((diff % 60000) / 1000)
+      setTimeLeft(`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`)
+    }
+    tick(); const id = setInterval(tick, 1000); return () => clearInterval(id)
+  }, [until])
+  return (
+    <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, padding: '8px 14px', flexShrink: 0 }}>
+      <Zap size={13} strokeWidth={1.5} style={{ color: '#F59E0B' }} />
+      <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600 }}>Boost ativo — voce esta em destaque</span>
+      <span style={{ fontSize: 11, color: 'rgba(245,158,11,0.70)', marginLeft: 4 }}>{timeLeft}</span>
+    </div>
+  )
+}
+
 // ─── Mode Selector (injetado no AppHeader) ───────────────────────────────────
 
 const MODE_LABELS: Record<ViewMode, string> = {
@@ -547,14 +570,44 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
           min_age:         localFilters.search_min_age,
           max_age:         localFilters.search_max_age >= 60 ? 120 : localFilters.search_max_age,
         })
-        daily = (data ?? []).slice(0, 5) as Profile[]
+        // Busca candidatos para filtrar por compatibilidade mútua
+        const candidates = (data ?? []).slice(0, 20) as Profile[]
+
+        // Calcular compatibilidade mútua para filtrar >= 59%
+        try {
+          const candidateIds = candidates.map((p: Profile) => p.id)
+          const [myRes, theirRes] = await Promise.all([
+            supabase.from('filters').select('*').eq('user_id', userId).single(),
+            supabase.from('filters').select('*').in('user_id', candidateIds),
+          ])
+          if (myRes.data && theirRes.data) {
+            const myFilters = myRes.data as Record<string, boolean>
+            const scoreMap: Record<string, number> = {}
+            for (const row of theirRes.data) {
+              const scoreAtoB = calcCompatibility(myFilters, row as Record<string, boolean>)
+              const scoreBtoA = calcCompatibility(row as Record<string, boolean>, myFilters)
+              scoreMap[row.user_id] = Math.round((scoreAtoB + scoreBtoA) / 2)
+            }
+            // Filtra mínimo 59% de compatibilidade mútua, pega os 5 melhores
+            daily = candidates
+              .filter(p => (scoreMap[p.id] ?? 0) >= 59)
+              .sort((a, b) => (scoreMap[b.id] ?? 0) - (scoreMap[a.id] ?? 0))
+              .slice(0, 5)
+            setScores(scoreMap)
+          } else {
+            daily = candidates.slice(0, 5)
+          }
+        } catch {
+          daily = candidates.slice(0, 5)
+        }
+
         setProfiles(daily)
         localStorage.setItem(cacheKey, JSON.stringify(daily))
       } catch {}
     }
 
-    // Calcular scores de compatibilidade
-    if (daily.length && userId) {
+    // Calcular scores de compatibilidade (para perfis vindos do cache)
+    if (daily.length && userId && Object.keys(scores).length === 0) {
       try {
         const profileIds = daily.map(p => p.id)
         const [myRes, theirRes] = await Promise.all([
@@ -565,7 +618,9 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
           const myFilters = myRes.data as Record<string, boolean>
           const scoreMap: Record<string, number> = {}
           for (const row of theirRes.data) {
-            scoreMap[row.user_id] = calcCompatibility(myFilters, row as Record<string, boolean>)
+            const scoreAtoB = calcCompatibility(myFilters, row as Record<string, boolean>)
+            const scoreBtoA = calcCompatibility(row as Record<string, boolean>, myFilters)
+            scoreMap[row.user_id] = Math.round((scoreAtoB + scoreBtoA) / 2)
           }
           setScores(scoreMap)
         }
@@ -643,7 +698,7 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
           const photo = photos[0]
           const score = scores[profile.id]
           const hasScore = score !== undefined
-          const isGoodMatch = hasScore && score >= 60
+          const isGoodMatch = hasScore && score >= 59
 
           return (
             <div
@@ -694,9 +749,12 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
                     </p>
                   )}
                   {isGoodMatch && (
-                    <p style={{ fontSize: 11, color: 'var(--muted-2)', fontStyle: 'italic' }}>
-                      Que tal conversar e ver no que isso pode dar?
-                    </p>
+                    <button
+                      onClick={() => handleLike(profile)}
+                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 11, color: 'var(--accent)', fontWeight: 600, textAlign: 'left' }}
+                    >
+                      Curtir e tentar conversar →
+                    </button>
                   )}
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
@@ -762,7 +820,7 @@ function RoomsPlaceholder({ userPlan }: { userPlan: string }) {
       {/* Header */}
       <div style={{ marginBottom: 16 }}>
         <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)' }}>
-          Salas Sociais
+          Salas de Bate-papo
         </span>
         <p style={{ fontSize: 12, color: 'var(--muted)', margin: '4px 0 0', lineHeight: 1.5 }}>
           Converse em grupo com quem tem os mesmos interesses.
@@ -1015,6 +1073,9 @@ export default function BuscaPage() {
   const [upgradeReason, setUpgradeReason] = useState<'superlike' | 'fetiche'>('superlike')
   const [matchResult, setMatchResult] = useState<{ name: string; photo?: string } | null>(null)
 
+  // ── Boost ────────────────────────────────────────────────────────────────
+  const [boostUntil, setBoostUntil] = useState<Date | null>(null)
+
   // ── Novos states (Fase 4) ─────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState<ViewMode>('discovery')
   const [photoIdx, setPhotoIdx] = useState(0)
@@ -1082,10 +1143,14 @@ export default function BuscaPage() {
       setUserGender(profileRes.data?.gender ?? '')
 
       const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
-      const [todayLikesRes, avulsoRes] = await Promise.all([
+      const [todayLikesRes, avulsoRes, boostRes] = await Promise.all([
         supabase.from('likes').select('is_superlike').eq('user_id', user.id).gte('created_at', todayStart.toISOString()),
         supabase.from('user_superlikes').select('amount').eq('user_id', user.id).single(),
+        supabase.from('user_boosts').select('active_until').eq('user_id', user.id).gt('active_until', new Date().toISOString()).order('active_until', { ascending: false }).limit(1).maybeSingle(),
       ])
+      if (boostRes.data?.active_until) {
+        setBoostUntil(new Date(boostRes.data.active_until))
+      }
       if (todayLikesRes.data) {
         setLikesUsed(todayLikesRes.data.filter(l => !l.is_superlike).length)
         setSuperlikesUsed(todayLikesRes.data.filter(l => l.is_superlike).length)
@@ -1461,6 +1526,19 @@ export default function BuscaPage() {
                   <Heart size={10} strokeWidth={1.5} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 2 }} />{likesUsed}/{likeLimit}
                 </span>
               </div>
+            )}
+
+            {/* Banner de Boost */}
+            {boostUntil && boostUntil > new Date() ? (
+              <BoostActiveBanner until={boostUntil} />
+            ) : (
+              <button
+                onClick={() => window.location.href = '/loja'}
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.20)', borderRadius: 12, padding: '8px 14px', cursor: 'pointer', flexShrink: 0 }}
+              >
+                <Zap size={13} strokeWidth={1.5} style={{ color: '#F59E0B' }} />
+                <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600 }}>Dar um boost e aparecer para mais pessoas</span>
+              </button>
             )}
 
             {/* Stack de cards */}
