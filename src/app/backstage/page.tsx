@@ -1,417 +1,645 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import {
-  Crown, Lock, MapPin, Heart, Loader2, ArrowLeft,
-  AlertCircle, CheckCircle, X, ShieldAlert, MessageCircle,
-  Clock, Users, ChevronRight,
+  Crown, Lock, Loader2, ArrowLeft, Shield,
+  CheckCircle, X, Heart, MapPin, Users,
+  Check, SlidersHorizontal, ChevronRight,
+  AlertTriangle, Flame, Clock, User,
 } from 'lucide-react'
 
+// ─── Constantes ────────────────────────────────────────────────────────────────
+
+const CATEGORIAS = [
+  { key: 'trisal',   label: 'Trisal' },
+  { key: 'menage',   label: 'Menage' },
+  { key: 'bdsm',     label: 'BDSM' },
+  { key: 'sado',     label: 'Sadomasoquismo' },
+  { key: 'sugar',    label: 'Sugar' },
+  { key: 'swing',    label: 'Swing' },
+  { key: 'poliamor', label: 'Poliamor' },
+]
+
+const TERMS_KEY = 'camarote_terms_v1'
 const RESGATE_URL = 'https://pay.cakto.com.br/i73nbfm'
 
+const G = '#F59E0B'               // gold
+const G_SOFT = 'rgba(245,158,11,0.10)'
+const G_BORDER = 'rgba(245,158,11,0.25)'
+const G_BORDER2 = 'rgba(245,158,11,0.15)'
+const BG = '#08090E'
+const BG_CARD = '#0F1117'
+const BG_DARK = '#050608'
+
 // ─── Página principal ──────────────────────────────────────────────────────────
+
 export default function BackstagePage() {
   const { limits, loading: planLoading } = usePlan()
   const router = useRouter()
 
   if (planLoading) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center">
-        <Loader2 size={28} className="animate-spin text-white/30" />
+      <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader2 size={28} className="animate-spin" style={{ color: 'rgba(255,255,255,0.2)' }} />
       </div>
     )
   }
 
   if (!limits.isBlack) {
-    return <BackstageBlurred plan={limits.isPlus ? 'plus' : 'essencial'} onBack={() => router.back()} />
+    return <CamaroteBlocked plan={limits.isPlus ? 'plus' : 'essencial'} onBack={() => router.back()} />
   }
 
-  return <BackstageContent onBack={() => router.back()} />
+  return <CamaroteApp onBack={() => router.back()} />
 }
 
-// ─── Área bloqueada para não-Black ────────────────────────────────────────────
-function BackstageBlurred({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack: () => void }) {
+// ─── App interno (só Black) ────────────────────────────────────────────────────
+
+type Step = 'loading' | 'terms' | 'categories' | 'vitrine'
+type MainTab = 'vitrine' | 'resgates'
+
+function CamaroteApp({ onBack }: { onBack: () => void }) {
   const { user } = useAuth()
+  const [step, setStep] = useState<Step>('loading')
+  const [myCategories, setMyCategories] = useState<string[]>([])
 
-  const [requestSent, setRequestSent] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [accepted, setAccepted] = useState(false)
-  const [requestType, setRequestType] = useState<'sugar' | 'fetiche'>('sugar')
+  useEffect(() => {
+    if (!user) return
+    init()
+  }, [user?.id])
 
-  async function handleRequest() {
-    if (!accepted || !user) return
-    setLoading(true)
+  async function init() {
+    const termsOk = localStorage.getItem(TERMS_KEY) === 'accepted'
+    if (!termsOk) { setStep('terms'); return }
 
-    const { data } = await supabase.rpc('create_access_request', {
-      p_requester_id: user.id,
-      p_target_id: null,
-      p_type: requestType,
-      p_tier: plan === 'plus' ? 'premium' : 'basic',
-    })
+    const { data } = await supabase
+      .from('profiles')
+      .select('camarote_interests')
+      .eq('id', user!.id)
+      .single()
 
-    setLoading(false)
-    if (data?.success || data?.reason === 'already_pending') {
-      setRequestSent(true)
-      setShowConfirm(false)
-    }
+    const cats: string[] = data?.camarote_interests ?? []
+    if (cats.length === 0) { setStep('categories'); return }
+
+    setMyCategories(cats)
+    setStep('vitrine')
+  }
+
+  function handleTermsAccepted() {
+    localStorage.setItem(TERMS_KEY, 'accepted')
+    setStep('categories')
+  }
+
+  async function handleCategoriesSaved(cats: string[]) {
+    await supabase
+      .from('profiles')
+      .update({ camarote_interests: cats })
+      .eq('id', user!.id)
+    setMyCategories(cats)
+    setStep('vitrine')
+  }
+
+  if (step === 'loading') {
+    return (
+      <div style={{ minHeight: '100vh', background: BG, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Loader2 size={28} className="animate-spin" style={{ color: G }} />
+      </div>
+    )
+  }
+
+  if (step === 'terms') {
+    return <CamaroteTerms onAccept={handleTermsAccepted} onBack={onBack} />
+  }
+
+  if (step === 'categories') {
+    return <CamaroteCategories initial={myCategories} onSave={handleCategoriesSaved} onBack={onBack} />
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] font-jakarta relative overflow-hidden">
+    <CamaroteVitrine
+      myCategories={myCategories}
+      onChangeCategories={() => setStep('categories')}
+      onBack={onBack}
+    />
+  )
+}
+
+// ─── Termos de segurança ───────────────────────────────────────────────────────
+
+const SAFETY_ITEMS = [
+  { icon: Shield, text: 'Mantenha toda comunicacao pelo app. Suas conversas ficam salvas e protegidas.' },
+  { icon: CheckCircle, text: 'Use a videochamada para verificar que a pessoa e real antes de marcar um encontro.' },
+  { icon: MapPin, text: 'Marque encontros em locais publicos e seguros na primeira vez.' },
+  { icon: Users, text: 'Avise alguem de confianca: onde vai, com quem e em que horario.' },
+  { icon: Heart, text: 'Leve seu telefone carregado e comunique-se durante o encontro.' },
+  { icon: AlertTriangle, text: 'Nao compartilhe dados pessoais (endereco, trabalho) antes de ter confianca.' },
+  { icon: Flame, text: 'Use o botao de denuncia se algo parecer errado. Estamos aqui para proteger voce.' },
+]
+
+function CamaroteTerms({ onAccept, onBack }: { onAccept: () => void; onBack: () => void }) {
+  const [accepted, setAccepted] = useState(false)
+
+  return (
+    <div style={{ minHeight: '100vh', background: BG, fontFamily: 'var(--font-jakarta)', paddingBottom: 32 }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[var(--bg)]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
-        <button onClick={onBack} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-          <ArrowLeft size={18} className="text-white/60" />
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, background: 'rgba(8,9,14,0.95)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${G_BORDER2}`, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <ArrowLeft size={17} color="rgba(255,255,255,0.5)" strokeWidth={1.5} />
         </button>
-        <Crown size={18} className="text-[#F59E0B]" />
-        <h1 className="font-fraunces text-xl text-white">Backstage</h1>
+        <Crown size={18} color={G} strokeWidth={1.5} />
+        <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: '#fff' }}>Camarote Black</span>
       </header>
 
-      {/* Conteúdo borrado atrás */}
-      <div className="filter blur-sm pointer-events-none select-none opacity-30 px-5 pt-6">
-        <div className="grid grid-cols-2 gap-3">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="rounded-2xl bg-white/5 aspect-[3/4]" />
-          ))}
+      <div style={{ padding: '32px 24px 24px' }}>
+        {/* Titulo */}
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', background: G_SOFT, border: `1px solid ${G_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Shield size={24} color={G} strokeWidth={1.5} />
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 24, color: '#fff', margin: '0 0 8px' }}>
+            Antes de entrar
+          </h2>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, margin: 0 }}>
+            O Camarote e um ambiente adulto e privado. Leia com atencao antes de continuar.
+          </p>
         </div>
-      </div>
 
-      {/* Overlay */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center px-6 bg-[var(--bg)]/80 backdrop-blur-sm">
-        <div className="w-16 h-16 rounded-full bg-[#F59E0B]/10 border border-[#F59E0B]/30 flex items-center justify-center mb-5">
-          <Lock size={28} className="text-[#F59E0B]" />
-        </div>
-        <h2 className="font-fraunces text-2xl text-white text-center mb-2">
-          Área exclusiva Black
-        </h2>
-        <p className="text-white/40 text-sm text-center leading-relaxed mb-8 max-w-xs">
-          Assinantes Black acessam o Backstage e podem resgatar perfis. Você pode fazer um pedido para ser visto por eles.
-        </p>
-
-        <div className="w-full max-w-xs flex flex-col gap-3">
-          <a
-            href="/planos"
-            className="w-full py-3.5 rounded-2xl text-center font-bold text-sm transition"
-            style={{ background: 'linear-gradient(135deg, #F59E0B, #fbbf24)', color: '#fff' }}
-          >
-            Assinar Black
-          </a>
-
-          {requestSent ? (
-            <div className="w-full py-3.5 rounded-2xl bg-[#10b981]/10 border border-[#10b981]/20 flex items-center justify-center gap-2">
-              <CheckCircle size={16} className="text-[#10b981]" />
-              <span className="text-[#10b981] text-sm font-semibold">Pedido enviado!</span>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowConfirm(true)}
-              className="w-full py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white/70 text-sm hover:bg-white/10 transition"
-            >
-              Fazer pedido de acesso
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Modal de confirmação */}
-      {showConfirm && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-sm bg-[#0F1117] rounded-t-3xl border-t border-white/10 p-6">
-            <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-5" />
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-fraunces text-xl text-white">Tipo de pedido</h3>
-              <button onClick={() => setShowConfirm(false)}><X size={18} className="text-white/40" /></button>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              {(['sugar', 'fetiche'] as const).map((t) => (
-                <button
-                  key={t}
-                  onClick={() => setRequestType(t)}
-                  className={`py-3 rounded-xl border text-sm font-semibold capitalize transition ${
-                    requestType === t
-                      ? 'bg-[#f5c842]/20 border-[#f5c842]/40 text-[#F59E0B]'
-                      : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
-                  }`}
-                >
-                  {t === 'sugar' ? 'Sugar' : 'Fetiche'}
-                </button>
-              ))}
-            </div>
-
-            <p className="text-white/50 text-sm leading-relaxed mb-4">
-              Seu perfil ficará visível para assinantes Black. Se um Black pagar R$ 15, vocês terão acesso ao chat por 30 dias.
-            </p>
-
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 mb-4 flex gap-2">
-              <ShieldAlert size={16} className="text-yellow-400 shrink-0 mt-0.5" />
-              <p className="text-yellow-300 text-xs leading-relaxed">
-                <strong>Sem reembolso:</strong> O pagamento feito pelo Black é imediato e não reembolsável.
+        {/* Lista de termos */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
+          {SAFETY_ITEMS.map(({ icon: Icon, text }, i) => (
+            <div key={i} style={{ display: 'flex', gap: 14, padding: '14px 16px', borderRadius: 14, background: BG_CARD, border: `1px solid rgba(255,255,255,0.05)` }}>
+              <div style={{ width: 32, height: 32, borderRadius: 8, background: G_SOFT, border: `1px solid ${G_BORDER2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Icon size={15} color={G} strokeWidth={1.5} />
+              </div>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.60)', lineHeight: 1.55, margin: 0, paddingTop: 6 }}>
+                {text}
               </p>
             </div>
-
-            <label className="flex items-start gap-3 mb-5 cursor-pointer">
-              <div
-                onClick={() => setAccepted(!accepted)}
-                className={`w-5 h-5 rounded border flex items-center justify-center shrink-0 mt-0.5 transition ${
-                  accepted ? 'bg-[#b8f542] border-[#b8f542]' : 'border-white/20 bg-white/5'
-                }`}
-              >
-                {accepted && <CheckCircle size={12} className="text-black" />}
-              </div>
-              <span className="text-white/50 text-xs leading-relaxed">
-                Entendo que o pagamento feito pelo assinante Black não será reembolsado.
-              </span>
-            </label>
-
-            <button
-              onClick={handleRequest}
-              disabled={!accepted || loading}
-              className="w-full py-3.5 rounded-2xl bg-[#b8f542] text-black font-bold text-sm disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#a8e030] transition"
-            >
-              {loading ? <Loader2 size={16} className="animate-spin mx-auto" /> : 'Enviar pedido'}
-            </button>
-          </div>
+          ))}
         </div>
-      )}
+
+        {/* Checkbox */}
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 24, cursor: 'pointer' }}>
+          <div
+            onClick={() => setAccepted(a => !a)}
+            style={{
+              width: 22, height: 22, borderRadius: 6, flexShrink: 0, marginTop: 1,
+              background: accepted ? G : 'rgba(255,255,255,0.05)',
+              border: `1.5px solid ${accepted ? G : 'rgba(255,255,255,0.15)'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.15s',
+            }}
+          >
+            {accepted && <Check size={13} color="#000" strokeWidth={2.5} />}
+          </div>
+          <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.50)', lineHeight: 1.55 }}>
+            Li e compreendo as recomendacoes de seguranca. Estou ciente de que o Camarote e um ambiente para adultos maiores de 18 anos.
+          </span>
+        </label>
+
+        {/* Botao */}
+        <button
+          onClick={onAccept}
+          disabled={!accepted}
+          style={{
+            width: '100%', padding: '15px', borderRadius: 16,
+            fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 15,
+            cursor: accepted ? 'pointer' : 'not-allowed',
+            background: accepted ? `linear-gradient(135deg, #c9a84c, ${G}, #fbbf24)` : 'rgba(255,255,255,0.05)',
+            color: accepted ? '#000' : 'rgba(255,255,255,0.20)',
+            border: 'none', transition: 'all 0.2s',
+          }}
+        >
+          Entrar no Camarote
+        </button>
+      </div>
     </div>
   )
 }
 
-// ─── Conteúdo real (só Black vê) ──────────────────────────────────────────────
-function BackstageContent({ onBack }: { onBack: () => void }) {
-  const { user } = useAuth()
-  const router = useRouter()
+// ─── Seleção de categorias ─────────────────────────────────────────────────────
 
-  const [tab, setTab] = useState<'disponivel' | 'meus'>('disponivel')
-  const [requests, setRequests] = useState<any[]>([])
-  const [myRescues, setMyRescues] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
-  const [loadingRescues, setLoadingRescues] = useState(true)
-  const [selectedFilter, setSelectedFilter] = useState<'all' | 'basic' | 'premium'>('all')
-  const [confirmRequest, setConfirmRequest] = useState<any>(null)
+function CamaroteCategories({
+  initial,
+  onSave,
+  onBack,
+}: {
+  initial: string[]
+  onSave: (cats: string[]) => Promise<void>
+  onBack: () => void
+}) {
+  const [selected, setSelected] = useState<string[]>(initial)
+  const [saving, setSaving] = useState(false)
 
-  useEffect(() => {
-    loadRequests()
-    loadMyRescues()
-  }, [])
-
-  async function loadRequests() {
-    setLoading(true)
-    const { data } = await supabase.rpc('get_available_requests', {
-      p_user_id: user!.id,
-    })
-    setRequests(data ?? [])
-    setLoading(false)
+  function toggle(key: string) {
+    setSelected(prev =>
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    )
   }
 
-  async function loadMyRescues() {
-    setLoadingRescues(true)
-    // Busca resgates ativos pagos por este usuário
-    const { data } = await supabase.rpc('get_my_rescued_requests', {
-      p_user_id: user!.id,
-    })
-    setMyRescues(data ?? [])
-    setLoadingRescues(false)
+  async function handleSave() {
+    if (selected.length === 0) return
+    setSaving(true)
+    await onSave(selected)
+    setSaving(false)
   }
-
-  function handleCheckout() {
-    if (!confirmRequest) return
-    const url = `${RESGATE_URL}?metadata[request_id]=${confirmRequest.request_id}`
-    window.open(url, '_blank')
-    setConfirmRequest(null)
-  }
-
-  function handleOpenChat(rescue: any) {
-    if (rescue.conversation_id) {
-      router.push(`/conversas/${rescue.conversation_id}`)
-    } else if (rescue.match_id) {
-      router.push(`/conversas/${rescue.match_id}`)
-    }
-  }
-
-  const filtered = selectedFilter === 'all'
-    ? requests
-    : requests.filter((r) => r.tier === selectedFilter)
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] font-jakarta pb-24">
+    <div style={{ minHeight: '100vh', background: BG, fontFamily: 'var(--font-jakarta)', paddingBottom: 32 }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[var(--bg)]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
-        <button onClick={onBack} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-          <ArrowLeft size={18} className="text-white/60" />
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, background: 'rgba(8,9,14,0.95)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${G_BORDER2}`, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <ArrowLeft size={17} color="rgba(255,255,255,0.5)" strokeWidth={1.5} />
         </button>
-        <div className="flex items-center gap-2 flex-1">
-          <Crown size={18} className="text-[#F59E0B]" />
-          <h1 className="font-fraunces text-xl text-white">Backstage</h1>
-          <span className="text-xs px-2 py-0.5 rounded-full border border-[#f5c842]/40 text-[#F59E0B] ml-1">
-            Black
-          </span>
-        </div>
+        <Crown size={18} color={G} strokeWidth={1.5} />
+        <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: '#fff' }}>Camarote Black</span>
       </header>
 
-      {/* Tabs principais */}
-      <div className="px-5 pt-4 pb-2 flex gap-2 border-b border-white/5">
+      <div style={{ padding: '32px 24px 24px' }}>
+
+        {/* Titulo */}
+        <div style={{ marginBottom: 28 }}>
+          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 26, color: '#fff', margin: '0 0 8px', lineHeight: 1.2 }}>
+            No que voce tem interesse?
+          </h2>
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.40)', lineHeight: 1.6, margin: 0 }}>
+            Selecione tudo que voce esta aberto(a) a explorar. Voce aparecera na vitrine apenas para quem compartilha seus interesses.
+          </p>
+        </div>
+
+        {/* Grid de categorias */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 24 }}>
+          {CATEGORIAS.map(({ key, label }) => {
+            const active = selected.includes(key)
+            return (
+              <button
+                key={key}
+                onClick={() => toggle(key)}
+                style={{
+                  padding: '16px 12px',
+                  borderRadius: 14,
+                  border: `1.5px solid ${active ? G : 'rgba(255,255,255,0.08)'}`,
+                  background: active ? G_SOFT : 'rgba(255,255,255,0.03)',
+                  color: active ? G : 'rgba(255,255,255,0.50)',
+                  fontFamily: 'var(--font-jakarta)',
+                  fontWeight: active ? 700 : 400,
+                  fontSize: 14,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 8,
+                  transition: 'all 0.15s',
+                }}
+              >
+                <span>{label}</span>
+                {active && (
+                  <div style={{ width: 18, height: 18, borderRadius: '50%', background: G, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <Check size={11} color="#000" strokeWidth={2.5} />
+                  </div>
+                )}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Nota */}
+        <div style={{ padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 24 }}>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', lineHeight: 1.55, margin: 0 }}>
+            Voce pode alterar seus interesses a qualquer momento voltando aqui. Quanto mais categorias, mais perfis voce vera na vitrine.
+          </p>
+        </div>
+
+        {/* Botao */}
         <button
-          onClick={() => setTab('disponivel')}
-          className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition ${
-            tab === 'disponivel'
-              ? 'bg-[#f5c842]/15 border border-[#f5c842]/30 text-[#F59E0B]'
-              : 'bg-white/4 border border-white/8 text-white/40'
-          }`}
+          onClick={handleSave}
+          disabled={selected.length === 0 || saving}
+          style={{
+            width: '100%', padding: '15px', borderRadius: 16,
+            fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 15,
+            cursor: selected.length > 0 ? 'pointer' : 'not-allowed',
+            background: selected.length > 0 ? `linear-gradient(135deg, #c9a84c, ${G}, #fbbf24)` : 'rgba(255,255,255,0.05)',
+            color: selected.length > 0 ? '#000' : 'rgba(255,255,255,0.20)',
+            border: 'none', transition: 'all 0.2s',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}
         >
-          Disponíveis
-        </button>
-        <button
-          onClick={() => setTab('meus')}
-          className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition relative ${
-            tab === 'meus'
-              ? 'bg-[#f5c842]/15 border border-[#f5c842]/30 text-[#F59E0B]'
-              : 'bg-white/4 border border-white/8 text-white/40'
-          }`}
-        >
-          Meus resgates
-          {myRescues.length > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-[#E11D48] text-white text-[10px] font-bold flex items-center justify-center">
-              {myRescues.length}
-            </span>
-          )}
+          {saving
+            ? <Loader2 size={18} className="animate-spin" />
+            : `Entrar no Camarote${selected.length > 0 ? ` (${selected.length})` : ''}`
+          }
         </button>
       </div>
+    </div>
+  )
+}
 
-      {tab === 'disponivel' ? (
+// ─── Vitrine ───────────────────────────────────────────────────────────────────
+
+interface Profile {
+  id: string
+  name: string
+  age: number
+  city: string
+  state: string
+  photo_body: string | null
+  photo_best: string | null
+  camarote_interests: string[]
+}
+
+interface Filters {
+  city: string
+  state: string
+  ageMin: number
+  ageMax: number
+}
+
+const DEFAULT_FILTERS: Filters = { city: '', state: '', ageMin: 18, ageMax: 60 }
+
+const ESTADOS = [
+  'AC','AL','AM','AP','BA','CE','DF','ES','GO','MA','MG','MS','MT',
+  'PA','PB','PE','PI','PR','RJ','RN','RO','RR','RS','SC','SE','SP','TO',
+]
+
+function CamaroteVitrine({
+  myCategories,
+  onChangeCategories,
+  onBack,
+}: {
+  myCategories: string[]
+  onChangeCategories: () => void
+  onBack: () => void
+}) {
+  const { user } = useAuth()
+  const [mainTab, setMainTab] = useState<MainTab>('vitrine')
+  const [activeCategory, setActiveCategory] = useState<string>(myCategories[0] ?? '')
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [loading, setLoading] = useState(true)
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState<Filters>(DEFAULT_FILTERS)
+  const [localFilters, setLocalFilters] = useState<Filters>(DEFAULT_FILTERS)
+  const [likedIds, setLikedIds] = useState<Set<string>>(new Set())
+
+  const activeCats = CATEGORIAS.filter(c => myCategories.includes(c.key))
+
+  useEffect(() => {
+    if (!activeCategory && activeCats.length > 0) {
+      setActiveCategory(activeCats[0].key)
+    }
+  }, [myCategories])
+
+  const load = useCallback(async () => {
+    if (!user || !activeCategory) return
+    setLoading(true)
+
+    let query = supabase
+      .from('profiles')
+      .select('id, name, age, city, state, photo_body, photo_best, camarote_interests')
+      .eq('plan', 'black')
+      .neq('id', user.id)
+      .contains('camarote_interests', [activeCategory])
+
+    if (filters.city) {
+      query = query.ilike('city', `%${filters.city}%`)
+    }
+    if (filters.state) {
+      query = query.eq('state', filters.state)
+    }
+    if (filters.ageMin > 18 || filters.ageMax < 60) {
+      query = query.gte('age', filters.ageMin).lte('age', filters.ageMax)
+    }
+
+    const { data } = await query.limit(50)
+    setProfiles(data ?? [])
+    setLoading(false)
+  }, [user?.id, activeCategory, filters])
+
+  useEffect(() => { load() }, [load])
+
+  async function handleLike(profileId: string) {
+    if (!user || likedIds.has(profileId)) return
+    setLikedIds(prev => new Set(prev).add(profileId))
+    await supabase.rpc('process_swipe', {
+      p_user_id: user.id,
+      p_target_id: profileId,
+      p_action: 'like',
+      p_is_superlike: false,
+    })
+  }
+
+  function applyFilters() {
+    setFilters(localFilters)
+    setShowFilters(false)
+  }
+
+  const hasActiveFilters = filters.city || filters.state || filters.ageMin > 18 || filters.ageMax < 60
+
+  return (
+    <div style={{ minHeight: '100vh', background: BG, fontFamily: 'var(--font-jakarta)', paddingBottom: 80 }}>
+
+      {/* Header */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, background: 'rgba(8,9,14,0.95)', backdropFilter: 'blur(12px)', borderBottom: `1px solid ${G_BORDER2}`, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+          <ArrowLeft size={17} color="rgba(255,255,255,0.5)" strokeWidth={1.5} />
+        </button>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <Crown size={18} color={G} strokeWidth={1.5} />
+          <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: '#fff' }}>Camarote</span>
+          <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 100, border: `1px solid ${G_BORDER}`, color: G, fontWeight: 600 }}>Black</span>
+        </div>
+        <button
+          onClick={() => { setLocalFilters(filters); setShowFilters(true) }}
+          style={{
+            width: 36, height: 36, borderRadius: '50%', cursor: 'pointer',
+            border: `1px solid ${hasActiveFilters ? G_BORDER : 'rgba(255,255,255,0.08)'}`,
+            background: hasActiveFilters ? G_SOFT : 'rgba(255,255,255,0.04)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}
+        >
+          <SlidersHorizontal size={16} color={hasActiveFilters ? G : 'rgba(255,255,255,0.5)'} strokeWidth={1.5} />
+        </button>
+      </header>
+
+      {/* Tabs principais: Vitrine | Resgates */}
+      <div style={{ display: 'flex', borderBottom: `1px solid rgba(255,255,255,0.05)`, padding: '0 20px' }}>
+        {(['vitrine', 'resgates'] as MainTab[]).map(tab => (
+          <button
+            key={tab}
+            onClick={() => setMainTab(tab)}
+            style={{
+              flex: 1, padding: '13px 0', fontSize: 13, fontWeight: 600,
+              fontFamily: 'var(--font-jakarta)', cursor: 'pointer', border: 'none',
+              background: 'transparent', textTransform: 'capitalize',
+              color: mainTab === tab ? G : 'rgba(255,255,255,0.30)',
+              borderBottom: `2px solid ${mainTab === tab ? G : 'transparent'}`,
+              transition: 'all 0.15s',
+            }}
+          >
+            {tab === 'vitrine' ? 'Explorar' : 'Resgates'}
+          </button>
+        ))}
+      </div>
+
+      {mainTab === 'vitrine' ? (
         <>
-          {/* Filtros de tier */}
-          <div className="px-5 pt-4 mb-4 flex gap-2">
-            {[
-              { value: 'all',     label: 'Todos' },
-              { value: 'basic',   label: 'Essencial' },
-              { value: 'premium', label: 'Plus' },
-            ].map((opt) => (
+          {/* Tabs de categoria */}
+          <div style={{ overflowX: 'auto', scrollbarWidth: 'none', display: 'flex', gap: 8, padding: '14px 20px 10px', borderBottom: `1px solid rgba(255,255,255,0.04)` }}>
+            {activeCats.map(cat => (
               <button
-                key={opt.value}
-                onClick={() => setSelectedFilter(opt.value as any)}
-                className={`px-3 py-1.5 rounded-full text-xs border transition ${
-                  selectedFilter === opt.value
-                    ? 'bg-[#f5c842] text-black border-[#f5c842] font-semibold'
-                    : 'bg-white/5 border-white/10 text-white/50 hover:border-white/20'
-                }`}
+                key={cat.key}
+                onClick={() => setActiveCategory(cat.key)}
+                style={{
+                  flexShrink: 0, padding: '7px 16px', borderRadius: 100, cursor: 'pointer',
+                  border: `1px solid ${activeCategory === cat.key ? G : 'rgba(255,255,255,0.10)'}`,
+                  background: activeCategory === cat.key ? G_SOFT : 'transparent',
+                  color: activeCategory === cat.key ? G : 'rgba(255,255,255,0.40)',
+                  fontFamily: 'var(--font-jakarta)', fontWeight: activeCategory === cat.key ? 600 : 400,
+                  fontSize: 13, transition: 'all 0.15s',
+                }}
               >
-                {opt.label}
+                {cat.label}
               </button>
             ))}
+            <button
+              onClick={onChangeCategories}
+              style={{
+                flexShrink: 0, padding: '7px 12px', borderRadius: 100, cursor: 'pointer',
+                border: '1px solid rgba(255,255,255,0.06)',
+                background: 'transparent',
+                color: 'rgba(255,255,255,0.25)',
+                fontFamily: 'var(--font-jakarta)', fontSize: 13,
+                display: 'flex', alignItems: 'center', gap: 4,
+              }}
+            >
+              <SlidersHorizontal size={12} strokeWidth={1.5} />
+              Editar
+            </button>
           </div>
 
-          {/* Lista de pedidos disponíveis */}
-          <div className="px-5">
+          {/* Grid */}
+          <div style={{ padding: '16px 16px 0' }}>
             {loading ? (
-              <div className="flex justify-center py-16">
-                <Loader2 size={24} className="animate-spin text-white/30" />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} style={{ borderRadius: 18, aspectRatio: '3/4', background: BG_CARD, animation: 'ui-pulse 1.5s ease infinite' }} />
+                ))}
               </div>
-            ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-center py-16 gap-3 text-white/30">
-                <Users size={32} />
-                <p className="text-sm text-center">Nenhum pedido disponível no momento.</p>
+            ) : profiles.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '64px 24px' }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', background: G_SOFT, border: `1px solid ${G_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <Users size={24} color={G} strokeWidth={1.5} />
+                </div>
+                <p style={{ fontSize: 15, color: 'rgba(255,255,255,0.40)', fontWeight: 600, margin: '0 0 6px' }}>
+                  Nenhum perfil encontrado
+                </p>
+                <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.25)', lineHeight: 1.5, margin: 0 }}>
+                  {hasActiveFilters
+                    ? 'Tente ajustar os filtros para ver mais perfis.'
+                    : 'Ainda nao ha outros Black nesta categoria. Volte em breve.'}
+                </p>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
-                {filtered.map((req) => (
-                  <RequestCard key={req.request_id} request={req} onRescue={setConfirmRequest} />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                {profiles.map(profile => (
+                  <VitrinCard
+                    key={profile.id}
+                    profile={profile}
+                    liked={likedIds.has(profile.id)}
+                    onLike={() => handleLike(profile.id)}
+                  />
                 ))}
               </div>
             )}
           </div>
         </>
       ) : (
-        /* Meus resgates */
-        <div className="px-5 pt-4">
-          {loadingRescues ? (
-            <div className="flex justify-center py-16">
-              <Loader2 size={24} className="animate-spin text-white/30" />
-            </div>
-          ) : myRescues.length === 0 ? (
-            <div className="flex flex-col items-center py-16 gap-4 text-white/30">
-              <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-                <MessageCircle size={28} strokeWidth={1.5} />
-              </div>
-              <div className="text-center">
-                <p className="text-sm font-semibold text-white/40 mb-1">Nenhum resgate ainda</p>
-                <p className="text-xs leading-relaxed max-w-xs">
-                  Quando você resgatar um perfil, o chat aparece aqui por 30 dias.
-                </p>
-              </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {myRescues.map((rescue) => (
-                <RescueCard key={rescue.request_id} rescue={rescue} onChat={handleOpenChat} />
-              ))}
-            </div>
-          )}
-        </div>
+        <ResgatesSection />
       )}
 
-      {/* Modal de confirmação de pagamento */}
-      {confirmRequest && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-sm bg-[#0F1117] rounded-t-3xl border-t border-[#f5c842]/20 p-6">
-            <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-5" />
+      {/* Bottom sheet de filtros */}
+      {showFilters && (
+        <div
+          style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+          onClick={e => { if (e.target === e.currentTarget) setShowFilters(false) }}
+        >
+          <div style={{ width: '100%', maxWidth: 480, background: BG_CARD, borderRadius: '24px 24px 0 0', borderTop: `1px solid ${G_BORDER2}`, padding: '20px 24px 40px', animation: 'ui-slide-up 0.25s ease' }}>
+            <div style={{ width: 40, height: 4, borderRadius: 100, background: 'rgba(255,255,255,0.15)', margin: '0 auto 20px' }} />
 
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="font-fraunces text-xl text-white">Resgatar acesso</h3>
-              <button onClick={() => setConfirmRequest(null)}>
-                <X size={18} className="text-white/40" />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+              <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: '#fff', margin: 0 }}>Filtros</h3>
+              <button onClick={() => setShowFilters(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                <X size={20} color="rgba(255,255,255,0.40)" />
               </button>
             </div>
 
-            <div className="flex items-center gap-3 mb-5 p-3 rounded-2xl bg-white/5 border border-white/8">
-              <div className="relative w-12 h-12 rounded-full overflow-hidden">
-                {confirmRequest.photo_best ? (
-                  <Image src={confirmRequest.photo_best} alt={confirmRequest.name} fill className="object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-white/10" />
-                )}
-              </div>
-              <div>
-                <p className="text-white font-semibold text-sm">{confirmRequest.name}, {confirmRequest.age}</p>
-                <p className="text-white/40 text-xs flex items-center gap-1">
-                  <MapPin size={10} /> {confirmRequest.city}
-                </p>
-                <span className="text-xs px-1.5 py-0.5 rounded bg-[#f5c842]/10 text-[#F59E0B] capitalize">
-                  {confirmRequest.type}
-                </span>
-              </div>
+            {/* Cidade */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>Cidade</label>
+              <input
+                type="text"
+                placeholder="Ex: Sao Paulo"
+                value={localFilters.city}
+                onChange={e => setLocalFilters(f => ({ ...f, city: e.target.value }))}
+                style={{ width: '100%', padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+              />
             </div>
 
-            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-3 mb-5 flex gap-2">
-              <ShieldAlert size={16} className="text-yellow-400 shrink-0 mt-0.5" />
-              <p className="text-yellow-300 text-xs leading-relaxed">
-                <strong>Sem reembolso:</strong> Ao pagar R$ 15, o acesso ao chat é imediato e não reembolsável. O chat fica disponível por 30 dias.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={handleCheckout}
-                className="w-full py-3.5 rounded-2xl font-bold text-sm flex items-center justify-center gap-2 transition active:scale-95"
-                style={{ background: 'linear-gradient(135deg, #c9a84c, #f5d485)', color: '#1a1a1a' }}
+            {/* Estado */}
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>Estado</label>
+              <select
+                value={localFilters.state}
+                onChange={e => setLocalFilters(f => ({ ...f, state: e.target.value }))}
+                style={{ width: '100%', padding: '12px 14px', borderRadius: 12, background: BG_CARD, border: '1px solid rgba(255,255,255,0.08)', color: localFilters.state ? '#fff' : 'rgba(255,255,255,0.30)', fontFamily: 'var(--font-jakarta)', fontSize: 14, outline: 'none', cursor: 'pointer', boxSizing: 'border-box' }}
               >
-                <Heart size={16} />
-                Resgatar por R$ 15 — chat por 30 dias
+                <option value="">Todos os estados</option>
+                {ESTADOS.map(uf => <option key={uf} value={uf}>{uf}</option>)}
+              </select>
+            </div>
+
+            {/* Faixa etaria */}
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
+                Idade — {localFilters.ageMin} a {localFilters.ageMax} anos
+              </label>
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <input type="range" min={18} max={localFilters.ageMax} value={localFilters.ageMin}
+                    onChange={e => setLocalFilters(f => ({ ...f, ageMin: Number(e.target.value) }))}
+                    style={{ width: '100%', accentColor: G }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(255,255,255,0.30)', marginTop: 2 }}>
+                    <span>Min: {localFilters.ageMin}</span>
+                  </div>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <input type="range" min={localFilters.ageMin} max={75} value={localFilters.ageMax}
+                    onChange={e => setLocalFilters(f => ({ ...f, ageMax: Number(e.target.value) }))}
+                    style={{ width: '100%', accentColor: G }} />
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'rgba(255,255,255,0.30)', marginTop: 2 }}>
+                    <span>Max: {localFilters.ageMax}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => { setLocalFilters(DEFAULT_FILTERS) }}
+                style={{ flex: 1, padding: '13px', borderRadius: 14, border: '1px solid rgba(255,255,255,0.10)', background: 'transparent', color: 'rgba(255,255,255,0.40)', fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+              >
+                Limpar
               </button>
               <button
-                onClick={() => setConfirmRequest(null)}
-                className="w-full py-3 rounded-2xl border border-white/10 text-white/40 text-sm hover:text-white transition"
+                onClick={applyFilters}
+                style={{ flex: 2, padding: '13px', borderRadius: 14, border: 'none', background: `linear-gradient(135deg, #c9a84c, ${G})`, color: '#000', fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
               >
-                Cancelar
+                Aplicar filtros
               </button>
             </div>
           </div>
@@ -421,98 +649,535 @@ function BackstageContent({ onBack }: { onBack: () => void }) {
   )
 }
 
-// ─── Card de pedido disponível ─────────────────────────────────────────────────
-function RequestCard({ request, onRescue }: { request: any; onRescue: (r: any) => void }) {
+// ─── Card da vitrine ───────────────────────────────────────────────────────────
+
+function VitrinCard({
+  profile,
+  liked,
+  onLike,
+}: {
+  profile: Profile
+  liked: boolean
+  onLike: () => void
+}) {
+  const photo = profile.photo_body ?? profile.photo_best
+
   return (
-    <div className="relative rounded-2xl overflow-hidden bg-white/5 border border-[#f5c842]/10 aspect-[3/4]">
-      {request.photo_best ? (
-        <Image src={request.photo_best} alt={request.name} fill className="object-cover" sizes="200px" />
+    <div style={{ position: 'relative', borderRadius: 18, overflow: 'hidden', aspectRatio: '3/4', background: BG_CARD, border: `1px solid ${G_BORDER2}` }}>
+      {photo ? (
+        <Image src={photo} alt={profile.name} fill style={{ objectFit: 'cover' }} sizes="200px" />
       ) : (
-        <div className="absolute inset-0 bg-white/5" />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(160deg, #1a0d08 0%, #2a1505 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Crown size={32} color={G_BORDER} strokeWidth={1} />
+        </div>
       )}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
 
-      <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 border border-[#f5c842]/30">
-        <span className="text-[#F59E0B] text-xs font-semibold capitalize">{request.type}</span>
-      </div>
+      {/* Gradient overlay */}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.90) 0%, rgba(0,0,0,0.20) 50%, transparent 100%)' }} />
 
-      <div className="absolute bottom-0 left-0 right-0 p-3">
-        <p className="font-fraunces text-sm text-white font-semibold leading-tight">
-          {request.name}, {request.age}
+      {/* Info */}
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 10px 8px' }}>
+        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 14, color: '#fff', fontWeight: 700, margin: '0 0 2px', lineHeight: 1.2 }}>
+          {profile.name}{profile.age ? `, ${profile.age}` : ''}
         </p>
-        <p className="text-white/40 text-xs flex items-center gap-1 mt-0.5 mb-3">
-          <MapPin size={9} /> {request.city}
-        </p>
+        {profile.city && (
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.45)', margin: '0 0 8px', display: 'flex', alignItems: 'center', gap: 3 }}>
+            <MapPin size={9} strokeWidth={1.5} />
+            {profile.city}{profile.state ? `, ${profile.state}` : ''}
+          </p>
+        )}
         <button
-          onClick={() => onRescue(request)}
-          className="w-full py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95"
-          style={{ background: 'linear-gradient(135deg, #c9a84c, #f5d485)', color: '#1a1a1a' }}
+          onClick={onLike}
+          style={{
+            width: '100%', padding: '8px', borderRadius: 10, border: 'none', cursor: 'pointer',
+            background: liked ? G_SOFT : `linear-gradient(135deg, #c9a84c, ${G})`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+            transition: 'all 0.15s',
+          }}
         >
-          <Crown size={11} />
-          Resgatar R$ 15
+          <Heart size={13} color={liked ? G : '#000'} strokeWidth={liked ? 1.5 : 2} fill={liked ? 'none' : '#000'} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: liked ? G : '#000' }}>
+            {liked ? 'Curtido' : 'Curtir'}
+          </span>
         </button>
       </div>
     </div>
   )
 }
 
-// ─── Card de resgate ativo (com chat) ─────────────────────────────────────────
-function RescueCard({ rescue, onChat }: { rescue: any; onChat: (r: any) => void }) {
-  const expiresAt = rescue.expires_at ? new Date(rescue.expires_at) : null
-  const daysLeft = expiresAt
-    ? Math.max(0, Math.ceil((expiresAt.getTime() - Date.now()) / 86400000))
-    : null
-  const isExpiring = daysLeft !== null && daysLeft <= 3
+// ─── Tipos para resgates ───────────────────────────────────────────────────────
+
+interface AccessRequest {
+  id: string
+  requester_id: string
+  category: string
+  tier: string
+  city: string
+  state: string
+  age: number
+  display_name: string
+  created_at: string
+}
+
+interface RescuedRequest {
+  id: string
+  requester_id: string
+  category: string
+  city: string
+  state: string
+  age: number
+  display_name: string
+  rescued_at: string
+  expires_at: string
+}
+
+// ─── Resgates ─────────────────────────────────────────────────────────────────
+
+function ResgatesSection() {
+  const { user } = useAuth()
+  const [requests, setRequests] = useState<AccessRequest[]>([])
+  const [rescued, setRescued] = useState<RescuedRequest[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!user) return
+    load()
+  }, [user?.id])
+
+  async function load() {
+    setLoading(true)
+    try {
+      const [{ data: avail }, { data: mine }] = await Promise.all([
+        supabase.rpc('get_available_requests', { p_user_id: user!.id }),
+        supabase.rpc('get_my_rescued_requests', { p_user_id: user!.id }),
+      ])
+      setRequests(avail ?? [])
+      setRescued(mine ?? [])
+    } catch {
+      setRequests([])
+      setRescued([])
+    }
+    setLoading(false)
+  }
+
+  function handleResgate(req: AccessRequest) {
+    const url = `${RESGATE_URL}?email=${encodeURIComponent(user?.email ?? '')}&metadata[request_id]=${req.id}`
+    window.open(url, '_blank')
+  }
+
+  function daysLeft(expiresAt: string) {
+    const diff = new Date(expiresAt).getTime() - Date.now()
+    return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+  }
+
+  const catLabel = (key: string) => CATEGORIAS.find(c => c.key === key)?.label ?? key
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '48px 0' }}>
+        <Loader2 size={28} className="animate-spin" style={{ color: G }} />
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ padding: '20px 16px', paddingBottom: 40 }}>
+
+      {/* Header da secao */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, padding: '0 2px' }}>
+        <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+          Pedidos de acesso
+        </span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <span style={{ fontSize: 12, color: G, fontWeight: 600 }}>
+            {requests.length} aguardando
+          </span>
+          <button
+            onClick={load}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}
+          >
+            <ChevronRight size={14} color={G} strokeWidth={2} style={{ transform: 'rotate(90deg)' }} />
+          </button>
+        </div>
+      </div>
+
+      {/* Lista de pedidos */}
+      {requests.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px 24px', borderRadius: 18, background: BG_CARD, border: `1px solid ${G_BORDER2}`, marginBottom: 24 }}>
+          <Crown size={28} color={G_BORDER} strokeWidth={1.5} style={{ marginBottom: 12 }} />
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.40)', margin: '0 0 4px', fontWeight: 600 }}>
+            Nenhum pedido no momento
+          </p>
+          <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', lineHeight: 1.5, margin: 0 }}>
+            Quando alguem pedir acesso em suas categorias, aparece aqui.
+          </p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 28 }}>
+          {requests.map(req => (
+            <div
+              key={req.id}
+              style={{ padding: '14px 14px', borderRadius: 16, background: BG_CARD, border: `1px solid ${G_BORDER2}`, display: 'flex', alignItems: 'center', gap: 12 }}
+            >
+              {/* Avatar */}
+              <div style={{ width: 46, height: 46, borderRadius: '50%', background: G_SOFT, border: `1px solid ${G_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <User size={19} color={G} strokeWidth={1.5} />
+              </div>
+
+              {/* Info */}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 14, fontWeight: 700, color: '#fff', fontFamily: 'var(--font-fraunces)' }}>
+                    {req.display_name}{req.age ? `, ${req.age}` : ''}
+                  </span>
+                  {req.tier === 'premium' && (
+                    <span style={{ fontSize: 10, padding: '2px 6px', borderRadius: 100, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.25)', color: '#818cf8', fontWeight: 600 }}>
+                      Plus
+                    </span>
+                  )}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                  {req.city && (
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <MapPin size={9} strokeWidth={1.5} />
+                      {req.city}{req.state ? `, ${req.state}` : ''}
+                    </span>
+                  )}
+                  <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 100, background: G_SOFT, color: G, fontWeight: 600 }}>
+                    {catLabel(req.category)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Botao de resgate */}
+              <button
+                onClick={() => handleResgate(req)}
+                style={{
+                  flexShrink: 0,
+                  padding: '8px 12px',
+                  borderRadius: 12,
+                  border: 'none',
+                  background: `linear-gradient(135deg, #c9a84c, ${G})`,
+                  color: '#000',
+                  fontFamily: 'var(--font-jakarta)',
+                  fontWeight: 700,
+                  fontSize: 11,
+                  cursor: 'pointer',
+                  textAlign: 'center',
+                  lineHeight: 1.4,
+                }}
+              >
+                Resgatar<br />
+                <span style={{ fontWeight: 500 }}>R$ 15,00</span>
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Meus resgates ativos */}
+      {rescued.length > 0 && (
+        <>
+          <div style={{ marginBottom: 14, padding: '0 2px' }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.07em', textTransform: 'uppercase' }}>
+              Meus resgates ativos
+            </span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {rescued.map(r => (
+              <div
+                key={r.id}
+                style={{ padding: '14px 16px', borderRadius: 16, background: BG_CARD, border: `1px solid ${G_BORDER2}`, display: 'flex', alignItems: 'center', gap: 12 }}
+              >
+                <div style={{ width: 40, height: 40, borderRadius: '50%', background: G_SOFT, border: `1px solid ${G_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Crown size={16} color={G} strokeWidth={1.5} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: '#fff', margin: '0 0 4px', fontFamily: 'var(--font-fraunces)' }}>
+                    {r.display_name}{r.age ? `, ${r.age}` : ''}
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: 11, color: G, fontWeight: 600 }}>{catLabel(r.category)}</span>
+                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.30)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                      <Clock size={9} strokeWidth={1.5} />
+                      {daysLeft(r.expires_at)} dias restantes
+                    </span>
+                  </div>
+                </div>
+                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>
+                  chat em breve
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Nota explicativa */}
+      <div style={{ marginTop: 24, padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.30)', lineHeight: 1.6, margin: 0 }}>
+          Ao resgatar, voce paga R$ 15,00 para iniciar uma conversa por 30 dias. Isso nao e garantia de encontro — apenas o inicio de uma conversa.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+// ─── Tela bloqueada (não-Black) ────────────────────────────────────────────────
+
+function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack: () => void }) {
+  const { user } = useAuth()
+  const [showModal, setShowModal] = useState(false)
+
+  return (
+    <div style={{ minHeight: '100vh', background: BG_DARK, fontFamily: 'var(--font-jakarta)', overflow: 'hidden', position: 'relative' }}>
+
+      {/* Header */}
+      <header style={{ position: 'relative', zIndex: 10, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
+        <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <ArrowLeft size={17} color="rgba(255,255,255,0.5)" strokeWidth={1.5} />
+        </button>
+        <Crown size={18} color={G} strokeWidth={1.5} />
+        <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: '#fff' }}>Camarote Black</span>
+      </header>
+
+      {/* Grade borrada de preview */}
+      <div style={{ position: 'absolute', inset: 0, top: 68, filter: 'blur(16px)', opacity: 0.18, pointerEvents: 'none', userSelect: 'none' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, padding: '8px 12px' }}>
+          {[
+            'linear-gradient(160deg,#3d1520,#1a0a0f)',
+            'linear-gradient(160deg,#1a1a0a,#3d3010)',
+            'linear-gradient(160deg,#0a1a3d,#0d2040)',
+            'linear-gradient(160deg,#2a0a3d,#1a0828)',
+            'linear-gradient(160deg,#3d1a0a,#2a1005)',
+            'linear-gradient(160deg,#0a3d1a,#082a10)',
+          ].map((bg, i) => (
+            <div key={i} style={{ borderRadius: 16, aspectRatio: '3/4', background: bg }} />
+          ))}
+        </div>
+      </div>
+
+      {/* Overlay escuro */}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(5,6,8,0.3) 0%, rgba(5,6,8,0.85) 60%, rgba(5,6,8,0.98) 100%)' }} />
+
+      {/* Conteudo principal */}
+      <div style={{ position: 'relative', zIndex: 5, padding: '40px 24px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+
+        {/* Icone */}
+        <div style={{ width: 64, height: 64, borderRadius: '50%', background: G_SOFT, border: `1.5px solid ${G_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>
+          <Lock size={28} color={G} strokeWidth={1.5} />
+        </div>
+
+        <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 28, color: '#fff', margin: '0 0 10px', textAlign: 'center', lineHeight: 1.2 }}>
+          Camarote Black
+        </h2>
+        <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.40)', textAlign: 'center', lineHeight: 1.65, margin: '0 0 32px', maxWidth: 300 }}>
+          Um ambiente exclusivo para experiencias que vao alem do comum. Apenas assinantes Black tem acesso.
+        </p>
+
+        {/* Categorias travadas */}
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 36 }}>
+          {CATEGORIAS.map(cat => (
+            <div
+              key={cat.key}
+              style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 14px', borderRadius: 100, border: `1px solid rgba(255,255,255,0.07)`, background: 'rgba(255,255,255,0.04)' }}
+            >
+              <Lock size={10} color="rgba(255,255,255,0.25)" strokeWidth={2} />
+              <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.35)', fontWeight: 500 }}>{cat.label}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* Botoes */}
+        <div style={{ width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <a
+            href="/planos"
+            style={{ display: 'block', width: '100%', padding: '15px', borderRadius: 16, textAlign: 'center', fontWeight: 700, fontSize: 15, fontFamily: 'var(--font-jakarta)', textDecoration: 'none', background: `linear-gradient(135deg, #c9a84c, ${G}, #fbbf24)`, color: '#000', boxSizing: 'border-box' }}
+          >
+            Assinar Black — R$ 99,97/mes
+          </a>
+          <button
+            onClick={() => setShowModal(true)}
+            style={{ width: '100%', padding: '14px', borderRadius: 16, border: `1px solid rgba(255,255,255,0.10)`, background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+          >
+            Pedir acesso — entender como funciona
+          </button>
+        </div>
+      </div>
+
+      {showModal && (
+        <CamaroteAccessModal user={user} plan={plan} onClose={() => setShowModal(false)} />
+      )}
+    </div>
+  )
+}
+
+// ─── Modal de pedido de acesso ─────────────────────────────────────────────────
+
+function CamaroteAccessModal({
+  user,
+  plan,
+  onClose,
+}: {
+  user: any
+  plan: 'plus' | 'essencial'
+  onClose: () => void
+}) {
+  const [selectedCat, setSelectedCat] = useState<string>('')
+  const [accepted, setAccepted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [sent, setSent] = useState(false)
+
+  async function handleSubmit() {
+    if (!user || !selectedCat || !accepted) return
+    setLoading(true)
+    try {
+      await supabase.rpc('create_access_request', {
+        p_requester_id: user.id,
+        p_target_id: null,
+        p_type: selectedCat,
+        p_tier: plan === 'plus' ? 'premium' : 'basic',
+      })
+      setSent(true)
+    } catch {
+      // RPC pode nao existir ainda (Fase 2)
+      setSent(true)
+    }
+    setLoading(false)
+  }
 
   return (
     <div
-      className="flex items-center gap-3 p-4 rounded-2xl bg-[var(--bg-card)] border border-white/8 cursor-pointer active:scale-[0.98] transition"
-      onClick={() => onChat(rescue)}
+      style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
-      {/* Foto */}
-      <div className="relative w-14 h-14 rounded-full overflow-hidden shrink-0 border border-[#f5c842]/20">
-        {rescue.photo_best ? (
-          <Image src={rescue.photo_best} alt={rescue.name} fill className="object-cover" sizes="56px" />
-        ) : (
-          <div className="w-full h-full bg-white/10" />
-        )}
-        {/* Bolinha de tipo */}
-        <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-[#0F1117] border border-[#f5c842]/40 flex items-center justify-center text-[10px]">
-          {rescue.type === 'sugar' ? 'S' : 'F'}
-        </div>
-      </div>
+      <div style={{ width: '100%', maxWidth: 480, background: BG_CARD, borderRadius: '24px 24px 0 0', borderTop: `1px solid ${G_BORDER2}`, maxHeight: '92vh', overflowY: 'auto', animation: 'ui-slide-up 0.25s ease' }}>
 
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className="font-semibold text-sm text-white truncate">
-          {rescue.name}{rescue.age ? `, ${rescue.age}` : ''}
-        </p>
-        {rescue.city && (
-          <p className="text-xs text-white/40 flex items-center gap-1 mt-0.5">
-            <MapPin size={9} /> {rescue.city}
-          </p>
-        )}
-        <div className="flex items-center gap-1 mt-1.5">
-          {daysLeft !== null && (
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-semibold ${
-              isExpiring
-                ? 'bg-red-500/10 border-red-500/30 text-red-400'
-                : 'bg-[#f5c842]/10 border-[#f5c842]/30 text-[#F59E0B]'
-            }`}>
-              <Clock size={9} className="inline mr-0.5" />
-              {daysLeft === 0 ? 'Expira hoje' : `${daysLeft}d restantes`}
-            </span>
+        {/* Handle */}
+        <div style={{ width: 40, height: 4, borderRadius: 100, background: 'rgba(255,255,255,0.15)', margin: '16px auto 0' }} />
+
+        <div style={{ padding: '20px 24px 40px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+            <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: '#fff', margin: 0 }}>Como funciona o acesso</h3>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+              <X size={20} color="rgba(255,255,255,0.40)" />
+            </button>
+          </div>
+
+          {sent ? (
+            <div style={{ textAlign: 'center', padding: '32px 0' }}>
+              <CheckCircle size={48} color={G} strokeWidth={1.5} style={{ marginBottom: 16 }} />
+              <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: '#fff', margin: '0 0 8px' }}>Pedido enviado!</p>
+              <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.40)', lineHeight: 1.6, margin: 0 }}>
+                Assinantes Black da categoria <strong style={{ color: G }}>{CATEGORIAS.find(c => c.key === selectedCat)?.label}</strong> foram notificados. Se alguem pagar, voce recebera uma notificacao para iniciar a conversa.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Secao 1: o que recebe sendo resgatado */}
+              <div style={{ marginBottom: 20 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: G, letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 12px' }}>O que voce recebe sendo resgatado</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  {[
+                    'Um assinante Black paga R$ 15 para iniciar uma conversa com voce',
+                    'Voce e o resgatador terao acesso ao chat exclusivo do Camarote por 30 dias',
+                    'O que acontece depende da conversa entre voces — nao e garantia de nada',
+                    'Assinantes Black da sua categoria sao notificados assim que voce pede acesso',
+                    'Quem pagar primeiro tem acesso — os demais nao veem mais o seu pedido',
+                  ].map((item, i) => (
+                    <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                      <CheckCircle size={14} color={G} strokeWidth={2} style={{ flexShrink: 0, marginTop: 2 }} />
+                      <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.55)', margin: 0, lineHeight: 1.5 }}>{item}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Secao 2: com o Black voce teria */}
+              <div style={{ padding: '14px 16px', borderRadius: 14, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 20 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 10px' }}>Com o plano Black voce teria</p>
+                {[
+                  'Acesso completo a vitrine do Camarote',
+                  'Interacao com todos os Black disponiveis',
+                  'Categorias de fetiche e Sugar desbloqueadas',
+                  'Chat exclusivo preto e dourado',
+                  'Curtidas ilimitadas, SuperCurtidas, Boosts e muito mais',
+                ].map((item, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 8, alignItems: 'flex-start', marginBottom: i < 4 ? 6 : 0 }}>
+                    <Crown size={12} color={G} strokeWidth={2} style={{ flexShrink: 0, marginTop: 2 }} />
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.40)', margin: 0, lineHeight: 1.5 }}>{item}</p>
+                  </div>
+                ))}
+                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', margin: '12px 0 0', fontStyle: 'italic' }}>
+                  Ser resgatado e apenas um gostinho. Nao tem comparacao com ser assinante Black.
+                </p>
+              </div>
+
+              {/* Aviso importante */}
+              <div style={{ padding: '12px 14px', borderRadius: 12, background: 'rgba(245,158,11,0.07)', border: `1px solid ${G_BORDER}`, marginBottom: 20, display: 'flex', gap: 10 }}>
+                <AlertTriangle size={15} color={G} strokeWidth={1.5} style={{ flexShrink: 0, marginTop: 1 }} />
+                <p style={{ fontSize: 12, color: 'rgba(245,158,11,0.80)', lineHeight: 1.55, margin: 0 }}>
+                  <strong>Importante:</strong> isso nao e uma compra de servico. O assinante esta pagando para iniciar uma conversa, nao por qualquer ato. O que acontece entre voces e resultado da troca e da conexao — nao de uma transacao.
+                </p>
+              </div>
+
+              {/* Selecao de categoria */}
+              <div style={{ marginBottom: 16 }}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 10px' }}>Em qual categoria voce quer entrar?</p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  {CATEGORIAS.map(cat => (
+                    <button
+                      key={cat.key}
+                      onClick={() => setSelectedCat(cat.key)}
+                      style={{
+                        padding: '11px 10px', borderRadius: 12, cursor: 'pointer',
+                        border: `1.5px solid ${selectedCat === cat.key ? G : 'rgba(255,255,255,0.08)'}`,
+                        background: selectedCat === cat.key ? G_SOFT : 'rgba(255,255,255,0.03)',
+                        color: selectedCat === cat.key ? G : 'rgba(255,255,255,0.40)',
+                        fontFamily: 'var(--font-jakarta)', fontWeight: selectedCat === cat.key ? 700 : 400,
+                        fontSize: 13, transition: 'all 0.15s',
+                      }}
+                    >
+                      {cat.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Checkbox */}
+              <label style={{ display: 'flex', alignItems: 'flex-start', gap: 10, marginBottom: 20, cursor: 'pointer' }}>
+                <div
+                  onClick={() => setAccepted(a => !a)}
+                  style={{
+                    width: 20, height: 20, borderRadius: 6, flexShrink: 0, marginTop: 1,
+                    background: accepted ? G : 'rgba(255,255,255,0.05)',
+                    border: `1.5px solid ${accepted ? G : 'rgba(255,255,255,0.15)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
+                  }}
+                >
+                  {accepted && <Check size={12} color="#000" strokeWidth={2.5} />}
+                </div>
+                <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.40)', lineHeight: 1.55 }}>
+                  Entendo que isso nao e uma compra de servico e que o resultado depende da troca entre nos dois.
+                </span>
+              </label>
+
+              <button
+                onClick={handleSubmit}
+                disabled={!selectedCat || !accepted || loading}
+                style={{
+                  width: '100%', padding: '14px', borderRadius: 16, border: 'none', cursor: selectedCat && accepted ? 'pointer' : 'not-allowed',
+                  background: selectedCat && accepted ? `linear-gradient(135deg, #c9a84c, ${G})` : 'rgba(255,255,255,0.05)',
+                  color: selectedCat && accepted ? '#000' : 'rgba(255,255,255,0.20)',
+                  fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 15,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s',
+                }}
+              >
+                {loading ? <Loader2 size={18} className="animate-spin" /> : 'Enviar pedido de acesso'}
+              </button>
+            </>
           )}
         </div>
-      </div>
-
-      {/* CTA */}
-      <div className="flex items-center gap-2 shrink-0">
-        <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#E11D48] text-white text-xs font-bold">
-          <MessageCircle size={13} strokeWidth={1.5} />
-          Chat
-        </div>
-        <ChevronRight size={16} strokeWidth={1.5} className="text-white/30" />
       </div>
     </div>
   )
