@@ -139,7 +139,7 @@ export default function ChatPage() {
     // Busca perfil do outro — sem campos sensíveis
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, name, photo_best, verified, last_seen')
+      .select('id, name, photo_best, verified, last_active_at, show_last_active')
       .eq('id', otherId)
       .single()
 
@@ -148,8 +148,8 @@ export default function ChatPage() {
       name: profile?.name ?? 'Usuario',
       photo_best: profile?.photo_best ?? null,
       verified: profile?.verified ?? false,
-      last_active_at: profile?.last_seen ?? null,
-      show_last_active: true,
+      last_active_at: profile?.last_active_at ?? null,
+      show_last_active: profile?.show_last_active ?? true,
     })
 
     // Carrega mensagens

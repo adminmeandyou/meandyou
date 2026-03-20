@@ -1,6 +1,7 @@
 // src/app/api/chat/send/route.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { moderateContent, getModerationMessage, containsSensitiveData } from '@/app/lib/moderation'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,6 +35,28 @@ export async function POST(req: NextRequest) {
 
     if (trimmed.length > MAX_CHARS) {
       return NextResponse.json({ error: `Máximo de ${MAX_CHARS} caracteres.` }, { status: 400 })
+    }
+
+    // 2a. Moderação de conteúdo
+    const mod = moderateContent(trimmed)
+    if (mod.blocked) {
+      if (mod.critical) {
+        // Dispara alerta ao suporte em background (não bloqueia o response)
+        fetch(`${process.env.NEXT_PUBLIC_APP_URL ?? 'https://www.meandyou.com.br'}/api/salas/alertar`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ palavras: mod.matchedWords, contexto: 'dm', userId: user.id }),
+        }).catch(() => {})
+      }
+      return NextResponse.json({ error: getModerationMessage(mod) }, { status: 422 })
+    }
+
+    // 2b. Dados pessoais sensíveis (CPF, cartão, telefone)
+    if (containsSensitiveData(trimmed)) {
+      return NextResponse.json(
+        { error: 'Por segurança, não compartilhe dados pessoais como CPF, cartão ou telefone no chat.' },
+        { status: 422 }
+      )
     }
 
     // 2. Verificar que o usuário é participante do match

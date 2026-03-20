@@ -8,7 +8,8 @@ import { Heart, Loader2, CheckCircle2, AlertCircle } from 'lucide-react'
 function CasalAceitarContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const token = searchParams.get('token')
+  const tokenFromUrl = searchParams.get('token')
+  const token = tokenFromUrl ?? (typeof window !== 'undefined' ? sessionStorage.getItem('casal_invite_token') : null)
 
   const [loading, setLoading] = useState(true)
   const [accepting, setAccepting] = useState(false)
@@ -18,7 +19,8 @@ function CasalAceitarContent() {
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) {
-        window.location.href = `/login?redirect=/casal/aceitar?token=${token}`
+        if (token) sessionStorage.setItem('casal_invite_token', token)
+        window.location.href = `/login?redirect=/casal/aceitar`
         return
       }
       setLoading(false)
@@ -41,6 +43,7 @@ function CasalAceitarContent() {
         setAccepting(false)
         return
       }
+      sessionStorage.removeItem('casal_invite_token')
       setDone(true)
       setTimeout(() => router.push('/configuracoes/casal'), 2500)
     } catch {

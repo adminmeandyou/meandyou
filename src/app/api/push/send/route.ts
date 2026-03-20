@@ -1,5 +1,4 @@
 // src/app/api/push/send/route.ts
-import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import webpush from 'web-push'
 
@@ -85,33 +84,4 @@ export async function enviarPushParaUsuario({
   await Promise.allSettled(promises)
 }
 
-// POST — endpoint interno para enviar push (chamado por outras APIs)
-// Protegido por service role key no header
-export async function POST(req: NextRequest) {
-  try {
-    // Só aceita chamadas internas autenticadas com service role
-    const authHeader = req.headers.get('authorization') ?? ''
-    const expected = `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''}`
-    const { timingSafeEqual } = await import('crypto')
-    const a = Buffer.from(authHeader)
-    const b = Buffer.from(expected)
-    const authorized = a.length === b.length && timingSafeEqual(a, b)
-    if (!authorized) {
-      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
-    }
-
-    const params: SendPushParams = await req.json()
-
-    if (!params.targetUserId || !params.type || !params.title || !params.body) {
-      return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
-    }
-
-    await enviarPushParaUsuario(params)
-
-    return NextResponse.json({ ok: true })
-
-  } catch (err) {
-    console.error('Erro em push/send:', err)
-    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
-  }
-}
+// Este endpoint nao e exposto via HTTP — use enviarPushParaUsuario() diretamente nas API routes

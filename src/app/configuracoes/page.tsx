@@ -221,15 +221,20 @@ export default function ConfiguracoesPage() {
   async function enviarBug() {
     if (bugDescricao.trim().length < 20) return
     setBugEnviando(true)
-    const fd = new FormData()
-    fd.append('descricao', bugDescricao)
-    if (bugFile) fd.append('screenshot', bugFile)
-    const res = await fetch('/api/bugs/reportar', { method: 'POST', body: fd })
-    setBugEnviando(false)
-    if (res.ok) {
-      setBugEnviado(true)
-      setBugDescricao('')
-      setBugFile(null)
+    try {
+      const fd = new FormData()
+      fd.append('descricao', bugDescricao)
+      if (bugFile) fd.append('screenshot', bugFile)
+      const res = await fetch('/api/bugs/reportar', { method: 'POST', body: fd })
+      if (res.ok) {
+        setBugEnviado(true)
+        setBugDescricao('')
+        setBugFile(null)
+      }
+    } catch {
+      // falha silenciosa — usuario nao perde o texto digitado
+    } finally {
+      setBugEnviando(false)
     }
   }
 
