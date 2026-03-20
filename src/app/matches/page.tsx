@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
-import { MessageCircle, Heart, Search, Clock, Archive, Loader2 } from 'lucide-react'
+import { MessageCircle, Heart, Clock, Archive, Loader2, UserPlus, Check } from 'lucide-react'
 import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
@@ -225,6 +225,7 @@ export default function MatchesPage() {
                     <NovoMatchCard
                       key={match.match_id}
                       match={match}
+                      userId={userId}
                       onIniciarConversa={() => iniciarConversa(match.match_id, match.other_user_id)}
                       formatTempo={formatTempo}
                     />
@@ -267,24 +268,41 @@ export default function MatchesPage() {
 
 function NovoMatchCard({
   match,
+  userId,
   onIniciarConversa,
   formatTempo,
 }: {
   match: Match
+  userId: string | null
   onIniciarConversa: () => void
   formatTempo: (d: string | null) => string
 }) {
   const expiry = getExpiryInfo(match.matched_at, match.last_message_at)
+  const [friendSent, setFriendSent] = useState(false)
+
+  async function handleAddFriend(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (friendSent || !userId) return
+    setFriendSent(true)
+    try {
+      await fetch('/api/amigos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId: match.other_user_id }),
+      })
+    } catch {
+      setFriendSent(false)
+    }
+  }
 
   return (
-    <button
-      onClick={onIniciarConversa}
+    <div
       style={{
         scrollSnapAlign: 'start', flexShrink: 0, width: 130,
         background: 'var(--bg-card)', border: '1px solid var(--border)',
         borderRadius: 16, padding: '14px 12px',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
-        cursor: 'pointer', position: 'relative', textAlign: 'center',
+        position: 'relative', textAlign: 'center',
       }}
     >
       {expiry && (
@@ -324,14 +342,37 @@ function NovoMatchCard({
         </div>
       </div>
 
-      <div style={{
-        width: '100%', padding: '7px 0', borderRadius: 10, background: 'var(--accent)',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-      }}>
+      <button
+        onClick={onIniciarConversa}
+        style={{
+          width: '100%', padding: '7px 0', borderRadius: 10, background: 'var(--accent)',
+          border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+          cursor: 'pointer',
+        }}
+      >
         <MessageCircle size={11} color="#fff" />
         <span style={{ fontSize: 11, fontWeight: 700, color: '#fff' }}>Conversar</span>
-      </div>
-    </button>
+      </button>
+
+      <button
+        onClick={handleAddFriend}
+        style={{
+          width: '100%', padding: '6px 0', borderRadius: 10,
+          background: friendSent ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.05)',
+          border: `1px solid ${friendSent ? 'rgba(16,185,129,0.25)' : 'var(--border)'}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+          cursor: friendSent ? 'default' : 'pointer',
+        }}
+      >
+        {friendSent
+          ? <Check size={11} color="#10b981" />
+          : <UserPlus size={11} color="rgba(248,249,250,0.5)" />
+        }
+        <span style={{ fontSize: 11, fontWeight: 600, color: friendSent ? '#10b981' : 'rgba(248,249,250,0.5)' }}>
+          {friendSent ? 'Pedido enviado' : 'Adicionar'}
+        </span>
+      </button>
+    </div>
   )
 }
 

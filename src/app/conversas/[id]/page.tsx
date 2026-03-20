@@ -9,7 +9,7 @@ import {
   ArrowLeft, Send, Video, ShieldAlert,
   Loader2, AlertCircle, Lock, Mic,
   Sparkles, CalendarPlus, Zap, X, CalendarCheck, Star, Coffee,
-  MapPin, Shield, HeartCrack, Ghost, Phone, CheckCircle2
+  MapPin, Shield, HeartCrack, Ghost, Phone, CheckCircle2, UserPlus, Check
 } from 'lucide-react'
 import { ChatBubble } from '@/components/ui/ChatBubble'
 import { ReportModal } from '@/components/ReportModal'
@@ -97,6 +97,9 @@ export default function ChatPage() {
   const [showBoloModal, setShowBoloModal] = useState(false)
   const [boloDone, setBoloDone] = useState(false)
   const [boloOportunidade, setBoloOportunidade] = useState(false)
+
+  // Adicionar como amigo (M4)
+  const [friendSent, setFriendSent] = useState(false)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -479,6 +482,21 @@ export default function ChatPage() {
         .eq('id', matchId)
     } catch { /* ignore */ }
     router.push('/conversas')
+  }
+
+  async function handleAddFriend() {
+    if (friendSent || !otherUser) return
+    setFriendSent(true)
+    try {
+      const res = await fetch('/api/amigos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId: otherUser.id }),
+      })
+      if (!res.ok) setFriendSent(false)
+    } catch {
+      setFriendSent(false)
+    }
   }
 
   // ─────────────────────────────────────────────────────────────────────────────
@@ -941,6 +959,13 @@ export default function ChatPage() {
               onClick={handleNudge}
               accent
             />
+            {/* Adicionar como amigo */}
+            <ActionBtn
+              icon={friendSent ? <Check size={14} strokeWidth={1.5} /> : <UserPlus size={14} strokeWidth={1.5} />}
+              label={friendSent ? 'Enviado' : 'Amigo'}
+              onClick={handleAddFriend}
+              success={friendSent}
+            />
             {/* Avaliar — so aparece apos 5+ msgs e nao avaliou ainda */}
             {messages.length >= 5 && !ratingDone && (
               <ActionBtn
@@ -1291,14 +1316,18 @@ export default function ChatPage() {
 // ─── Botão de ação rápida ─────────────────────────────────────────────────────
 
 function ActionBtn({
-  icon, label, onClick, active = false, accent = false,
+  icon, label, onClick, active = false, accent = false, success = false,
 }: {
   icon: React.ReactNode
   label: string
   onClick: () => void
   active?: boolean
   accent?: boolean
+  success?: boolean
 }) {
+  const border = success ? '1px solid rgba(16,185,129,0.25)' : (active || accent ? '1px solid var(--accent-border)' : '1px solid var(--border)')
+  const bg = success ? 'rgba(16,185,129,0.10)' : (active || accent ? 'var(--accent-soft)' : 'rgba(255,255,255,0.04)')
+  const color = success ? '#10b981' : (active || accent ? 'var(--accent)' : 'var(--muted)')
   return (
     <button
       onClick={onClick}
@@ -1306,11 +1335,9 @@ function ActionBtn({
       style={{
         display: 'flex', alignItems: 'center', gap: 5,
         padding: '6px 12px', borderRadius: 100,
-        border: active || accent ? '1px solid var(--accent-border)' : '1px solid var(--border)',
-        background: active || accent ? 'var(--accent-soft)' : 'rgba(255,255,255,0.04)',
-        color: active || accent ? 'var(--accent)' : 'var(--muted)',
+        border, background: bg, color,
         fontSize: 12, fontFamily: 'var(--font-jakarta)',
-        cursor: 'pointer',
+        cursor: success ? 'default' : 'pointer',
       }}
     >
       {icon}
