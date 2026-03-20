@@ -25,11 +25,6 @@ const FICHAS_PACKAGES = [
   { label: '900 fichas',  price: 'R$ 59,97', url: 'https://pay.cakto.com.br/fichas_900',  highlight: false, tag: 'Melhor valor' },
 ]
 
-// Preço fixo — igual para todos os planos
-function applyDiscount(base: number, _plan: string | null): number {
-  return base
-}
-
 // ─── Itens compraveis com fichas ──────────────────────────────────────────
 type ItemKey =
   | 'superlike' | 'boost' | 'lupa' | 'rewind'

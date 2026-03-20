@@ -137,7 +137,7 @@ export function usePlan() {
     const today = new Date().toISOString().split('T')[0]
 
     // Buscar tudo em paralelo
-    const [userRes, likesRes, superlikesRes, boostsRes, lupasRes, rewindsRes] =
+    const [userRes, likesRes, superlikesRes, boostsRes, lupasRes, rewindsRes, ticketsRes] =
       await Promise.all([
         supabase.from('users').select('plan').eq('id', user.id).single(),
         supabase
@@ -150,6 +150,7 @@ export function usePlan() {
         supabase.from('user_boosts').select('amount').eq('user_id', user.id).single(),
         supabase.from('user_lupas').select('amount').eq('user_id', user.id).single(),
         supabase.from('user_rewinds').select('amount').eq('user_id', user.id).single(),
+        supabase.from('user_tickets').select('amount').eq('user_id', user.id).single(),
       ])
 
     const plan = (userRes.data?.plan as PlanType) ?? 'essencial'
@@ -172,7 +173,7 @@ export function usePlan() {
       superlikesBalance:     superlikesRes.data?.amount ?? 0,
       boostsBalance:         boostsRes.data?.amount     ?? 0,
       lupasBalance,
-      ticketsBalance:        0,
+      ticketsBalance:        ticketsRes.data?.amount ?? 0,
       rewindsBalance,
       ...config,
       // Inventário libera funcionalidades independente do plano (sobrescreve config)

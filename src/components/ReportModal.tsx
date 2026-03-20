@@ -28,30 +28,50 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const REASON_MAP: Record<string, string> = {
+    fake_profile:  'fake',
+    scam:          'other',
+    harassment:    'harassment',
+    minor:         'minor',
+    inappropriate: 'inappropriate',
+  }
+
   async function handleSubmit() {
     if (!user || !selectedReason) return
     setLoading(true)
     setError(null)
 
-    const { data, error: rpcError } = await supabase.rpc('create_report', {
-      p_reporter_id: user.id,
-      p_reported_id: reportedId,
-      p_reason: selectedReason,
-      p_details: details.trim() || null,
-    })
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/denuncias', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({
+          reported_user_id: reportedId,
+          category: REASON_MAP[selectedReason] ?? 'other',
+          description: details.trim() || undefined,
+        }),
+      })
 
-    setLoading(false)
+      setLoading(false)
 
-    if (rpcError || !data?.success) {
-      if (data?.reason === 'already_reported') {
+      if (res.status === 409) {
         setError('Você já denunciou este perfil recentemente.')
-      } else {
-        setError('Erro ao enviar denúncia. Tente novamente.')
+        return
       }
-      return
-    }
+      if (!res.ok) {
+        setError('Erro ao enviar denúncia. Tente novamente.')
+        return
+      }
 
-    setStep('success')
+      setStep('success')
+    } catch {
+      setLoading(false)
+      setError('Erro ao enviar denúncia. Tente novamente.')
+    }
   }
 
   return (

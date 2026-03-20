@@ -50,6 +50,7 @@
   --gold: #F59E0B;
   --gold-light: rgba(245,158,11,0.10);
   --gold-border: rgba(245,158,11,0.25);
+  --accent-soft: rgba(225,29,72,0.10);
   --font-fraunces: 'Fraunces', serif;
   --font-jakarta: 'Plus Jakarta Sans', sans-serif;
 }

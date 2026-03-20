@@ -27,12 +27,12 @@ const PLAN_PRICES: Record<string, number> = {
 }
 
 // ── Pacotes de Fichas ─────────────────────────────────────────────────────
-// ATENÇÃO: substitua os slugs placeholder pelos slugs reais criados na Cakto
+// ATENÇÃO: substitua os slugs pelos slugs reais criados na Cakto após criar os produtos
 const FICHAS_OFFERS: Record<string, number> = {
-  'fichas_500':   500,    // TODO: substituir pelo slug real — R$ 7,97
-  'fichas_1500':  1500,   // TODO: substituir pelo slug real — R$ 19,97
-  'fichas_4000':  4000,   // TODO: substituir pelo slug real — R$ 44,97
-  'fichas_10000': 10000,  // TODO: substituir pelo slug real — R$ 99,97
+  'fichas_50':  50,   // TODO: substituir pelo slug real — R$ 5,97
+  'fichas_150': 150,  // TODO: substituir pelo slug real — R$ 14,97
+  'fichas_400': 400,  // TODO: substituir pelo slug real — R$ 34,97
+  'fichas_900': 900,  // TODO: substituir pelo slug real — R$ 59,97
 }
 
 // ── Loja avulsa ───────────────────────────────────────────────────────────
@@ -170,7 +170,7 @@ export async function POST(req: NextRequest) {
         console.error('Erro ao recompensar indicação:', err)
       }
 
-      console.log(`Plano ${plan} ativado para ${customerEmail}`)
+      console.log(`Plano ${plan} ativado — orderId=${orderId}`)
       const { data: profileData } = await supabaseAdmin.from('profiles').select('name').eq('id', userId).single()
       const nomeDisplay = profileData?.name?.split(' ')[0] ?? 'Usuário'
       await sendPlanActivatedEmail(customerEmail, nomeDisplay, plan)
@@ -204,7 +204,7 @@ export async function POST(req: NextRequest) {
         p_paid_by:        userId,
         p_cakto_order_id: orderId,
       })
-      console.log(`Backstage ativado para ${customerEmail}`)
+      console.log(`Backstage ativado — orderId=${orderId}`)
       return NextResponse.json({ success: true })
     }
 
@@ -233,7 +233,7 @@ export async function POST(req: NextRequest) {
         })
       }
 
-      console.log(`${storeItem.amount}x ${storeItem.type} creditado para ${customerEmail}`)
+      console.log(`${storeItem.amount}x ${storeItem.type} creditado — orderId=${orderId}`)
 
       // Email de confirmação de compra avulsa
       try {
@@ -263,7 +263,7 @@ export async function POST(req: NextRequest) {
         p_order_id:   orderId,
         p_description: `Compra de ${fichasAmount} fichas`,
       })
-      console.log(`${fichasAmount} fichas creditadas para ${customerEmail}`)
+      console.log(`${fichasAmount} fichas creditadas — orderId=${orderId}`)
       try {
         const { data: profileData } = await supabaseAdmin.from('profiles').select('name').eq('id', userId).single()
         const nomeDisplay = profileData?.name?.split(' ')[0] ?? 'Usuario'
@@ -276,7 +276,7 @@ export async function POST(req: NextRequest) {
 
     // ATENÇÃO: oferta não mapeada — pode ser slug de Lupa/Rewind ainda não configurado.
     // Adicionar o slug real em STORE_OFFERS para que compras desse item sejam creditadas.
-    console.error(`Webhook Cakto: oferta não reconhecida — slug="${offerSlug}", orderId="${orderId}", email="${customerEmail}"`)
+    console.error(`Webhook Cakto: oferta não reconhecida — slug="${offerSlug}", orderId="${orderId}"`)
     return NextResponse.json({ received: true })
 
   } catch (err) {
