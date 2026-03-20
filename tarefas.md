@@ -105,12 +105,15 @@
 
 ## 🔵 BAIXO / INFRAESTRUTURA
 
-### B1 — Banco: RPC spend_fichas precisa ser verificada
-- Se a compra não funciona mesmo com código correto, a RPC no Supabase está errada
-- Verificar: parâmetros, retorno, RLS policies
+### ~~B1 — Banco: RPC spend_fichas precisa ser verificada~~ ✅
+- RPC nao existia em nenhuma migration — criada em `migration_b1_spend_fichas.sql`
+- Assina: `spend_fichas(p_user_id, p_amount, p_description) → boolean`
+- Tambem inclui `credit_fichas` para garantir consistencia de parametros
+- **Pendencia Leandro:** rodar `migration_b1_spend_fichas.sql` no Supabase SQL Editor
 
-### B2 — Banco: RPC claim_streak_reward precisa creditar corretamente
-- Ao resgatar recompensa de streak, o saldo não é atualizado nas tabelas corretas
+### ~~B2 — Banco: RPC claim_streak_reward precisa creditar corretamente~~ ✅
+- Bug no frontend: RPC retorna TABLE (array), mas codigo fazia `data?.success` em vez de `data?.[0]?.success`
+- Corrigido em `streak/page.tsx`: usa `Array.isArray(data) ? data[0] : data` antes de checar `success`
 
 ### B3 — Moderação de conteúdo global
 - Filtro de palavras proibidas em: chat, nome de sala, bio, tags, qualquer campo de texto

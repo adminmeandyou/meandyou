@@ -77,9 +77,11 @@ export default function StreakPage() {
   async function handleClaim(dayNumber: number) {
     setClaiming(dayNumber)
     const { data, error } = await supabase.rpc('claim_streak_reward', { p_user_id: user!.id, p_day_number: dayNumber })
-    if (error || !data?.success) {
+    // claim_streak_reward retorna TABLE (array) — acessar o primeiro elemento
+    const result = Array.isArray(data) ? data[0] : data
+    if (error || !result?.success) {
       const msgs: Record<string, string> = { already_claimed: 'Já resgatado hoje.', not_reached: 'Dia ainda não alcançado.', streak_reset: 'Seu streak foi resetado.' }
-      setClaimMsg({ day: dayNumber, text: msgs[data?.reason ?? ''] ?? 'Não foi possível resgatar.' })
+      setClaimMsg({ day: dayNumber, text: msgs[result?.reason ?? ''] ?? 'Não foi possível resgatar.' })
     } else {
       setCalendar((prev) => prev.map((e) => (e.day_number === dayNumber ? { ...e, claimed: true } : e)))
       const entry = calendar.find((e) => e.day_number === dayNumber)
