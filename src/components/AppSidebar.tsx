@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import {
-  MessageCircle, Compass, Zap, ShoppingBag, User,
+  MessageCircle, Compass, ShoppingBag, User,
   Bell, Shield, Gift,
 } from 'lucide-react'
 import { supabase } from '@/app/lib/supabase'
@@ -18,9 +18,8 @@ interface SidebarItem {
 const NAV_ITEMS: SidebarItem[] = [
   { href: '/conversas', label: 'Chat',      icon: MessageCircle },
   { href: '/busca',     label: 'Descobrir', icon: Compass },
-  { href: '/roleta',    label: 'Roleta',    icon: Zap },
-  { href: '/streak',    label: 'Premios',   icon: Gift },
-  { href: '/loja',      label: 'Loja',      icon: ShoppingBag },
+  { href: '/recompensas', label: 'Premios',   icon: Gift },
+  { href: '/loja',        label: 'Loja',     icon: ShoppingBag },
   { href: '/perfil',    label: 'Perfil',    icon: User },
 ]
 

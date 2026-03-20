@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { MessageCircle, Compass, Zap, ShoppingBag, User } from 'lucide-react'
+import { MessageCircle, Compass, Zap, Gift, User } from 'lucide-react'
 import { useHaptics } from '@/hooks/useHaptics'
 
 interface NavItem {
@@ -16,7 +16,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/conversas', label: 'Chat',       icon: MessageCircle },
   { href: '/busca',     label: 'Descobrir',  icon: Compass },
   { href: '/roleta',    label: 'Roleta',     icon: Zap, center: true },
-  { href: '/loja',      label: 'Loja',       icon: ShoppingBag },
+  { href: '/recompensas', label: 'Premios',   icon: Gift },
   { href: '/perfil',    label: 'Perfil',     icon: User },
 ]
 

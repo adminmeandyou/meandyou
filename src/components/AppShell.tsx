@@ -27,6 +27,7 @@ const SHELL_PREFIXES = [
   '/destaque',
   '/roleta',
   '/streak',
+  '/recompensas',
   '/indicar',
   '/notificacoes',
   '/backstage',
