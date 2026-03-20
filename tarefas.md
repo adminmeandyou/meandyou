@@ -45,11 +45,10 @@
 
 ## 🟠 ALTA PRIORIDADE
 
-### A8 — APIs de marketing admin inexistentes
-- `admin/marketing/page.tsx` chama dois endpoints que nao foram criados:
-  - `GET /api/admin/marketing/historico` — historico de campanhas
-  - `PUT /api/admin/notificacoes/settings` — salvar webhook WhatsApp e canais por evento
-- Toda a aba de marketing do admin esta quebrada silenciosamente
+### ~~A8 — APIs de marketing admin inexistentes~~ ✅
+- `GET /api/admin/marketing/historico` — existe e implementada
+- `GET/POST /api/admin/notificacoes/settings` — existe e implementada
+- Ambas criadas em sessao anterior (migration `marketing_campaigns` e `notification_settings`)
 
 ### A9 — Sistema de XP nunca credita via servidor
 - `api/xp/award/route.ts` existe e esta completo
@@ -155,10 +154,9 @@
 - API `/api/amigos` com GET/POST/PATCH implementada
 - Pagina `/amigos` com lista, pedidos recebidos e enviados
 
-### M6 — Reveals de curtidas (lupa) comprados mas sem efeito visual
-- Loja credita `curtidas_reveals_until` ao comprar lupa
-- Mas nenhuma tela usa esse campo para mostrar quem curtiu de fato
-- `/curtidas/page.tsx` so tem blur para Essencial e grid para Plus/Black — lupa nao e usada
+### ~~M6 — Reveals de curtidas (lupa) comprados mas sem efeito visual~~ ✅
+- `usePlan.ts` ja checava `curtidas_reveals_until` e `lupasBalance > 0` para setar `canSeeWhoLiked`
+- `/curtidas/page.tsx` ja usa `limits.canSeeWhoLiked` — feature estava completa
 
 ### M7 — Verified Plus sem exibicao no app
 - Loja ativa `profiles.verified_plus = true` ao comprar
@@ -197,22 +195,18 @@
 - Integrado no chat das salas e criacao de salas privadas
 - Alerta automatico ao suporte para palavras criticas via `/api/salas/alertar`
 
-### B4 — Toast.tsx duplicado
-- `components/Toast.tsx` — provider global correto, usado no AppShell
-- `components/ui/Toast.tsx` — componente standalone legado com interface diferente
-- Remover `components/ui/Toast.tsx` para evitar confusao
+### ~~B4 — Toast.tsx duplicado~~ ✅
+- `components/ui/Toast.tsx` removido — era legado sem importadores
 
-### B5 — Aba "Arquivados" em matches sempre vazia
-- `matches/page.tsx:151` — botao "Arquivados (0)" mas feature de arquivar nunca foi implementada
-- Ou implementar ou remover o botao
+### ~~B5 — Aba "Arquivados" em matches sempre vazia~~ ✅
+- Botao "Arquivados" ja havia sido removido de matches/page.tsx em sessao anterior
 
-### B6 — `show_last_active` ignorado em matches e conversas
-- `matches/page.tsx` renderiza `OnlineIndicator` sem verificar preferencia de privacidade
-- Usuario que desativou "mostrar quando estou ativo" ainda aparece como online
+### ~~B6 — `show_last_active` ignorado em matches e conversas~~ ✅
+- `conversas/page.tsx`: `?? true` corrigido para `?? false` (privacy-first)
+- `matches/page.tsx`: `showLastActive={match.show_last_active ?? false}` para nao mostrar quando campo ausente
 
-### B7 — Coluna `photo_face` pode nao existir no schema
-- `api/badges/auto-award/route.ts:61` — query referencia `photo_face` da tabela `profiles`
-- Verificar nome real das colunas de foto no banco; auto-award pode estar falhando silenciosamente
+### ~~B7 — Coluna `photo_face` pode nao existir no schema~~ ✅
+- Colunas verificadas: `photo_face`, `photo_body`, `photo_side`, `photo_extra1-3` existem em profiles — falso alarme
 
 ---
 

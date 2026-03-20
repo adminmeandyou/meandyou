@@ -397,7 +397,7 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
           <div style={{ position: 'absolute', bottom: 1, right: 1 }}>
             <OnlineIndicator
               lastActiveAt={match.last_active_at}
-              showLastActive={match.show_last_active}
+              showLastActive={match.show_last_active ?? false}
               mode="dot"
               size={12}
             />

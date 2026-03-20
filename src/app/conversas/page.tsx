@@ -84,7 +84,7 @@ export default function ConversasPage() {
         // ✅ CORREÇÃO: campo 'read' (boolean) — não 'read_at'
         unreadCount: row.unread_count ?? 0,
         lastActiveAt: row.other_last_active_at ?? null,
-        showLastActive: row.other_show_last_active ?? true,
+        showLastActive: row.other_show_last_active ?? false,
       }))
 
       // Ordena por mais recente
