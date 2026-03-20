@@ -1072,6 +1072,7 @@ export default function BuscaPage() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradeReason, setUpgradeReason] = useState<'superlike' | 'fetiche'>('superlike')
   const [matchResult, setMatchResult] = useState<{ name: string; photo?: string } | null>(null)
+  const [lastSwipe, setLastSwipe] = useState<{ dir: 'left' | 'right' | 'up'; profileId: string } | null>(null)
 
   // ── Boost ────────────────────────────────────────────────────────────────
   const [boostUntil, setBoostUntil] = useState<Date | null>(null)
@@ -1220,6 +1221,19 @@ export default function BuscaPage() {
       })
       let profiles = (data ?? []) as Profile[]
 
+      // Filtra perfis em modo fantasma
+      if (profiles.length > 0) {
+        const ids = profiles.map(p => p.id)
+        const now = new Date().toISOString()
+        const { data: ghostData } = await supabase
+          .from('profiles')
+          .select('id')
+          .in('id', ids)
+          .gt('ghost_mode_until', now)
+        const ghostIds = new Set((ghostData ?? []).map((g: { id: string }) => g.id))
+        profiles = profiles.filter(p => !ghostIds.has(p.id))
+      }
+
       // Modo Busca: aplica filtros de compatibilidade client-side
       if (searchMode && profiles.length) {
         const profileIds = profiles.map(p => p.id)
@@ -1302,6 +1316,7 @@ export default function BuscaPage() {
     setSwipeDir(dir)
     const profileId = currentProfile.id
     const savedProfile = { name: currentProfile.name, photo: currentProfile.photo_best }
+    setLastSwipe({ dir, profileId })
     setTimeout(async () => {
       setSwipeDir(null); setDragX(0); setDragY(0)
       setCurrentIdx(i => i + 1)
@@ -1801,8 +1816,24 @@ export default function BuscaPage() {
                 size="sm"
                 icon={<Undo2 size={18} strokeWidth={1.5} />}
                 label="Voltar"
-                onClick={() => setCurrentIdx(i => Math.max(0, i - 1))}
-                disabled={currentIdx === 0}
+                onClick={async () => {
+                  if (currentIdx === 0) return
+                  setCurrentIdx(i => Math.max(0, i - 1))
+                  // Cancela like/superlike no banco se o último swipe foi positivo
+                  if (lastSwipe && (lastSwipe.dir === 'right' || lastSwipe.dir === 'up') && userId) {
+                    try {
+                      await supabase
+                        .from('likes')
+                        .delete()
+                        .eq('user_id', userId)
+                        .eq('target_id', lastSwipe.profileId)
+                      if (lastSwipe.dir === 'right') setLikesUsed(v => Math.max(0, v - 1))
+                      if (lastSwipe.dir === 'up') setSuperlikesUsed(v => Math.max(0, v - 1))
+                    } catch {}
+                  }
+                  setLastSwipe(null)
+                }}
+                disabled={currentIdx === 0 || !lastSwipe}
               />
 
               {/* Dislike */}

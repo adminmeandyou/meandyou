@@ -137,7 +137,7 @@ export function usePlan() {
     const today = new Date().toISOString().split('T')[0]
 
     // Buscar tudo em paralelo
-    const [userRes, likesRes, superlikesRes, boostsRes] =
+    const [userRes, likesRes, superlikesRes, boostsRes, lupasRes, rewindsRes] =
       await Promise.all([
         supabase.from('users').select('plan').eq('id', user.id).single(),
         supabase
@@ -148,6 +148,8 @@ export function usePlan() {
           .gte('created_at', `${today}T00:00:00`),
         supabase.from('user_superlikes').select('amount').eq('user_id', user.id).single(),
         supabase.from('user_boosts').select('amount').eq('user_id', user.id).single(),
+        supabase.from('user_lupas').select('amount').eq('user_id', user.id).single(),
+        supabase.from('user_rewinds').select('amount').eq('user_id', user.id).single(),
       ])
 
     const plan = (userRes.data?.plan as PlanType) ?? 'essencial'
@@ -159,6 +161,9 @@ export function usePlan() {
       ? Infinity
       : Math.max(0, likesPerDay - likesUsedToday)
 
+    const lupasBalance   = lupasRes.data?.amount   ?? 0
+    const rewindsBalance = rewindsRes.data?.amount ?? 0
+
     setLimits({
       plan,
       likesPerDay,
@@ -166,10 +171,13 @@ export function usePlan() {
       likesRemaining,
       superlikesBalance:     superlikesRes.data?.amount ?? 0,
       boostsBalance:         boostsRes.data?.amount     ?? 0,
-      lupasBalance:          0,
+      lupasBalance,
       ticketsBalance:        0,
-      rewindsBalance:        0,
+      rewindsBalance,
       ...config,
+      // Inventário libera funcionalidades independente do plano (sobrescreve config)
+      canSeeWhoLiked:        (config.canSeeWhoLiked ?? false) || lupasBalance > 0,
+      canUndo:               (config.canUndo ?? false) || rewindsBalance > 0,
     } as PlanLimits)
 
     setLoading(false)

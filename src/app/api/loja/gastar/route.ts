@@ -112,6 +112,18 @@ export async function POST(req: NextRequest) {
 
     } else if (item_key === 'verified_plus') {
       await supabaseAdmin.from('profiles').update({ verified_plus: true }).eq('id', user.id)
+      // Concede automaticamente o emblema de Identidade Verificada (se existir)
+      const { data: verifiedBadge } = await supabaseAdmin
+        .from('badges')
+        .select('id')
+        .eq('condition_type', 'on_verify')
+        .limit(1)
+        .maybeSingle()
+      if (verifiedBadge?.id) {
+        await supabaseAdmin
+          .from('user_badges')
+          .upsert({ user_id: user.id, badge_id: verifiedBadge.id }, { onConflict: 'user_id,badge_id', ignoreDuplicates: true })
+      }
 
     } else if (item_key === 'caixa_surpresa') {
       const { data: spinResult } = await supabaseAdmin.rpc('spin_roleta', { p_user_id: user.id })

@@ -124,7 +124,22 @@ export function useSearch() {
 
       if (rpcError) throw rpcError
 
-      setResults((data as ProfileResult[]) ?? [])
+      const profiles = (data as ProfileResult[]) ?? []
+
+      // Filtra perfis em modo fantasma (ghost_mode_until > agora)
+      if (profiles.length > 0) {
+        const ids = profiles.map(p => p.id)
+        const now = new Date().toISOString()
+        const { data: ghostData } = await supabase
+          .from('profiles')
+          .select('id')
+          .in('id', ids)
+          .gt('ghost_mode_until', now)
+        const ghostIds = new Set((ghostData ?? []).map((g: { id: string }) => g.id))
+        setResults(profiles.filter(p => !ghostIds.has(p.id)))
+      } else {
+        setResults([])
+      }
     } catch (err: any) {
       setError('Erro ao buscar perfis. Tente novamente.')
       console.error(err)
