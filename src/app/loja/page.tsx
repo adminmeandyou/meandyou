@@ -252,6 +252,8 @@ export default function LojaPage() {
     () => Object.fromEntries(STORE_ITEMS.map(i => [i.key, 1]))
   )
   const [openQty, setOpenQty] = useState(1)
+  const [lendariaResult, setLendariaResult] = useState<{ type: string; amount: number } | null>(null)
+  const [lendariaPhase, setLendariaPhase] = useState<'idle' | 'shake' | 'jump' | 'explode' | 'reveal'>('idle')
 
   const plan = limits.plan
 
@@ -323,6 +325,13 @@ export default function LojaPage() {
         toast.success(`${item.label} adicionado ao seu saldo!`)
         if (data.surpresa) {
           toast.info(`Caixa Surpresa: você ganhou ${data.surpresa.reward_amount}x ${data.surpresa.reward_type}!`)
+        }
+        if (data.caixa_lendaria) {
+          setLendariaResult(data.caixa_lendaria)
+          setLendariaPhase('shake')
+          setTimeout(() => setLendariaPhase('jump'), 700)
+          setTimeout(() => setLendariaPhase('explode'), 1200)
+          setTimeout(() => setLendariaPhase('reveal'), 1700)
         }
         setOpenItem(null)
         await loadBalance()
@@ -694,9 +703,39 @@ export default function LojaPage() {
         />
       )}
 
+      {/* Modal Caixa Super Lendária */}
+      {lendariaPhase !== 'idle' && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
+          <div style={{
+            fontSize: 80,
+            animation: lendariaPhase === 'shake' ? 'lend-shake 0.6s ease-in-out infinite' :
+                       lendariaPhase === 'jump'  ? 'lend-jump 0.4s ease-out' :
+                       lendariaPhase === 'explode' ? 'lend-explode 0.4s ease-out forwards' : 'none',
+          }}>🎁</div>
+          {lendariaPhase === 'reveal' && lendariaResult && (
+            <div style={{ textAlign: 'center', animation: 'lend-reveal 0.5s ease-out' }}>
+              <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 28, color: '#F59E0B', marginBottom: 8 }}>Voce ganhou!</p>
+              <p style={{ fontSize: 20, color: 'var(--text)', fontWeight: 700 }}>
+                {lendariaResult.amount > 1 ? `${lendariaResult.amount}x ` : ''}{lendariaResult.type.replace(/_/g, ' ')}
+              </p>
+              <button
+                onClick={() => { setLendariaPhase('idle'); setLendariaResult(null); loadBalance() }}
+                style={{ marginTop: 24, backgroundColor: '#F59E0B', color: '#000', border: 'none', borderRadius: 100, padding: '14px 32px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+              >
+                Boa!
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        @keyframes lend-shake { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-8deg)} 40%{transform:rotate(8deg)} 60%{transform:rotate(-6deg)} 80%{transform:rotate(6deg)} }
+        @keyframes lend-jump { 0%{transform:translateY(0) scale(1)} 50%{transform:translateY(-40px) scale(1.2)} 100%{transform:translateY(0) scale(1)} }
+        @keyframes lend-explode { 0%{transform:scale(1);opacity:1} 100%{transform:scale(3);opacity:0} }
+        @keyframes lend-reveal { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
       `}</style>
     </div>
   )

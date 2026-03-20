@@ -130,8 +130,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, surpresa: spinResult })
 
     } else if (item_key === 'caixa_lendaria') {
-      // Premio aleatorio lendario — implementacao completa via caixa_lendaria futuramente
-      return NextResponse.json({ success: true, caixa_lendaria: true })
+      // Pool lendário — itens exclusivos, ponderados por raridade
+      const pool = [
+        { type: 'superlike', amount: 5, weight: 30 },
+        { type: 'boost', amount: 2, weight: 20 },
+        { type: 'lupa', amount: 2, weight: 20 },
+        { type: 'ghost_7d', amount: 1, weight: 15 },
+        { type: 'reveals_5', amount: 1, weight: 10 },
+        { type: 'xp_bonus_3d', amount: 1, weight: 4 },
+        { type: 'plan_black_1d', amount: 1, weight: 1 },
+      ]
+      const totalWeight = pool.reduce((s, i) => s + i.weight, 0)
+      let rng = Math.random() * totalWeight
+      const chosen = pool.find(i => { rng -= i.weight; return rng <= 0 }) ?? pool[0]
+
+      if (chosen.type === 'superlike') await incrementarSaldo('user_superlikes', user.id, chosen.amount)
+      else if (chosen.type === 'boost') await incrementarSaldo('user_boosts', user.id, chosen.amount)
+      else if (chosen.type === 'lupa') await incrementarSaldo('user_lupas', user.id, chosen.amount)
+      else if (chosen.type === 'ghost_7d') {
+        const until = new Date(Date.now() + 7 * 86400000).toISOString()
+        await supabaseAdmin.from('profiles').update({ ghost_mode_until: until }).eq('id', user.id)
+      } else if (chosen.type === 'reveals_5') {
+        const until = new Date(Date.now() + 86400000).toISOString()
+        await supabaseAdmin.from('profiles').update({ curtidas_reveals_until: until }).eq('id', user.id)
+      } else if (chosen.type === 'xp_bonus_3d') {
+        const until = new Date(Date.now() + 3 * 86400000).toISOString()
+        await supabaseAdmin.from('profiles').update({ xp_bonus_until: until }).eq('id', user.id)
+      } else if (chosen.type === 'plan_black_1d') {
+        // XP bonus como proxy de "1 dia Black" até sistema de planos temporários existir
+        const until = new Date(Date.now() + 86400000).toISOString()
+        await supabaseAdmin.from('profiles').update({ xp_bonus_until: until }).eq('id', user.id)
+      }
+
+      return NextResponse.json({ success: true, caixa_lendaria: { type: chosen.type, amount: chosen.amount } })
     }
 
     // Conceder XP pela compra (fire-and-forget)

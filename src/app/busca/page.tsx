@@ -1234,6 +1234,24 @@ export default function BuscaPage() {
         profiles = profiles.filter(p => !ghostIds.has(p.id))
       }
 
+      // A4 — Perfis com boost ativo sobem para o topo (mais recente primeiro)
+      if (profiles.length > 0) {
+        const ids = profiles.map(p => p.id)
+        const { data: boostData } = await supabase
+          .from('user_boosts')
+          .select('user_id, active_until')
+          .in('user_id', ids)
+          .gt('active_until', new Date().toISOString())
+        if (boostData && boostData.length > 0) {
+          const boostMap = new Map(boostData.map((b: { user_id: string; active_until: string }) => [b.user_id, b.active_until]))
+          const boosted = profiles.filter(p => boostMap.has(p.id)).sort((a, b) =>
+            new Date(boostMap.get(b.id)!).getTime() - new Date(boostMap.get(a.id)!).getTime()
+          )
+          const notBoosted = profiles.filter(p => !boostMap.has(p.id))
+          profiles = [...boosted, ...notBoosted]
+        }
+      }
+
       // Modo Busca: aplica filtros de compatibilidade client-side
       if (searchMode && profiles.length) {
         const profileIds = profiles.map(p => p.id)
@@ -1338,6 +1356,19 @@ export default function BuscaPage() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
                 body: JSON.stringify({ fromUserId: userId, toUserId: profileId }),
+              }).catch(() => {})
+            }
+          })
+        }
+        // Notifica superlike (fire-and-forget)
+        if (dir === 'up') {
+          supabase.auth.getSession().then(({ data: s }) => {
+            const token = s.session?.access_token
+            if (token) {
+              fetch('/api/likes/superlike-notify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                body: JSON.stringify({ toUserId: profileId }),
               }).catch(() => {})
             }
           })
