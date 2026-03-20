@@ -46,13 +46,13 @@ export async function POST(req: NextRequest) {
 
     case 'early_adopter': {
       const refDate = badge.condition_extra?.reference_date ?? badge.condition_value?.date ?? '2025-12-31'
-      const { data } = await supabase.from('users').select('id, created_at').lte('created_at', refDate)
+      const { data } = await supabase.from('profiles').select('id, created_at').lte('created_at', refDate)
       userIds = (data ?? []).map((r: any) => r.id)
       break
     }
 
     case 'on_verify': {
-      const { data } = await supabase.from('users').select('id').eq('verified', true)
+      const { data } = await supabase.from('profiles').select('id').eq('verified', true)
       userIds = (data ?? []).map((r: any) => r.id)
       break
     }
@@ -106,9 +106,9 @@ export async function POST(req: NextRequest) {
       // Count messages where user is NOT the sender in their conversations
       // Uses a join approach via matches/conversations
       const { data } = await supabase.from('messages').select('sender_id, match_id')
-      const { data: matchData } = await supabase.from('matches').select('id, user1_id, user2_id')
+      const { data: matchData } = await supabase.from('matches').select('id, user1, user2')
       const matchMap: Record<string, { u1: string; u2: string }> = {}
-      for (const m of matchData ?? []) matchMap[m.id] = { u1: m.user1_id, u2: m.user2_id }
+      for (const m of matchData ?? []) matchMap[m.id] = { u1: m.user1, u2: m.user2 }
       const counts: Record<string, number> = {}
       for (const msg of data ?? []) {
         const match = matchMap[msg.match_id]
@@ -122,9 +122,9 @@ export async function POST(req: NextRequest) {
 
     case 'messages_total_gte': {
       const { data: msgData } = await supabase.from('messages').select('sender_id, match_id')
-      const { data: matchData } = await supabase.from('matches').select('id, user1_id, user2_id')
+      const { data: matchData } = await supabase.from('matches').select('id, user1, user2')
       const matchMap: Record<string, { u1: string; u2: string }> = {}
-      for (const m of matchData ?? []) matchMap[m.id] = { u1: m.user1_id, u2: m.user2_id }
+      for (const m of matchData ?? []) matchMap[m.id] = { u1: m.user1, u2: m.user2 }
       const counts: Record<string, number> = {}
       for (const msg of msgData ?? []) {
         if (msg.sender_id) counts[msg.sender_id] = (counts[msg.sender_id] || 0) + 1
@@ -139,11 +139,11 @@ export async function POST(req: NextRequest) {
     }
 
     case 'matches_gte': {
-      const { data } = await supabase.from('matches').select('user1_id, user2_id').eq('status', 'active')
+      const { data } = await supabase.from('matches').select('user1, user2').eq('status', 'active')
       const counts: Record<string, number> = {}
       for (const m of data ?? []) {
-        if (m.user1_id) counts[m.user1_id] = (counts[m.user1_id] || 0) + 1
-        if (m.user2_id) counts[m.user2_id] = (counts[m.user2_id] || 0) + 1
+        if (m.user1) counts[m.user1] = (counts[m.user1] || 0) + 1
+        if (m.user2) counts[m.user2] = (counts[m.user2] || 0) + 1
       }
       userIds = Object.entries(counts).filter(([, c]) => c >= count).map(([uid]) => uid)
       break
@@ -216,13 +216,13 @@ export async function POST(req: NextRequest) {
     }
 
     case 'plan_active': {
-      const { data } = await supabase.from('users').select('id, plan').in('plan', ['plus', 'black'])
+      const { data } = await supabase.from('profiles').select('id, plan').in('plan', ['plus', 'black'])
       userIds = (data ?? []).map((r: any) => r.id)
       break
     }
 
     case 'plan_black': {
-      const { data } = await supabase.from('users').select('id').eq('plan', 'black')
+      const { data } = await supabase.from('profiles').select('id').eq('plan', 'black')
       userIds = (data ?? []).map((r: any) => r.id)
       break
     }

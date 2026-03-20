@@ -267,9 +267,13 @@ export default function AdminEmblemas() {
 
   async function aplicarAgora(b: Badge) {
     setAplicando(b.id)
+    const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/badges/auto-award', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token ?? ''}`,
+      },
       body: JSON.stringify({ badgeId: b.id }),
     })
     const json = await res.json()

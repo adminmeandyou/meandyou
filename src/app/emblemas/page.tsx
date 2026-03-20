@@ -9,11 +9,12 @@ import { Lock, Trophy } from 'lucide-react'
 interface Badge {
   id: string
   icon: string
+  icon_url?: string | null
   name: string
   description: string
   rarity: 'comum' | 'incomum' | 'raro' | 'lendario'
-  condition: string
-  condition_value: number
+  condition_type: string
+  condition_value: any
 }
 
 interface UserBadge {
@@ -28,19 +29,35 @@ const RARITY_CONFIG = {
 }
 
 const CONDITION_LABELS: Record<string, (val: number) => string> = {
-  manual:           () => 'Concedido pela equipe',
-  on_verify:        () => 'Verificar identidade biometrica',
-  on_join:          () => 'Criar conta no app',
-  invited_X:        (v) => `Convidar ${v} amigo${v > 1 ? 's' : ''}`,
-  match_X:          (v) => `Conseguir ${v} match${v > 1 ? 'es' : ''}`,
-  msg_X:            (v) => `Enviar ${v} mensagem${v > 1 ? 'ns' : ''}`,
-  took_bolo:        () => 'Relatar um bolo recebido',
-  profile_complete: () => 'Completar 100% do perfil',
+  manual:               () => 'Concedido pela equipe',
+  on_verify:            () => 'Verificar identidade biometrica',
+  on_join:              () => 'Criar conta no app',
+  invited_gte:          (v) => `Convidar ${v} amigo${v > 1 ? 's' : ''}`,
+  matches_gte:          (v) => `Conseguir ${v} match${v > 1 ? 'es' : ''}`,
+  messages_sent_gte:    (v) => `Enviar ${v} mensagem${v > 1 ? 'ns' : ''}`,
+  messages_received_gte:(v) => `Receber ${v} mensagem${v > 1 ? 'ns' : ''}`,
+  messages_total_gte:   (v) => `Trocar ${v} mensagem${v > 1 ? 'ns' : ''}`,
+  likes_received_gte:   (v) => `Receber ${v} curtida${v > 1 ? 's' : ''}`,
+  likes_sent_gte:       (v) => `Enviar ${v} curtida${v > 1 ? 's' : ''}`,
+  streak_gte:           (v) => `Streak de ${v} dias seguidos`,
+  streak_longest_gte:   (v) => `Maior streak de ${v} dias`,
+  video_calls_gte:      (v) => `Realizar ${v} videochamada${v > 1 ? 's' : ''}`,
+  video_minutes_gte:    (v) => `${v} minutos em videochamadas`,
+  photos_gte:           (v) => `Ter ${v}+ fotos no perfil`,
+  plan_active:          () => 'Ter plano Plus ou Black ativo',
+  plan_black:           () => 'Ter plano Black ativo',
+  store_purchase:       () => 'Fazer pelo menos 1 compra na loja',
+  store_spent_gte:      (v) => `Gastar ${v}+ fichas na loja`,
+  store_item:           () => 'Comprar item especifico na loja',
+  early_adopter:        () => 'Pioneiro — entrou cedo no app',
+  profile_complete:     () => 'Completar 100% do perfil',
+  took_bolo:            () => 'Relatar um bolo recebido',
 }
 
-function getConditionLabel(condition: string, value: number): string {
-  const fn = CONDITION_LABELS[condition] ?? CONDITION_LABELS[condition.replace(/\d+$/, 'X')]
-  return fn ? fn(value) : condition
+function getConditionLabel(condition_type: string, condition_value: any): string {
+  const val = condition_value?.count ?? 0
+  const fn = CONDITION_LABELS[condition_type]
+  return fn ? fn(val) : condition_type
 }
 
 export default function EmblemasPage() {
@@ -66,7 +83,7 @@ export default function EmblemasPage() {
   async function loadData() {
     setLoading(true)
     const [{ data: badgesData }, { data: userBadgesData }] = await Promise.all([
-      supabase.from('badges').select('*').eq('active', true).order('rarity'),
+      supabase.from('badges').select('*').eq('is_active', true).eq('is_published', true).order('rarity'),
       user ? supabase.from('user_badges').select('badge_id').eq('user_id', user.id) : Promise.resolve({ data: [] }),
     ])
     setBadges(badgesData ?? [])
@@ -160,8 +177,12 @@ export default function EmblemasPage() {
                       <Lock size={12} color="var(--muted-2)" strokeWidth={1.5} />
                     </div>
                   )}
-                  <div style={{ fontSize: 36, marginBottom: 8, filter: unlocked ? 'none' : 'grayscale(1)', lineHeight: 1 }}>
-                    {badge.icon}
+                  <div style={{ width: 40, height: 40, marginBottom: 8, filter: unlocked ? 'none' : 'grayscale(1)', lineHeight: 1 }}>
+                    {badge.icon_url ? (
+                      <img src={badge.icon_url} alt={badge.name} style={{ width: 40, height: 40, objectFit: 'contain' }} />
+                    ) : (
+                      <span style={{ fontSize: 36 }}>{badge.icon}</span>
+                    )}
                   </div>
                   <p style={{ fontSize: 13, fontWeight: 700, color: unlocked ? 'var(--text)' : 'var(--muted)', margin: '0 0 4px' }}>
                     {badge.name}
@@ -199,7 +220,13 @@ export default function EmblemasPage() {
           }}>
             <div style={{ width: 40, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 auto 24px' }} />
             <div style={{ textAlign: 'center', marginBottom: 20 }}>
-              <div style={{ fontSize: 56, lineHeight: 1, marginBottom: 12 }}>{selected.icon}</div>
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                {selected.icon_url ? (
+                  <img src={selected.icon_url} alt={selected.name} style={{ width: 64, height: 64, objectFit: 'contain' }} />
+                ) : (
+                  <span style={{ fontSize: 56, lineHeight: 1 }}>{selected.icon}</span>
+                )}
+              </div>
               <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: '0 0 8px' }}>{selected.name}</h2>
               {(() => {
                 const cfg = RARITY_CONFIG[selected.rarity] ?? RARITY_CONFIG.comum
@@ -218,7 +245,7 @@ export default function EmblemasPage() {
               <div>
                 <p style={{ fontSize: 11, color: 'var(--muted-2)', margin: 0 }}>Como ganhar</p>
                 <p style={{ fontSize: 13, color: 'var(--text)', margin: '2px 0 0', fontWeight: 500 }}>
-                  {getConditionLabel(selected.condition, selected.condition_value)}
+                  {getConditionLabel(selected.condition_type, selected.condition_value)}
                 </p>
               </div>
             </div>
