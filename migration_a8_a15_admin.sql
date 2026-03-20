@@ -72,8 +72,8 @@ SELECT
       AND COALESCE(p.banned, false) = false
       AND p.deleted_at IS NULL
   )                                                                                     AS pending_verification,
-  COUNT(*) FILTER (WHERE p.last_active_at >= now() - interval '5 minutes')             AS online_now,
-  COUNT(*) FILTER (WHERE p.last_active_at >= now() - interval '1 day')                 AS active_today,
+  COUNT(*) FILTER (WHERE p.last_seen >= now() - interval '5 minutes')                  AS online_now,
+  COUNT(*) FILTER (WHERE p.last_seen >= now() - interval '1 day')                      AS active_today,
   COUNT(*) FILTER (WHERE p.plan = 'essencial')                                         AS plan_essencial,
   COUNT(*) FILTER (WHERE p.plan = 'plus')                                              AS plan_plus,
   COUNT(*) FILTER (WHERE p.plan = 'black')                                             AS plan_black,
@@ -100,7 +100,7 @@ SELECT
   COALESCE(p.banned, false)                                           AS banned,
   p.deleted_at,
   p.created_at,
-  p.last_active_at,
+  p.last_seen                                                             AS last_active_at,
   p.banned_reason,
   p.city,
   EXTRACT(YEAR FROM AGE(now(), p.birthdate::date))::int               AS age,
