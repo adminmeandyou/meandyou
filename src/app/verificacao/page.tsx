@@ -614,7 +614,7 @@ function Verificacao() {
         body: JSON.stringify({ token: tokenAtual, userId, cpf: cpfLimpo }),
       }))
       const data = await res.json()
-      if (data.ok) { setStatus('sucesso'); setTimeout(() => router.push('/perfil'), 3000) }
+      if (data.ok) { setStatus('sucesso'); setTimeout(() => router.push('/busca'), 3000) }
       else { setStatus('erro'); setMensagem(data.error || 'Erro ao confirmar verificação. Tente novamente.') }
     } catch (e: any) {
       setStatus('erro')
