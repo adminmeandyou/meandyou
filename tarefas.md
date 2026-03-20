@@ -27,25 +27,19 @@
 - Usuario cancela no app, banco marca como cancelado, mas cobranca continua na Cakto
 - **Acao:** Aguardando resposta da Cakto sobre endpoint de cancelamento
 
-### C6 — SERVICE_ROLE_KEY usada como credencial em header HTTP
-- `api/push/send/route.ts:93-101` — Chave secreta maxima do Supabase comparada via header de requisicao HTTP
-- Qualquer log de servidor pode expor ela
-- **Acao:** Refatorar para autorizacao interna (env-based ou rota interna apenas)
+### ~~C6 — SERVICE_ROLE_KEY usada como credencial em header HTTP~~ ✅
+- POST handler de push/send removido — ninguem chamava via HTTP; todos importam enviarPushParaUsuario direto
 
-### C7 — Cron job acessivel sem secret configurado
-- `api/cron/expire-matches/route.ts:6-12` — Se `CRON_SECRET` nao estiver no Vercel, validacao passa com Bearer vazio
-- Qualquer pessoa pode expirar matches em massa via requisicao simples
-- **Acao:** Configurar `CRON_SECRET` no Vercel e adicionar verificacao de env obrigatoria
+### ~~C7 — Cron job acessivel sem secret configurado~~ ✅
+- Codigo ja tinha !secret guard correto — retorna 401 se CRON_SECRET nao estiver configurado
 
-### C8 — Painel admin sem protecao server-side
-- `admin/layout.tsx:46-76` — Verificacao de role e feita apenas no cliente via `useEffect`
-- Usuario nao-admin ve o painel por alguns segundos antes do redirect
-- **Acao:** Criar middleware ou server component que verifica role antes de renderizar
+### ~~C8 — Painel admin sem protecao server-side~~ ✅
+- admin/layout.tsx convertido para Server Component — verifica role no servidor antes de renderizar qualquer HTML
+- Sidebar extraido para AdminLayoutClient.tsx (client component)
 
-### C9 — Token de convite de casal exposto no URL
-- `casal/aceitar/page.tsx:21` — Redireciona para `/login?redirect=/casal/aceitar?token=XXX`
-- Token fica salvo no historico do browser do usuario
-- **Acao:** Salvar token em sessionStorage antes de redirecionar para login
+### ~~C9 — Token de convite de casal exposto no URL~~ ✅
+- Token salvo em sessionStorage antes do redirect para login
+- URL de login nao contem mais o token; limpo do sessionStorage apos aceitar
 
 ---
 
@@ -63,30 +57,21 @@
 - Bonus 2x XP vendido na loja tambem nunca e aplicado de fato
 - **Verificar:** se `award_xp` RPC existe no banco e se chamadas dos hooks estao chegando
 
-### A10 — `containsSensitiveData()` nunca chamada
-- `lib/moderation.ts` tem funcao que detecta CPF, cartao de credito e telefone em texto
-- Funcao existe mas nao e chamada em lugar nenhum do app
-- CPF, numero de cartao e telefone podem ser enviados livremente no chat
+### ~~A10 — `containsSensitiveData()` nunca chamada~~ ✅
+- Integrada em /api/chat/send — bloqueia mensagens com CPF, cartao de credito e telefone nos DMs
 
-### A11 — Moderacao ausente em DMs
-- `conversas/[id]/page.tsx` nao importa nem chama `moderateContent()`
-- Salas publicas tem moderacao ativa, mensagens diretas nao tem
-- Conteudo banido passa livremente em conversas privadas
+### ~~A11 — Moderacao ausente em DMs~~ ✅
+- moderateContent() e containsSensitiveData() adicionados em /api/chat/send
+- DMs agora tem a mesma moderacao das salas publicas
 
-### A12 — AppBottomNav "Salas" aponta para /roleta
-- `components/AppBottomNav.tsx:18` — botao central diz "Salas" mas `href` e `/roleta`
-- Pagina `/salas` existe e funciona, mas e inacessivel pela navegacao principal
-- **Acao:** Corrigir href para `/salas` ou mudar label para "Roleta"
+### ~~A12 — AppBottomNav "Salas" aponta para /roleta~~ ✅
+- Corrigido: href='/salas' agora
 
-### A13 — OnlineIndicator quebrado no chat individual
-- `conversas/[id]/page.tsx:151` — query busca coluna `last_seen` mas passa como `last_active_at`
-- Status "Ativo agora / Ativo hoje" nunca aparece corretamente no header do chat
-- **Acao:** Verificar nome real da coluna no schema e unificar (`last_seen` ou `last_active_at`)
+### ~~A13 — OnlineIndicator quebrado no chat individual~~ ✅
+- Query corrigida: seleciona last_active_at e show_last_active (era last_seen hardcoded)
 
-### A14 — Modal de reportar bug trava em loading
-- `configuracoes/page.tsx:221-234` — `enviarBug()` sem try/catch
-- Se fetch falhar, `setBugEnviando(false)` nunca e chamado — modal fica preso em "Enviando..."
-- **Acao:** Adicionar try/catch com finally
+### ~~A14 — Modal de reportar bug trava em loading~~ ✅
+- try/catch/finally adicionado em enviarBug() — modal nao trava mais se fetch falhar
 
 ### A15 — Views `admin_users` e `admin_metrics` podem nao existir
 - `admin/page.tsx` e `admin/insights/page.tsx` fazem query nessas views
