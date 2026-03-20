@@ -10,7 +10,7 @@ import {
   Crown, Lock, Loader2, ArrowLeft, Shield,
   CheckCircle, X, Heart, MapPin, Users,
   Check, SlidersHorizontal, ChevronRight,
-  AlertTriangle, Flame, Clock, User,
+  AlertTriangle, Flame, Clock, User, MessageCircle,
 } from 'lucide-react'
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
@@ -904,9 +904,12 @@ function ResgatesSection() {
                     </span>
                   </div>
                 </div>
-                <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', fontStyle: 'italic' }}>
-                  chat em breve
-                </span>
+                <a
+                  href={`/backstage/chat/${r.id}`}
+                  style={{ flexShrink: 0, width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg, #c9a84c, ${G})`, display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
+                >
+                  <MessageCircle size={16} color="#000" strokeWidth={2} />
+                </a>
               </div>
             ))}
           </div>
@@ -928,6 +931,27 @@ function ResgatesSection() {
 function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack: () => void }) {
   const { user } = useAuth()
   const [showModal, setShowModal] = useState(false)
+  const [rescuedChats, setRescuedChats] = useState<{ id: string; category: string; rescuer_name: string }[]>([])
+
+  useEffect(() => {
+    if (!user) return
+    supabase
+      .from('access_requests')
+      .select('id, category, rescued_by')
+      .eq('requester_id', user.id)
+      .eq('status', 'rescued')
+      .gt('expires_at', new Date().toISOString())
+      .then(async ({ data }) => {
+        if (!data?.length) return
+        const ids = data.map(r => r.rescued_by)
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('id, name')
+          .in('id', ids)
+        const nameMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p.name]))
+        setRescuedChats(data.map(r => ({ id: r.id, category: r.category, rescuer_name: nameMap[r.rescued_by] ?? 'Alguem' })))
+      })
+  }, [user?.id])
 
   return (
     <div style={{ minHeight: '100vh', background: BG_DARK, fontFamily: 'var(--font-jakarta)', overflow: 'hidden', position: 'relative' }}>
@@ -987,6 +1011,31 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
             </div>
           ))}
         </div>
+
+        {/* Chats ativos (foi resgatado) */}
+        {rescuedChats.length > 0 && (
+          <div style={{ width: '100%', maxWidth: 320, marginBottom: 16 }}>
+            <p style={{ fontSize: 11, fontWeight: 700, color: G, letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 10px', textAlign: 'center' }}>
+              Voce foi resgatado
+            </p>
+            {rescuedChats.map(chat => (
+              <a
+                key={chat.id}
+                href={`/backstage/chat/${chat.id}`}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 14, background: G_SOFT, border: `1px solid ${G_BORDER}`, textDecoration: 'none', marginBottom: 8 }}
+              >
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(245,158,11,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                  <Crown size={15} color={G} strokeWidth={1.5} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>{chat.rescuer_name}</p>
+                  <p style={{ fontSize: 11, color: G, margin: 0 }}>{CATEGORIAS.find(c => c.key === chat.category)?.label ?? chat.category}</p>
+                </div>
+                <MessageCircle size={16} color={G} strokeWidth={1.5} />
+              </a>
+            ))}
+          </div>
+        )}
 
         {/* Botoes */}
         <div style={{ width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: 10 }}>
