@@ -12,6 +12,14 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
+    const token = req.headers.get('authorization')?.replace('Bearer ', '')
+    if (!token) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+    const { data: { user: caller } } = await supabase.auth.getUser(token)
+    if (!caller) return NextResponse.json({ error: 'Sessão inválida' }, { status: 401 })
+    const { data: profile } = await supabase.from('profiles').select('role').eq('id', caller.id).single()
+    const { data: staff } = await supabase.from('staff_members').select('id').eq('user_id', caller.id).single()
+    if (profile?.role !== 'admin' && !staff) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+
     const form = await req.formData()
     const file = form.get('image') as File | null
     if (!file) return NextResponse.json({ error: 'Imagem obrigatória' }, { status: 400 })

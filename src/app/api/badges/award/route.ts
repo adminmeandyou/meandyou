@@ -18,6 +18,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'badgeId obrigatório' }, { status: 400 })
   }
 
+  // Verifica se e admin ou staff (somente eles podem conceder badges)
+  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single()
+  const { data: staff } = await supabase.from('staff_members').select('id').eq('user_id', user.id).single()
+  if (profile?.role !== 'admin' && !staff) {
+    return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
+  }
+
   // Verifica se o badge existe
   const { data: badge } = await supabase
     .from('badges')

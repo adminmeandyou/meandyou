@@ -205,7 +205,12 @@ export default function AdminEmblemas() {
         if (!blob) { setUploadingImage(false); return }
         const fd = new FormData()
         fd.append('image', blob, 'badge.jpg')
-        const res = await fetch('/api/badges/upload', { method: 'POST', body: fd })
+        const { data: { session } } = await supabase.auth.getSession()
+        const res = await fetch('/api/badges/upload', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}` },
+          body: fd,
+        })
         const json = await res.json()
         if (json.url) {
           setForm(p => ({ ...p, icon_url: json.url }))
@@ -221,48 +226,69 @@ export default function AdminEmblemas() {
     img.src = URL.createObjectURL(file)
   }
 
+  async function apiFetch(method: string, body: object) {
+    const res = await fetch('/api/admin/badges', {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+    const json = await res.json()
+    if (!res.ok) throw new Error(json.error ?? 'Erro desconhecido')
+    return json
+  }
+
   async function salvar() {
     if (!form.name.trim()) return
     setSalvando(true)
 
-    // Build condition_value from UI state
-    const meta = getConditionMeta(form.condition_type)
-    const conditionValue = form.condition_value
-    const conditionExtra = form.condition_extra ?? {}
-
     const payload = {
       ...form,
-      condition_value: conditionValue,
-      condition_extra: conditionExtra,
+      condition_value: form.condition_value,
+      condition_extra: form.condition_extra ?? {},
       icon_url: form.icon_url || null,
     }
 
-    if (modal === 'criar') {
-      await supabase.from('badges').insert(payload)
-    } else if (editandoId) {
-      await supabase.from('badges').update(payload).eq('id', editandoId)
+    try {
+      if (modal === 'criar') {
+        await apiFetch('POST', payload)
+      } else if (editandoId) {
+        await apiFetch('PATCH', { id: editandoId, ...payload })
+      }
+      setModal(null)
+      loadBadges()
+    } catch (err: any) {
+      alert('Erro ao salvar: ' + err.message)
+    } finally {
+      setSalvando(false)
     }
-
-    setSalvando(false)
-    setModal(null)
-    loadBadges()
   }
 
   async function deletar(id: string) {
-    await supabase.from('user_badges').delete().eq('badge_id', id)
-    await supabase.from('badges').delete().eq('id', id)
-    setConfirmarDelete(null)
-    loadBadges()
+    try {
+      await apiFetch('DELETE', { id })
+      setConfirmarDelete(null)
+      loadBadges()
+    } catch (err: any) {
+      alert('Erro ao excluir: ' + err.message)
+    }
   }
 
   async function togglePublicado(b: Badge) {
-    await supabase.from('badges').update({ is_published: !b.is_published }).eq('id', b.id)
-    loadBadges()
+    try {
+      await apiFetch('PATCH', { id: b.id, is_published: !b.is_published })
+      loadBadges()
+    } catch (err: any) {
+      alert('Erro: ' + err.message)
+    }
   }
 
   async function toggleAtivo(b: Badge) {
-    await supabase.from('badges').update({ is_active: !b.is_active }).eq('id', b.id)
-    loadBadges()
+    try {
+      await apiFetch('PATCH', { id: b.id, is_active: !b.is_active })
+      loadBadges()
+    } catch (err: any) {
+      alert('Erro: ' + err.message)
+    }
   }
 
   async function aplicarAgora(b: Badge) {

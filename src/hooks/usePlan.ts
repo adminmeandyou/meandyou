@@ -139,7 +139,7 @@ export function usePlan() {
     // Buscar tudo em paralelo
     const [userRes, likesRes, superlikesRes, boostsRes, lupasRes, rewindsRes, ticketsRes] =
       await Promise.all([
-        supabase.from('users').select('plan').eq('id', user.id).single(),
+        supabase.from('profiles').select('plan').eq('id', user.id).single(),
         supabase
           .from('likes')
           .select('*', { count: 'exact', head: true })
