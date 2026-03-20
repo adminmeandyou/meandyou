@@ -62,6 +62,7 @@ function Verificacao() {
   const piscarContRef = useRef(0)
   const olhosAbertosRef = useRef(true)
   const deteccaoLoopRef = useRef<NodeJS.Timeout | null>(null)
+  const holdCountRef = useRef(0) // frames consecutivos com condicao ok
   // ✅ CORREÇÃO AVISO 13: ref para selfie usado no auto-submit após liveness
   const selfieFileRef = useRef<File | null>(null)
 
@@ -395,12 +396,14 @@ function Verificacao() {
     setSelfiePreview('')
     piscarContRef.current = 0
     olhosAbertosRef.current = true
+    holdCountRef.current = 0
     pararCamera('selfie')
   }
 
   useEffect(() => {
     if (!deteccaoAtiva || !faceApiCarregado || livenessOk) return
-    deteccaoLoopRef.current = setInterval(() => detectarPasso(), 300)
+    holdCountRef.current = 0
+    deteccaoLoopRef.current = setInterval(() => detectarPasso(), 500)
     return () => { if (deteccaoLoopRef.current) clearInterval(deteccaoLoopRef.current) }
   }, [deteccaoAtiva, faceApiCarregado, passoAtual, livenessOk])
 
@@ -414,13 +417,14 @@ function Verificacao() {
       .withFaceLandmarks()
 
     if (!deteccao) {
+      holdCountRef.current = 0
       setFeedbackLiveness('Rosto não detectado. Centralize o rosto na câmera.')
       return
     }
 
     const landmarks = deteccao.landmarks
     const passoId = PASSOS_LIVENESS[passoAtual]?.id
-    let passou = false
+    let condicaoOk = false
 
     if (passoId === 'frente') {
       const nose = landmarks.getNose()
@@ -431,8 +435,8 @@ function Verificacao() {
       const centro = (jawLeft.x + jawRight.x) / 2
       const diff = Math.abs(noseTip.x - centro)
       const largura = jawRight.x - jawLeft.x
-      if (diff < largura * 0.12) { passou = true; setFeedbackLiveness('✅ Ótimo!') }
-      else setFeedbackLiveness('Olhe diretamente para a câmera')
+      if (diff < largura * 0.12) { condicaoOk = true }
+      else { holdCountRef.current = 0; setFeedbackLiveness('Olhe diretamente para a câmera') }
     }
 
     if (passoId === 'direita') {
@@ -443,8 +447,8 @@ function Verificacao() {
       const jawRight = jaw[16]
       const centro = (jawLeft.x + jawRight.x) / 2
       const largura = jawRight.x - jawLeft.x
-      if (noseTip.x > centro + largura * 0.18) { passou = true; setFeedbackLiveness('✅ Perfeito!') }
-      else setFeedbackLiveness('Vire mais para a direita')
+      if (noseTip.x > centro + largura * 0.22) { condicaoOk = true }
+      else { holdCountRef.current = 0; setFeedbackLiveness('Vire mais para a direita') }
     }
 
     if (passoId === 'esquerda') {
@@ -455,8 +459,8 @@ function Verificacao() {
       const jawRight = jaw[16]
       const centro = (jawLeft.x + jawRight.x) / 2
       const largura = jawRight.x - jawLeft.x
-      if (noseTip.x < centro - largura * 0.18) { passou = true; setFeedbackLiveness('✅ Perfeito!') }
-      else setFeedbackLiveness('Vire mais para a esquerda')
+      if (noseTip.x < centro - largura * 0.22) { condicaoOk = true }
+      else { holdCountRef.current = 0; setFeedbackLiveness('Vire mais para a esquerda') }
     }
 
     if (passoId === 'cima') {
@@ -464,8 +468,8 @@ function Verificacao() {
       const chin = landmarks.getJawOutline()[8]
       const noseBridge = nose[0]
       const diff = chin.y - noseBridge.y
-      if (diff < 65) { passou = true; setFeedbackLiveness('✅ Ótimo!') }
-      else setFeedbackLiveness('Levante mais o queixo')
+      if (diff < 58) { condicaoOk = true }
+      else { holdCountRef.current = 0; setFeedbackLiveness('Levante mais o queixo') }
     }
 
     if (passoId === 'baixo') {
@@ -473,8 +477,8 @@ function Verificacao() {
       const chin = landmarks.getJawOutline()[8]
       const noseBridge = nose[0]
       const diff = chin.y - noseBridge.y
-      if (diff > 110) { passou = true; setFeedbackLiveness('✅ Ótimo!') }
-      else setFeedbackLiveness('Abaixe mais o queixo')
+      if (diff > 118) { condicaoOk = true }
+      else { holdCountRef.current = 0; setFeedbackLiveness('Abaixe mais o queixo') }
     }
 
     if (passoId === 'piscar') {
@@ -491,10 +495,22 @@ function Verificacao() {
       } else if (ear > 0.28) {
         olhosAbertosRef.current = true
       }
-      if (piscarContRef.current >= 2) { passou = true; setFeedbackLiveness('✅ Perfeito!') }
+      if (piscarContRef.current >= 2) { condicaoOk = true }
     }
 
+    // Exige 3 frames consecutivos para confirmar (evita falso positivo por frame unico)
+    if (condicaoOk && passoId !== 'piscar') {
+      holdCountRef.current += 1
+      if (holdCountRef.current < 3) {
+        setFeedbackLiveness('Mantenha a posição...')
+        return
+      }
+    }
+
+    const passou = condicaoOk && (passoId === 'piscar' ? piscarContRef.current >= 2 : holdCountRef.current >= 3)
+
     if (passou) {
+      holdCountRef.current = 0
       if (deteccaoLoopRef.current) clearInterval(deteccaoLoopRef.current)
       setDeteccaoAtiva(false)
 
