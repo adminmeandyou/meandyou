@@ -15,7 +15,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/conversas', label: 'Chat',       icon: MessageCircle },
   { href: '/busca',     label: 'Descobrir',  icon: Compass },
-  { href: '/salas',     label: 'Salas',      icon: Zap, center: true },
+  { href: '/roleta',    label: 'Roleta',     icon: Zap, center: true },
   { href: '/loja',      label: 'Loja',       icon: ShoppingBag },
   { href: '/perfil',    label: 'Perfil',     icon: User },
 ]
