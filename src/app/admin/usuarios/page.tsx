@@ -87,19 +87,19 @@ export default function AdminUsuarios() {
       {/* Search + filtros */}
       <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
         <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
-          <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#555' }} />
+          <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(248,249,250,0.40)' }} />
           <input
             placeholder="Buscar por nome ou email..."
             value={search}
             onChange={e => setSearch(e.target.value)}
-            style={{ width: '100%', paddingLeft: '36px', padding: '10px 12px 10px 36px', backgroundColor: '#111', border: '1px solid #222', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none' }}
+            style={{ width: '100%', paddingLeft: '36px', padding: '10px 12px 10px 36px', backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none' }}
           />
         </div>
         <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
           {FILTERS.map(f => (
             <button key={f} onClick={() => setFilter(f)} style={{
               padding: '8px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px',
-              backgroundColor: filter === f ? '#e11d48' : '#1a1a1a',
+              backgroundColor: filter === f ? '#e11d48' : '#13161F',
               color: filter === f ? '#fff' : '#666',
             }}>
               {FILTER_LABELS[f]}
@@ -114,20 +114,20 @@ export default function AdminUsuarios() {
           type="date"
           value={dateRange.inicio}
           onChange={e => setDateRange(d => ({ ...d, inicio: e.target.value }))}
-          style={{ padding: '8px 12px', backgroundColor: '#111', border: '1px solid #222', borderRadius: '8px', color: '#fff', fontSize: '13px', outline: 'none' }}
+          style={{ padding: '8px 12px', backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#fff', fontSize: '13px', outline: 'none' }}
         />
-        <span style={{ color: '#444', fontSize: '13px' }}>até</span>
+        <span style={{ color: 'rgba(248,249,250,0.40)', fontSize: '13px' }}>até</span>
         <input
           type="date"
           value={dateRange.fim}
           onChange={e => setDateRange(d => ({ ...d, fim: e.target.value }))}
-          style={{ padding: '8px 12px', backgroundColor: '#111', border: '1px solid #222', borderRadius: '8px', color: '#fff', fontSize: '13px', outline: 'none' }}
+          style={{ padding: '8px 12px', backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#fff', fontSize: '13px', outline: 'none' }}
         />
         <div style={{ display: 'flex', gap: '4px', marginLeft: 'auto', alignItems: 'center' }}>
           {(['csv', 'txt'] as const).map(fmt => (
             <button key={fmt} onClick={() => setExportFormat(fmt)} style={{
               padding: '8px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px',
-              backgroundColor: exportFormat === fmt ? '#1a1a1a' : 'transparent',
+              backgroundColor: exportFormat === fmt ? '#13161F' : 'transparent',
               color: exportFormat === fmt ? '#fff' : '#555',
             }}>.{fmt}</button>
           ))}
@@ -144,31 +144,31 @@ export default function AdminUsuarios() {
       </div>
 
       {/* Tabela */}
-      <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '16px', overflow: 'hidden' }}>
+      <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', overflow: 'hidden' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
           <thead>
-            <tr style={{ borderBottom: '1px solid #1e1e1e' }}>
+            <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
               {['Nome', 'Email', 'Plano', 'Status', 'Denúncias', 'Cadastro', 'Ações'].map(h => (
-                <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: '#444', fontWeight: '600', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: 'rgba(248,249,250,0.40)', fontWeight: '600', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: '#444' }}>Carregando...</td></tr>
+              <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'rgba(248,249,250,0.40)' }}>Carregando...</td></tr>
             ) : users.length === 0 ? (
-              <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: '#444' }}>Nenhum usuário encontrado</td></tr>
+              <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'rgba(248,249,250,0.40)' }}>Nenhum usuário encontrado</td></tr>
             ) : users.map(u => (
-              <tr key={u.id} style={{ borderBottom: '1px solid #161616' }}>
+              <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                 <td style={{ padding: '12px 16px', color: '#fff' }}>{u.name ?? '—'}</td>
-                <td style={{ padding: '12px 16px', color: '#888' }}>{u.email ?? '—'}</td>
+                <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.50)' }}>{u.email ?? '—'}</td>
                 <td style={{ padding: '12px 16px' }}>
                   {u.plan ? (
                     <span style={{ padding: '3px 10px', borderRadius: '100px', fontSize: '12px', fontWeight: '600',
                       backgroundColor: u.plan === 'black' ? '#f59e0b22' : u.plan === 'plus' ? '#3b82f622' : '#6b728022',
                       color:           u.plan === 'black' ? '#f59e0b'   : u.plan === 'plus' ? '#3b82f6'   : '#9ca3af',
                     }}>{u.plan}</span>
-                  ) : <span style={{ color: '#333' }}>—</span>}
+                  ) : <span style={{ color: 'rgba(248,249,250,0.20)' }}>—</span>}
                 </td>
                 <td style={{ padding: '12px 16px' }}>
                   {u.banned ? (
@@ -184,12 +184,12 @@ export default function AdminUsuarios() {
                 <td style={{ padding: '12px 16px', color: u.reports_received > 0 ? '#ef4444' : '#444' }}>
                   {u.reports_received}
                 </td>
-                <td style={{ padding: '12px 16px', color: '#555', fontSize: '13px' }}>
+                <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.40)', fontSize: '13px' }}>
                   {new Date(u.created_at).toLocaleDateString('pt-BR')}
                 </td>
                 <td style={{ padding: '12px 16px' }}>
                   <div style={{ display: 'flex', gap: '8px' }}>
-                    <a href={`/perfil/${u.id}`} target="_blank" style={{ color: '#555', display: 'flex' }}>
+                    <a href={`/perfil/${u.id}`} target="_blank" style={{ color: 'rgba(248,249,250,0.40)', display: 'flex' }}>
                       <Eye size={16} />
                     </a>
                     {u.banned ? (
@@ -212,18 +212,18 @@ export default function AdminUsuarios() {
       {/* Modal de ban */}
       {banModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: '#000a', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <div style={{ backgroundColor: '#111', border: '1px solid #222', borderRadius: '20px', padding: '28px', width: '100%', maxWidth: '400px' }}>
+          <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '20px', padding: '28px', width: '100%', maxWidth: '400px' }}>
             <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '18px', marginBottom: '8px' }}>Banir {banModal.name}?</h3>
-            <p style={{ color: '#555', fontSize: '14px', marginBottom: '16px' }}>Esta ação impede o usuário de acessar o app. Pode ser desfeita.</p>
+            <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', marginBottom: '16px' }}>Esta ação impede o usuário de acessar o app. Pode ser desfeita.</p>
             <textarea
               placeholder="Motivo do banimento..."
               value={banReason}
               onChange={e => setBanReason(e.target.value)}
               rows={3}
-              style={{ width: '100%', backgroundColor: '#1a1a1a', border: '1px solid #333', borderRadius: '10px', padding: '10px', color: '#fff', fontSize: '14px', resize: 'none', outline: 'none' }}
+              style={{ width: '100%', backgroundColor: '#13161F', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', padding: '10px', color: '#fff', fontSize: '14px', resize: 'none', outline: 'none' }}
             />
             <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
-              <button onClick={() => setBanModal(null)} style={{ flex: 1, padding: '10px', backgroundColor: '#1a1a1a', border: 'none', borderRadius: '10px', color: '#666', cursor: 'pointer', fontSize: '14px' }}>Cancelar</button>
+              <button onClick={() => setBanModal(null)} style={{ flex: 1, padding: '10px', backgroundColor: '#13161F', border: 'none', borderRadius: '10px', color: 'rgba(248,249,250,0.40)', cursor: 'pointer', fontSize: '14px' }}>Cancelar</button>
               <button onClick={banUser} style={{ flex: 1, padding: '10px', backgroundColor: '#ef4444', border: 'none', borderRadius: '10px', color: '#fff', cursor: 'pointer', fontSize: '14px', fontWeight: '600' }}>Banir</button>
             </div>
           </div>

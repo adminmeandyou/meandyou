@@ -104,22 +104,22 @@ function UserDrawer({ filterKey, title, onClose }: { filterKey: FilterKey; title
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex' }}>
       <div style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)' }} onClick={onClose} />
-      <div style={{ width: '660px', maxWidth: '96vw', backgroundColor: '#111', borderLeft: '1px solid #222', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '20px 24px', borderBottom: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
+      <div style={{ width: '660px', maxWidth: '96vw', backgroundColor: '#0F1117', borderLeft: '1px solid rgba(255,255,255,0.07)', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div>
             <p style={{ fontWeight: '700', fontSize: '16px', color: '#fff' }}>{title}</p>
-            {!loading && <p style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>{users.length} usuário{users.length !== 1 ? 's' : ''}</p>}
+            {!loading && <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)', marginTop: '2px' }}>{users.length} usuário{users.length !== 1 ? 's' : ''}</p>}
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666', padding: '4px', display: 'flex' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(248,249,250,0.40)', padding: '4px', display: 'flex' }}>
             <X size={20} />
           </button>
         </div>
 
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#555' }}>Carregando...</div>
+            <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(248,249,250,0.40)' }}>Carregando...</div>
           ) : users.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#555' }}>Nenhum usuário encontrado</div>
+            <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(248,249,250,0.40)' }}>Nenhum usuário encontrado</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {users.map(u => <DrawerUserRow key={u.id} user={u} />)}
@@ -136,14 +136,14 @@ function DrawerUserRow({ user: u }: { user: UserItem }) {
   const statusColor = ({ banido: '#ef4444', 'excluído': '#6b7280', verificado: '#22c55e', pendente: '#f59e0b' } as Record<string, string>)[status]
 
   return (
-    <div style={{ backgroundColor: '#0a0a0a', border: '1px solid #1e1e1e', borderRadius: '10px', padding: '12px 16px', display: 'grid', gridTemplateColumns: '40px 1fr auto', gap: '12px', alignItems: 'center' }}>
+    <div style={{ backgroundColor: '#0a0a0a', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', padding: '12px 16px', display: 'grid', gridTemplateColumns: '40px 1fr auto', gap: '12px', alignItems: 'center' }}>
       <div style={{
         width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-        backgroundColor: '#1a1a1a',
+        backgroundColor: '#13161F',
         backgroundImage: u.photo_best ? `url(${u.photo_best})` : undefined,
         backgroundSize: 'cover', backgroundPosition: 'center',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: '15px', color: '#555',
+        fontSize: '15px', color: 'rgba(248,249,250,0.40)',
       }}>
         {!u.photo_best && '?'}
       </div>
@@ -163,7 +163,7 @@ function DrawerUserRow({ user: u }: { user: UserItem }) {
             </span>
           )}
         </div>
-        <p style={{ fontSize: '12px', color: '#666', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {u.email}{u.age ? ` · ${u.age} anos` : ''}{u.city ? ` · ${u.city}` : ''}{u.gender ? ` · ${u.gender}` : ''}
         </p>
         <p style={{ fontSize: '11px', color: '#3a3a3a', marginTop: '1px' }}>
@@ -173,7 +173,7 @@ function DrawerUserRow({ user: u }: { user: UserItem }) {
         </p>
       </div>
 
-      <a href={`/perfil/${u.id}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', fontWeight: '600', padding: '6px 12px', borderRadius: '8px', border: '1px solid #2a2a2a', color: '#888', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+      <a href={`/perfil/${u.id}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', fontWeight: '600', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(248,249,250,0.50)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
         Ver perfil
       </a>
     </div>
@@ -192,21 +192,21 @@ function Card({ label, value, sub, icon: Icon, color = '#e11d48', onClick, linkT
     <div
       onClick={onClick}
       style={{
-        backgroundColor: '#111', border: `1px solid ${isClickable ? '#2a2a2a' : '#1e1e1e'}`, borderRadius: '16px', padding: '20px',
+        backgroundColor: '#0F1117', border: `1px solid ${isClickable ? '#2a2a2a' : '#1e1e1e'}`, borderRadius: '16px', padding: '20px',
         cursor: isClickable ? 'pointer' : 'default',
         transition: 'border-color 0.15s, background-color 0.15s',
       }}
       onMouseEnter={e => { if (isClickable) { (e.currentTarget as HTMLDivElement).style.borderColor = color + '55'; (e.currentTarget as HTMLDivElement).style.backgroundColor = '#161616' } }}
-      onMouseLeave={e => { if (isClickable) { (e.currentTarget as HTMLDivElement).style.borderColor = '#2a2a2a'; (e.currentTarget as HTMLDivElement).style.backgroundColor = '#111' } }}
+      onMouseLeave={e => { if (isClickable) { (e.currentTarget as HTMLDivElement).style.borderColor = '#2a2a2a'; (e.currentTarget as HTMLDivElement).style.backgroundColor = '#0F1117' } }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-        <p style={{ fontSize: '13px', color: '#555', fontWeight: '500' }}>{label}</p>
+        <p style={{ fontSize: '13px', color: 'rgba(248,249,250,0.40)', fontWeight: '500' }}>{label}</p>
         <div style={{ backgroundColor: color + '18', borderRadius: '8px', padding: '6px' }}>
           <Icon size={16} color={color} />
         </div>
       </div>
       <p style={{ fontSize: '28px', fontWeight: '700', color: '#fff', fontFamily: 'var(--font-fraunces)' }}>{value ?? '—'}</p>
-      {sub && <p style={{ fontSize: '12px', color: '#444', marginTop: '4px' }}>{sub}</p>}
+      {sub && <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)', marginTop: '4px' }}>{sub}</p>}
       {isClickable && <p style={{ fontSize: '11px', color: color + '88', marginTop: '6px' }}>Clique para ver usuários</p>}
     </div>
   )
@@ -282,9 +282,9 @@ export default function AdminDashboard() {
       <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'var(--font-fraunces)' }}>Dashboard</h1>
-          <p style={{ color: '#555', fontSize: '14px', marginTop: '4px' }}>Atualiza automaticamente a cada 30 segundos · Clique nos cards para ver os usuários</p>
+          <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', marginTop: '4px' }}>Atualiza automaticamente a cada 30 segundos · Clique nos cards para ver os usuários</p>
         </div>
-        <Link href="/admin/insights" style={{ fontSize: '13px', fontWeight: '600', padding: '8px 16px', borderRadius: '10px', border: '1px solid #2a2a2a', color: '#aaa', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <Link href="/admin/insights" style={{ fontSize: '13px', fontWeight: '600', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.07)', color: '#aaa', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '6px' }}>
           <BarChart2 size={14} />
           Perfil de Clientes
         </Link>
@@ -367,7 +367,7 @@ export default function AdminDashboard() {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: '32px' }}>
-      <p style={{ fontSize: '13px', fontWeight: '600', color: '#444', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</p>
+      <p style={{ fontSize: '13px', fontWeight: '600', color: 'rgba(248,249,250,0.40)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</p>
       {children}
     </div>
   )

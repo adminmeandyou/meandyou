@@ -64,7 +64,7 @@ export default function AdminDenuncias() {
         {(['pending', 'resolved', 'ignored'] as const).map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{
             padding: '8px 16px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px',
-            backgroundColor: filter === f ? '#e11d48' : '#1a1a1a',
+            backgroundColor: filter === f ? '#e11d48' : '#13161F',
             color: filter === f ? '#fff' : '#666',
           }}>
             {{ pending: 'Pendentes', resolved: 'Resolvidas', ignored: 'Ignoradas' }[f]}
@@ -73,42 +73,42 @@ export default function AdminDenuncias() {
       </div>
 
       {loading ? (
-        <p style={{ color: '#555' }}>Carregando...</p>
+        <p style={{ color: 'rgba(248,249,250,0.40)' }}>Carregando...</p>
       ) : reports.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '60px', color: '#444' }}>
+        <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(248,249,250,0.40)' }}>
           <p style={{ fontSize: '32px', marginBottom: '8px' }}>✓</p>
           <p>Nenhuma denúncia {filter === 'pending' ? 'pendente' : filter === 'resolved' ? 'resolvida' : 'ignorada'}</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {reports.map(r => (
-            <div key={r.id} style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '18px 20px' }}>
+            <div key={r.id} style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '18px 20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
                 <div style={{ flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                     <span style={{ backgroundColor: '#ef444422', color: '#ef4444', fontSize: '12px', fontWeight: '600', padding: '3px 10px', borderRadius: '100px' }}>
                       {REASON_LABEL[r.reason] ?? r.reason}
                     </span>
-                    <span style={{ fontSize: '12px', color: '#444' }}>
+                    <span style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)' }}>
                       {new Date(r.created_at).toLocaleDateString('pt-BR')}
                     </span>
                   </div>
-                  <p style={{ fontSize: '14px', color: '#888', marginBottom: '6px' }}>
+                  <p style={{ fontSize: '14px', color: 'rgba(248,249,250,0.50)', marginBottom: '6px' }}>
                     <span style={{ color: '#fff' }}>{r.reporter?.name ?? '?'}</span>
                     {' denunciou '}
                     <span style={{ color: '#fff' }}>{r.reported?.name ?? '?'}</span>
                   </p>
                   {r.description && (
-                    <p style={{ fontSize: '13px', color: '#555', fontStyle: 'italic' }}>"{r.description}"</p>
+                    <p style={{ fontSize: '13px', color: 'rgba(248,249,250,0.40)', fontStyle: 'italic' }}>"{r.description}"</p>
                   )}
                 </div>
 
                 {filter === 'pending' && (
                   <div style={{ display: 'flex', gap: '8px', flexShrink: 0 }}>
-                    <a href={`/perfil/${r.reported?.id}`} target="_blank" title="Ver perfil" style={{ padding: '8px', backgroundColor: '#1a1a1a', borderRadius: '8px', color: '#666', display: 'flex', textDecoration: 'none' }}>
+                    <a href={`/perfil/${r.reported?.id}`} target="_blank" title="Ver perfil" style={{ padding: '8px', backgroundColor: '#13161F', borderRadius: '8px', color: 'rgba(248,249,250,0.40)', display: 'flex', textDecoration: 'none' }}>
                       <Eye size={15} />
                     </a>
-                    <button onClick={() => resolve(r.id, 'ignored')} title="Ignorar" style={{ padding: '8px', backgroundColor: '#1a1a1a', border: 'none', borderRadius: '8px', color: '#666', cursor: 'pointer', display: 'flex' }}>
+                    <button onClick={() => resolve(r.id, 'ignored')} title="Ignorar" style={{ padding: '8px', backgroundColor: '#13161F', border: 'none', borderRadius: '8px', color: 'rgba(248,249,250,0.40)', cursor: 'pointer', display: 'flex' }}>
                       <XCircle size={15} />
                     </button>
                     <button onClick={() => resolve(r.id, 'resolved')} title="Resolver" style={{ padding: '8px', backgroundColor: '#22c55e22', border: 'none', borderRadius: '8px', color: '#22c55e', cursor: 'pointer', display: 'flex' }}>

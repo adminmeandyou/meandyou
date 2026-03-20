@@ -131,15 +131,15 @@ export default function EquipePage() {
       {/* Header */}
       <div style={{ marginBottom: '28px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: '700', margin: '0 0 4px' }}>Equipe</h1>
-        <p style={{ color: '#555', fontSize: '14px', margin: 0 }}>
+        <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', margin: 0 }}>
           Gerencie os membros da equipe e suas permissões de acesso
         </p>
       </div>
 
       {/* Formulário adicionar membro */}
       <div style={{
-        backgroundColor: '#111',
-        border: '1px solid #1e1e1e',
+        backgroundColor: '#0F1117',
+        border: '1px solid rgba(255,255,255,0.07)',
         borderRadius: '14px',
         padding: '20px',
         marginBottom: '28px',
@@ -149,7 +149,7 @@ export default function EquipePage() {
         </h2>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <div style={{ flex: '1', minWidth: '220px' }}>
-            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '12px', color: 'rgba(248,249,250,0.50)', marginBottom: '6px' }}>
               E-mail
             </label>
             <input
@@ -161,7 +161,7 @@ export default function EquipePage() {
                 width: '100%',
                 padding: '10px 12px',
                 borderRadius: '8px',
-                border: '1px solid #2a2a2a',
+                border: '1px solid rgba(255,255,255,0.07)',
                 backgroundColor: '#0a0a0a',
                 color: '#fff',
                 fontSize: '14px',
@@ -171,7 +171,7 @@ export default function EquipePage() {
             />
           </div>
           <div style={{ flex: '1', minWidth: '200px' }}>
-            <label style={{ display: 'block', fontSize: '12px', color: '#888', marginBottom: '6px' }}>
+            <label style={{ display: 'block', fontSize: '12px', color: 'rgba(248,249,250,0.50)', marginBottom: '6px' }}>
               Função
             </label>
             <select
@@ -181,7 +181,7 @@ export default function EquipePage() {
                 width: '100%',
                 padding: '10px 12px',
                 borderRadius: '8px',
-                border: '1px solid #2a2a2a',
+                border: '1px solid rgba(255,255,255,0.07)',
                 backgroundColor: '#0a0a0a',
                 color: '#fff',
                 fontSize: '14px',
@@ -243,15 +243,15 @@ export default function EquipePage() {
 
       {/* Lista de membros */}
       {loading ? (
-        <div style={{ textAlign: 'center', color: '#555', padding: '60px 0' }}>Carregando...</div>
+        <div style={{ textAlign: 'center', color: 'rgba(248,249,250,0.40)', padding: '60px 0' }}>Carregando...</div>
       ) : members.length === 0 ? (
         <div style={{
-          backgroundColor: '#111',
-          border: '1px solid #1e1e1e',
+          backgroundColor: '#0F1117',
+          border: '1px solid rgba(255,255,255,0.07)',
           borderRadius: '12px',
           padding: '40px',
           textAlign: 'center',
-          color: '#555',
+          color: 'rgba(248,249,250,0.40)',
         }}>
           Nenhum membro na equipe ainda.
         </div>
@@ -261,7 +261,7 @@ export default function EquipePage() {
             <div
               key={m.id}
               style={{
-                backgroundColor: '#111',
+                backgroundColor: '#0F1117',
                 border: `1px solid ${m.active ? '#1e1e1e' : '#1a0a0a'}`,
                 borderRadius: '12px',
                 padding: '16px 20px',
@@ -277,7 +277,7 @@ export default function EquipePage() {
                 <p style={{ margin: '0 0 2px', fontWeight: '600', fontSize: '14px', color: '#fff' }}>
                   {m.profiles?.name ?? 'Sem nome'}
                 </p>
-                <p style={{ margin: '0', fontSize: '13px', color: '#888' }}>
+                <p style={{ margin: '0', fontSize: '13px', color: 'rgba(248,249,250,0.50)' }}>
                   {m.users?.email ?? m.user_id}
                 </p>
               </div>
@@ -290,17 +290,17 @@ export default function EquipePage() {
                   fontWeight: '600',
                   padding: '2px 10px',
                   borderRadius: '6px',
-                  backgroundColor: '#1a1a1a',
+                  backgroundColor: '#13161F',
                   color: '#aaa',
-                  border: '1px solid #2a2a2a',
+                  border: '1px solid rgba(255,255,255,0.07)',
                   marginBottom: '6px',
                 }}>
                   {ROLE_CONFIG[m.role as Role]?.label ?? m.role}
                 </span>
-                <p style={{ margin: '0 0 2px', fontSize: '11px', color: '#555' }}>
+                <p style={{ margin: '0 0 2px', fontSize: '11px', color: 'rgba(248,249,250,0.40)' }}>
                   {ROLE_CONFIG[m.role as Role]?.description ?? ''}
                 </p>
-                <p style={{ margin: '0', fontSize: '11px', color: '#444' }}>
+                <p style={{ margin: '0', fontSize: '11px', color: 'rgba(248,249,250,0.40)' }}>
                   Adicionado em {formatDate(m.created_at)} ·{' '}
                   <span style={{ color: m.active ? '#22c55e' : '#ef4444' }}>
                     {m.active ? 'Ativo' : 'Inativo'}

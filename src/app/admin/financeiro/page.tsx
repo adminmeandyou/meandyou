@@ -27,7 +27,7 @@ export default function AdminFinanceiro() {
   const planColor: Record<string, string> = { essencial: '#6b7280', plus: '#3b82f6', black: '#f59e0b' }
   const maxSignups = Math.max(...signups.map(s => s.signups), 1)
 
-  if (loading) return <div style={{ padding: '32px', color: '#555' }}>Carregando...</div>
+  if (loading) return <div style={{ padding: '32px', color: 'rgba(248,249,250,0.40)' }}>Carregando...</div>
 
   return (
     <div style={{ padding: '32px', maxWidth: '1000px' }}>
@@ -51,12 +51,12 @@ export default function AdminFinanceiro() {
       <Section title="Assinaturas por plano">
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {revenue.map(r => (
-            <div key={r.plan} style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div key={r.plan} style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '16px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: planColor[r.plan] ?? '#fff' }} />
                 <div>
                   <p style={{ fontWeight: '600', textTransform: 'capitalize' }}>{r.plan}</p>
-                  <p style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>
+                  <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)', marginTop: '2px' }}>
                     {r.plan === 'essencial' ? 'R$10/mês' : r.plan === 'plus' ? 'R$39/mês' : 'R$100/mês'}
                   </p>
                 </div>
@@ -71,7 +71,7 @@ export default function AdminFinanceiro() {
       </Section>
 
       <Section title="Cadastros por dia (últimos 30 dias)">
-        <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '20px' }}>
+        <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '20px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '4px', height: '120px' }}>
             {[...signups].reverse().map((s, i) => (
               <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', height: '100%', justifyContent: 'flex-end' }}>
@@ -89,8 +89,8 @@ export default function AdminFinanceiro() {
             ))}
           </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px' }}>
-            <p style={{ fontSize: '11px', color: '#444' }}>{signups[signups.length - 1]?.day ?? ''}</p>
-            <p style={{ fontSize: '11px', color: '#444' }}>{signups[0]?.day ?? ''}</p>
+            <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)' }}>{signups[signups.length - 1]?.day ?? ''}</p>
+            <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)' }}>{signups[0]?.day ?? ''}</p>
           </div>
         </div>
       </Section>
@@ -101,12 +101,12 @@ export default function AdminFinanceiro() {
 function Section({ title, children }: any) {
   return (
     <div style={{ marginBottom: '32px' }}>
-      <p style={{ fontSize: '12px', fontWeight: '600', color: '#444', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</p>
+      <p style={{ fontSize: '12px', fontWeight: '600', color: 'rgba(248,249,250,0.40)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</p>
       {children}
     </div>
   )
 }
 
-const card: React.CSSProperties = { backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '20px' }
-const cardLabel: React.CSSProperties = { fontSize: '13px', color: '#555', marginBottom: '8px' }
+const card: React.CSSProperties = { backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '20px' }
+const cardLabel: React.CSSProperties = { fontSize: '13px', color: 'rgba(248,249,250,0.40)', marginBottom: '8px' }
 const cardValue: React.CSSProperties = { fontSize: '26px', fontWeight: '700', fontFamily: 'var(--font-fraunces)' }

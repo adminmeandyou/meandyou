@@ -45,7 +45,7 @@ function Toggle({ ativo, onChange, disabled }: { ativo: boolean; onChange: () =>
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div style={{ marginBottom: '28px' }}>
-      <p style={{ fontSize: '12px', fontWeight: '600', color: '#444', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</p>
+      <p style={{ fontSize: '12px', fontWeight: '600', color: 'rgba(248,249,250,0.40)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{title}</p>
       {children}
     </div>
   )
@@ -157,7 +157,7 @@ export default function AdminMarketing() {
     return notifSettings.find((s: any) => s.evento === evento && s.canal === canal)
   }
 
-  if (loading) return <div style={{ padding: '32px', color: '#555' }}>Carregando...</div>
+  if (loading) return <div style={{ padding: '32px', color: 'rgba(248,249,250,0.40)' }}>Carregando...</div>
 
   const { metrics, referrals, deleted } = analyticsData ?? {}
   const total      = metrics?.total_users ?? 0
@@ -170,14 +170,14 @@ export default function AdminMarketing() {
       <h1 style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'var(--font-fraunces)', marginBottom: '24px' }}>Marketing</h1>
 
       {/* Abas */}
-      <div style={{ display: 'flex', gap: '4px', marginBottom: '28px', backgroundColor: '#111', borderRadius: '12px', padding: '4px', width: 'fit-content' }}>
+      <div style={{ display: 'flex', gap: '4px', marginBottom: '28px', backgroundColor: '#0F1117', borderRadius: '12px', padding: '4px', width: 'fit-content' }}>
         {TABS.map(t => {
           const Icon = t.icon
           return (
             <button key={t.id} onClick={() => setTab(t.id)} style={{
               display: 'flex', alignItems: 'center', gap: '8px',
               padding: '8px 16px', borderRadius: '10px', border: 'none', cursor: 'pointer',
-              backgroundColor: tab === t.id ? '#1a1a1a' : 'transparent',
+              backgroundColor: tab === t.id ? '#13161F' : 'transparent',
               color: tab === t.id ? '#fff' : '#555',
               fontSize: '14px', fontWeight: tab === t.id ? '600' : '400',
             }}>
@@ -192,7 +192,7 @@ export default function AdminMarketing() {
       {tab === 'analytics' && (
         <>
           <Section title="Funil de conversao">
-            <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {[
                 { label: 'Cadastraram', value: total,      color: '#3b82f6' },
                 { label: 'Verificaram', value: verified,   color: '#a855f7' },
@@ -202,8 +202,8 @@ export default function AdminMarketing() {
                 return (
                   <div key={i}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '13px', color: '#888' }}>{step.label}</span>
-                      <span style={{ fontSize: '13px', fontWeight: '600' }}>{step.value} <span style={{ color: '#555', fontWeight: '400' }}>({pct}%)</span></span>
+                      <span style={{ fontSize: '13px', color: 'rgba(248,249,250,0.50)' }}>{step.label}</span>
+                      <span style={{ fontSize: '13px', fontWeight: '600' }}>{step.value} <span style={{ color: 'rgba(248,249,250,0.40)', fontWeight: '400' }}>({pct}%)</span></span>
                     </div>
                     <div style={{ height: '6px', backgroundColor: '#1e1e1e', borderRadius: '100px', overflow: 'hidden' }}>
                       <div style={{ height: '100%', width: `${pct}%`, backgroundColor: step.color, borderRadius: '100px' }} />
@@ -211,35 +211,35 @@ export default function AdminMarketing() {
                   </div>
                 )
               })}
-              <p style={{ fontSize: '12px', color: '#444', marginTop: '8px' }}>Taxa cadastro -&gt; assinatura: <strong style={{ color: '#22c55e' }}>{convRate}%</strong></p>
+              <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)', marginTop: '8px' }}>Taxa cadastro -&gt; assinatura: <strong style={{ color: '#22c55e' }}>{convRate}%</strong></p>
             </div>
           </Section>
 
           <Section title={`Indicacoes (${referrals?.length ?? 0})`}>
-            <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', overflow: 'hidden' }}>
+            <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', overflow: 'hidden' }}>
               {(referrals?.length ?? 0) === 0 ? (
-                <p style={{ padding: '20px', color: '#444', textAlign: 'center' }}>Nenhuma indicacao ainda</p>
+                <p style={{ padding: '20px', color: 'rgba(248,249,250,0.40)', textAlign: 'center' }}>Nenhuma indicacao ainda</p>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #1e1e1e' }}>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                       {['Indicou', 'Indicado', 'Status', 'Data'].map(h => (
-                        <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: '#444', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                        <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: 'rgba(248,249,250,0.40)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {referrals.map((r: any) => (
-                      <tr key={r.id} style={{ borderBottom: '1px solid #161616' }}>
+                      <tr key={r.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                         <td style={{ padding: '12px 16px' }}>{r.referrer?.name ?? '\u2014'}</td>
-                        <td style={{ padding: '12px 16px', color: '#888' }}>{r.referred?.name ?? '\u2014'}</td>
+                        <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.50)' }}>{r.referred?.name ?? '\u2014'}</td>
                         <td style={{ padding: '12px 16px' }}>
                           <span style={{ padding: '3px 10px', borderRadius: '100px', fontSize: '12px', fontWeight: '600',
                             backgroundColor: r.status === 'rewarded' ? '#22c55e22' : '#f59e0b22',
                             color: r.status === 'rewarded' ? '#22c55e' : '#f59e0b',
                           }}>{r.status === 'rewarded' ? 'Convertida' : 'Pendente'}</span>
                         </td>
-                        <td style={{ padding: '12px 16px', color: '#444', fontSize: '13px' }}>{new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
+                        <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.40)', fontSize: '13px' }}>{new Date(r.created_at).toLocaleDateString('pt-BR')}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -249,23 +249,23 @@ export default function AdminMarketing() {
           </Section>
 
           <Section title={`Excluiram a conta (${deleted?.length ?? 0})`}>
-            <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', overflow: 'hidden' }}>
+            <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', overflow: 'hidden' }}>
               {(deleted?.length ?? 0) === 0 ? (
-                <p style={{ padding: '20px', color: '#444', textAlign: 'center' }}>Nenhuma conta excluida</p>
+                <p style={{ padding: '20px', color: 'rgba(248,249,250,0.40)', textAlign: 'center' }}>Nenhuma conta excluida</p>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #1e1e1e' }}>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                       {['Nome', 'Data de exclusao'].map(h => (
-                        <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: '#444', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                        <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: 'rgba(248,249,250,0.40)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {deleted.map((u: any) => (
-                      <tr key={u.id} style={{ borderBottom: '1px solid #161616' }}>
-                        <td style={{ padding: '12px 16px', color: '#666' }}>{u.name ?? '\u2014'}</td>
-                        <td style={{ padding: '12px 16px', color: '#444', fontSize: '13px' }}>{new Date(u.deleted_at).toLocaleDateString('pt-BR')}</td>
+                      <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                        <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.40)' }}>{u.name ?? '\u2014'}</td>
+                        <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.40)', fontSize: '13px' }}>{new Date(u.deleted_at).toLocaleDateString('pt-BR')}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -280,18 +280,18 @@ export default function AdminMarketing() {
       {tab === 'campanhas' && (
         <>
           <Section title="Nova campanha">
-            <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
               <input
                 placeholder="Assunto do e-mail"
                 value={campTitulo}
                 onChange={e => setCampTitulo(e.target.value)}
-                style={{ padding: '10px 14px', backgroundColor: '#1a1a1a', border: '1px solid #222', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                style={{ padding: '10px 14px', backgroundColor: '#13161F', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none' }}
               />
               <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                 {['todos', 'essencial', 'plus', 'black'].map(s => (
                   <button key={s} onClick={() => setCampSegmento(s)} style={{
                     padding: '6px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px',
-                    backgroundColor: campSegmento === s ? '#e11d48' : '#1a1a1a',
+                    backgroundColor: campSegmento === s ? '#e11d48' : '#13161F',
                     color: campSegmento === s ? '#fff' : '#666',
                   }}>{s === 'todos' ? 'Todos os usuarios' : `Plano ${s}`}</button>
                 ))}
@@ -301,7 +301,7 @@ export default function AdminMarketing() {
                 value={campCorpo}
                 onChange={e => setCampCorpo(e.target.value)}
                 rows={8}
-                style={{ padding: '12px 14px', backgroundColor: '#1a1a1a', border: '1px solid #222', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none', resize: 'vertical' }}
+                style={{ padding: '12px 14px', backgroundColor: '#13161F', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none', resize: 'vertical' }}
               />
               {campResultado && (
                 <div style={{
@@ -331,27 +331,27 @@ export default function AdminMarketing() {
           </Section>
 
           <Section title="Historico de campanhas">
-            <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', overflow: 'hidden' }}>
+            <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', overflow: 'hidden' }}>
               {historicoLoading ? (
-                <p style={{ padding: '20px', color: '#444', textAlign: 'center' }}>Carregando...</p>
+                <p style={{ padding: '20px', color: 'rgba(248,249,250,0.40)', textAlign: 'center' }}>Carregando...</p>
               ) : historico.length === 0 ? (
-                <p style={{ padding: '20px', color: '#444', textAlign: 'center' }}>Nenhuma campanha enviada ainda</p>
+                <p style={{ padding: '20px', color: 'rgba(248,249,250,0.40)', textAlign: 'center' }}>Nenhuma campanha enviada ainda</p>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #1e1e1e' }}>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                       {['Data', 'Assunto', 'Segmento', 'Enviados', 'Status'].map(h => (
-                        <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: '#444', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                        <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: 'rgba(248,249,250,0.40)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {historico.map((c: any) => (
-                      <tr key={c.id} style={{ borderBottom: '1px solid #161616' }}>
-                        <td style={{ padding: '12px 16px', color: '#555', fontSize: '13px' }}>{new Date(c.created_at).toLocaleDateString('pt-BR')}</td>
+                      <tr key={c.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
+                        <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.40)', fontSize: '13px' }}>{new Date(c.created_at).toLocaleDateString('pt-BR')}</td>
                         <td style={{ padding: '12px 16px', color: '#fff' }}>{c.titulo}</td>
-                        <td style={{ padding: '12px 16px', color: '#888' }}>{c.segmento}</td>
-                        <td style={{ padding: '12px 16px', color: '#888' }}>{c.total_destinatarios}</td>
+                        <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.50)' }}>{c.segmento}</td>
+                        <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.50)' }}>{c.total_destinatarios}</td>
                         <td style={{ padding: '12px 16px' }}>
                           <span style={{
                             padding: '3px 10px', borderRadius: '100px', fontSize: '12px', fontWeight: '600',
@@ -373,8 +373,8 @@ export default function AdminMarketing() {
       {tab === 'notificacoes' && (
         <>
           <Section title="WhatsApp Business API">
-            <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '20px' }}>
-              <p style={{ color: '#555', fontSize: '13px', marginBottom: '12px', lineHeight: 1.6 }}>
+            <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '20px' }}>
+              <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '13px', marginBottom: '12px', lineHeight: 1.6 }}>
                 URL do webhook do provedor WhatsApp (Z-API, Evolution API, Twilio, etc). Deixe em branco ate contratar o servico.
               </p>
               <div style={{ display: 'flex', gap: '10px' }}>
@@ -382,7 +382,7 @@ export default function AdminMarketing() {
                   placeholder="https://api.z-api.io/instances/xxx/token/xxx/send-text"
                   value={whatsappUrl}
                   onChange={e => setWhatsappUrl(e.target.value)}
-                  style={{ flex: 1, padding: '10px 14px', backgroundColor: '#1a1a1a', border: '1px solid #222', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none' }}
+                  style={{ flex: 1, padding: '10px 14px', backgroundColor: '#13161F', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', color: '#fff', fontSize: '13px', outline: 'none' }}
                 />
                 <button onClick={salvarWhatsapp} disabled={salvando} style={{
                   padding: '10px 20px', backgroundColor: '#e11d48', color: '#fff',
@@ -396,15 +396,15 @@ export default function AdminMarketing() {
           </Section>
 
           <Section title="Eventos automaticos">
-            <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', overflow: 'hidden' }}>
+            <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', overflow: 'hidden' }}>
               {notifLoading ? (
-                <p style={{ padding: '20px', color: '#444', textAlign: 'center' }}>Carregando...</p>
+                <p style={{ padding: '20px', color: 'rgba(248,249,250,0.40)', textAlign: 'center' }}>Carregando...</p>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid #1e1e1e' }}>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                       {['Evento', 'E-mail', 'WhatsApp'].map(h => (
-                        <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: '#444', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
+                        <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: 'rgba(248,249,250,0.40)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                       ))}
                     </tr>
                   </thead>
@@ -413,7 +413,7 @@ export default function AdminMarketing() {
                       const emailS = getSetting(ev.key, 'email')
                       const waS = getSetting(ev.key, 'whatsapp')
                       return (
-                        <tr key={ev.key} style={{ borderBottom: '1px solid #161616' }}>
+                        <tr key={ev.key} style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
                           <td style={{ padding: '12px 16px', color: '#ccc' }}>{ev.label}</td>
                           <td style={{ padding: '12px 16px' }}>
                             <Toggle ativo={emailS?.ativo ?? false} onChange={() => toggleNotif(ev.key, 'email', !(emailS?.ativo ?? false))} />
@@ -428,7 +428,7 @@ export default function AdminMarketing() {
                 </table>
               )}
               {!whatsappUrl && (
-                <p style={{ padding: '12px 16px', color: '#555', fontSize: '12px', borderTop: '1px solid #1e1e1e' }}>
+                <p style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.40)', fontSize: '12px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
                   Configure a URL do WhatsApp acima para ativar notificacoes via WhatsApp.
                 </p>
               )}

@@ -168,7 +168,7 @@ export default function CancelamentosPage() {
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: '700', margin: '0 0 4px' }}>Cancelamentos</h1>
-        <p style={{ color: '#555', fontSize: '14px', margin: 0 }}>
+        <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', margin: 0 }}>
           Solicitações de cancelamento aguardando processamento manual na Cakto
         </p>
       </div>
@@ -186,7 +186,7 @@ export default function CancelamentosPage() {
               cursor: 'pointer',
               fontSize: '13px',
               fontWeight: filter === f.key ? '600' : '400',
-              backgroundColor: filter === f.key ? '#e11d48' : '#1a1a1a',
+              backgroundColor: filter === f.key ? '#e11d48' : '#13161F',
               color: filter === f.key ? '#fff' : '#888',
               transition: 'all 0.15s',
             }}
@@ -217,11 +217,11 @@ export default function CancelamentosPage() {
             marginLeft: 'auto',
             padding: '8px 14px',
             borderRadius: '8px',
-            border: '1px solid #222',
+            border: '1px solid rgba(255,255,255,0.07)',
             cursor: 'pointer',
             fontSize: '13px',
             backgroundColor: 'transparent',
-            color: '#888',
+            color: 'rgba(248,249,250,0.50)',
           }}
         >
           Atualizar
@@ -230,15 +230,15 @@ export default function CancelamentosPage() {
 
       {/* Tabela */}
       {loading ? (
-        <div style={{ textAlign: 'center', color: '#555', padding: '60px 0' }}>Carregando...</div>
+        <div style={{ textAlign: 'center', color: 'rgba(248,249,250,0.40)', padding: '60px 0' }}>Carregando...</div>
       ) : filtered.length === 0 ? (
         <div style={{
-          backgroundColor: '#111',
-          border: '1px solid #222',
+          backgroundColor: '#0F1117',
+          border: '1px solid rgba(255,255,255,0.07)',
           borderRadius: '12px',
           padding: '40px',
           textAlign: 'center',
-          color: '#555',
+          color: 'rgba(248,249,250,0.40)',
         }}>
           Nenhuma solicitação encontrada para este filtro.
         </div>
@@ -248,8 +248,8 @@ export default function CancelamentosPage() {
             <div
               key={req.id}
               style={{
-                backgroundColor: '#111',
-                border: '1px solid #1e1e1e',
+                backgroundColor: '#0F1117',
+                border: '1px solid rgba(255,255,255,0.07)',
                 borderRadius: '12px',
                 padding: '16px 20px',
                 display: 'grid',
@@ -263,7 +263,7 @@ export default function CancelamentosPage() {
                 <p style={{ margin: '0 0 2px', fontWeight: '600', fontSize: '14px', color: '#fff' }}>
                   {req.profiles?.name ?? 'Usuário sem nome'}
                 </p>
-                <p style={{ margin: '0 0 6px', fontSize: '13px', color: '#888' }}>
+                <p style={{ margin: '0 0 6px', fontSize: '13px', color: 'rgba(248,249,250,0.50)' }}>
                   {req.users?.email ?? req.user_id}
                 </p>
                 <span style={{
@@ -272,9 +272,9 @@ export default function CancelamentosPage() {
                   fontWeight: '600',
                   padding: '2px 8px',
                   borderRadius: '6px',
-                  backgroundColor: '#1a1a1a',
+                  backgroundColor: '#13161F',
                   color: '#aaa',
-                  border: '1px solid #2a2a2a',
+                  border: '1px solid rgba(255,255,255,0.07)',
                 }}>
                   Plano {PLAN_LABELS[req.plan] ?? req.plan}
                 </span>
@@ -282,11 +282,11 @@ export default function CancelamentosPage() {
 
               {/* Datas + status */}
               <div>
-                <p style={{ margin: '0 0 2px', fontSize: '12px', color: '#666' }}>
+                <p style={{ margin: '0 0 2px', fontSize: '12px', color: 'rgba(248,249,250,0.40)' }}>
                   Solicitado em: <span style={{ color: '#aaa' }}>{req.requested_at ? formatDate(req.requested_at) : '—'}</span>
                 </p>
                 {req.processed_at && (
-                  <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#666' }}>
+                  <p style={{ margin: '0 0 6px', fontSize: '12px', color: 'rgba(248,249,250,0.40)' }}>
                     Processado em: <span style={{ color: '#aaa' }}>{formatDate(req.processed_at)}</span>
                   </p>
                 )}
@@ -345,7 +345,7 @@ export default function CancelamentosPage() {
                   </button>
                 )}
                 {(req.status === 'done' || req.status === 'rejected') && (
-                  <span style={{ fontSize: '12px', color: '#444', textAlign: 'center' }}>Finalizado</span>
+                  <span style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)', textAlign: 'center' }}>Finalizado</span>
                 )}
               </div>
             </div>

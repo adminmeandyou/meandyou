@@ -64,24 +64,24 @@ function ClientDrawer({ clients, title, onClose }: { clients: ClientProfile[]; t
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, display: 'flex' }}>
       <div style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.75)' }} onClick={onClose} />
-      <div style={{ width: '680px', maxWidth: '96vw', backgroundColor: '#111', borderLeft: '1px solid #222', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ width: '680px', maxWidth: '96vw', backgroundColor: '#0F1117', borderLeft: '1px solid #222', display: 'flex', flexDirection: 'column' }}>
         <div style={{ padding: '20px 24px', borderBottom: '1px solid #1e1e1e', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexShrink: 0 }}>
           <div>
             <p style={{ fontWeight: '700', fontSize: '16px', color: '#fff' }}>{title}</p>
-            <p style={{ fontSize: '12px', color: '#555', marginTop: '2px' }}>{clients.length} usuário{clients.length !== 1 ? 's' : ''}</p>
+            <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)', marginTop: '2px' }}>{clients.length} usuário{clients.length !== 1 ? 's' : ''}</p>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#666', padding: '4px', display: 'flex' }}>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(248,249,250,0.40)', padding: '4px', display: 'flex' }}>
             <X size={20} />
           </button>
         </div>
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px' }}>
           {clients.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '60px', color: '#555' }}>Nenhum usuário neste grupo</div>
+            <div style={{ textAlign: 'center', padding: '60px', color: 'rgba(248,249,250,0.40)' }}>Nenhum usuário neste grupo</div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {clients.map(c => (
                 <div key={c.id} style={{ backgroundColor: '#0a0a0a', border: '1px solid #1e1e1e', borderRadius: '10px', padding: '12px 16px', display: 'grid', gridTemplateColumns: '40px 1fr auto', gap: '12px', alignItems: 'center' }}>
-                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0, backgroundColor: '#1a1a1a', backgroundImage: c.photo_best ? `url(${c.photo_best})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', color: '#555' }}>
+                  <div style={{ width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0, backgroundColor: '#13161F', backgroundImage: c.photo_best ? `url(${c.photo_best})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '15px', color: 'rgba(248,249,250,0.40)' }}>
                     {!c.photo_best && '?'}
                   </div>
                   <div style={{ minWidth: 0 }}>
@@ -92,7 +92,7 @@ function ClientDrawer({ clients, title, onClose }: { clients: ClientProfile[]; t
                       </span>
                       {c.verified && <span style={{ fontSize: '11px', padding: '1px 7px', borderRadius: '6px', color: '#22c55e', backgroundColor: '#22c55e18' }}>verificado</span>}
                     </div>
-                    <p style={{ fontSize: '12px', color: '#666', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)', marginTop: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {c.email}{c.age ? ` · ${c.age} anos` : ''}{c.gender ? ` · ${c.gender}` : ''}{c.city ? ` · ${c.city}` : ''}{c.state ? `/${c.state}` : ''}
                       {c.religion ? ` · ${c.religion}` : ''}
                     </p>
@@ -101,7 +101,7 @@ function ClientDrawer({ clients, title, onClose }: { clients: ClientProfile[]; t
                       {' '}· Cadastro: {new Date(c.created_at).toLocaleDateString('pt-BR')}
                     </p>
                   </div>
-                  <a href={`/perfil/${c.id}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', fontWeight: '600', padding: '6px 12px', borderRadius: '8px', border: '1px solid #2a2a2a', color: '#888', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+                  <a href={`/perfil/${c.id}`} target="_blank" rel="noopener noreferrer" style={{ fontSize: '12px', fontWeight: '600', padding: '6px 12px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(248,249,250,0.50)', textDecoration: 'none', whiteSpace: 'nowrap' }}>
                     Ver perfil
                   </a>
                 </div>
@@ -133,8 +133,8 @@ function DemogBlock({ title, groups, clients, fieldKey }: { title: string; group
 
   return (
     <>
-      <div style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '20px' }}>
-        <p style={{ fontSize: '13px', fontWeight: '600', color: '#555', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</p>
+      <div style={{ backgroundColor: '#0F1117', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '20px' }}>
+        <p style={{ fontSize: '13px', fontWeight: '600', color: 'rgba(248,249,250,0.40)', marginBottom: '14px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{title}</p>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
           {groups.slice(0, 8).map(g => (
             <div
@@ -145,14 +145,14 @@ function DemogBlock({ title, groups, clients, fieldKey }: { title: string; group
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
                 <span style={{ fontSize: '13px', color: '#ccc' }}>{g.label}</span>
-                <span style={{ fontSize: '12px', color: '#555' }}>{g.count} ({g.pct}%)</span>
+                <span style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)' }}>{g.count} ({g.pct}%)</span>
               </div>
-              <div style={{ height: '6px', backgroundColor: '#1a1a1a', borderRadius: '3px', overflow: 'hidden' }}>
+              <div style={{ height: '6px', backgroundColor: '#13161F', borderRadius: '3px', overflow: 'hidden' }}>
                 <div style={{ height: '100%', width: `${(g.count / max) * 100}%`, backgroundColor: '#e11d48', borderRadius: '3px', transition: 'width 0.4s' }} />
               </div>
             </div>
           ))}
-          {groups.length === 0 && <p style={{ fontSize: '13px', color: '#444' }}>Nenhum dado disponível</p>}
+          {groups.length === 0 && <p style={{ fontSize: '13px', color: 'rgba(248,249,250,0.40)' }}>Nenhum dado disponível</p>}
         </div>
       </div>
       {drawer && (
@@ -228,7 +228,7 @@ export default function InsightsPage() {
           <BarChart2 size={20} color="#e11d48" />
           <h1 style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'var(--font-fraunces)' }}>Perfil de Clientes</h1>
         </div>
-        <p style={{ color: '#555', fontSize: '14px' }}>Distribuição demográfica dos usuários pagantes — clique em qualquer barra para ver os usuários</p>
+        <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px' }}>Distribuição demográfica dos usuários pagantes — clique em qualquer barra para ver os usuários</p>
       </div>
 
       {/* Filtros de plano */}
@@ -249,7 +249,7 @@ export default function InsightsPage() {
         ))}
         <button
           onClick={() => setAllDrawer(true)}
-          style={{ marginLeft: 'auto', padding: '8px 16px', borderRadius: '10px', border: '1px solid #2a2a2a', backgroundColor: 'transparent', color: '#aaa', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+          style={{ marginLeft: 'auto', padding: '8px 16px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.07)', backgroundColor: 'transparent', color: '#aaa', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
         >
           Ver lista completa
         </button>
@@ -263,8 +263,8 @@ export default function InsightsPage() {
           { label: 'Ticket médio',          value: filtered.length > 0 ? `R$${(totalReceita / filtered.length).toFixed(0)}` : '—' },
           { label: 'Taxa verificados',      value: filtered.length > 0 ? `${Math.round((filtered.filter(c => c.verified).length / filtered.length) * 100)}%` : '—' },
         ].map(k => (
-          <div key={k.label} style={{ backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '16px 20px' }}>
-            <p style={{ fontSize: '12px', color: '#555', marginBottom: '6px' }}>{k.label}</p>
+          <div key={k.label} style={{ backgroundColor: '#0F1117', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '16px 20px' }}>
+            <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)', marginBottom: '6px' }}>{k.label}</p>
             <p style={{ fontSize: '22px', fontWeight: '700', fontFamily: 'var(--font-fraunces)', color: '#fff' }}>{k.value}</p>
           </div>
         ))}

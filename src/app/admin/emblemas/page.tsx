@@ -112,11 +112,11 @@ const EMPTY_FORM: BadgeForm = {
 }
 
 const S = {
-  card: { backgroundColor: '#111', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '16px' } as React.CSSProperties,
-  label: { fontSize: '12px', color: '#666', fontWeight: 600, marginBottom: '6px', display: 'block', textTransform: 'uppercase' as const, letterSpacing: '0.04em' },
-  input: { width: '100%', padding: '9px 12px', backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '8px', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' as const },
+  card: { backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '16px' } as React.CSSProperties,
+  label: { fontSize: '12px', color: 'rgba(248,249,250,0.40)', fontWeight: 600, marginBottom: '6px', display: 'block', textTransform: 'uppercase' as const, letterSpacing: '0.04em' },
+  input: { width: '100%', padding: '9px 12px', backgroundColor: '#13161F', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', color: '#fff', fontSize: '14px', outline: 'none', boxSizing: 'border-box' as const },
   section: { marginBottom: '18px' } as React.CSSProperties,
-  groupLabel: { fontSize: '10px', color: '#444', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', padding: '4px 0 2px', pointerEvents: 'none' as const },
+  groupLabel: { fontSize: '10px', color: 'rgba(248,249,250,0.40)', fontWeight: 700, textTransform: 'uppercase' as const, letterSpacing: '0.06em', padding: '4px 0 2px', pointerEvents: 'none' as const },
 }
 
 export default function AdminEmblemas() {
@@ -323,10 +323,10 @@ export default function AdminEmblemas() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '28px' }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', color: '#fff', margin: '0 0 4px' }}>Emblemas</h1>
-          <p style={{ color: '#555', fontSize: '14px', margin: 0 }}>{badges.length} emblemas cadastrados — apenas os existentes no banco são exibidos</p>
+          <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', margin: 0 }}>{badges.length} emblemas cadastrados — apenas os existentes no banco são exibidos</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={loadBadges} style={{ padding: '9px 14px', backgroundColor: 'transparent', border: '1px solid #2a2a2a', borderRadius: '10px', color: '#666', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
+          <button onClick={loadBadges} style={{ padding: '9px 14px', backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', color: 'rgba(248,249,250,0.40)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
             <RefreshCw size={14} /> Atualizar
           </button>
           <button onClick={abrirCriar} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 18px', backgroundColor: '#e11d48', border: 'none', borderRadius: '10px', color: '#fff', fontWeight: 700, fontSize: '14px', cursor: 'pointer' }}>
@@ -359,7 +359,7 @@ export default function AdminEmblemas() {
           <div style={{ width: '32px', height: '32px', border: '2px solid #e11d48', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         </div>
       ) : filtrados.length === 0 ? (
-        <div style={{ ...S.card, textAlign: 'center', padding: '48px', color: '#444' }}>
+        <div style={{ ...S.card, textAlign: 'center', padding: '48px', color: 'rgba(248,249,250,0.40)' }}>
           <Award size={32} style={{ marginBottom: '12px', opacity: 0.3 }} />
           <p style={{ margin: 0 }}>Nenhum emblema encontrado. {badges.length === 0 && 'Execute migration_badges_painel.sql para criar os emblemas iniciais.'}</p>
         </div>
@@ -372,10 +372,10 @@ export default function AdminEmblemas() {
             return (
               <div key={b.id} style={{ ...S.card, display: 'flex', alignItems: 'center', gap: '14px' }}>
                 {/* Numero sequencial */}
-                <span style={{ fontSize: '11px', color: '#333', fontWeight: 700, minWidth: 24, textAlign: 'right' }}>#{globalIdx + 1}</span>
+                <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.20)', fontWeight: 700, minWidth: 24, textAlign: 'right' }}>#{globalIdx + 1}</span>
 
                 {/* Icone */}
-                <div style={{ width: 44, height: 44, borderRadius: 10, overflow: 'hidden', flexShrink: 0, backgroundColor: '#1a1a1a', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid #2a2a2a' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 10, overflow: 'hidden', flexShrink: 0, backgroundColor: '#13161F', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.07)' }}>
                   {b.icon_url
                     ? <img src={b.icon_url} alt={b.name} style={{ width: 44, height: 44, objectFit: 'cover' }} />
                     : <span style={{ fontSize: 24 }}>{b.icon}</span>
@@ -397,12 +397,12 @@ export default function AdminEmblemas() {
                       </span>
                     )}
                   </div>
-                  <p style={{ color: '#555', fontSize: '12px', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.description}</p>
-                  <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: '#444', flexWrap: 'wrap' }}>
+                  <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '12px', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.description}</p>
+                  <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'rgba(248,249,250,0.40)', flexWrap: 'wrap' }}>
                     <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Users size={10} /> {b.user_count ?? '—'} usuários</span>
-                    <span style={{ color: '#333' }}>&#x25B8; {condLabel}</span>
-                    {b.condition_value?.count != null && <span style={{ color: '#333' }}>min: {b.condition_value.count}</span>}
-                    {b.condition_value?.item && <span style={{ color: '#333' }}>item: {b.condition_value.item}</span>}
+                    <span style={{ color: 'rgba(248,249,250,0.20)' }}>&#x25B8; {condLabel}</span>
+                    {b.condition_value?.count != null && <span style={{ color: 'rgba(248,249,250,0.20)' }}>min: {b.condition_value.count}</span>}
+                    {b.condition_value?.item && <span style={{ color: 'rgba(248,249,250,0.20)' }}>item: {b.condition_value.item}</span>}
                     {awarded != null && <span style={{ color: '#10b981', fontWeight: 700 }}>+{awarded} concedidos agora</span>}
                   </div>
                 </div>
@@ -410,26 +410,26 @@ export default function AdminEmblemas() {
                 {/* Ações */}
                 <div style={{ display: 'flex', gap: '5px', flexShrink: 0 }}>
                   <button onClick={() => aplicarAgora(b)} title="Aplicar agora para todos que atendem a condição"
-                    style={{ padding: '7px 10px', borderRadius: '8px', border: '1px solid #2a2a2a', backgroundColor: aplicando === b.id ? '#1a1a1a' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#f59e0b', fontWeight: 600 }}>
+                    style={{ padding: '7px 10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.07)', backgroundColor: aplicando === b.id ? '#13161F' : 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: '#f59e0b', fontWeight: 600 }}>
                     {aplicando === b.id
                       ? <div style={{ width: '12px', height: '12px', border: '2px solid #f59e0b', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
                       : <Zap size={13} />}
                     {aplicando !== b.id && 'Aplicar'}
                   </button>
                   <button onClick={() => togglePublicado(b)} title={b.is_published ? 'Ocultar dos usuários' : 'Publicar para usuários'}
-                    style={{ padding: '7px', borderRadius: '8px', border: '1px solid #2a2a2a', backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                    style={{ padding: '7px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.07)', backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     {b.is_published ? <XCircle size={14} color="#f87171" /> : <CheckCircle size={14} color="#10b981" />}
                   </button>
                   <button onClick={() => toggleAtivo(b)} title={b.is_active ? 'Desativar' : 'Ativar'}
-                    style={{ padding: '7px', borderRadius: '8px', border: '1px solid #2a2a2a', backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', fontSize: 11, color: b.is_active ? '#34d399' : '#f87171' }}>
+                    style={{ padding: '7px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.07)', backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center', fontSize: 11, color: b.is_active ? '#34d399' : '#f87171' }}>
                     {b.is_active ? '●' : '○'}
                   </button>
                   <button onClick={() => abrirEditar(b)}
-                    style={{ padding: '7px', borderRadius: '8px', border: '1px solid #2a2a2a', backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                    style={{ padding: '7px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.07)', backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     <Edit2 size={14} color="#aaa" />
                   </button>
                   <button onClick={() => setConfirmarDelete(b.id)}
-                    style={{ padding: '7px', borderRadius: '8px', border: '1px solid #2a2a2a', backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                    style={{ padding: '7px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.07)', backgroundColor: 'transparent', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
                     <Trash2 size={14} color="#f87171" />
                   </button>
                 </div>
@@ -442,13 +442,13 @@ export default function AdminEmblemas() {
       {/* Modal criar/editar */}
       {modal && (
         <div onClick={() => setModal(null)} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.80)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div onClick={e => e.stopPropagation()} style={{ backgroundColor: '#111', border: '1px solid #222', borderRadius: '18px', padding: '28px', width: '100%', maxWidth: '560px', maxHeight: '92vh', overflowY: 'auto' }}>
+          <div onClick={e => e.stopPropagation()} style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '18px', padding: '28px', width: '100%', maxWidth: '560px', maxHeight: '92vh', overflowY: 'auto' }}>
 
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 22 }}>
               <h2 style={{ fontFamily: 'var(--font-fraunces)', color: '#fff', fontSize: '20px', margin: 0 }}>
                 {modal === 'criar' ? 'Novo emblema' : 'Editar emblema'}
               </h2>
-              <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#555', padding: 4 }}>
+              <button onClick={() => setModal(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(248,249,250,0.40)', padding: 4 }}>
                 <X size={18} />
               </button>
             </div>
@@ -458,7 +458,7 @@ export default function AdminEmblemas() {
               <label style={S.label}>Imagem do emblema</label>
               <div style={{ display: 'flex', gap: 14, alignItems: 'flex-end' }}>
                 {/* Preview */}
-                <div style={{ width: 72, height: 72, borderRadius: 14, backgroundColor: '#1a1a1a', border: '1px solid #2a2a2a', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
+                <div style={{ width: 72, height: 72, borderRadius: 14, backgroundColor: '#13161F', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, overflow: 'hidden', position: 'relative' }}>
                   {previewUrl
                     ? <img src={previewUrl} alt="preview" style={{ width: 72, height: 72, objectFit: 'cover' }} />
                     : <span style={{ fontSize: 32 }}>{form.icon || '🏆'}</span>
@@ -473,12 +473,12 @@ export default function AdminEmblemas() {
 
                 <div style={{ flex: 1 }}>
                   <button onClick={() => fileInputRef.current?.click()} disabled={uploadingImage}
-                    style={{ width: '100%', padding: '9px 14px', backgroundColor: '#1a1a1a', border: '1px dashed #333', borderRadius: 8, color: uploadingImage ? '#555' : '#aaa', cursor: uploadingImage ? 'not-allowed' : 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                    style={{ width: '100%', padding: '9px 14px', backgroundColor: '#13161F', border: '1px dashed #333', borderRadius: 8, color: uploadingImage ? '#555' : '#aaa', cursor: uploadingImage ? 'not-allowed' : 'pointer', fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                     {uploadingImage
                       ? <><div style={{ width: 14, height: 14, border: '2px solid #e11d48', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> Enviando...</>
                       : <><Upload size={14} /> Fazer upload (JPG/PNG)</>}
                   </button>
-                  <p style={{ fontSize: 11, color: '#444', margin: '5px 0 0' }}>Qualquer tamanho — será cortado e redimensionado para 72x72 px automaticamente</p>
+                  <p style={{ fontSize: 11, color: 'rgba(248,249,250,0.40)', margin: '5px 0 0' }}>Qualquer tamanho — será cortado e redimensionado para 72x72 px automaticamente</p>
                   <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" onChange={handleImageUpload} style={{ display: 'none' }} />
                 </div>
 
@@ -612,7 +612,7 @@ export default function AdminEmblemas() {
             </div>
 
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => setModal(null)} style={{ flex: 1, padding: '11px', borderRadius: '10px', border: '1px solid #333', backgroundColor: 'transparent', color: '#aaa', cursor: 'pointer', fontSize: '14px' }}>
+              <button onClick={() => setModal(null)} style={{ flex: 1, padding: '11px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.07)', backgroundColor: 'transparent', color: '#aaa', cursor: 'pointer', fontSize: '14px' }}>
                 Cancelar
               </button>
               <button onClick={salvar} disabled={salvando || !form.name.trim()}
@@ -627,11 +627,11 @@ export default function AdminEmblemas() {
       {/* Confirmar delete */}
       {confirmarDelete && (
         <div onClick={() => setConfirmarDelete(null)} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.80)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
-          <div onClick={e => e.stopPropagation()} style={{ backgroundColor: '#111', border: '1px solid #222', borderRadius: '16px', padding: '24px', maxWidth: '360px', width: '100%' }}>
+          <div onClick={e => e.stopPropagation()} style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '24px', maxWidth: '360px', width: '100%' }}>
             <h3 style={{ color: '#fff', fontFamily: 'var(--font-fraunces)', marginBottom: 8, fontSize: 18 }}>Excluir emblema?</h3>
-            <p style={{ color: '#666', fontSize: '14px', marginBottom: '20px', lineHeight: 1.5 }}>Esta ação remove o emblema de todos os usuários que o possuem e não pode ser desfeita.</p>
+            <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', marginBottom: '20px', lineHeight: 1.5 }}>Esta ação remove o emblema de todos os usuários que o possuem e não pode ser desfeita.</p>
             <div style={{ display: 'flex', gap: '10px' }}>
-              <button onClick={() => setConfirmarDelete(null)} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #333', backgroundColor: 'transparent', color: '#aaa', cursor: 'pointer' }}>Cancelar</button>
+              <button onClick={() => setConfirmarDelete(null)} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.07)', backgroundColor: 'transparent', color: '#aaa', cursor: 'pointer' }}>Cancelar</button>
               <button onClick={() => deletar(confirmarDelete)} style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', backgroundColor: '#f87171', color: '#fff', fontWeight: 700, cursor: 'pointer' }}>Excluir</button>
             </div>
           </div>

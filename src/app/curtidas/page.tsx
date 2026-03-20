@@ -108,10 +108,10 @@ export default function CurtidasPage() {
   const FAKE_COUNT = 6
 
   return (
-    <div className="min-h-screen bg-[#0e0b14] font-jakarta pb-24">
+    <div className="min-h-screen bg-[#08090E] font-jakarta pb-24">
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[#0e0b14]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
+      <header className="sticky top-0 z-30 bg-[#08090E]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
         <button
           onClick={() => router.back()}
           className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center shrink-0"

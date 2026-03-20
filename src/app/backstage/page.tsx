@@ -70,7 +70,7 @@ function BackstageBlurred({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack
         <button onClick={onBack} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
           <ArrowLeft size={18} className="text-white/60" />
         </button>
-        <Crown size={18} className="text-[#f5c842]" />
+        <Crown size={18} className="text-[#F59E0B]" />
         <h1 className="font-fraunces text-xl text-white">Backstage</h1>
       </header>
 
@@ -85,8 +85,8 @@ function BackstageBlurred({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack
 
       {/* Overlay */}
       <div className="absolute inset-0 flex flex-col items-center justify-center px-6 bg-[var(--bg)]/80 backdrop-blur-sm">
-        <div className="w-16 h-16 rounded-full bg-[#f5c842]/10 border border-[#f5c842]/30 flex items-center justify-center mb-5">
-          <Lock size={28} className="text-[#f5c842]" />
+        <div className="w-16 h-16 rounded-full bg-[#F59E0B]/10 border border-[#F59E0B]/30 flex items-center justify-center mb-5">
+          <Lock size={28} className="text-[#F59E0B]" />
         </div>
         <h2 className="font-fraunces text-2xl text-white text-center mb-2">
           Área exclusiva Black
@@ -99,15 +99,15 @@ function BackstageBlurred({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack
           <a
             href="/planos"
             className="w-full py-3.5 rounded-2xl text-center font-bold text-sm transition"
-            style={{ background: 'linear-gradient(135deg, #c9a84c, #f5d485)', color: '#1a1a1a' }}
+            style={{ background: 'linear-gradient(135deg, #F59E0B, #fbbf24)', color: '#fff' }}
           >
             Assinar Black
           </a>
 
           {requestSent ? (
-            <div className="w-full py-3.5 rounded-2xl bg-[#b8f542]/10 border border-[#b8f542]/20 flex items-center justify-center gap-2">
-              <CheckCircle size={16} className="text-[#b8f542]" />
-              <span className="text-[#b8f542] text-sm font-semibold">Pedido enviado!</span>
+            <div className="w-full py-3.5 rounded-2xl bg-[#10b981]/10 border border-[#10b981]/20 flex items-center justify-center gap-2">
+              <CheckCircle size={16} className="text-[#10b981]" />
+              <span className="text-[#10b981] text-sm font-semibold">Pedido enviado!</span>
             </div>
           ) : (
             <button
@@ -123,7 +123,7 @@ function BackstageBlurred({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack
       {/* Modal de confirmação */}
       {showConfirm && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-sm bg-[#141020] rounded-t-3xl border-t border-white/10 p-6">
+          <div className="w-full max-w-sm bg-[#0F1117] rounded-t-3xl border-t border-white/10 p-6">
             <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-5" />
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-fraunces text-xl text-white">Tipo de pedido</h3>
@@ -137,7 +137,7 @@ function BackstageBlurred({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack
                   onClick={() => setRequestType(t)}
                   className={`py-3 rounded-xl border text-sm font-semibold capitalize transition ${
                     requestType === t
-                      ? 'bg-[#f5c842]/20 border-[#f5c842]/40 text-[#f5c842]'
+                      ? 'bg-[#f5c842]/20 border-[#f5c842]/40 text-[#F59E0B]'
                       : 'bg-white/5 border-white/10 text-white/40 hover:border-white/20'
                   }`}
                 >
@@ -250,9 +250,9 @@ function BackstageContent({ onBack }: { onBack: () => void }) {
           <ArrowLeft size={18} className="text-white/60" />
         </button>
         <div className="flex items-center gap-2 flex-1">
-          <Crown size={18} className="text-[#f5c842]" />
+          <Crown size={18} className="text-[#F59E0B]" />
           <h1 className="font-fraunces text-xl text-white">Backstage</h1>
-          <span className="text-xs px-2 py-0.5 rounded-full border border-[#f5c842]/40 text-[#f5c842] ml-1">
+          <span className="text-xs px-2 py-0.5 rounded-full border border-[#f5c842]/40 text-[#F59E0B] ml-1">
             Black
           </span>
         </div>
@@ -264,7 +264,7 @@ function BackstageContent({ onBack }: { onBack: () => void }) {
           onClick={() => setTab('disponivel')}
           className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition ${
             tab === 'disponivel'
-              ? 'bg-[#f5c842]/15 border border-[#f5c842]/30 text-[#f5c842]'
+              ? 'bg-[#f5c842]/15 border border-[#f5c842]/30 text-[#F59E0B]'
               : 'bg-white/4 border border-white/8 text-white/40'
           }`}
         >
@@ -274,7 +274,7 @@ function BackstageContent({ onBack }: { onBack: () => void }) {
           onClick={() => setTab('meus')}
           className={`flex-1 py-2.5 rounded-xl text-sm font-semibold transition relative ${
             tab === 'meus'
-              ? 'bg-[#f5c842]/15 border border-[#f5c842]/30 text-[#f5c842]'
+              ? 'bg-[#f5c842]/15 border border-[#f5c842]/30 text-[#F59E0B]'
               : 'bg-white/4 border border-white/8 text-white/40'
           }`}
         >
@@ -362,7 +362,7 @@ function BackstageContent({ onBack }: { onBack: () => void }) {
       {/* Modal de confirmação de pagamento */}
       {confirmRequest && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 backdrop-blur-sm">
-          <div className="w-full max-w-sm bg-[#141020] rounded-t-3xl border-t border-[#f5c842]/20 p-6">
+          <div className="w-full max-w-sm bg-[#0F1117] rounded-t-3xl border-t border-[#f5c842]/20 p-6">
             <div className="w-10 h-1 rounded-full bg-white/20 mx-auto mb-5" />
 
             <div className="flex items-center justify-between mb-5">
@@ -385,7 +385,7 @@ function BackstageContent({ onBack }: { onBack: () => void }) {
                 <p className="text-white/40 text-xs flex items-center gap-1">
                   <MapPin size={10} /> {confirmRequest.city}
                 </p>
-                <span className="text-xs px-1.5 py-0.5 rounded bg-[#f5c842]/10 text-[#f5c842] capitalize">
+                <span className="text-xs px-1.5 py-0.5 rounded bg-[#f5c842]/10 text-[#F59E0B] capitalize">
                   {confirmRequest.type}
                 </span>
               </div>
@@ -433,7 +433,7 @@ function RequestCard({ request, onRescue }: { request: any; onRescue: (r: any) =
       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/10 to-transparent" />
 
       <div className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/60 border border-[#f5c842]/30">
-        <span className="text-[#f5c842] text-xs font-semibold capitalize">{request.type}</span>
+        <span className="text-[#F59E0B] text-xs font-semibold capitalize">{request.type}</span>
       </div>
 
       <div className="absolute bottom-0 left-0 right-0 p-3">
@@ -477,7 +477,7 @@ function RescueCard({ rescue, onChat }: { rescue: any; onChat: (r: any) => void 
           <div className="w-full h-full bg-white/10" />
         )}
         {/* Bolinha de tipo */}
-        <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-[#141020] border border-[#f5c842]/40 flex items-center justify-center text-[10px]">
+        <div className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-[#0F1117] border border-[#f5c842]/40 flex items-center justify-center text-[10px]">
           {rescue.type === 'sugar' ? 'S' : 'F'}
         </div>
       </div>
@@ -497,7 +497,7 @@ function RescueCard({ rescue, onChat }: { rescue: any; onChat: (r: any) => void 
             <span className={`text-[10px] px-1.5 py-0.5 rounded-full border font-semibold ${
               isExpiring
                 ? 'bg-red-500/10 border-red-500/30 text-red-400'
-                : 'bg-[#f5c842]/10 border-[#f5c842]/30 text-[#f5c842]'
+                : 'bg-[#f5c842]/10 border-[#f5c842]/30 text-[#F59E0B]'
             }`}>
               <Clock size={9} className="inline mr-0.5" />
               {daysLeft === 0 ? 'Expira hoje' : `${daysLeft}d restantes`}
