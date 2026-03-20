@@ -27,11 +27,12 @@
 ### ~~A4 — Boost: funcionalidade real~~ ✅
 - loadDeck ordena perfis com boost ativo no topo (mais recente primeiro); sem boost aparecem depois
 
-### A6 — Emblemas: painel do próprio perfil
-- Usuário deve ver APENAS os emblemas que possui (sem cadeado)
-- Pode ativar/desativar cada emblema (visibilidade)
-- Apenas 3 emblemas ficam visíveis no perfil público
-- Os demais ficam ocultos e só aparecem se a pessoa clicar em "Ver todos os emblemas"
+### ~~A6 — Emblemas: painel do próprio perfil~~ ✅
+- Proprio perfil: grid de todos os emblemas desbloqueados com toggle (toque para ativar/desativar)
+- Badge vermelho com checkmark indica emblema em exibicao; contador "X/3 em exibicao" no header
+- Maximo de 3 emblemas em exibicao; toast de erro se tentar adicionar um 4o
+- Perfil alheio: mostra apenas emblemas do showcase; "Ver todos" expande o restante
+- Persistido em `profiles.badge_showcase text[]` — requer `migration_a6_emblemas.sql`
 
 ### A7 — Emblemas: painel admin não está funcionando
 - Emblema criado no painel admin não aparece na loja/perfil
