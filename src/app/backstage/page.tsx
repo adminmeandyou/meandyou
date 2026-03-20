@@ -11,6 +11,7 @@ import {
   CheckCircle, X, Heart, MapPin, Users,
   Check, SlidersHorizontal, ChevronRight,
   AlertTriangle, Flame, Clock, User, MessageCircle,
+  Star, ThumbsUp, ThumbsDown, HeartHandshake, Trophy, Flag,
 } from 'lucide-react'
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
@@ -731,6 +732,22 @@ interface RescuedRequest {
   expires_at: string
 }
 
+// ─── Opcoes de avaliacao (compartilhado) ───────────────────────────────────────
+
+const BACKSTAGE_RATING_OPTIONS = [
+  { key: 'bom_papo',  label: 'Bom de papo',              icon: ThumbsUp,       color: '#2ec4a0' },
+  { key: 'sairam',    label: 'Sairam para se conhecer',  icon: HeartHandshake, color: '#E11D48' },
+  { key: 'objetivo',  label: 'Alcancaram o objetivo',    icon: Trophy,         color: G         },
+  { key: 'bolo',      label: 'Levou bolo',               icon: ThumbsDown,     color: 'rgba(248,249,250,0.40)' },
+  { key: 'denuncia',  label: 'Denunciar',                icon: Flag,           color: '#f87171' },
+]
+
+function isRated(requestId: string): boolean {
+  if (typeof window === 'undefined') return false
+  const v = localStorage.getItem(`camarote_rating_${requestId}`)
+  return !!v && v !== 'skip'
+}
+
 // ─── Resgates ─────────────────────────────────────────────────────────────────
 
 function ResgatesSection() {
@@ -738,6 +755,9 @@ function ResgatesSection() {
   const [requests, setRequests] = useState<AccessRequest[]>([])
   const [rescued, setRescued] = useState<RescuedRequest[]>([])
   const [loading, setLoading] = useState(true)
+  const [ratingFor, setRatingFor] = useState<{ id: string; otherId: string } | null>(null)
+  const [ratingSubmitting, setRatingSubmitting] = useState(false)
+  const [ratedIds, setRatedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!user) return
@@ -752,12 +772,33 @@ function ResgatesSection() {
         supabase.rpc('get_my_rescued_requests', { p_user_id: user!.id }),
       ])
       setRequests(avail ?? [])
-      setRescued(mine ?? [])
+      const myRescued = mine ?? []
+      setRescued(myRescued)
+      // Inicializa quais ja foram avaliados
+      const done = new Set<string>(myRescued.filter((r: RescuedRequest) => isRated(r.id)).map((r: RescuedRequest) => r.id))
+      setRatedIds(done)
     } catch {
       setRequests([])
       setRescued([])
     }
     setLoading(false)
+  }
+
+  async function submitRating(ratingKey: string) {
+    if (!ratingFor || !user || ratingSubmitting) return
+    setRatingSubmitting(true)
+    try {
+      await supabase.from('camarote_ratings').insert({
+        request_id: ratingFor.id,
+        rater_id:   user.id,
+        rated_id:   ratingFor.otherId,
+        rating:     ratingKey,
+      })
+    } catch { /* silencioso */ }
+    localStorage.setItem(`camarote_rating_${ratingFor.id}`, ratingKey)
+    setRatedIds(prev => new Set([...prev, ratingFor!.id]))
+    setRatingFor(null)
+    setRatingSubmitting(false)
   }
 
   function handleResgate(req: AccessRequest) {
@@ -904,12 +945,24 @@ function ResgatesSection() {
                     </span>
                   </div>
                 </div>
-                <a
-                  href={`/backstage/chat/${r.id}`}
-                  style={{ flexShrink: 0, width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg, #c9a84c, ${G})`, display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
-                >
-                  <MessageCircle size={16} color="#000" strokeWidth={2} />
-                </a>
+                <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                  {/* Botao avaliar (so se nao avaliou ainda) */}
+                  {!ratedIds.has(r.id) && (
+                    <button
+                      onClick={() => setRatingFor({ id: r.id, otherId: r.requester_id })}
+                      title="Avaliar conversa"
+                      style={{ width: 36, height: 36, borderRadius: '50%', border: `1px solid ${G_BORDER}`, background: G_SOFT, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    >
+                      <Star size={15} color={G} strokeWidth={1.5} />
+                    </button>
+                  )}
+                  <a
+                    href={`/backstage/chat/${r.id}`}
+                    style={{ flexShrink: 0, width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg, #c9a84c, ${G})`, display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
+                  >
+                    <MessageCircle size={16} color="#000" strokeWidth={2} />
+                  </a>
+                </div>
               </div>
             ))}
           </div>
@@ -922,6 +975,52 @@ function ResgatesSection() {
           Ao resgatar, voce paga R$ 15,00 para iniciar uma conversa por 30 dias. Isso nao e garantia de encontro — apenas o inicio de uma conversa.
         </p>
       </div>
+
+      {/* Overlay de avaliacao */}
+      {ratingFor && (
+        <>
+          <div onClick={() => setRatingFor(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', zIndex: 50 }} />
+          <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, zIndex: 51, background: BG_CARD, borderTop: `1px solid ${G_BORDER}`, borderRadius: '20px 20px 0 0', padding: '20px 20px 36px' }}>
+            <div style={{ width: 36, height: 4, borderRadius: 100, background: 'rgba(255,255,255,0.12)', margin: '0 auto 20px' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Star size={16} color={G} strokeWidth={1.5} />
+                <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: '#fff', fontWeight: 700 }}>
+                  Como foi essa conversa?
+                </span>
+              </div>
+              <button onClick={() => setRatingFor(null)} style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <X size={14} color="rgba(255,255,255,0.50)" strokeWidth={1.5} />
+              </button>
+            </div>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '0 0 16px' }}>
+              Sua avaliacao e anonima.
+            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {BACKSTAGE_RATING_OPTIONS.map((opt) => {
+                const Icon = opt.icon
+                return (
+                  <button
+                    key={opt.key}
+                    onClick={() => submitRating(opt.key)}
+                    disabled={ratingSubmitting}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 14, background: 'rgba(255,255,255,0.03)', border: opt.key === 'denuncia' ? '1px solid rgba(248,113,113,0.20)' : '1px solid rgba(255,255,255,0.07)', cursor: ratingSubmitting ? 'default' : 'pointer', textAlign: 'left', width: '100%', opacity: ratingSubmitting ? 0.5 : 1, fontFamily: 'var(--font-jakarta)' }}
+                  >
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${opt.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon size={18} color={opt.color} strokeWidth={1.5} />
+                    </div>
+                    <span style={{ fontSize: 15, color: opt.key === 'denuncia' ? '#f87171' : '#fff', fontWeight: 500 }}>{opt.label}</span>
+                    {ratingSubmitting && <Loader2 size={14} className="animate-spin" style={{ color: 'rgba(255,255,255,0.30)', marginLeft: 'auto' }} />}
+                  </button>
+                )
+              })}
+            </div>
+            <button onClick={() => setRatingFor(null)} style={{ marginTop: 14, width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(255,255,255,0.30)', fontFamily: 'var(--font-jakarta)' }}>
+              Agora nao
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -931,7 +1030,10 @@ function ResgatesSection() {
 function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack: () => void }) {
   const { user } = useAuth()
   const [showModal, setShowModal] = useState(false)
-  const [rescuedChats, setRescuedChats] = useState<{ id: string; category: string; rescuer_name: string }[]>([])
+  const [rescuedChats, setRescuedChats] = useState<{ id: string; category: string; rescuer_name: string; rescued_by: string }[]>([])
+  const [ratingFor, setRatingFor] = useState<{ id: string; otherId: string } | null>(null)
+  const [ratingSubmitting, setRatingSubmitting] = useState(false)
+  const [ratedIds, setRatedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     if (!user) return
@@ -949,9 +1051,29 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
           .select('id, name')
           .in('id', ids)
         const nameMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p.name]))
-        setRescuedChats(data.map(r => ({ id: r.id, category: r.category, rescuer_name: nameMap[r.rescued_by] ?? 'Alguem' })))
+        const chats = data.map(r => ({ id: r.id, category: r.category, rescuer_name: nameMap[r.rescued_by] ?? 'Alguem', rescued_by: r.rescued_by }))
+        setRescuedChats(chats)
+        const done = new Set<string>(chats.filter(c => isRated(c.id)).map(c => c.id))
+        setRatedIds(done)
       })
   }, [user?.id])
+
+  async function submitRatingBlocked(ratingKey: string) {
+    if (!ratingFor || !user || ratingSubmitting) return
+    setRatingSubmitting(true)
+    try {
+      await supabase.from('camarote_ratings').insert({
+        request_id: ratingFor.id,
+        rater_id:   user.id,
+        rated_id:   ratingFor.otherId,
+        rating:     ratingKey,
+      })
+    } catch { /* silencioso */ }
+    localStorage.setItem(`camarote_rating_${ratingFor.id}`, ratingKey)
+    setRatedIds(prev => new Set([...prev, ratingFor!.id]))
+    setRatingFor(null)
+    setRatingSubmitting(false)
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: BG_DARK, fontFamily: 'var(--font-jakarta)', overflow: 'hidden', position: 'relative' }}>
@@ -1019,10 +1141,9 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
               Voce foi resgatado
             </p>
             {rescuedChats.map(chat => (
-              <a
+              <div
                 key={chat.id}
-                href={`/backstage/chat/${chat.id}`}
-                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 14, background: G_SOFT, border: `1px solid ${G_BORDER}`, textDecoration: 'none', marginBottom: 8 }}
+                style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderRadius: 14, background: G_SOFT, border: `1px solid ${G_BORDER}`, marginBottom: 8 }}
               >
                 <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(245,158,11,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   <Crown size={15} color={G} strokeWidth={1.5} />
@@ -1031,8 +1152,23 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
                   <p style={{ fontSize: 13, fontWeight: 700, color: '#fff', margin: '0 0 2px' }}>{chat.rescuer_name}</p>
                   <p style={{ fontSize: 11, color: G, margin: 0 }}>{CATEGORIAS.find(c => c.key === chat.category)?.label ?? chat.category}</p>
                 </div>
-                <MessageCircle size={16} color={G} strokeWidth={1.5} />
-              </a>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {!ratedIds.has(chat.id) && (
+                    <button
+                      onClick={() => setRatingFor({ id: chat.id, otherId: chat.rescued_by })}
+                      style={{ width: 32, height: 32, borderRadius: '50%', border: `1px solid ${G_BORDER}`, background: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+                    >
+                      <Star size={13} color={G} strokeWidth={1.5} />
+                    </button>
+                  )}
+                  <a
+                    href={`/backstage/chat/${chat.id}`}
+                    style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(245,158,11,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
+                  >
+                    <MessageCircle size={14} color={G} strokeWidth={1.5} />
+                  </a>
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -1056,6 +1192,45 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
 
       {showModal && (
         <CamaroteAccessModal user={user} plan={plan} onClose={() => setShowModal(false)} />
+      )}
+
+      {/* Overlay de avaliacao */}
+      {ratingFor && (
+        <>
+          <div onClick={() => setRatingFor(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', zIndex: 50 }} />
+          <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 480, zIndex: 51, background: BG_CARD, borderTop: `1px solid ${G_BORDER}`, borderRadius: '20px 20px 0 0', padding: '20px 20px 36px' }}>
+            <div style={{ width: 36, height: 4, borderRadius: 100, background: 'rgba(255,255,255,0.12)', margin: '0 auto 20px' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Star size={16} color={G} strokeWidth={1.5} />
+                <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: '#fff', fontWeight: 700 }}>Como foi essa conversa?</span>
+              </div>
+              <button onClick={() => setRatingFor(null)} style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <X size={14} color="rgba(255,255,255,0.50)" strokeWidth={1.5} />
+              </button>
+            </div>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '0 0 16px' }}>Sua avaliacao e anonima.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {BACKSTAGE_RATING_OPTIONS.map((opt) => {
+                const Icon = opt.icon
+                return (
+                  <button key={opt.key} onClick={() => submitRatingBlocked(opt.key)} disabled={ratingSubmitting}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 14, background: 'rgba(255,255,255,0.03)', border: opt.key === 'denuncia' ? '1px solid rgba(248,113,113,0.20)' : '1px solid rgba(255,255,255,0.07)', cursor: ratingSubmitting ? 'default' : 'pointer', textAlign: 'left', width: '100%', opacity: ratingSubmitting ? 0.5 : 1, fontFamily: 'var(--font-jakarta)' }}
+                  >
+                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${opt.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <Icon size={18} color={opt.color} strokeWidth={1.5} />
+                    </div>
+                    <span style={{ fontSize: 15, color: opt.key === 'denuncia' ? '#f87171' : '#fff', fontWeight: 500 }}>{opt.label}</span>
+                    {ratingSubmitting && <Loader2 size={14} className="animate-spin" style={{ color: 'rgba(255,255,255,0.30)', marginLeft: 'auto' }} />}
+                  </button>
+                )
+              })}
+            </div>
+            <button onClick={() => setRatingFor(null)} style={{ marginTop: 14, width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(255,255,255,0.30)', fontFamily: 'var(--font-jakarta)' }}>
+              Agora nao
+            </button>
+          </div>
+        </>
       )}
     </div>
   )
