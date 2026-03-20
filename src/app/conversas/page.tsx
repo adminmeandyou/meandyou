@@ -26,6 +26,22 @@ interface Conversation {
   showLastActive?: boolean
 }
 
+const ARCHIVED_KEY = 'meandyou_archived_convs'
+
+function getArchivedIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem(ARCHIVED_KEY)
+    return new Set(raw ? JSON.parse(raw) : [])
+  } catch { return new Set() }
+}
+
+function toggleArchived(matchId: string): boolean {
+  const ids = getArchivedIds()
+  if (ids.has(matchId)) { ids.delete(matchId) } else { ids.add(matchId) }
+  localStorage.setItem(ARCHIVED_KEY, JSON.stringify(Array.from(ids)))
+  return ids.has(matchId)
+}
+
 export default function ConversasPage() {
   const router = useRouter()
   const toast = useToast()
@@ -37,8 +53,10 @@ export default function ConversasPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [aba, setAba] = useState<'ativos' | 'arquivados'>('ativos')
+  const [archivedIds, setArchivedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
+    setArchivedIds(getArchivedIds())
     let channel: ReturnType<typeof supabase.channel> | null = null
 
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -102,7 +120,18 @@ export default function ConversasPage() {
     setLoading(false)
   }
 
-  const filtered = conversations.filter((c) =>
+  function handleArchive(matchId: string) {
+    const nowArchived = toggleArchived(matchId)
+    const updated = getArchivedIds()
+    setArchivedIds(new Set(updated))
+    haptics.tap()
+    toast.success(nowArchived ? 'Conversa arquivada' : 'Conversa restaurada')
+  }
+
+  const ativos    = conversations.filter(c => !archivedIds.has(c.matchId))
+  const arquivados = conversations.filter(c => archivedIds.has(c.matchId))
+
+  const filtered = (aba === 'ativos' ? ativos : arquivados).filter((c) =>
     c.otherName.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
@@ -182,22 +211,24 @@ export default function ConversasPage() {
 
       {/* Lista */}
       <main style={{ paddingBottom: 96 }}>
-        {aba === 'arquivados' ? (
-          <EmptyState
-            icon={<Archive size={28} />}
-            title="Nenhuma arquivada"
-            description="Você pode arquivar conversas para organizar sua caixa de entrada."
-          />
-        ) : loading ? (
+        {loading ? (
           <div style={{ padding: '12px 0' }}>
             <SkeletonList rows={6} />
           </div>
         ) : filtered.length === 0 ? (
           <EmptyState
-            icon={<MessageCircle size={28} />}
-            title={searchTerm ? 'Nenhuma conversa encontrada' : 'Nenhuma conversa ainda'}
-            description={searchTerm ? undefined : 'Faça um match para começar a conversar!'}
-            action={!searchTerm ? { label: 'Explorar pessoas', onClick: () => router.push('/busca') } : undefined}
+            icon={aba === 'arquivados' ? <Archive size={28} /> : <MessageCircle size={28} />}
+            title={
+              aba === 'arquivados'
+                ? 'Nenhuma conversa arquivada'
+                : searchTerm ? 'Nenhuma conversa encontrada' : 'Nenhuma conversa ainda'
+            }
+            description={
+              aba === 'arquivados'
+                ? 'Deslize para o lado em uma conversa para arquivar.'
+                : searchTerm ? undefined : 'Faça um match para começar a conversar!'
+            }
+            action={aba === 'ativos' && !searchTerm ? { label: 'Explorar pessoas', onClick: () => router.push('/busca') } : undefined}
           />
         ) : (
           <div>
@@ -206,6 +237,8 @@ export default function ConversasPage() {
                 key={conv.matchId}
                 conv={conv}
                 currentUserId={userId!}
+                isArchived={archivedIds.has(conv.matchId)}
+                onArchive={handleArchive}
               />
             ))}
           </div>
@@ -220,20 +253,43 @@ export default function ConversasPage() {
 function ConversationItem({
   conv,
   currentUserId,
+  isArchived,
+  onArchive,
 }: {
   conv: Conversation
   currentUserId: string
+  isArchived: boolean
+  onArchive: (matchId: string) => void
 }) {
   const isMyMessage = conv.lastSenderId === currentUserId
 
   return (
-    // ✅ CORREÇÃO: rota correta é /conversas/[id], não /chat/[id]
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
+      {/* Botão arquivar (deslizando para o lado) */}
+      <button
+        onClick={() => onArchive(conv.matchId)}
+        style={{
+          position: 'absolute', right: 0, top: 0, bottom: 0,
+          width: 80, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: isArchived ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)',
+          border: 'none', cursor: 'pointer', flexDirection: 'column', gap: 4,
+          borderLeft: '1px solid var(--border-soft)',
+        }}
+      >
+        <Archive size={16} color={isArchived ? '#10b981' : 'rgba(248,249,250,0.4)'} strokeWidth={1.5} />
+        <span style={{ fontSize: 10, color: isArchived ? '#10b981' : 'rgba(248,249,250,0.4)', fontWeight: 600 }}>
+          {isArchived ? 'Restaurar' : 'Arquivar'}
+        </span>
+      </button>
+
     <Link
       href={`/conversas/${conv.matchId}`}
       style={{
         display: 'flex', alignItems: 'center', gap: 14,
         padding: '12px 20px', borderBottom: '1px solid var(--border-soft)',
-        textDecoration: 'none',
+        textDecoration: 'none', background: 'var(--bg)',
+        position: 'relative', zIndex: 1,
+        marginRight: 80,
       }}
     >
       {/* Avatar */}
@@ -312,6 +368,7 @@ function ConversationItem({
         </p>
       </div>
     </Link>
+    </div>
   )
 }
 

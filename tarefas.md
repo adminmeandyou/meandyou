@@ -198,8 +198,11 @@
 ### ~~B4 — Toast.tsx duplicado~~ ✅
 - `components/ui/Toast.tsx` removido — era legado sem importadores
 
-### ~~B5 — Aba "Arquivados" em matches sempre vazia~~ ✅
-- Botao "Arquivados" ja havia sido removido de matches/page.tsx em sessao anterior
+### ~~B5 — Aba "Arquivados" em conversas funcionando~~ ✅
+- Arquivamento via localStorage (sem migration) — igual ao Meetup do projeto
+- Botao "Arquivar/Restaurar" visivel ao lado de cada conversa
+- Aba "Arquivados" lista conversas arquivadas corretamente
+- Aba "Ativos" oculta as arquivadas
 
 ### ~~B6 — `show_last_active` ignorado em matches e conversas~~ ✅
 - `conversas/page.tsx`: `?? true` corrigido para `?? false` (privacy-first)
