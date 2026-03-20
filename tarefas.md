@@ -23,10 +23,8 @@
 ### ~~A3 — Boost: CTA no dashboard~~ ✅
 - Banner acima dos cards na tela de swipe: se boost ativo mostra contador; se não, CTA "Dar um boost" → /loja
 
-### A4 — Boost: funcionalidade real
-- Ao ativar boost, o perfil deve aparecer no TOPO da fila para os outros usuários
-- Com múltiplos boosts ativos: quem ativou mais recentemente aparece primeiro
-- Quem não tem boost aparece depois de todos com boost (mas o usuário não sabe, vê normalmente)
+### ~~A4 — Boost: funcionalidade real~~ ✅
+- loadDeck ordena perfis com boost ativo no topo (mais recente primeiro); sem boost aparecem depois
 
 ### A6 — Emblemas: painel do próprio perfil
 - Usuário deve ver APENAS os emblemas que possui (sem cadeado)
@@ -45,9 +43,8 @@
 
 ### M1 — Funcionalidades da loja que precisam existir de verdade
 
-#### M1a — Superlike
-- Quando usa superlike, a pessoa recebe notificação destacada
-- Aparece com indicador especial no feed da outra pessoa
+#### ~~M1a — Superlike~~ ✅
+- Push notification enviada ao alvo via /api/likes/superlike-notify após cada superlike
 
 #### ~~M1b — Lupa (ver quem curtiu)~~ ✅
 - `usePlan` agora busca saldo de `user_lupas` e seta `canSeeWhoLiked=true` se tiver lupa no inventário
@@ -65,10 +62,8 @@
 #### ~~M1f — Selo verificado~~ ✅
 - Ao comprar `verified_plus`, agora também concede automaticamente o emblema de Identidade Verificada (busca por `condition_type=on_verify` nos badges)
 
-#### M1g — Caixa Super Lendária
-- Ao clicar para abrir: animação da caixa tremendo → salto → explosão
-- Exibe o prêmio ganho (item aleatório do pool)
-- Prêmio vai direto para o inventário
+#### ~~M1g — Caixa Super Lendária~~ ✅
+- Backend: sorteio ponderado (superlike/boost/lupa/ghost/reveals/xp/black). Frontend: animação shake→jump→explode→reveal
 
 ### M2 — Salas de Bate-Papo (redesign completo)
 
