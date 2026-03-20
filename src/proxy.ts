@@ -11,7 +11,7 @@ const PROTECTED_ROUTES = [
   '/conversas', '/loja', '/destaque', '/indicar', '/backstage',
   '/roleta', '/streak', '/onboarding', '/notificacoes', '/suporte',
   '/ajuda', '/deletar-conta', '/minha-assinatura', '/videochamada', '/curtidas',
-  '/configuracoes',
+  '/configuracoes', '/salas', '/amigos', '/casal',
 ]
 
 // Rotas públicas (redireciona para /busca se já logado)

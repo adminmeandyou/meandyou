@@ -8,7 +8,7 @@ import Image from 'next/image'
 import {
   ArrowLeft, ChevronRight, User, HelpCircle, FileText, Shield, Trash2,
   LogOut, CreditCard, Headphones, ShieldCheck, Monitor, Mail, Bell,
-  Eye, EyeOff, Lock, Smartphone, Bug, Paperclip, X,
+  Eye, EyeOff, Lock, Smartphone, Bug, Paperclip, X, Heart, Users,
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
@@ -285,6 +285,19 @@ export default function ConfiguracoesPage() {
           <LinkRow href="/minha-assinatura" icon={<CreditCard size={17} />} label="Minha assinatura" sub="Gerenciar plano e cobranças" badge={<Badge label={planLabel} cor={planCor} />} />
           <LinkRow href="/configuracoes/alterar-email" icon={<Mail size={17} />} label="Alterar email" sub={email} last />
         </CardSection>
+
+        {/* ── CASAL (Black only) ── */}
+        {profile?.plan === 'black' && (
+          <CardSection titulo="Plano Black">
+            <LinkRow href="/configuracoes/casal" icon={<Heart size={17} />} label="Perfil de Casal" sub="Apareca como casal no feed" badge={<Badge label="Black" cor="#F59E0B" />} />
+            <LinkRow href="/amigos" icon={<Users size={17} />} label="Amigos" sub="Ver amigos online" last />
+          </CardSection>
+        )}
+        {profile?.plan !== 'black' && (
+          <CardSection titulo="Social">
+            <LinkRow href="/amigos" icon={<Users size={17} />} label="Amigos" sub="Ver amigos online" last />
+          </CardSection>
+        )}
 
         {/* ── PRIVACIDADE ── */}
         <CardSection titulo="Privacidade">

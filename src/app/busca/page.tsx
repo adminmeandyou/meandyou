@@ -782,165 +782,36 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
   )
 }
 
-// ─── Salas Sociais ────────────────────────────────────────────────────────────
-
-const MOCK_ROOMS = [
-  { id: '1', title: 'Noite de Pagode',    desc: 'Quem curte uma roda de pagode?',       count: 12, emoji: '🎶' },
-  { id: '2', title: 'Geeks & Gamers',     desc: 'Para quem joga e ama tecnologia',       count: 8,  emoji: '🎮' },
-  { id: '3', title: 'Trilhas e Aventuras',desc: 'Apaixonados por natureza',              count: 23, emoji: '🏕' },
-  { id: '4', title: 'Cinema & Series',    desc: 'Discussoes sem spoiler (ou com)',       count: 17, emoji: '🎬' },
-  { id: '5', title: 'Esportes ao Vivo',   desc: 'Torcedores que curtem jogar também',   count: 9,  emoji: '⚽' },
-  { id: '6', title: 'Culinaria & Bares',  desc: 'Onde comer bem esta cidade?',          count: 14, emoji: '🍻' },
-]
+// ─── Salas de Bate-papo ───────────────────────────────────────────────────────
 
 function RoomsPlaceholder({ userPlan }: { userPlan: string }) {
   const canJoin = userPlan === 'plus' || userPlan === 'black'
-  const [openRoom, setOpenRoom] = useState<typeof MOCK_ROOMS[0] | null>(null)
+  const openRoom = null
 
   return (
-    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
-
-      {/* Banner Em breve */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 10,
-        padding: '12px 16px', borderRadius: 14, marginBottom: 20,
-        backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.20)',
-      }}>
-        <div style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: 'rgba(245,158,11,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Users size={16} strokeWidth={1.5} style={{ color: '#F59E0B' }} />
-        </div>
-        <div>
-          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 13, color: '#F59E0B', margin: 0 }}>
-            Salas em beta fechado
-          </p>
-          <p style={{ fontSize: 11, color: 'rgba(245,158,11,0.6)', margin: '2px 0 0', lineHeight: 1.4 }}>
-            Disponíveis em breve para todos os planos.
-          </p>
-        </div>
+    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+      <div style={{ width: 72, height: 72, borderRadius: 20, backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Users size={36} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
       </div>
-
-      {/* Header */}
-      <div style={{ marginBottom: 16 }}>
-        <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)' }}>
-          Salas de Bate-papo
-        </span>
-        <p style={{ fontSize: 12, color: 'var(--muted)', margin: '4px 0 0', lineHeight: 1.5 }}>
+      <div style={{ textAlign: 'center' }}>
+        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>Salas de Bate-papo</p>
+        <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
           Converse em grupo com quem tem os mesmos interesses.
         </p>
       </div>
-
-      {/* Paywall para Essencial */}
-      {!canJoin && (
-        <div style={{ marginBottom: 20 }}>
-          <PaywallCard
-            title="Salas exclusivas para Plus e Black"
-            description="Faça upgrade para entrar em salas temáticas e conhecer pessoas com os mesmos interesses."
-            ctaLabel="Ver planos"
-          />
-        </div>
-      )}
-
-      {/* Lista de salas */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {MOCK_ROOMS.map((room) => (
-          <button
-            key={room.id}
-            onClick={() => canJoin && setOpenRoom(room)}
-            disabled={!canJoin}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 14,
-              padding: '14px 16px', borderRadius: 16, width: '100%', textAlign: 'left',
-              backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)',
-              opacity: canJoin ? 1 : 0.45, cursor: canJoin ? 'pointer' : 'default',
-              transition: 'all 0.15s',
-            }}
-          >
-            <div style={{
-              width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-              backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
-            }}>
-              {room.emoji}
-            </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, color: 'var(--text)', margin: '0 0 2px' }}>
-                {room.title}
-              </p>
-              <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, lineHeight: 1.4 }}>{room.desc}</p>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <div style={{ display: 'flex' }}>
-                {[...Array(Math.min(3, Math.max(1, Math.floor(room.count / 4))))].map((_, i) => (
-                  <div key={i} style={{
-                    width: 20, height: 20, borderRadius: '50%', marginLeft: i > 0 ? -6 : 0,
-                    backgroundColor: `hsl(${(i * 80 + parseInt(room.id) * 40) % 360}, 50%, 40%)`,
-                    border: '1.5px solid var(--bg-card)',
-                  }} />
-                ))}
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: 'rgba(16,185,129,0.8)' }} />
-                <span style={{ fontSize: 11, color: 'var(--muted)' }}>{room.count}</span>
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Sheet de sala */}
-      {openRoom && (
-        <>
-          <div
-            onClick={() => setOpenRoom(null)}
-            style={{ position: 'fixed', inset: 0, zIndex: 40, backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }}
-          />
-          <div style={{
-            position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
-            width: '100%', maxWidth: 430, zIndex: 50,
-            backgroundColor: 'var(--bg-card)', borderRadius: '20px 20px 0 0',
-            borderTop: '1px solid var(--border)', padding: '20px 20px 40px',
-            animation: 'ui-slide-up 0.25s ease-out',
-          }}>
-            <div style={{ width: 36, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 auto 20px' }} />
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-              <div style={{
-                width: 56, height: 56, borderRadius: 16, flexShrink: 0,
-                backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26,
-              }}>
-                {openRoom.emoji}
-              </div>
-              <div>
-                <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: 0 }}>{openRoom.title}</p>
-                <p style={{ fontSize: 13, color: 'var(--muted)', margin: '4px 0 0' }}>{openRoom.desc}</p>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 20, padding: '10px 14px', borderRadius: 12, backgroundColor: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.20)' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', backgroundColor: '#10b981', boxShadow: '0 0 6px rgba(16,185,129,0.6)' }} />
-              <span style={{ fontSize: 13, color: '#10b981', fontWeight: 600 }}>{openRoom.count} pessoas ativas agora</span>
-            </div>
-
-            <div style={{ padding: '14px 16px', borderRadius: 14, backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.20)', marginBottom: 16 }}>
-              <p style={{ fontSize: 13, color: '#F59E0B', fontWeight: 600, margin: '0 0 4px' }}>Em breve</p>
-              <p style={{ fontSize: 12, color: 'rgba(245,158,11,0.6)', margin: 0, lineHeight: 1.5 }}>
-                As salas estão em beta fechado. Em breve você poderá entrar, conversar em grupo e conhecer novas pessoas.
-              </p>
-            </div>
-
-            <button
-              onClick={() => setOpenRoom(null)}
-              style={{
-                width: '100%', padding: '14px', borderRadius: 14,
-                border: '1px solid var(--border)', backgroundColor: 'transparent',
-                color: 'var(--muted)', fontSize: 14, fontWeight: 600,
-                cursor: 'pointer', fontFamily: 'var(--font-jakarta)',
-              }}
-            >
-              Fechar
-            </button>
-          </div>
-        </>
+      {!canJoin ? (
+        <PaywallCard
+          title="Salas disponiveis no Plus e Black"
+          description="Faca upgrade para entrar em salas tematicas e conhecer pessoas com os mesmos interesses."
+          ctaLabel="Ver planos"
+        />
+      ) : (
+        <a
+          href="/salas"
+          style={{ padding: '14px 32px', borderRadius: 14, backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 15, textDecoration: 'none', fontFamily: 'var(--font-jakarta)' }}
+        >
+          Entrar nas salas
+        </a>
       )}
     </div>
   )
