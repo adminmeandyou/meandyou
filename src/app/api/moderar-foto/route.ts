@@ -134,7 +134,7 @@ export async function POST(req: NextRequest) {
     if (!url) return NextResponse.json({ aprovado: false, motivo: 'Erro ao salvar a foto. Tente novamente.' })
 
     // Conceder XP pela foto aprovada (fire-and-forget)
-    supabaseAdmin.rpc('award_xp', { p_user_id: user.id, p_event_type: 'photo_added', p_base_xp: 10 }).then(() => {}).catch(() => {})
+    void supabaseAdmin.rpc('award_xp', { p_user_id: user.id, p_event_type: 'photo_added', p_base_xp: 10 }).then(() => {})
 
     return NextResponse.json({ aprovado: true, url })
   } catch (err) {

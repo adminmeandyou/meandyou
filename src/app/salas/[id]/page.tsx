@@ -23,11 +23,11 @@ type RoomMember = {
 }
 type ProfileRequest = {
   id: string; requester_id: string; target_id: string; status: string
-  expires_at: string; requesterNickname?: string
+  expires_at: string; room_id: string; requesterNickname?: string
 }
 type ChatRequest = {
   id: string; requester_id: string; target_id: string; status: string
-  expires_at: string; requesterNickname?: string
+  expires_at: string; room_id: string; requesterNickname?: string
 }
 type PublicProfile = {
   id: string; name: string; photo_best: string | null; city: string | null; plan: string
