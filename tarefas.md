@@ -17,9 +17,81 @@
 ### ~~C3 — Roleta: não toca som de efeito ao girar/parar~~ ✅
 - Sons implementados via Web Audio API (sem arquivos externos): ticks ao iniciar, jingle ao ganhar (jackpot = jingle mais épico)
 
+### C4 — Fichas nao sao creditadas apos compra (FINANCEIRO)
+- `api/webhooks/cakto/route.ts:31-36` — 4 slugs de fichas (50, 150, 400, 900) sao `TODO` no codigo
+- Usuario paga na Cakto mas as fichas nunca chegam na conta
+- **Acao:** Leandro precisa criar os 4 produtos na Cakto e substituir os slugs reais no codigo
+
+### C5 — Cancelamento de assinatura nao cancela na Cakto (FINANCEIRO)
+- `api/assinatura/cancelar/route.ts:43-46` — TODO explicito: nao chama API da Cakto para parar recorrencia
+- Usuario cancela no app, banco marca como cancelado, mas cobranca continua na Cakto
+- **Acao:** Aguardando resposta da Cakto sobre endpoint de cancelamento
+
+### C6 — SERVICE_ROLE_KEY usada como credencial em header HTTP
+- `api/push/send/route.ts:93-101` — Chave secreta maxima do Supabase comparada via header de requisicao HTTP
+- Qualquer log de servidor pode expor ela
+- **Acao:** Refatorar para autorizacao interna (env-based ou rota interna apenas)
+
+### C7 — Cron job acessivel sem secret configurado
+- `api/cron/expire-matches/route.ts:6-12` — Se `CRON_SECRET` nao estiver no Vercel, validacao passa com Bearer vazio
+- Qualquer pessoa pode expirar matches em massa via requisicao simples
+- **Acao:** Configurar `CRON_SECRET` no Vercel e adicionar verificacao de env obrigatoria
+
+### C8 — Painel admin sem protecao server-side
+- `admin/layout.tsx:46-76` — Verificacao de role e feita apenas no cliente via `useEffect`
+- Usuario nao-admin ve o painel por alguns segundos antes do redirect
+- **Acao:** Criar middleware ou server component que verifica role antes de renderizar
+
+### C9 — Token de convite de casal exposto no URL
+- `casal/aceitar/page.tsx:21` — Redireciona para `/login?redirect=/casal/aceitar?token=XXX`
+- Token fica salvo no historico do browser do usuario
+- **Acao:** Salvar token em sessionStorage antes de redirecionar para login
+
 ---
 
 ## 🟠 ALTA PRIORIDADE
+
+### A8 — APIs de marketing admin inexistentes
+- `admin/marketing/page.tsx` chama dois endpoints que nao foram criados:
+  - `GET /api/admin/marketing/historico` — historico de campanhas
+  - `PUT /api/admin/notificacoes/settings` — salvar webhook WhatsApp e canais por evento
+- Toda a aba de marketing do admin esta quebrada silenciosamente
+
+### A9 — Sistema de XP nunca credita via servidor
+- `api/xp/award/route.ts` existe e esta completo
+- Nenhuma API route chama `POST /api/xp/award` — so os hooks locais chamam `awardXp()` que depende de RPC
+- Bonus 2x XP vendido na loja tambem nunca e aplicado de fato
+- **Verificar:** se `award_xp` RPC existe no banco e se chamadas dos hooks estao chegando
+
+### A10 — `containsSensitiveData()` nunca chamada
+- `lib/moderation.ts` tem funcao que detecta CPF, cartao de credito e telefone em texto
+- Funcao existe mas nao e chamada em lugar nenhum do app
+- CPF, numero de cartao e telefone podem ser enviados livremente no chat
+
+### A11 — Moderacao ausente em DMs
+- `conversas/[id]/page.tsx` nao importa nem chama `moderateContent()`
+- Salas publicas tem moderacao ativa, mensagens diretas nao tem
+- Conteudo banido passa livremente em conversas privadas
+
+### A12 — AppBottomNav "Salas" aponta para /roleta
+- `components/AppBottomNav.tsx:18` — botao central diz "Salas" mas `href` e `/roleta`
+- Pagina `/salas` existe e funciona, mas e inacessivel pela navegacao principal
+- **Acao:** Corrigir href para `/salas` ou mudar label para "Roleta"
+
+### A13 — OnlineIndicator quebrado no chat individual
+- `conversas/[id]/page.tsx:151` — query busca coluna `last_seen` mas passa como `last_active_at`
+- Status "Ativo agora / Ativo hoje" nunca aparece corretamente no header do chat
+- **Acao:** Verificar nome real da coluna no schema e unificar (`last_seen` ou `last_active_at`)
+
+### A14 — Modal de reportar bug trava em loading
+- `configuracoes/page.tsx:221-234` — `enviarBug()` sem try/catch
+- Se fetch falhar, `setBugEnviando(false)` nunca e chamado — modal fica preso em "Enviando..."
+- **Acao:** Adicionar try/catch com finally
+
+### A15 — Views `admin_users` e `admin_metrics` podem nao existir
+- `admin/page.tsx` e `admin/insights/page.tsx` fazem query nessas views
+- Se as views nao foram criadas no Supabase, todo o painel admin mostra vazio sem erro visivel
+- **Acao:** Verificar se views existem no banco; criar se necessario
 
 ### ~~A3 — Boost: CTA no dashboard~~ ✅
 - Banner acima dos cards na tela de swipe: se boost ativo mostra contador; se não, CTA "Dar um boost" → /loja
@@ -92,9 +164,29 @@
 - Ao clicar: ver perfil de um e depois do outro
 - Parceiro também precisa ter plano ativo para manter o desconto
 
-### M4 — Sistema de amigos / adicionar pessoa
-- Após um match (em qualquer modo), opção de "Adicionar como amigo"
-- Seção "Amigos online" visível em alguma parte do app
+### ~~M4 — Sistema de amigos / adicionar pessoa~~ ✅
+- Botao "Adicionar como amigo" nos cards de novos matches (carrossel)
+- Botao "Amigo" na action bar do chat individual
+- API `/api/amigos` com GET/POST/PATCH implementada
+- Pagina `/amigos` com lista, pedidos recebidos e enviados
+
+### M6 — Reveals de curtidas (lupa) comprados mas sem efeito visual
+- Loja credita `curtidas_reveals_until` ao comprar lupa
+- Mas nenhuma tela usa esse campo para mostrar quem curtiu de fato
+- `/curtidas/page.tsx` so tem blur para Essencial e grid para Plus/Black — lupa nao e usada
+
+### M7 — Verified Plus sem exibicao no app
+- Loja ativa `profiles.verified_plus = true` ao comprar
+- Nenhuma pagina (perfil, chat, busca) exibe o selo ou diferencia esse usuario
+- Feature invisivel para quem comprou
+
+### M8 — Foto aprovada mesmo quando Sightengine esta fora do ar
+- `api/moderar-foto/route.ts:86-101` — se Sightengine retornar erro, foto e aprovada automaticamente
+- Fotos inapropriadas passam sem moderacao quando o servico cai
+
+### M9 — Rate limit de chat por match, nao global
+- `api/chat/send/route.ts` — limite de 20 msgs/min e por match individual
+- Usuario com 10 matches pode enviar 200 msgs/min no total
 
 ### ~~M5 — Match do dia: garantir algoritmo funcionando~~ ✅
 - Compatibilidade mútua implementada (média das duas direções)
@@ -115,9 +207,27 @@
 - Bug no frontend: RPC retorna TABLE (array), mas codigo fazia `data?.success` em vez de `data?.[0]?.success`
 - Corrigido em `streak/page.tsx`: usa `Array.isArray(data) ? data[0] : data` antes de checar `success`
 
-### B3 — Moderação de conteúdo global
-- Filtro de palavras proibidas em: chat, nome de sala, bio, tags, qualquer campo de texto
-- Integrar lista de palavras-chave críticas com alerta automático ao suporte
+### ~~B3 — Moderação de conteúdo global~~ ✅
+- `lib/moderation.ts` criado com `moderateContent()`, `moderateRoomName()`, `containsSensitiveData()`
+- Integrado no chat das salas e criacao de salas privadas
+- Alerta automatico ao suporte para palavras criticas via `/api/salas/alertar`
+
+### B4 — Toast.tsx duplicado
+- `components/Toast.tsx` — provider global correto, usado no AppShell
+- `components/ui/Toast.tsx` — componente standalone legado com interface diferente
+- Remover `components/ui/Toast.tsx` para evitar confusao
+
+### B5 — Aba "Arquivados" em matches sempre vazia
+- `matches/page.tsx:151` — botao "Arquivados (0)" mas feature de arquivar nunca foi implementada
+- Ou implementar ou remover o botao
+
+### B6 — `show_last_active` ignorado em matches e conversas
+- `matches/page.tsx` renderiza `OnlineIndicator` sem verificar preferencia de privacidade
+- Usuario que desativou "mostrar quando estou ativo" ainda aparece como online
+
+### B7 — Coluna `photo_face` pode nao existir no schema
+- `api/badges/auto-award/route.ts:61` — query referencia `photo_face` da tabela `profiles`
+- Verificar nome real das colunas de foto no banco; auto-award pode estar falhando silenciosamente
 
 ---
 
@@ -144,3 +254,6 @@
 - [x] Barra de completude não avancava — `filtersData` nunca atualizado no estado após salvar
 - [x] Revelação gradual removida de editar-perfil e perfil/[id]
 - [x] Sistema de XP: awardXp chamado em like, dislike, superlike, match, mensagem, login diário, foto aprovada, compra na loja, perfil 100%
+- [x] M2 — Salas de bate-papo: tabelas, RLS, seed de 20 salas publicas + 2 Black, paginas /salas /salas/criar /salas/[id], APIs entrar/criar/alertar, moderacao integrada (commit cb7d359) — **Pendencia Leandro:** rodar `migration_m2_salas.sql` e ativar Realtime
+- [x] M3 — Perfil de casal Black: tabela couple_profiles, pagina /configuracoes/casal, API /api/casal, pagina /casal/aceitar para parceiro aceitar convite (commits cb7d359, b5ca97a) — **Pendencia Leandro:** rodar `migration_m3_m4_casal_amigos.sql`
+- [x] B3 — Moderacao de conteudo global: lib/moderation.ts criado e integrado em salas (commit cb7d359)
