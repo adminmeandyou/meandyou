@@ -9,6 +9,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const supabaseAdmin = createAdminClient()
+  const { data: profile } = await supabaseAdmin.from('profiles').select('role').eq('id', user.id).single()
+  const { data: staff } = await supabaseAdmin.from('staff_members').select('id').eq('user_id', user.id).single()
+  if (profile?.role !== 'admin' && !staff) return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
   const { error } = await supabaseAdmin
     .from('bug_reports')

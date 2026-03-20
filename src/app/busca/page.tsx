@@ -565,10 +565,12 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
     if (!daily.length) {
       try {
         const { data } = await supabase.rpc('search_profiles', {
-          current_user_id: userId,
-          max_distance_km: localFilters.search_max_distance_km,
-          min_age:         localFilters.search_min_age,
-          max_age:         localFilters.search_max_age >= 60 ? 120 : localFilters.search_max_age,
+          p_user_id:         userId,
+          p_lat:             null,
+          p_lng:             null,
+          p_max_distance_km: localFilters.search_max_distance_km,
+          p_min_age:         localFilters.search_min_age,
+          p_max_age:         localFilters.search_max_age >= 60 ? 120 : localFilters.search_max_age,
         })
         // Busca candidatos para filtrar por compatibilidade mútua
         const candidates = (data ?? []).slice(0, 20) as Profile[]
@@ -1214,10 +1216,12 @@ export default function BuscaPage() {
         await supabase.from('profiles').update({ lat: loc.lat, lng: loc.lng }).eq('id', id)
       }
       const { data } = await supabase.rpc('search_profiles', {
-        current_user_id: id,
-        max_distance_km: filters.search_max_distance_km,
-        min_age:         filters.search_min_age,
-        max_age:         filters.search_max_age >= 60 ? 120 : filters.search_max_age,
+        p_user_id:         id,
+        p_lat:             loc?.lat ?? null,
+        p_lng:             loc?.lng ?? null,
+        p_max_distance_km: filters.search_max_distance_km,
+        p_min_age:         filters.search_min_age,
+        p_max_age:         filters.search_max_age >= 60 ? 120 : filters.search_max_age,
       })
       let profiles = (data ?? []) as Profile[]
 

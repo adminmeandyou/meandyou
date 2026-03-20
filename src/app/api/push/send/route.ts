@@ -90,8 +90,13 @@ export async function enviarPushParaUsuario({
 export async function POST(req: NextRequest) {
   try {
     // Só aceita chamadas internas autenticadas com service role
-    const authHeader = req.headers.get('authorization')
-    if (authHeader !== `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`) {
+    const authHeader = req.headers.get('authorization') ?? ''
+    const expected = `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY ?? ''}`
+    const { timingSafeEqual } = await import('crypto')
+    const a = Buffer.from(authHeader)
+    const b = Buffer.from(expected)
+    const authorized = a.length === b.length && timingSafeEqual(a, b)
+    if (!authorized) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 

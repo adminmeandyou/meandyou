@@ -41,9 +41,10 @@ export default function DestaquesPage() {
   }, [period, canAccess])
 
   async function loadHighlights() {
+    if (!user) return
     setLoading(true)
     const { data } = await supabase.rpc('get_highlights', {
-      p_user_id: user!.id,
+      p_user_id: user.id,
       p_period: period,
     })
     setProfiles(data ?? [])
@@ -51,10 +52,11 @@ export default function DestaquesPage() {
   }
 
   async function loadLupas() {
+    if (!user) return
     const { data } = await supabase
       .from('user_lupas')
       .select('amount')
-      .eq('user_id', user!.id)
+      .eq('user_id', user.id)
       .single()
     setLupas(data?.amount ?? 0)
   }
@@ -63,7 +65,7 @@ export default function DestaquesPage() {
     if (lupas <= 0) { toast.error('Sem lupas disponíveis. Compre na Loja.'); return }
     haptics.tap()
     setRevealing(profileId)
-    const { error } = await supabase.rpc('use_lupa', { p_user_id: user!.id, p_target_id: profileId })
+    const { error } = await supabase.rpc('use_lupa', { p_user_id: user?.id, p_target_id: profileId })
     if (!error) {
       setRevealedIds((prev) => new Set(Array.from(prev).concat(profileId)))
       setLupas((l) => l - 1)
@@ -76,7 +78,7 @@ export default function DestaquesPage() {
   async function handleLike(profileId: string) {
     haptics.medium()
     await supabase.rpc('process_swipe', {
-      p_from: user!.id,
+      p_from: user?.id,
       p_to: profileId,
       p_type: 'like',
     })

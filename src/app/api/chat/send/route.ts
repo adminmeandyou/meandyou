@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     // 4. Inserir mensagem
     const { data: message, error: insertErr } = await supabaseAdmin
       .from('messages')
-      .insert({ match_id: matchId, sender_id: user.id, content: trimmed })
+      .insert({ match_id: matchId, sender_id: user.id, content: trimmed, read: false })
       .select()
       .single()
 

@@ -49,7 +49,7 @@ export default function Dashboard() {
     // Limpa os cookies setados manualmente pelo /api/auth/login
     document.cookie = 'sb-access-token=; Max-Age=0; path=/'
     document.cookie = 'sb-refresh-token=; Max-Age=0; path=/'
-    router.push('/login')
+    window.location.href = '/login'
   }
 
   if (carregando) {

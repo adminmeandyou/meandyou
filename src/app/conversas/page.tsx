@@ -39,28 +39,26 @@ export default function ConversasPage() {
   const [aba, setAba] = useState<'ativos' | 'arquivados'>('ativos')
 
   useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push('/login'); return }
       setUserId(user.id)
       loadConversations(user.id)
 
-      // ✅ CORREÇÃO: Realtime filtrado por filter para não disparar em qualquer mensagem do sistema
-      // Filtra apenas mensagens onde o usuário NÃO é o sender (mensagens recebidas)
-      const channel = supabase
+      channel = supabase
         .channel(`conversas-list-${user.id}`)
         .on('postgres_changes', {
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          // Filtra mensagens recebidas pelo usuário (sender_id != userId não é possível via filter,
-          // então ouvimos tudo e recarregamos — mas com debounce para evitar spam)
         }, () => {
           loadConversations(user.id)
         })
         .subscribe()
-
-      return () => { supabase.removeChannel(channel) }
     })
+
+    return () => { if (channel) supabase.removeChannel(channel) }
   }, [])
 
   async function loadConversations(uid: string) {

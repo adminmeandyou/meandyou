@@ -112,7 +112,7 @@ export async function POST(req: NextRequest) {
     // Envia confirmação para o usuário
     await resend.emails.send({
       from: 'MeAndYou Suporte <noreply@meandyou.com.br>',
-      to: email,
+      to: user.email!,
       subject: 'Recebemos sua mensagem — MeAndYou',
       html: `
         <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; background: #0e0b14; color: #fff;">

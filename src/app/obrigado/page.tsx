@@ -137,7 +137,7 @@ function ObrigadoContent() {
                     height: '24px',
                     borderRadius: '50%',
                     backgroundColor: 'var(--accent)',
-                    color: '#000',
+                    color: '#fff',
                     fontSize: '0.75rem',
                     fontWeight: '700',
                     display: 'flex',
