@@ -2,7 +2,7 @@
 -- A8: tabelas para marketing admin (historico de campanhas + configuracoes de notificacao)
 -- A15: views admin_users e admin_metrics para o painel admin
 
--- ─── A8: marketing_campaigns ─────────────────────────────────────────────────
+-- A8: marketing_campaigns
 
 CREATE TABLE IF NOT EXISTS marketing_campaigns (
   id                   uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -23,12 +23,12 @@ CREATE POLICY "admin_only" ON marketing_campaigns
     EXISTS (SELECT 1 FROM staff_members WHERE user_id = auth.uid() AND active = true)
   );
 
--- ─── A8: notification_settings ────────────────────────────────────────────────
+-- A8: notification_settings
 
 CREATE TABLE IF NOT EXISTS notification_settings (
   id                uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   evento            text        NOT NULL,
-  canal             text        NOT NULL,  -- 'email' | 'whatsapp'
+  canal             text        NOT NULL,
   ativo             boolean     NOT NULL DEFAULT false,
   webhook_url       text,
   dias_inatividade  int,
@@ -44,7 +44,6 @@ CREATE POLICY "admin_only" ON notification_settings
     EXISTS (SELECT 1 FROM staff_members WHERE user_id = auth.uid() AND active = true)
   );
 
--- Seed com eventos padrão
 INSERT INTO notification_settings (evento, canal, ativo) VALUES
   ('new_user',          'email',    true),
   ('new_user',          'whatsapp', false),
@@ -58,18 +57,21 @@ INSERT INTO notification_settings (evento, canal, ativo) VALUES
   ('new_match',         'whatsapp', false)
 ON CONFLICT (evento, canal) DO NOTHING;
 
--- ─── A15: view admin_metrics ──────────────────────────────────────────────────
+-- A15: views
 
-CREATE OR REPLACE VIEW admin_metrics AS
+DROP VIEW IF EXISTS admin_users;
+DROP VIEW IF EXISTS admin_metrics;
+
+CREATE VIEW admin_metrics AS
 SELECT
-  COUNT(*) FILTER (WHERE p.deleted_at IS NULL AND COALESCE(p.banned, false) = false)   AS total_users,
+  COUNT(*) FILTER (WHERE p.deleted_at IS NULL AND COALESCE(u.banned, false) = false)   AS total_users,
   COUNT(*) FILTER (WHERE p.created_at >= now() - interval '1 day')                     AS new_today,
-  COUNT(*) FILTER (WHERE COALESCE(p.banned, false) = true)                             AS total_banned,
+  COUNT(*) FILTER (WHERE COALESCE(u.banned, false) = true)                             AS total_banned,
   COUNT(*) FILTER (WHERE p.deleted_at IS NOT NULL)                                     AS total_deleted,
-  COUNT(*) FILTER (WHERE COALESCE(u.verified, COALESCE(p.verified, false)) = true)     AS total_verified,
+  COUNT(*) FILTER (WHERE COALESCE(u.verified, false) = true)                           AS total_verified,
   COUNT(*) FILTER (
-    WHERE COALESCE(u.verified, COALESCE(p.verified, false)) = false
-      AND COALESCE(p.banned, false) = false
+    WHERE COALESCE(u.verified, false) = false
+      AND COALESCE(u.banned, false) = false
       AND p.deleted_at IS NULL
   )                                                                                     AS pending_verification,
   COUNT(*) FILTER (WHERE p.last_seen >= now() - interval '5 minutes')                  AS online_now,
@@ -81,31 +83,29 @@ SELECT
     WHERE p.plan IN ('essencial', 'plus', 'black')
       AND p.created_at >= now() - interval '1 day'
   )                                                                                     AS new_subscribers_today,
-  (SELECT COUNT(*)::int FROM reports WHERE status = 'pending')                         AS reports_pending,
-  (SELECT COUNT(*)::int FROM reports WHERE status = 'resolved')                        AS reports_resolved,
-  COALESCE((SELECT COUNT(*)::int FROM referrals), 0)                                   AS referrals_total,
-  COALESCE((SELECT COUNT(*)::int FROM referrals WHERE status = 'rewarded'), 0)         AS referrals_converted
+  (SELECT COUNT(*) FROM reports WHERE status = 'pending')                               AS reports_pending,
+  (SELECT COUNT(*) FROM reports WHERE status = 'resolved')                              AS reports_resolved,
+  COALESCE((SELECT COUNT(*) FROM referrals), 0)                                         AS referrals_total,
+  COALESCE((SELECT COUNT(*) FROM referrals WHERE status = 'rewarded'), 0)               AS referrals_converted
 FROM profiles p
 LEFT JOIN users u ON u.id = p.id;
 
--- ─── A15: view admin_users ────────────────────────────────────────────────────
-
-CREATE OR REPLACE VIEW admin_users AS
+CREATE VIEW admin_users AS
 SELECT
   p.id,
   p.name,
-  COALESCE(u.email, p.email)                                          AS email,
+  u.email,
   p.plan,
-  COALESCE(u.verified, COALESCE(p.verified, false))                  AS verified,
-  COALESCE(p.banned, false)                                           AS banned,
+  COALESCE(u.verified, false)                                         AS verified,
+  COALESCE(u.banned, false)                                           AS banned,
   p.deleted_at,
   p.created_at,
-  p.last_seen                                                             AS last_active_at,
+  p.last_seen                                                         AS last_active_at,
   p.banned_reason,
   p.city,
   EXTRACT(YEAR FROM AGE(now(), p.birthdate::date))::int               AS age,
   p.gender,
   p.photo_best,
-  (SELECT COUNT(*)::int FROM reports r WHERE r.reported_id = p.id)   AS reports_count
+  (SELECT COUNT(*) FROM reports r WHERE r.reported_id = p.id)        AS reports_count
 FROM profiles p
 LEFT JOIN users u ON u.id = p.id;
