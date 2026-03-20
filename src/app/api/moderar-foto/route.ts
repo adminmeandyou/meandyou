@@ -85,19 +85,14 @@ export async function POST(req: NextRequest) {
 
     if (!response.ok) {
       console.error('Sightengine HTTP error:', response.status)
-      // Moderação indisponível — faz upload mesmo assim para não bloquear o usuário
-      const url = await uploadFoto(user.id, index, foto)
-      if (!url) return NextResponse.json({ aprovado: false, motivo: 'Erro ao salvar a foto. Tente novamente.' })
-      return NextResponse.json({ aprovado: true, url, aviso: 'moderacao_indisponivel' })
+      return NextResponse.json({ aprovado: false, motivo: 'Moderacao temporariamente indisponivel. Tente novamente em alguns minutos.' })
     }
 
     const resultado = await response.json()
 
     if (resultado.status !== 'success') {
       console.error('Sightengine erro:', resultado)
-      const url = await uploadFoto(user.id, index, foto)
-      if (!url) return NextResponse.json({ aprovado: false, motivo: 'Erro ao salvar a foto. Tente novamente.' })
-      return NextResponse.json({ aprovado: true, url, aviso: 'moderacao_indisponivel' })
+      return NextResponse.json({ aprovado: false, motivo: 'Moderacao temporariamente indisponivel. Tente novamente em alguns minutos.' })
     }
 
     // 5. Nudez — bloqueia se qualquer categoria relevante ultrapassar o threshold

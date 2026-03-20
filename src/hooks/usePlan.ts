@@ -139,7 +139,7 @@ export function usePlan() {
     // Buscar tudo em paralelo
     const [userRes, likesRes, superlikesRes, boostsRes, lupasRes, rewindsRes, ticketsRes] =
       await Promise.all([
-        supabase.from('profiles').select('plan').eq('id', user.id).single(),
+        supabase.from('profiles').select('plan, curtidas_reveals_until').eq('id', user.id).single(),
         supabase
           .from('likes')
           .select('*', { count: 'exact', head: true })
@@ -154,6 +154,8 @@ export function usePlan() {
       ])
 
     const plan = (userRes.data?.plan as PlanType) ?? 'essencial'
+    const revealsAtivo = userRes.data?.curtidas_reveals_until
+      && new Date(userRes.data.curtidas_reveals_until) > new Date()
     const config = PLAN_CONFIG[plan] ?? PLAN_CONFIG.essencial
 
     const likesUsedToday = likesRes.count ?? 0
@@ -177,7 +179,7 @@ export function usePlan() {
       rewindsBalance,
       ...config,
       // Inventário libera funcionalidades independente do plano (sobrescreve config)
-      canSeeWhoLiked:        (config.canSeeWhoLiked ?? false) || lupasBalance > 0,
+      canSeeWhoLiked:        (config.canSeeWhoLiked ?? false) || lupasBalance > 0 || !!revealsAtivo,
       canUndo:               (config.canUndo ?? false) || rewindsBalance > 0,
     } as PlanLimits)
 

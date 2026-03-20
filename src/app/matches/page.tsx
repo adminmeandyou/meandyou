@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
-import { MessageCircle, Heart, Clock, Archive, Loader2, UserPlus, Check } from 'lucide-react'
+import { MessageCircle, Heart, Clock, Loader2, UserPlus, Check } from 'lucide-react'
 import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
@@ -59,7 +59,6 @@ export default function MatchesPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
-  const [aba, setAba] = useState<'ativos' | 'arquivados'>('ativos')
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -147,35 +146,22 @@ export default function MatchesPage() {
 
         {/* Tabs Ativos / Arquivados */}
         <div style={{ display: 'flex', gap: 8 }}>
-          {([
-            { key: 'ativos' as const, label: 'Ativos', Icon: Heart, count: matches.length },
-            { key: 'arquivados' as const, label: 'Arquivados', Icon: Archive, count: 0 },
-          ]).map(({ key, label, Icon, count }) => (
-            <button
-              key={key}
-              onClick={() => { haptics.tap(); setAba(key) }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 6,
-                padding: '7px 16px', borderRadius: 100,
-                border: aba === key ? '1px solid var(--accent)' : '1px solid var(--border)',
-                background: aba === key ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
-                color: aba === key ? '#fff' : 'rgba(248,249,250,0.50)',
-                fontFamily: 'var(--font-jakarta)', fontSize: 13, fontWeight: aba === key ? 700 : 400,
-                cursor: 'pointer', transition: 'all 0.15s',
-              }}
-            >
-              <Icon size={13} />
-              {label}
-              {count > 0 && (
-                <span style={{
-                  fontSize: 11, fontWeight: 700, padding: '1px 6px', borderRadius: 100,
-                  background: aba === key ? 'rgba(0,0,0,0.2)' : 'var(--accent)', color: '#fff',
-                }}>
-                  {count}
-                </span>
-              )}
-            </button>
-          ))}
+          {matches.length > 0 && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            padding: '7px 16px', borderRadius: 100,
+            border: '1px solid var(--accent)',
+            background: 'var(--accent)',
+            color: '#fff',
+            fontFamily: 'var(--font-jakarta)', fontSize: 13, fontWeight: 700,
+          }}>
+            <Heart size={13} />
+            Ativos
+            <span style={{ fontSize: 11, fontWeight: 700, padding: '1px 6px', borderRadius: 100, background: 'rgba(0,0,0,0.2)', color: '#fff' }}>
+              {matches.length}
+            </span>
+          </div>
+        )}
         </div>
       </header>
 
@@ -184,13 +170,6 @@ export default function MatchesPage() {
           <div style={{ padding: '16px 20px' }}>
             <SkeletonList rows={5} />
           </div>
-
-        ) : aba === 'arquivados' ? (
-          <EmptyState
-            icon={<Archive size={28} />}
-            title="Nenhum arquivado"
-            description="Você pode arquivar matches para organizar sua lista."
-          />
 
         ) : matches.length === 0 ? (
           <EmptyState
