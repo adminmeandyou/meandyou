@@ -77,6 +77,9 @@ function getStatusPills(userRow: any): StatusPill[] {
   if (userRow.verified) {
     pills.push({ label: 'Verificado', bg: 'rgba(225,29,72,0.18)', color: '#F43F5E' })
   }
+  if (userRow.verified_plus) {
+    pills.push({ label: 'Verificado Plus', bg: 'rgba(245,158,11,0.18)', color: '#F59E0B' })
+  }
   if (createdAt && (now - createdAt) < 7 * 24 * 60 * 60 * 1000) {
     pills.push({ label: 'Novo no app', bg: 'rgba(96,165,250,0.18)', color: '#60a5fa' })
   }
@@ -296,7 +299,7 @@ export default function VerPerfilPage() {
     // Busca dados de status para StatusPills
     const { data: userData } = await supabase
       .from('profiles')
-      .select('verified, last_seen, created_at')
+      .select('verified, last_seen, created_at, verified_plus')
       .eq('id', profileId)
       .single()
     setUserRow(userData)

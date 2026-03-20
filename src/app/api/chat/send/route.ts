@@ -71,12 +71,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 403 })
     }
 
-    // 3. Rate limit global: conta todas as msgs do usuário na janela (não por match)
+    // 3. Rate limit por match: conta msgs do usuário nesse match na janela
     const since = new Date(Date.now() - RATE_WINDOW_SECS * 1000).toISOString()
     const { count } = await supabaseAdmin
       .from('messages')
       .select('id', { count: 'exact', head: true })
       .eq('sender_id', user.id)
+      .eq('match_id', matchId)
       .gte('created_at', since)
 
     if ((count ?? 0) >= RATE_LIMIT) {

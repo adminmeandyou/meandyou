@@ -63,13 +63,16 @@ export default function DestaquesPage() {
 
   async function handleReveal(profileId: string) {
     if (lupas <= 0) { toast.error('Sem lupas disponíveis. Compre na Loja.'); return }
-    haptics.tap()
+    haptics.medium()
     setRevealing(profileId)
     const { error } = await supabase.rpc('use_lupa', { p_user_id: user?.id, p_target_id: profileId })
     if (!error) {
       setRevealedIds((prev) => new Set(Array.from(prev).concat(profileId)))
       setLupas((l) => l - 1)
+      haptics.success()
+      toast.success('Perfil revelado!')
     } else {
+      haptics.error()
       toast.error('Erro ao revelar perfil')
     }
     setRevealing(null)
