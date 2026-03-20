@@ -1386,6 +1386,9 @@ export default function Home() {
                   <li className="gold-check">3 tickets de roleta/dia</li>
                   <li className="gold-check">Destaque máximo no algoritmo</li>
                   <li className="gold-check">Suporte prioritário 24h</li>
+                  <li className="gold-check">Chat exclusivo do Backstage (tema preto e dourado)</li>
+                  <li className="gold-check">Seja resgatado: outros assinantes pagam para te alcançar</li>
+                  <li className="gold-check" style={{ color: 'rgba(245,158,11,0.7)', fontStyle: 'italic' }}>Mais recursos exclusivos revelados ao entrar...</li>
                 </ul>
                 <a href="/planos" className="lp-btn-price lp-btn-gold">Assinar Camarote Black</a>
               </div>
@@ -1418,12 +1421,41 @@ export default function Home() {
                   t: 'Indique e ganhe',
                   d: 'Cada amigo que entrar pelo seu link te rende 1 SuperCurtida. Indicou 3? Ganhe 1 Boost. Quem entrou ganha 3 tickets de boas-vindas.',
                 },
+                {
+                  icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>,
+                  t: 'Emblemas Colecionáveis',
+                  d: 'Conquistas que aparecem no seu perfil. Raridades Comum, Incomum, Raro e Lendário. Quanto mais você usa e interage, mais emblemas raros você desbloqueia.',
+                },
               ].map((item, i) => (
                 <div key={i} className="lp-gamif-card lp-anim">
                   <div className="lp-gamif-icon">{item.icon}</div>
                   <h3>{item.t}</h3>
                   <p>{item.d}</p>
                 </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── Salas Temáticas ── */}
+        <section style={{ padding: '80px 24px', textAlign: 'center', background: 'linear-gradient(180deg, #0d0f16 0%, #08090E 100%)' }}>
+          <div style={{ maxWidth: '720px', margin: '0 auto' }}>
+            <p className="lp-section-label">Em breve</p>
+            <h2 className="lp-section-title" style={{ marginBottom: '16px' }}>
+              <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Salas Temáticas</em>
+            </h2>
+            <p style={{ color: 'rgba(248,249,250,0.55)', fontSize: '16px', maxWidth: '520px', margin: '0 auto 40px', lineHeight: 1.75, fontFamily: 'var(--font-jakarta)' }}>
+              Uma nova forma de se conectar. Entre em uma sala por interesse ou clima e descubra quem mais está no mesmo astral que você neste momento.
+            </p>
+            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+              {['Bares e baladas', 'Games', 'Viagens', 'Música ao vivo', 'Relacionamento sério', 'Apenas diversão', 'K-pop', 'Fitness', 'LGBTQIA+'].map((sala, i) => (
+                <span key={i} style={{
+                  padding: '8px 18px', borderRadius: '100px',
+                  background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.2)',
+                  color: 'rgba(248,249,250,0.65)', fontSize: '13px', fontFamily: 'var(--font-jakarta)',
+                }}>
+                  {sala}
+                </span>
               ))}
             </div>
           </div>
