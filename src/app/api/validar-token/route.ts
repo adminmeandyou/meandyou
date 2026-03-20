@@ -6,17 +6,17 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-function isMobileUA(ua: string): boolean {
-  const isEmulator = /bluestacks|nox|memu|ldplayer|gameloop|android.*sdk|sdk.*android/i.test(ua)
-  if (isEmulator) return false
-  return /android|iphone|ipad|ipod|mobile/i.test(ua)
+function isEmulator(ua: string): boolean {
+  return /bluestacks|nox|memu|ldplayer|gameloop|android.*sdk|sdk.*android/i.test(ua)
 }
 
 export async function POST(req: NextRequest) {
   try {
-    // Verificação server-side: só aceita celular real
+    // Bloqueia emuladores conhecidos (BlueStacks, Nox, etc.)
+    // Não bloqueia desktop/webview de clientes de email — a página de verificação
+    // já faz a checagem de dispositivo mobile no client-side
     const userAgent = req.headers.get('user-agent') || ''
-    if (!isMobileUA(userAgent)) {
+    if (isEmulator(userAgent)) {
       return NextResponse.json({ error: 'mobile_required' }, { status: 403 })
     }
 

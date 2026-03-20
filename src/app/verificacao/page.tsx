@@ -797,7 +797,7 @@ function Verificacao() {
             </div>
           </div>
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
-          <button onClick={() => { const c = cpf.replace(/\D/g,''); if (c.length !== 11) { setErroForm('CPF inválido.'); return } setErroForm(''); setStatus('doc_frente') }}
+          <button onClick={() => { const c = cpf.replace(/\D/g,''); if (!validarCPF(c)) { setErroForm('CPF inválido. Verifique os dígitos.'); return } setErroForm(''); setStatus('doc_frente') }}
             style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '20px' }}>
             Próximo →
           </button>
@@ -904,7 +904,7 @@ function Verificacao() {
               </div>
 
               <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', backgroundColor: '#111', marginBottom: '12px', aspectRatio: '3/4' }}>
-                <video ref={videoSelfieRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover', display: cameraSelfieAtiva ? 'block' : 'none' }} />
+                <video ref={videoSelfieRef} autoPlay playsInline muted style={{ width: '100%', height: '100%', objectFit: 'cover', display: cameraSelfieAtiva ? 'block' : 'none', transform: 'scaleX(-1)' }} />
                 {cameraSelfieAtiva && (
                   <svg viewBox="0 0 300 400" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none' }}>
                     <defs>

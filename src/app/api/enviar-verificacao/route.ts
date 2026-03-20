@@ -38,9 +38,9 @@ export async function POST(req: NextRequest) {
       .eq('user_id', userId)
       .eq('used', false)
 
-    // 3. Gerar novo token (30 minutos de validade)
+    // 3. Gerar novo token (60 minutos de validade)
     const token = crypto.randomBytes(32).toString('hex')
-    const expiresAt = new Date(Date.now() + 30 * 60 * 1000)
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
 
     const { error } = await supabase.from('verification_tokens').insert({
       user_id: userId,
