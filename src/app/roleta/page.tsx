@@ -390,8 +390,8 @@ export default function RoletaPage() {
     }
     fastSpinIdRef.current = requestAnimationFrame(doFastSpin)
 
-    // ── Chama a API em paralelo com a animação ───────────────────────
-    const { data, error } = await supabase.rpc('spin_roleta', { p_user_id: user!.id })
+    // ── Chama a API route (usa service_role para contornar RLS) ─────
+    const apiResponse = await fetch('/api/roleta/girar', { method: 'POST' })
 
     // Garante tempo mínimo de giro visual para não parecer instantâneo
     const elapsed = performance.now() - spinStart
@@ -403,29 +403,21 @@ export default function RoletaPage() {
     fastRunning = false
     cancelAnimationFrame(fastSpinIdRef.current)
 
-    if (error || !data) {
+    const responseData = apiResponse.ok ? await apiResponse.json().catch(() => null) : null
+
+    if (!apiResponse.ok || !responseData?.reward_type) {
+      const errMsg = responseData?.error || 'Erro ao girar. Tente novamente.'
       // Desacelera suavemente antes de mostrar o erro (sem parar bruscamente)
       const randomTarget = rotRef.current + Math.PI * 2 + Math.random() * Math.PI * 2
       animateDecelerate(randomTarget, 2000, () => {
         setSpinning(false)
         spinningRef.current = false
-        toast.error('Erro ao girar. Tente novamente.')
+        toast.error(errMsg)
       })
       return
     }
 
-    // Supabase pode retornar array ou objeto dependendo da função RPC
-    const prize = (Array.isArray(data) ? data[0] : data) as SpinResult
-
-    if (!prize?.reward_type) {
-      const randomTarget = rotRef.current + Math.PI * 2 + Math.random() * Math.PI * 2
-      animateDecelerate(randomTarget, 2000, () => {
-        setSpinning(false)
-        spinningRef.current = false
-        toast.error('Erro ao girar. Tente novamente.')
-      })
-      return
-    }
+    const prize = responseData as SpinResult
 
     // ── FASE 2: Desacelera e para exatamente no prêmio sorteado ──────
     const segCount  = WHEEL_SEGMENTS.length
