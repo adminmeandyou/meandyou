@@ -21,14 +21,17 @@ CREATE INDEX IF NOT EXISTS access_requests_status_idx    ON access_requests(stat
 
 ALTER TABLE access_requests ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Usuarios veem seus proprios pedidos" ON access_requests;
 CREATE POLICY "Usuarios veem seus proprios pedidos"
   ON access_requests FOR SELECT
   USING (auth.uid() = requester_id OR auth.uid() = rescued_by);
 
+DROP POLICY IF EXISTS "Usuarios criam seus pedidos" ON access_requests;
 CREATE POLICY "Usuarios criam seus pedidos"
   ON access_requests FOR INSERT
   WITH CHECK (auth.uid() = requester_id);
 
+DROP POLICY IF EXISTS "Usuarios atualizam seus pedidos" ON access_requests;
 CREATE POLICY "Usuarios atualizam seus pedidos"
   ON access_requests FOR UPDATE
   USING (auth.uid() = requester_id OR auth.uid() = rescued_by);
@@ -46,10 +49,12 @@ CREATE TABLE IF NOT EXISTS camarote_ratings (
 
 ALTER TABLE camarote_ratings ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Usuarios inserem suas proprias avaliacoes" ON camarote_ratings;
 CREATE POLICY "Usuarios inserem suas proprias avaliacoes"
   ON camarote_ratings FOR INSERT
   WITH CHECK (auth.uid() = rater_id);
 
+DROP POLICY IF EXISTS "Usuarios veem avaliacoes de seus requests" ON camarote_ratings;
 CREATE POLICY "Usuarios veem avaliacoes de seus requests"
   ON camarote_ratings FOR SELECT
   USING (auth.uid() = rater_id OR auth.uid() = rated_id);
@@ -68,6 +73,7 @@ CREATE INDEX IF NOT EXISTS camarote_messages_request_idx ON camarote_messages(re
 
 ALTER TABLE camarote_messages ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Participantes veem mensagens do request" ON camarote_messages;
 CREATE POLICY "Participantes veem mensagens do request"
   ON camarote_messages FOR SELECT
   USING (
@@ -78,6 +84,7 @@ CREATE POLICY "Participantes veem mensagens do request"
     )
   );
 
+DROP POLICY IF EXISTS "Participantes enviam mensagens" ON camarote_messages;
 CREATE POLICY "Participantes enviam mensagens"
   ON camarote_messages FOR INSERT
   WITH CHECK (
@@ -89,6 +96,7 @@ CREATE POLICY "Participantes enviam mensagens"
     )
   );
 
+DROP POLICY IF EXISTS "Participantes marcam mensagens como lidas" ON camarote_messages;
 CREATE POLICY "Participantes marcam mensagens como lidas"
   ON camarote_messages FOR UPDATE
   USING (
@@ -113,6 +121,7 @@ CREATE INDEX IF NOT EXISTS referrals_referrer_idx ON referrals(referrer_id);
 
 ALTER TABLE referrals ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Usuarios veem suas proprias indicacoes" ON referrals;
 CREATE POLICY "Usuarios veem suas proprias indicacoes"
   ON referrals FOR SELECT
   USING (auth.uid() = referrer_id);
