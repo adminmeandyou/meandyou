@@ -320,7 +320,7 @@ export default function LojaPage() {
         setFichas(f => f - item.baseFichas * qty)
         toast.success(`${item.label} adicionado ao seu saldo!`)
         if (data.surpresa) {
-          toast.info(`Caixa Surpresa: você ganhou ${data.surpresa.reward_amount}x ${data.surpresa.reward_type}!`)
+          const SURPRESA_LABELS: Record<string, string> = { ticket: 'ticket(s) da roleta', supercurtida: 'supercurtida(s)', boost: 'boost(s)', lupa: 'lupa(s)', rewind: 'rewind(s)', invisivel_1d: '1 dia invisivel', plan_plus_1d: '1 dia Plus', plan_black_1d: '1 dia Black' }; const sLabel = SURPRESA_LABELS[data.surpresa.reward_type] ?? data.surpresa.reward_type; toast.success(`Caixa Surpresa: voce ganhou ${data.surpresa.reward_amount}x ${sLabel}!`)
         }
         if (data.caixa_lendaria) {
           setLendariaResult(data.caixa_lendaria)
@@ -711,9 +711,18 @@ export default function LojaPage() {
           {lendariaPhase === 'reveal' && lendariaResult && (
             <div style={{ textAlign: 'center', animation: 'lend-reveal 0.5s ease-out' }}>
               <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 28, color: '#F59E0B', marginBottom: 8 }}>Voce ganhou!</p>
-              <p style={{ fontSize: 20, color: 'var(--text)', fontWeight: 700 }}>
-                {lendariaResult.amount > 1 ? `${lendariaResult.amount}x ` : ''}{lendariaResult.type.replace(/_/g, ' ')}
-              </p>
+              {lendariaResult.type === 'badge' || lendariaResult.type === 'badge_pending' ? (
+                <>
+                  {lendariaResult.badge_icon && <img src={lendariaResult.badge_icon} alt="" style={{ width: 80, height: 80, margin: '0 auto 12px', display: 'block' }} />}
+                  <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#F59E0B', marginBottom: 4 }}>Emblema Super Lendario</p>
+                  <p style={{ fontSize: 20, color: 'var(--text)', fontWeight: 700 }}>{lendariaResult.badge_name ?? 'Emblema Exclusivo'}</p>
+                  {lendariaResult.type === 'badge_pending' && <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.40)', marginTop: 6 }}>Em breve disponivel no seu perfil</p>}
+                </>
+              ) : (
+                <p style={{ fontSize: 20, color: 'var(--text)', fontWeight: 700 }}>
+                  {lendariaResult.badge_name ?? ''}
+                </p>
+              )}
               <button
                 onClick={() => { setLendariaPhase('idle'); setLendariaResult(null); loadBalance() }}
                 style={{ marginTop: 24, backgroundColor: '#F59E0B', color: '#000', border: 'none', borderRadius: 100, padding: '14px 32px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}

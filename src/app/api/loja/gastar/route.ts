@@ -126,43 +126,42 @@ export async function POST(req: NextRequest) {
       }
 
     } else if (item_key === 'caixa_surpresa') {
-      const { data: spinResult } = await supabaseAdmin.rpc('spin_roleta', { p_user_id: user.id })
-      return NextResponse.json({ success: true, surpresa: spinResult })
+      const { data: spinResult, error: spinError } = await supabaseAdmin.rpc('spin_roleta', { p_user_id: user.id })
+      if (spinError) return NextResponse.json({ error: spinError.message }, { status: 500 })
+      const prize = Array.isArray(spinResult) ? spinResult[0] : spinResult
+      if (!prize?.reward_type) return NextResponse.json({ error: 'Premio invalido' }, { status: 500 })
+      return NextResponse.json({ success: true, surpresa: prize })
 
     } else if (item_key === 'caixa_lendaria') {
-      // Pool lendário — itens exclusivos, ponderados por raridade
-      const pool = [
-        { type: 'superlike', amount: 5, weight: 30 },
-        { type: 'boost', amount: 2, weight: 20 },
-        { type: 'lupa', amount: 2, weight: 20 },
-        { type: 'ghost_7d', amount: 1, weight: 15 },
-        { type: 'reveals_5', amount: 1, weight: 10 },
-        { type: 'xp_bonus_3d', amount: 1, weight: 4 },
-        { type: 'plan_black_1d', amount: 1, weight: 1 },
-      ]
-      const totalWeight = pool.reduce((s, i) => s + i.weight, 0)
-      let rng = Math.random() * totalWeight
-      const chosen = pool.find(i => { rng -= i.weight; return rng <= 0 }) ?? pool[0]
+      // Busca emblemas exclusivos da caixa lendária (condition_type = 'caixa_lendaria')
+      const { data: lendBadges } = await supabaseAdmin
+        .from('badges')
+        .select('id, name, icon_url')
+        .eq('condition_type', 'caixa_lendaria')
+        .eq('active', true)
 
-      if (chosen.type === 'superlike') await incrementarSaldo('user_superlikes', user.id, chosen.amount)
-      else if (chosen.type === 'boost') await incrementarSaldo('user_boosts', user.id, chosen.amount)
-      else if (chosen.type === 'lupa') await incrementarSaldo('user_lupas', user.id, chosen.amount)
-      else if (chosen.type === 'ghost_7d') {
-        const until = new Date(Date.now() + 7 * 86400000).toISOString()
-        await supabaseAdmin.from('profiles').update({ ghost_mode_until: until }).eq('id', user.id)
-      } else if (chosen.type === 'reveals_5') {
-        const until = new Date(Date.now() + 86400000).toISOString()
-        await supabaseAdmin.from('profiles').update({ curtidas_reveals_until: until }).eq('id', user.id)
-      } else if (chosen.type === 'xp_bonus_3d') {
-        const until = new Date(Date.now() + 3 * 86400000).toISOString()
-        await supabaseAdmin.from('profiles').update({ xp_bonus_until: until }).eq('id', user.id)
-      } else if (chosen.type === 'plan_black_1d') {
-        // XP bonus como proxy de "1 dia Black" até sistema de planos temporários existir
-        const until = new Date(Date.now() + 86400000).toISOString()
-        await supabaseAdmin.from('profiles').update({ xp_bonus_until: until }).eq('id', user.id)
+      if (!lendBadges || lendBadges.length === 0) {
+        // Emblemas ainda nao cadastrados — informa ao usuario
+        return NextResponse.json({ success: true, caixa_lendaria: { type: 'badge_pending', badge_name: 'Emblema Super Lendario', badge_id: null } })
       }
 
-      return NextResponse.json({ success: true, caixa_lendaria: { type: chosen.type, amount: chosen.amount } })
+      // Sorteia um emblema que o usuario ainda nao tem
+      const { data: owned } = await supabaseAdmin
+        .from('user_badges')
+        .select('badge_id')
+        .eq('user_id', user.id)
+        .in('badge_id', lendBadges.map(b => b.id))
+
+      const ownedIds = new Set((owned ?? []).map((r: any) => r.badge_id))
+      const available = lendBadges.filter(b => !ownedIds.has(b.id))
+      const pool = available.length > 0 ? available : lendBadges // se tiver todos, repete
+      const badge = pool[Math.floor(Math.random() * pool.length)]
+
+      await supabaseAdmin
+        .from('user_badges')
+        .upsert({ user_id: user.id, badge_id: badge.id }, { onConflict: 'user_id,badge_id', ignoreDuplicates: true })
+
+      return NextResponse.json({ success: true, caixa_lendaria: { type: 'badge', badge_id: badge.id, badge_name: badge.name, badge_icon: badge.icon_url } })
     }
 
     // Conceder XP pela compra (fire-and-forget)
