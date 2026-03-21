@@ -327,6 +327,7 @@ export default function CheckoutModal({
       setPaymentId(null)
       setPixData(null)
       setBillingUrl(null)
+      setCopied(false)
       setTimeLeft(900)
     }
   }, [open, isSubscription])
@@ -343,27 +344,35 @@ export default function CheckoutModal({
   useEffect(() => {
     if (step !== 3 || method !== 'pix' || !paymentId) return
     let active = true
+    let pollTimer: ReturnType<typeof setTimeout>
+
     const poll = async () => {
       if (!active) return
       try {
         const { data: { session } } = await supabase.auth.getSession()
+        if (!session?.access_token) return
         const resp = await fetch(`/api/payments/status/${paymentId}`, {
-          headers: { Authorization: `Bearer ${session?.access_token}` }
+          headers: { Authorization: `Bearer ${session.access_token}` }
         })
         const json = await resp.json()
+        if (!active) return
         if (json.status === 'paid') {
           setStep(4)
         } else if (json.status === 'expired') {
           setError('PIX expirado. Feche e tente novamente.')
-        } else if (active) {
-          setTimeout(poll, 3000)
+        } else {
+          pollTimer = setTimeout(poll, 3000)
         }
       } catch {
-        if (active) setTimeout(poll, 3000)
+        if (active) pollTimer = setTimeout(poll, 3000)
       }
     }
-    const t = setTimeout(poll, 3000)
-    return () => { active = false; clearTimeout(t) }
+
+    pollTimer = setTimeout(poll, 3000)
+    return () => {
+      active = false
+      clearTimeout(pollTimer)
+    }
   }, [step, method, paymentId])
 
   const createPayment = useCallback(async (selectedMethod: 'pix' | 'credit_card') => {
@@ -388,7 +397,6 @@ export default function CheckoutModal({
       const json = await resp.json()
       if (!json.ok) {
         setError(json.error ?? 'Erro ao iniciar pagamento')
-        setLoading(false)
         return
       }
       setPaymentId(json.paymentId)
@@ -400,8 +408,9 @@ export default function CheckoutModal({
       setStep(3)
     } catch {
       setError('Erro de conexao. Tente novamente.')
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }, [type, isSubscription, plan, cycle, amountCents, metadata])
 
   const handleMethodSelect = (m: 'pix' | 'credit_card') => {
