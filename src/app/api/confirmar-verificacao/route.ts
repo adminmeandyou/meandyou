@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendVerificationApprovedEmail } from '@/app/lib/email'
+import { createClient as createServerClient } from '@/lib/supabase/server'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,6 +14,13 @@ export async function POST(req: NextRequest) {
     const { token, userId } = await req.json()
     if (!token || !userId) {
       return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
+    }
+
+    // Risco R4: garantir que o userId do body pertence ao usuário autenticado na sessão
+    const sessionClient = await createServerClient()
+    const { data: { user: sessionUser } } = await sessionClient.auth.getUser()
+    if (!sessionUser || sessionUser.id !== userId) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 403 })
     }
 
     // 1. Validar token

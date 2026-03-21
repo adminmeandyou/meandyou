@@ -164,29 +164,32 @@ function Verificacao() {
     return `${nums.slice(0,3)}.${nums.slice(3,6)}.${nums.slice(6,9)}-${nums.slice(9)}`
   }
 
+  const FACE_API_CDNS = [
+    {
+      script: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js',
+      models: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model',
+    },
+    {
+      script: 'https://unpkg.com/@vladmandic/face-api@1.7.12/dist/face-api.js',
+      models: 'https://unpkg.com/@vladmandic/face-api@1.7.12/model',
+    },
+  ]
+
   const carregarFaceApi = async () => {
     if ((window as any).faceapi) { setFaceApiCarregado(true); return }
     setFaceApiErro(false)
 
-    const timeout = new Promise<never>((_, reject) =>
-      setTimeout(() => reject(new Error('timeout')), 15000)
-    )
-
-    try {
-      await Promise.race([
+    const tentarCdn = (cdn: typeof FACE_API_CDNS[0]) =>
+      Promise.race([
         new Promise<void>((resolve, reject) => {
           const script = document.createElement('script')
-          // ✅ CORREÇÃO CRÍTICA: usar @vladmandic/face-api para biblioteca E modelos
-          // Antes: biblioteca era face-api.js@0.22.2 (pacote original) com modelos de
-          // @vladmandic/face-api@1.7.12 (fork incompatível) → manifests e pesos distintos
-          script.src = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js'
+          script.src = cdn.script
           script.onload = async () => {
             const faceapi = (window as any).faceapi
             try {
-              const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model'
               await Promise.all([
-                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
+                faceapi.nets.tinyFaceDetector.loadFromUri(cdn.models),
+                faceapi.nets.faceLandmark68Net.loadFromUri(cdn.models),
               ])
               setFaceApiCarregado(true)
               resolve()
@@ -195,11 +198,19 @@ function Verificacao() {
           script.onerror = reject
           document.head.appendChild(script)
         }),
-        timeout,
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 15000)),
       ])
-    } catch {
-      setFaceApiErro(true)
+
+    for (const cdn of FACE_API_CDNS) {
+      try {
+        await tentarCdn(cdn)
+        return
+      } catch {
+        // limpa faceapi do window se carregou parcialmente antes de tentar próximo CDN
+        delete (window as any).faceapi
+      }
     }
+    setFaceApiErro(true)
   }
 
   useEffect(() => {
@@ -220,13 +231,31 @@ function Verificacao() {
     salvarVerifDraft({ cpf, tipoDoc, frenteFeita, versoFeita })
   }, [cpf, tipoDoc, frenteFeita, versoFeita])
 
-  // Auto-submit após liveness concluído
+  // Restaura selfie do draft quando userId e tokenAtual ficam disponíveis
   useEffect(() => {
-    if (livenessOk && selfieFileRef.current) {
+    if (!userId || !tokenAtual) return
+    const savedDraft = carregarVerifDraft()
+    if (!savedDraft?.selfieBase64 || selfieFileRef.current) return
+    fetch(savedDraft.selfieBase64)
+      .then(r => r.blob())
+      .then(blob => {
+        const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' })
+        selfieFileRef.current = file
+        setSelfieFile(file)
+        setSelfiePreview(savedDraft.selfieBase64)
+        setLivenessOk(true)
+      })
+      .catch(() => {})
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, tokenAtual])
+
+  // Auto-submit após liveness concluído (aguarda userId e tokenAtual estarem prontos)
+  useEffect(() => {
+    if (livenessOk && selfieFileRef.current && userId && tokenAtual) {
       enviarVerificacao()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [livenessOk])
+  }, [livenessOk, userId, tokenAtual])
 
   const pararTodasCameras = () => {
     [streamFrenteRef, streamVersoRef, streamSelfieRef].forEach(ref => {
@@ -239,7 +268,7 @@ function Verificacao() {
 
   const verificarSeJaValidado = async () => {
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
+    if (!user) { window.location.href = '/login'; return }
     const { data } = await supabase.from('users').select('verified, email').eq('id', user.id).single()
     if (data?.verified) {
       const { data: profile } = await supabase.from('profiles').select('onboarding_completed').eq('id', user.id).single()
@@ -595,6 +624,15 @@ function Verificacao() {
       setLivenessOk(true)
       setDeteccaoAtiva(false)
       setFeedbackLiveness('✅ Verificação concluída!')
+      // Persiste selfie no draft para não precisar refazer liveness se a página fechar
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        try {
+          const draft = carregarVerifDraft() || {}
+          salvarVerifDraft({ ...draft, selfieBase64: reader.result as string })
+        } catch {}
+      }
+      reader.readAsDataURL(blob)
     }, 'image/jpeg', 0.92)
   }
 
