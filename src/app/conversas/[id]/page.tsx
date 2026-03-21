@@ -30,7 +30,7 @@ interface OtherUser {
   name: string
   photo_best: string | null
   verified: boolean
-  last_active_at: string | null
+  last_seen: string | null
   show_last_active: boolean
 }
 
@@ -139,7 +139,7 @@ export default function ChatPage() {
     // Busca perfil do outro — sem campos sensíveis
     const { data: profile } = await supabase
       .from('profiles')
-      .select('id, name, photo_best, verified, last_active_at, show_last_active')
+      .select('id, name, photo_best, verified, last_seen, show_last_active')
       .eq('id', otherId)
       .single()
 
@@ -148,7 +148,7 @@ export default function ChatPage() {
       name: profile?.name ?? 'Usuario',
       photo_best: profile?.photo_best ?? null,
       verified: profile?.verified ?? false,
-      last_active_at: profile?.last_active_at ?? null,
+      last_seen: profile?.last_seen ?? null,
       show_last_active: profile?.show_last_active ?? true,
     })
 
@@ -670,7 +670,7 @@ export default function ChatPage() {
                 )}
               </p>
               <OnlineIndicator
-                lastActiveAt={otherUser?.last_active_at}
+                lastActiveAt={otherUser?.last_seen}
                 showLastActive={otherUser?.show_last_active}
                 mode="text"
                 size={7}

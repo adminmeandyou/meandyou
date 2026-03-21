@@ -43,7 +43,7 @@ interface UserItem {
   banned: boolean
   deleted_at: string | null
   created_at: string
-  last_active_at: string | null
+  last_seen: string | null
   banned_reason?: string
   reports_count?: number
   city?: string
@@ -80,8 +80,8 @@ function UserDrawer({ filterKey, title, onClose }: { filterKey: FilterKey; title
       let q = supabase.from('admin_users').select('*').limit(200)
 
       switch (filterKey) {
-        case 'online_now':          q = q.gte('last_active_at', fiveMinAgo); break
-        case 'active_today':        q = q.gte('last_active_at', todayStart); break
+        case 'online_now':          q = q.gte('last_seen', fiveMinAgo); break
+        case 'active_today':        q = q.gte('last_seen', todayStart); break
         case 'new_today':           q = q.gte('created_at', todayStart); break
         case 'new_subscribers_today': q = q.not('plan', 'in', '("free")').gte('created_at', todayStart); break
         case 'total_users':         q = q.is('deleted_at', null).neq('banned', true); break
@@ -168,7 +168,7 @@ function DrawerUserRow({ user: u }: { user: UserItem }) {
         </p>
         <p style={{ fontSize: '11px', color: '#3a3a3a', marginTop: '1px' }}>
           Cadastro: {new Date(u.created_at).toLocaleDateString('pt-BR')}
-          {u.last_active_at ? ` · Ativo: ${new Date(u.last_active_at).toLocaleDateString('pt-BR')}` : ''}
+          {u.last_seen ? ` · Ativo: ${new Date(u.last_seen).toLocaleDateString('pt-BR')}` : ''}
           {u.banned_reason ? ` · Motivo: ${u.banned_reason}` : ''}
         </p>
       </div>

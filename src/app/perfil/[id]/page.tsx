@@ -243,7 +243,7 @@ export default function VerPerfilPage() {
     // verified, last_seen, created_at, verified_plus incluidos aqui para evitar segundo roundtrip
     let { data: profileData } = await supabase
       .from('profiles')
-      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_best, photo_extra1, photo_extra2, photo_extra3, highlight_tags, status_temp, status_temp_expires_at, profile_question, profile_question_answer, badge_showcase, verified, last_seen, last_active_at, created_at, verified_plus')
+      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_best, photo_extra1, photo_extra2, photo_extra3, highlight_tags, status_temp, status_temp_expires_at, profile_question, profile_question_answer, badge_showcase, verified, last_seen, created_at, verified_plus')
       .eq('id', profileId)
       .single()
 
@@ -251,7 +251,7 @@ export default function VerPerfilPage() {
     if (!profileData) {
       const { data: fallback } = await supabase
         .from('profiles')
-        .select('id, name, birthdate, bio, gender, city, state, photo_best, verified, last_seen, last_active_at, created_at, verified_plus')
+        .select('id, name, birthdate, bio, gender, city, state, photo_best, verified, last_seen, created_at, verified_plus')
         .eq('id', profileId)
         .single()
       profileData = fallback as typeof profileData
@@ -290,7 +290,7 @@ export default function VerPerfilPage() {
     // Dados de status para StatusPills — reutilizados do select principal (sem roundtrip extra)
     setUserRow(profileData ? {
       verified: (profileData as any).verified,
-      last_seen: (profileData as any).last_seen ?? (profileData as any).last_active_at,
+      last_seen: (profileData as any).last_seen,
       created_at: (profileData as any).created_at,
       verified_plus: (profileData as any).verified_plus,
     } : null)
