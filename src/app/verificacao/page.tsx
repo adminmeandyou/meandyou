@@ -3,27 +3,23 @@
 import { useEffect, useState, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, ArrowRight, ArrowUp, ArrowDown, EyeOff, ScanFace, Camera, FolderOpen, RefreshCw, Check, AlertCircle, Lightbulb } from 'lucide-react'
+import { ArrowLeft, ArrowRight, ScanFace, Smile, Camera, FolderOpen, RefreshCw, Check, AlertCircle, Lightbulb } from 'lucide-react'
 
 type Status = 'loading' | 'desktop' | 'aguardando' | 'dados' | 'doc_frente' | 'doc_verso' | 'selfie' | 'enviando' | 'sucesso' | 'erro' | 'expirado' | 'usado'
 type ModoCaptura = 'escolha' | 'camera' | 'arquivo'
 
 const PASSOS_LIVENESS = [
-  { id: 'frente',   instrucao: 'Olhe para a câmera'          },
   { id: 'direita',  instrucao: 'Vire o rosto para a direita' },
   { id: 'esquerda', instrucao: 'Vire o rosto para a esquerda'},
-  { id: 'cima',     instrucao: 'Levante o queixo'            },
-  { id: 'baixo',    instrucao: 'Abaixe o queixo'             },
-  { id: 'piscar',   instrucao: 'Pisque duas vezes'           },
+  { id: 'frente',   instrucao: 'Olhe para a câmera'          },
+  { id: 'sorriso',  instrucao: 'Sorria!'                     },
 ]
 
 const LIVENESS_ICON: Record<string, React.ReactNode> = {
-  frente:   <ScanFace   size={40} strokeWidth={1.5} />,
   direita:  <ArrowRight size={40} strokeWidth={1.5} />,
   esquerda: <ArrowLeft  size={40} strokeWidth={1.5} />,
-  cima:     <ArrowUp    size={40} strokeWidth={1.5} />,
-  baixo:    <ArrowDown  size={40} strokeWidth={1.5} />,
-  piscar:   <EyeOff     size={40} strokeWidth={1.5} />,
+  frente:   <ScanFace   size={40} strokeWidth={1.5} />,
+  sorriso:  <Smile      size={40} strokeWidth={1.5} />,
 }
 
 function Verificacao() {
@@ -426,6 +422,34 @@ function Verificacao() {
     const passoId = PASSOS_LIVENESS[passoAtual]?.id
     let condicaoOk = false
 
+    if (passoId === 'direita') {
+      // Vídeo tem transform: scaleX(-1) no CSS (espelhado para o usuário).
+      // face-api lê pixels brutos SEM espelhamento.
+      // Virar para a direita fisicamente → nariz move para a ESQUERDA nos pixels brutos.
+      const nose = landmarks.getNose()
+      const jaw = landmarks.getJawOutline()
+      const noseTip = nose[3]
+      const jawLeft = jaw[0]
+      const jawRight = jaw[16]
+      const centro = (jawLeft.x + jawRight.x) / 2
+      const largura = jawRight.x - jawLeft.x
+      if (noseTip.x < centro - largura * 0.18) { condicaoOk = true }
+      else { holdCountRef.current = 0; setFeedbackLiveness('Vire mais para a direita') }
+    }
+
+    if (passoId === 'esquerda') {
+      // Virar para a esquerda fisicamente → nariz move para a DIREITA nos pixels brutos.
+      const nose = landmarks.getNose()
+      const jaw = landmarks.getJawOutline()
+      const noseTip = nose[3]
+      const jawLeft = jaw[0]
+      const jawRight = jaw[16]
+      const centro = (jawLeft.x + jawRight.x) / 2
+      const largura = jawRight.x - jawLeft.x
+      if (noseTip.x > centro + largura * 0.18) { condicaoOk = true }
+      else { holdCountRef.current = 0; setFeedbackLiveness('Vire mais para a esquerda') }
+    }
+
     if (passoId === 'frente') {
       const nose = landmarks.getNose()
       const jaw = landmarks.getJawOutline()
@@ -439,67 +463,19 @@ function Verificacao() {
       else { holdCountRef.current = 0; setFeedbackLiveness('Olhe diretamente para a câmera') }
     }
 
-    if (passoId === 'direita') {
-      const nose = landmarks.getNose()
-      const jaw = landmarks.getJawOutline()
-      const noseTip = nose[3]
-      const jawLeft = jaw[0]
-      const jawRight = jaw[16]
-      const centro = (jawLeft.x + jawRight.x) / 2
-      const largura = jawRight.x - jawLeft.x
-      if (noseTip.x > centro + largura * 0.22) { condicaoOk = true }
-      else { holdCountRef.current = 0; setFeedbackLiveness('Vire mais para a direita') }
-    }
-
-    if (passoId === 'esquerda') {
-      const nose = landmarks.getNose()
-      const jaw = landmarks.getJawOutline()
-      const noseTip = nose[3]
-      const jawLeft = jaw[0]
-      const jawRight = jaw[16]
-      const centro = (jawLeft.x + jawRight.x) / 2
-      const largura = jawRight.x - jawLeft.x
-      if (noseTip.x < centro - largura * 0.22) { condicaoOk = true }
-      else { holdCountRef.current = 0; setFeedbackLiveness('Vire mais para a esquerda') }
-    }
-
-    if (passoId === 'cima') {
-      const nose = landmarks.getNose()
-      const chin = landmarks.getJawOutline()[8]
-      const noseBridge = nose[0]
-      const diff = chin.y - noseBridge.y
-      if (diff < 58) { condicaoOk = true }
-      else { holdCountRef.current = 0; setFeedbackLiveness('Levante mais o queixo') }
-    }
-
-    if (passoId === 'baixo') {
-      const nose = landmarks.getNose()
-      const chin = landmarks.getJawOutline()[8]
-      const noseBridge = nose[0]
-      const diff = chin.y - noseBridge.y
-      if (diff > 118) { condicaoOk = true }
-      else { holdCountRef.current = 0; setFeedbackLiveness('Abaixe mais o queixo') }
-    }
-
-    if (passoId === 'piscar') {
-      const leftEye = landmarks.getLeftEye()
-      const rightEye = landmarks.getRightEye()
-      const earEsq = calcularEAR(leftEye)
-      const earDir = calcularEAR(rightEye)
-      const ear = (earEsq + earDir) / 2
-
-      if (ear < 0.22 && olhosAbertosRef.current) {
-        olhosAbertosRef.current = false
-        piscarContRef.current += 1
-        setFeedbackLiveness(`Piscar detectado: ${piscarContRef.current}/2`)
-      } else if (ear > 0.28) {
-        olhosAbertosRef.current = true
-      }
-      if (piscarContRef.current >= 2) { condicaoOk = true }
+    if (passoId === 'sorriso') {
+      const mouth = landmarks.getMouth()
+      // mouth[0] = canto esquerdo, mouth[6] = canto direito
+      // mouth[3] = centro superior, mouth[9] = centro inferior
+      const mouthWidth = dist(mouth[0], mouth[6])
+      const mouthHeight = dist(mouth[3], mouth[9])
+      const smileRatio = mouthWidth > 0 ? mouthHeight / mouthWidth : 0
+      if (smileRatio > 0.28) { condicaoOk = true }
+      else { holdCountRef.current = 0; setFeedbackLiveness('Sorria mostrando os dentes!') }
     }
 
     // Exige 3 frames consecutivos para confirmar (evita falso positivo por frame unico)
-    if (condicaoOk && passoId !== 'piscar') {
+    if (condicaoOk) {
       holdCountRef.current += 1
       if (holdCountRef.current < 3) {
         setFeedbackLiveness('Mantenha a posição...')
@@ -507,7 +483,7 @@ function Verificacao() {
       }
     }
 
-    const passou = condicaoOk && (passoId === 'piscar' ? piscarContRef.current >= 2 : holdCountRef.current >= 3)
+    const passou = condicaoOk && holdCountRef.current >= 3
 
     if (passou) {
       holdCountRef.current = 0
