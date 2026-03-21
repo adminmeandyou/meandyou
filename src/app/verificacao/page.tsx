@@ -64,6 +64,8 @@ function Verificacao() {
   const [versoFeita, setVersoFeita] = useState<boolean>(draft?.versoFeita ?? false)
   const [frenteUploadando, setFrenteUploadando] = useState(false)
   const [versoUploadando, setVersoUploadando] = useState(false)
+  const [frenteUploadFalhou, setFrenteUploadFalhou] = useState(false)
+  const [versoUploadFalhou, setVersoUploadFalhou] = useState(false)
 
   const [modoFrente, setModoFrente] = useState<ModoCaptura>('escolha')
   const [modoVerso, setModoVerso] = useState<ModoCaptura>('escolha')
@@ -317,6 +319,8 @@ function Verificacao() {
     if (!permitidos.includes(file.type)) { setErroForm('Formato inválido. Use JPG, PNG, WEBP ou PDF.'); return }
     if (file.size > 10 * 1024 * 1024) { setErroForm('Arquivo muito grande. Máximo 10MB.'); return }
     setErroForm('')
+    if (tipo === 'frente') setFrenteUploadFalhou(false)
+    else setVersoUploadFalhou(false)
     const url = file.type === 'application/pdf' ? '' : URL.createObjectURL(file)
     if (tipo === 'frente') { setDocFrente(file); setDocFrentePreview(url) }
     else { setDocVerso(file); setDocVersoPreview(url) }
@@ -611,14 +615,16 @@ function Verificacao() {
   // Upload imediato ao tirar/selecionar foto de documento
   const uploadDocImediato = async (file: File, tipo: 'frente' | 'verso') => {
     if (!userId || !tokenAtual) return
-    if (tipo === 'frente') { setFrenteUploadando(true); setFrenteFeita(false) }
-    else { setVersoUploadando(true); setVersoFeita(false) }
+    if (tipo === 'frente') { setFrenteUploadando(true); setFrenteFeita(false); setFrenteUploadFalhou(false) }
+    else { setVersoUploadando(true); setVersoFeita(false); setVersoUploadFalhou(false) }
     setErroForm('')
     try {
       await uploadArquivo(file, `${userId}/${tipo}.jpg`)
-      if (tipo === 'frente') setFrenteFeita(true)
-      else setVersoFeita(true)
+      if (tipo === 'frente') { setFrenteFeita(true); setFrenteUploadFalhou(false) }
+      else { setVersoFeita(true); setVersoUploadFalhou(false) }
     } catch (e: any) {
+      if (tipo === 'frente') setFrenteUploadFalhou(true)
+      else setVersoUploadFalhou(true)
       setErroForm(e.message || `Erro ao enviar foto. Tente novamente.`)
     } finally {
       if (tipo === 'frente') setFrenteUploadando(false)
@@ -885,11 +891,12 @@ function Verificacao() {
               onClick={() => {
                 if (!docFrente && !frenteFeita) { setErroForm('Fotografe ou anexe a frente do documento.'); return }
                 if (frenteUploadando) return
+                if (frenteUploadFalhou && docFrente) { uploadDocImediato(docFrente, 'frente'); return }
                 if (!frenteFeita) { setErroForm('Aguarde o envio da foto.'); return }
                 setErroForm(''); setStatus(tipoDoc === 'cpf_doc' ? 'selfie' : 'doc_verso')
               }}
               style={{ flex: 2, backgroundColor: frenteUploadando ? 'var(--border)' : 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: frenteUploadando ? 'not-allowed' : 'pointer' }}>
-              {frenteUploadando ? 'Aguardando...' : 'Próximo →'}
+              {frenteUploadando ? 'Enviando...' : frenteUploadFalhou ? 'Tentar enviar novamente' : 'Próximo →'}
             </button>
           </div>
         </>)}
@@ -920,11 +927,12 @@ function Verificacao() {
               onClick={() => {
                 if (!docVerso && !versoFeita) { setErroForm('Fotografe ou anexe o verso do documento.'); return }
                 if (versoUploadando) return
+                if (versoUploadFalhou && docVerso) { uploadDocImediato(docVerso, 'verso'); return }
                 if (!versoFeita) { setErroForm('Aguarde o envio da foto.'); return }
                 setErroForm(''); setStatus('selfie')
               }}
               style={{ flex: 2, backgroundColor: versoUploadando ? 'var(--border)' : 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: versoUploadando ? 'not-allowed' : 'pointer' }}>
-              {versoUploadando ? 'Aguardando...' : 'Próximo →'}
+              {versoUploadando ? 'Enviando...' : versoUploadFalhou ? 'Tentar enviar novamente' : 'Próximo →'}
             </button>
           </div>
         </>)}
