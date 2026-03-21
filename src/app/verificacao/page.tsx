@@ -701,8 +701,7 @@ function Verificacao() {
         limparVerifDraft()
         setStatus('sucesso')
         setTimeout(() => {
-          // cadastro_step agora é 3 — proxy lê e libera acesso completo
-          window.location.href = '/busca'
+          window.location.href = '/onboarding'
         }, 2500)
       }
       else { setStatus('selfie'); setErroForm(data.error || 'Erro ao confirmar verificação. Tente novamente.') }

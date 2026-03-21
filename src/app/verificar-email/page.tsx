@@ -30,11 +30,11 @@ function VerificarEmailInner() {
         if (data.ok) {
           setStatus(data.jaVerificado ? 'jaVerificado' : 'sucesso')
 
-          // Redirecionar apos 2s — proxy lê cadastro_step e manda para o passo correto
+          // Redirecionar apos 2s — se logado vai direto para /verificacao, senao para /login
           setTimeout(async () => {
             const { data: { user } } = await supabase.auth.getUser().catch(() => ({ data: { user: null } }))
             if (user) {
-              window.location.href = '/busca'
+              window.location.href = '/verificacao'
             } else {
               router.replace('/login')
             }
