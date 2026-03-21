@@ -798,7 +798,7 @@ export default function LojaPage() {
                   <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(248,249,250,0.45)', margin: '0 0 8px' }}>CAIXA SURPRESA</p>
                   <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 34, color: '#fff', margin: '0 0 8px', lineHeight: 1 }}>Voce ganhou!</p>
                   <p style={{ fontSize: 24, fontWeight: 800, color: SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.color ?? '#E11D48', margin: '0 0 4px' }}>
-                    {(boxReveal.payload?.reward_amount ?? 1)}x {SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.label ?? boxReveal.payload?.reward_type ?? 'Premio'}
+                    {(boxReveal.payload?.reward_amount ?? 1)}x {SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.label ?? (boxReveal.payload?.reward_type ? boxReveal.payload.reward_type.charAt(0).toUpperCase() + boxReveal.payload.reward_type.slice(1) : 'Premio')}
                   </p>
                 </>
               ) : (

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, Users, DollarSign, Flag, ShieldAlert, TrendingUp, LogOut, XCircle, UserCog, Award, BarChart2, Bug } from 'lucide-react'
+import { LayoutDashboard, Users, DollarSign, Flag, ShieldAlert, TrendingUp, LogOut, XCircle, UserCog, Award, BarChart2, Bug, Gift } from 'lucide-react'
 
 type NavItem = { href: string; label: string; icon: React.ElementType }
 
@@ -17,6 +17,7 @@ const ALL_NAV: NavItem[] = [
   { href: '/admin/insights',       label: 'Perfil Clientes', icon: BarChart2       },
   { href: '/admin/equipe',         label: 'Equipe',          icon: UserCog         },
   { href: '/admin/emblemas',       label: 'Emblemas',        icon: Award           },
+  { href: '/admin/recompensas',    label: 'Recompensas',     icon: Gift            },
   { href: '/admin/bugs',           label: 'Bugs',            icon: Bug             },
 ]
 

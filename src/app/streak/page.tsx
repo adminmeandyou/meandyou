@@ -90,7 +90,8 @@ export default function StreakPage() {
       const entry = calendar.find((e) => e.day_number === dayNumber)
       if (entry) {
         const cfg = REWARD_CONFIG[entry.reward_type]
-        setClaimMsg({ day: dayNumber, text: `+${entry.reward_amount} ${cfg?.label ?? entry.reward_type} adicionado!` })
+        const nomeLabel = cfg?.label ?? (entry.reward_type.charAt(0).toUpperCase() + entry.reward_type.slice(1))
+        setClaimMsg({ day: dayNumber, text: `+${entry.reward_amount} ${nomeLabel} adicionado!` })
       }
       // Recarrega dados para refletir desconto do streak e credito do premio
       await loadData()
