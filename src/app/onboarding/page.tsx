@@ -26,11 +26,11 @@ export default function OnboardingPage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('onboarding_done, name')
+        .select('onboarding_completed, name')
         .eq('id', user.id)
         .single()
 
-      if (profile?.onboarding_done) { router.push('/dashboard'); return }
+      if (profile?.onboarding_completed) { router.push('/dashboard'); return }
       if (profile?.name) setNome(profile.name)
       setCarregando(false)
     })
@@ -48,13 +48,12 @@ export default function OnboardingPage() {
       }
       const { error } = await supabase
         .from('profiles')
-        .update({ onboarding_done: true, cadastro_step: 2 })
+        .update({ onboarding_completed: true })
         .eq('id', user.id)
       if (error) {
-        await supabase.from('profiles').upsert({ id: user.id, onboarding_done: true, cadastro_step: 2 })
+        await supabase.from('profiles').upsert({ id: user.id, onboarding_completed: true })
       }
-      // window.location.href força o proxy a reler o cadastro_step atualizado
-      window.location.href = '/configuracoes/editar-perfil'
+      window.location.href = '/dashboard'
     } catch {
       setErroConcluir('Erro ao salvar. Tente novamente.')
       setConcluindo(false)

@@ -206,11 +206,21 @@ export async function POST(req: NextRequest) {
       email_verify_token_expires_at: verifyExpiresAt,
     }).eq('id', userId)
 
-    // Inicializar cadastro_step = 0 no profile (trigger já criou a linha)
+    // Inicializar campos de progresso do cadastro no profile
     for (let t = 0; t < 3; t++) {
       const { data: updated } = await supabase
         .from('profiles')
-        .update({ cadastro_step: 0 })
+        .update({
+          reg_credentials_set:    true,
+          reg_email_verified:     false,
+          reg_document_verified:  true,  // CPF validado algoritmicamente acima
+          reg_facial_verified:    false,
+          reg_name_confirmed:     true,
+          reg_username_confirmed: true,
+          reg_invite_provided:    !!refCode,
+          reg_invite_code:        refCode || null,
+          onboarding_completed:   false,
+        })
         .eq('id', userId)
         .select('id')
         .single()

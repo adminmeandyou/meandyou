@@ -51,12 +51,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Erro ao verificar email. Tente novamente.' }, { status: 500 })
     }
 
-    // 3. Avançar cadastro_step para 1 (email verificado, onboarding pendente)
+    // 3. Marcar email como verificado no progresso do cadastro
     await supabase
       .from('profiles')
-      .update({ cadastro_step: 1 })
+      .update({ reg_email_verified: true })
       .eq('id', userId)
-      .lt('cadastro_step', 1)
 
     // 4. Email de boas-vindas (fire-and-forget)
     const { data: profile } = await supabase

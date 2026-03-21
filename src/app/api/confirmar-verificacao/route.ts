@@ -59,12 +59,11 @@ export async function POST(req: NextRequest) {
       if (cpfError) console.error('Erro ao salvar CPF:', cpfError)
     }
 
-    // 3b. Avançar cadastro_step para 3 (acesso completo)
+    // 3b. Marcar verificacao facial como concluida no progresso do cadastro
     await supabase
       .from('profiles')
-      .update({ cadastro_step: 3 })
+      .update({ reg_facial_verified: true })
       .eq('id', userId)
-      .lt('cadastro_step', 3)
 
     // 4. Marcar token como usado (só depois de verified = true ter sido commitado)
     const { error: tokenMarkError } = await supabase

@@ -99,11 +99,11 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL('/busca', req.url))
   }
 
-  // Verificar estado do funil de cadastro para rotas protegidas
+  // Verificar progresso do cadastro para rotas protegidas
   if (user && isProtected) {
     const { data: userRow } = await supabase
       .from('users')
-      .select('banned, email_verified')
+      .select('banned')
       .eq('id', user.id)
       .single()
 
@@ -111,47 +111,49 @@ export async function proxy(req: NextRequest) {
       return NextResponse.redirect(new URL('/banido', req.url))
     }
 
-    // Buscar progresso do onboarding
     const { data: profile } = await supabase
       .from('profiles')
-      .select('cadastro_step')
+      .select('reg_credentials_set, reg_email_verified, reg_facial_verified, onboarding_completed')
       .eq('id', user.id)
       .single()
 
-    // null = usuario antigo sem coluna = acesso completo
-    const step = profile?.cadastro_step ?? 3
+    // Verificacao do final para tras:
+    // encontra a etapa mais avancada concluida e redireciona para a proxima pendente
 
-    // Step 0: email nao verificado
-    if (!userRow?.email_verified || step === 0) {
-      if (!pathname.startsWith('/aguardando-email')) {
-        return NextResponse.redirect(new URL('/aguardando-email', req.url))
+    // Onboarding concluido → acesso total
+    if (profile?.onboarding_completed) {
+      if (pathname.startsWith('/onboarding')) {
+        return NextResponse.redirect(new URL('/dashboard', req.url))
       }
       return res
     }
 
-    // Step 1: email verificado, onboarding nao feito
-    if (step === 1) {
+    // Facial verificado → falta onboarding
+    if (profile?.reg_facial_verified) {
       if (!pathname.startsWith('/onboarding')) {
         return NextResponse.redirect(new URL('/onboarding', req.url))
       }
       return res
     }
 
-    // Step 2: onboarding feito, preencher perfil e/ou verificar biometria
-    if (step === 2) {
-      const nasPaginasCorretas =
-        pathname.startsWith('/configuracoes/editar-perfil') ||
-        pathname.startsWith('/verificacao')
-      if (!nasPaginasCorretas) {
-        return NextResponse.redirect(new URL('/configuracoes/editar-perfil', req.url))
+    // Email verificado → falta verificacao facial
+    if (profile?.reg_email_verified) {
+      if (!pathname.startsWith('/verificacao')) {
+        return NextResponse.redirect(new URL('/verificacao', req.url))
       }
       return res
     }
 
-    // Step 3: acesso completo — bloqueia /onboarding para quem ja concluiu
-    if (pathname.startsWith('/onboarding')) {
-      return NextResponse.redirect(new URL('/dashboard', req.url))
+    // Credenciais criadas → falta verificar email
+    if (profile?.reg_credentials_set) {
+      if (!pathname.startsWith('/aguardando-email')) {
+        return NextResponse.redirect(new URL('/aguardando-email', req.url))
+      }
+      return res
     }
+
+    // Nenhum campo preenchido → cadastro
+    return NextResponse.redirect(new URL('/cadastro', req.url))
   }
 
   return res
