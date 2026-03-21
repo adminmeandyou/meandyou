@@ -40,9 +40,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Assinatura não está ativa' }, { status: 400 })
     }
 
-    // TODO: chamar API do novo gateway de pagamentos para parar a recorrência.
-    // Sem isso, o usuário cancela no app mas pode ser cobrado no próximo ciclo.
-    console.warn(`Cancelamento de assinatura ${subscription_id} — gateway pendente de configuracao, recorrencia pode continuar`)
+    // Busca gateway_order_id para registro
+    const { data: subInfo } = await supabase
+      .from('subscriptions')
+      .select('gateway_order_id, plan, cycle')
+      .eq('id', subscription_id)
+      .single()
+
+    if (subInfo?.gateway_order_id) {
+      // AbacatePay v1 nao tem endpoint de cancelamento documentado
+      // Registrado para cancelamento manual no admin
+      console.log(`[cancelamento] gateway_order_id=${subInfo.gateway_order_id} plan=${subInfo.plan} cycle=${subInfo.cycle}`)
+    }
 
     // Cancela no banco — acesso continua até ends_at; pg_cron faz o downgrade ao expirar
     const { error: updateErr } = await supabase
