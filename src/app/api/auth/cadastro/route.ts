@@ -1,7 +1,10 @@
 // src/app/api/auth/cadastro/route.ts
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
-import { sendWelcomeEmail } from '@/app/lib/email'
+import { sendInstitutionalEmail } from '@/app/lib/email'
+import { randomUUID } from 'crypto'
+
+const APP_URL = 'https://www.meandyou.com.br'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -192,10 +195,40 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 6. Email de boas-vindas via lib/email.ts (fire-and-forget — não bloqueia resposta)
-    sendWelcomeEmail(email, nomeExibicao).catch(err =>
-      console.error('[cadastro] Falha ao enviar email de boas-vindas:', err)
-    )
+    // 6. Gerar token de verificação de email (expira em 30 min)
+    const verifyToken = randomUUID()
+    const verifyExpiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString()
+
+    // Salvar token e marcar email como não verificado
+    await supabase.from('users').update({
+      email_verified: false,
+      email_verify_token: verifyToken,
+      email_verify_token_expires_at: verifyExpiresAt,
+    }).eq('id', userId)
+
+    // Inicializar cadastro_step = 0 no profile (trigger já criou a linha)
+    for (let t = 0; t < 3; t++) {
+      const { data: updated } = await supabase
+        .from('profiles')
+        .update({ cadastro_step: 0 })
+        .eq('id', userId)
+        .select('id')
+        .single()
+      if (updated) break
+      await new Promise(r => setTimeout(r, 400))
+    }
+
+    // Enviar email de verificação (fire-and-forget)
+    const verifyLink = `${APP_URL}/verificar-email?token=${verifyToken}`
+    sendInstitutionalEmail(
+      email,
+      nomeExibicao,
+      'Confirme seu email - MeAndYou',
+      'Confirme seu email',
+      'Para acessar o MeAndYou, precisamos confirmar seu endereço de email. Clique no botão abaixo — o link expira em 30 minutos.',
+      'Verificar email',
+      verifyLink
+    ).catch(err => console.error('[cadastro] Falha ao enviar email de verificacao:', err))
 
     return NextResponse.json({ ok: true })
   } catch (err) {

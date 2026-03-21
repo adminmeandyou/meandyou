@@ -11,7 +11,7 @@ const PROTECTED_ROUTES = [
   '/conversas', '/loja', '/destaque', '/indicar', '/backstage',
   '/roleta', '/streak', '/onboarding', '/notificacoes', '/suporte',
   '/ajuda', '/deletar-conta', '/minha-assinatura', '/videochamada', '/curtidas',
-  '/configuracoes', '/salas', '/amigos', '/casal',
+  '/configuracoes', '/salas', '/amigos', '/casal', '/aguardando-email',
 ]
 
 // Rotas públicas (redireciona para /busca se já logado)
@@ -99,11 +99,11 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL('/busca', req.url))
   }
 
-  // Verificar se usuário está banido ou não verificado
+  // Verificar estado do funil de cadastro para rotas protegidas
   if (user && isProtected) {
     const { data: userRow } = await supabase
       .from('users')
-      .select('banned, verified')
+      .select('banned, email_verified')
       .eq('id', user.id)
       .single()
 
@@ -111,22 +111,44 @@ export async function proxy(req: NextRequest) {
       return NextResponse.redirect(new URL('/banido', req.url))
     }
 
-    if (!userRow?.verified && !pathname.startsWith('/verificacao')) {
-      return NextResponse.redirect(new URL('/verificacao', req.url))
+    // Buscar progresso do onboarding
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('cadastro_step')
+      .eq('id', user.id)
+      .single()
+
+    // null = usuario antigo sem coluna = acesso completo
+    const step = profile?.cadastro_step ?? 3
+
+    // Step 0: email nao verificado
+    if (!userRow?.email_verified || step === 0) {
+      if (!pathname.startsWith('/aguardando-email')) {
+        return NextResponse.redirect(new URL('/aguardando-email', req.url))
+      }
+      return res
     }
 
-    // Verificar se usuário concluiu o onboarding
-    if (!pathname.startsWith('/onboarding') && !pathname.startsWith('/perfil')) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('onboarding_done')
-        .eq('id', user.id)
-        .single()
-
-      if (profile && profile.onboarding_done === false) {
+    // Step 1: email verificado, onboarding nao feito
+    if (step === 1) {
+      if (!pathname.startsWith('/onboarding')) {
         return NextResponse.redirect(new URL('/onboarding', req.url))
       }
+      return res
     }
+
+    // Step 2: onboarding feito, preencher perfil e/ou verificar biometria
+    if (step === 2) {
+      const nasPaginasCorretas =
+        pathname.startsWith('/configuracoes/editar-perfil') ||
+        pathname.startsWith('/verificacao')
+      if (!nasPaginasCorretas) {
+        return NextResponse.redirect(new URL('/configuracoes/editar-perfil', req.url))
+      }
+      return res
+    }
+
+    // Step 3: acesso completo — continua normalmente
   }
 
   return res

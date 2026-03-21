@@ -37,10 +37,9 @@ export default function OnboardingPage() {
   const concluirOnboarding = async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
-    const { error } = await supabase.from('profiles').update({ onboarding_done: true }).eq('id', user.id)
+    const { error } = await supabase.from('profiles').update({ onboarding_done: true, cadastro_step: 2 }).eq('id', user.id)
     if (error) {
-      // fallback: tenta upsert
-      await supabase.from('profiles').upsert({ id: user.id, onboarding_done: true })
+      await supabase.from('profiles').upsert({ id: user.id, onboarding_done: true, cadastro_step: 2 })
     }
     router.push('/configuracoes/editar-perfil')
   }

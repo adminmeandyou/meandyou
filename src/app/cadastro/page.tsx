@@ -218,7 +218,7 @@ function CadastroInner() {
       })
       limparRascunho()
       if (loginRes.ok) {
-        window.location.href = '/onboarding'
+        window.location.href = '/aguardando-email'
       } else {
         setSucesso(true)
       }

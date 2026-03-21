@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
       .update({ verified: true })
       .eq('id', userId)
 
+
     if (verifyError) {
       console.error('Erro ao verificar usuário:', verifyError)
       return NextResponse.json({ error: 'Erro ao verificar usuário. Tente novamente.' }, { status: 500 })
@@ -57,6 +58,13 @@ export async function POST(req: NextRequest) {
         .eq('id', userId)
       if (cpfError) console.error('Erro ao salvar CPF:', cpfError)
     }
+
+    // 3b. Avançar cadastro_step para 3 (acesso completo)
+    await supabase
+      .from('profiles')
+      .update({ cadastro_step: 3 })
+      .eq('id', userId)
+      .lt('cadastro_step', 3)
 
     // 4. Marcar token como usado (só depois de verified = true ter sido commitado)
     const { error: tokenMarkError } = await supabase
