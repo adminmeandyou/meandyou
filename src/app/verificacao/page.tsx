@@ -620,8 +620,20 @@ function Verificacao() {
     setErroForm('')
     try {
       await uploadArquivo(file, `${userId}/${tipo}.jpg`)
-      if (tipo === 'frente') { setFrenteFeita(true); setFrenteUploadFalhou(false) }
-      else { setVersoFeita(true); setVersoUploadFalhou(false) }
+      if (tipo === 'frente') {
+        setFrenteFeita(true)
+        setFrenteUploadFalhou(false)
+        // Auto-avança para o próximo passo após 800ms (tempo para ver o banner verde)
+        setTimeout(() => {
+          setStatus(prev => prev === 'doc_frente' ? (tipoDoc === 'cpf_doc' ? 'selfie' : 'doc_verso') : prev)
+        }, 800)
+      } else {
+        setVersoFeita(true)
+        setVersoUploadFalhou(false)
+        setTimeout(() => {
+          setStatus(prev => prev === 'doc_verso' ? 'selfie' : prev)
+        }, 800)
+      }
     } catch (e: any) {
       if (tipo === 'frente') setFrenteUploadFalhou(true)
       else setVersoUploadFalhou(true)
@@ -1080,6 +1092,7 @@ function Verificacao() {
           <div style={{ width: '56px', height: '56px', border: '5px solid var(--accent)', borderTop: '5px solid transparent', borderRadius: '50%', margin: '0 auto 20px', animation: 'spin 1s linear infinite' }} />
           <p style={{ color: 'var(--muted)', fontSize: '15px' }}>Enviando documentos...</p>
           <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '8px' }}>Não feche esta tela.</p>
+          <p style={{ color: 'var(--muted-2)', fontSize: '12px', marginTop: '24px' }}>Isso pode levar até 1 minuto em conexões lentas.</p>
         </div>}
 
         {status === 'sucesso' && card(<>

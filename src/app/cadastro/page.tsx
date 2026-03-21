@@ -362,7 +362,15 @@ function CadastroInner() {
             {pergunta('Qual é o seu CPF?', 'Garante 1 conta por pessoa — não é compartilhado')}
             <input
               type="text" placeholder="000.000.000-00" value={cpf}
-              onChange={e => setCpf(formatarCpf(e.target.value))} onKeyDown={handleKeyDown}
+              onChange={e => {
+                const formatted = formatarCpf(e.target.value)
+                setCpf(formatted)
+                if (formatted.replace(/\D/g, '').length === 11) {
+                  setErro('')
+                  setTimeout(() => setStep(s => s + 1), 400)
+                }
+              }}
+              onKeyDown={handleKeyDown}
               autoFocus style={inputStyle} inputMode="numeric"
             />
           </>
@@ -374,7 +382,15 @@ function CadastroInner() {
             {pergunta('Qual é o seu celular?')}
             <input
               type="tel" placeholder="(00) 00000-0000" value={telefone}
-              onChange={e => setTelefone(formatarTelefone(e.target.value))} onKeyDown={handleKeyDown}
+              onChange={e => {
+                const formatted = formatarTelefone(e.target.value)
+                setTelefone(formatted)
+                if (formatted.replace(/\D/g, '').length === 11) {
+                  setErro('')
+                  setTimeout(() => setStep(s => s + 1), 400)
+                }
+              }}
+              onKeyDown={handleKeyDown}
               autoFocus style={inputStyle}
             />
           </>
@@ -405,10 +421,23 @@ function CadastroInner() {
             )}
 
             {TURNSTILE_SITE_KEY && (
-              <div
-                ref={turnstileRef}
-                style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}
-              />
+              <>
+                <div
+                  ref={turnstileRef}
+                  style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}
+                />
+                {!cfToken && (
+                  <div style={{ textAlign: 'center', marginTop: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={resetTurnstile}
+                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: 'var(--muted)', textDecoration: 'underline', padding: '4px 8px' }}
+                    >
+                      Verificação não carregou? Recarregar
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </>
         )}
