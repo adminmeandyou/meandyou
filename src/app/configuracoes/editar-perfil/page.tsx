@@ -54,56 +54,6 @@ function findMulti(f: any, map: Record<string, string>): string[] {
   return Object.entries(map).filter(([key]) => f[key]).map(([, val]) => val)
 }
 
-function getAllTags(f: any): string[] {
-  if (!f) return []
-  const tags: string[] = []
-  const check = (key: string, label: string) => { if (f[key]) tags.push(label) }
-
-  // Aparência
-  check('eye_black', 'Olhos pretos'); check('eye_brown', 'Olhos castanhos')
-  check('eye_green', 'Olhos verdes'); check('eye_blue', 'Olhos azuis')
-  check('eye_honey', 'Olhos mel'); check('eye_gray', 'Olhos acinzentados')
-  check('hair_black', 'Cabelo preto'); check('hair_brown', 'Cabelo castanho')
-  check('hair_blonde', 'Cabelo loiro'); check('hair_red', 'Cabelo ruivo')
-  check('hair_colored', 'Cabelo colorido'); check('hair_curly', 'Cabelo cacheado')
-  check('hair_coily', 'Cabelo crespo'); check('hair_bald', 'Careca')
-  check('skin_white', 'Pele branca'); check('skin_black', 'Pele negra')
-  check('skin_mixed', 'Parda'); check('skin_asian', 'Asiático(a)')
-  check('feat_tattoo', 'Tatuagem'); check('feat_piercing', 'Piercing')
-  check('feat_beard', 'Barba'); check('feat_glasses', 'Óculos')
-  check('feat_freckles', 'Sardas')
-  // Estilo de vida
-  check('smoke_no', 'Não fuma'); check('smoke_yes', 'Fumante'); check('smoke_occasionally', 'Fuma ocasionalmente')
-  check('drink_no', 'Não bebe'); check('drink_socially', 'Bebe socialmente'); check('drink_yes', 'Consome álcool')
-  check('drug_cannabis', 'Cannabis')
-  check('routine_gym', 'Academia'); check('routine_sports', 'Esportes'); check('routine_homebody', 'Caseiro(a)')
-  check('routine_party', 'Balada'); check('routine_night_owl', 'Noturno(a)'); check('routine_morning', 'Matutino(a)')
-  check('routine_workaholic', 'Workaholic'); check('routine_balanced', 'Vida equilibrada')
-  check('hob_gamer', 'Gamer'); check('hob_reader', 'Leitor(a)'); check('hob_travel', 'Viajante')
-  check('hob_movies', 'Cinéfilo(a)'); check('hob_dance', 'Dança'); check('hob_photography', 'Fotografia')
-  check('hob_art', 'Arte'); check('hob_live_music', 'Música ao vivo'); check('hob_meditation', 'Meditação/Yoga')
-  check('hob_hiking', 'Trilha/Natureza'); check('hob_kpop', 'K-pop'); check('hob_anime', 'Anime/Mangá')
-  check('diet_vegan', 'Vegano(a)'); check('diet_vegetarian', 'Vegetariano(a)')
-  check('diet_healthy', 'Alimentação saudável'); check('food_cooks', 'Cozinha bem')
-  // Personalidade
-  check('pers_extrovert', 'Extrovertido(a)'); check('pers_introvert', 'Introvertido(a)')
-  check('pers_ambivert', 'Ambiverte'); check('pers_calm', 'Calmo(a)')
-  check('pers_intense', 'Intenso(a)'); check('pers_communicative', 'Comunicativo(a)')
-  check('pers_shy', 'Tímido(a)')
-  check('rel_evangelical', 'Evangélico(a)'); check('rel_catholic', 'Católico(a)')
-  check('rel_atheist', 'Ateu/Ateia'); check('rel_spiritist', 'Espírita')
-  check('rel_agnostic', 'Agnóstico(a)')
-  check('kids_has', 'Tem filhos'); check('kids_no', 'Sem filhos')
-  check('kids_wants', 'Quer filhos'); check('kids_no_want', 'Não quer filhos')
-  check('pet_dog', 'Tem cachorro'); check('pet_cat', 'Tem gato'); check('pet_loves', 'Ama animais')
-  // Objetivos
-  check('obj_serious', 'Relacionamento sério'); check('obj_casual', 'Relacionamento casual')
-  check('obj_friendship', 'Amizade'); check('obj_open', 'Aberto a experiências')
-  check('obj_events', 'Companhia para eventos')
-
-  return tags
-}
-
 // ─── Barra de completude ──────────────────────────────────────────────────────
 
 function calcCompletude(profileData: ProfileData | null, filtersData: any): number {
@@ -131,7 +81,7 @@ export default function EditarPerfilPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { router.push('/login'); return }
+      if (!user) { window.location.href = '/login'; return }
       setUserId(user.id)
       const [{ data: p, error: pErr }, { data: f }, { data: bData }] = await Promise.all([
         supabase.from('profiles')
@@ -512,7 +462,10 @@ function FotosBioSection({ userId, profileData, onSaved }: {
 
   function removerFoto(index: number) {
     const novas = [...fotosUrls]; novas[index] = null; setFotosUrls(novas)
-    if (fotoPrincipal === index) setFotoPrincipal(fotosUrls.findIndex((u, i) => u && i !== index) ?? 0)
+    if (fotoPrincipal === index) {
+      const next = fotosUrls.findIndex((u, i) => u && i !== index)
+      setFotoPrincipal(next >= 0 ? next : 0)
+    }
   }
 
   async function salvar() {
@@ -523,7 +476,7 @@ function FotosBioSection({ userId, profileData, onSaved }: {
     try {
       const perguntaFinal = pergunta.trim() || null
       const respostaFinal = perguntaFinal ? (resposta.trim() || null) : null
-      const { error: saveErr } = await supabase.from('profiles').upsert({ id: userId, bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, ...update })
+      const { error: saveErr } = await supabase.from('profiles').update({ bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, ...update }).eq('id', userId)
       if (saveErr) throw saveErr
       onSaved({ bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, photo_best: update['photo_best'], ...Object.fromEntries(fotoSlots.map((s, i) => [s, fotosUrls[i]])) } as any)
       setSucesso(true)
@@ -1385,9 +1338,10 @@ function StatusTempSection({
   const [duracao, setDuracao] = useState(4)
   const [saving, setSaving] = useState(false)
   const [sucesso, setSucesso] = useState(false)
+  const [erro, setErro] = useState('')
 
   async function salvar() {
-    setSaving(true)
+    setSaving(true); setErro('')
     const expires = new Date(Date.now() + duracao * 3600000).toISOString()
     const { error } = await supabase
       .from('profiles')
@@ -1398,6 +1352,8 @@ function StatusTempSection({
       onSaved(selecionado, selecionado ? expires : null)
       setSucesso(true)
       setTimeout(() => setSucesso(false), 2000)
+    } else {
+      setErro('Erro ao salvar status. Tente novamente.')
     }
     setSaving(false)
   }
@@ -1482,6 +1438,7 @@ function StatusTempSection({
         </>
       )}
 
+      {erro && <p style={{ color: '#f87171', fontSize: '13px', margin: '8px 0 0' }}>{erro}</p>}
       <BotaoSalvar loading={saving} sucesso={sucesso} onClick={salvar} />
     </div>
   )

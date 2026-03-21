@@ -226,7 +226,7 @@ export default function VerPerfilPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) { router.push('/login'); return }
+      if (!user) { window.location.href = '/login'; return }
       setUserId(user.id)
     })
   }, [])
@@ -240,30 +240,21 @@ export default function VerPerfilPage() {
     setLoading(true)
 
     // CORRECAO: NUNCA selecionar lat/lng/cep/rua/bairro em selects publicos
+    // verified, last_seen, created_at, verified_plus incluidos aqui para evitar segundo roundtrip
     let { data: profileData } = await supabase
       .from('profiles')
-      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_best, photo_extra1, photo_extra2, photo_extra3, highlight_tags, status_temp, status_temp_expires_at, profile_question, profile_question_answer, badge_showcase')
+      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_best, photo_extra1, photo_extra2, photo_extra3, highlight_tags, status_temp, status_temp_expires_at, profile_question, profile_question_answer, badge_showcase, verified, last_seen, last_active_at, created_at, verified_plus')
       .eq('id', profileId)
       .single()
 
-    // Fallback 1: sem colunas opcionais novas
+    // Fallback: colunas minimas garantidas — evita redirect indevido pro onboarding
     if (!profileData) {
       const { data: fallback } = await supabase
         .from('profiles')
-        .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_best, photo_extra1, photo_extra2, photo_extra3, highlight_tags, status_temp, status_temp_expires_at')
+        .select('id, name, birthdate, bio, gender, city, state, photo_best, verified, last_seen, last_active_at, created_at, verified_plus')
         .eq('id', profileId)
         .single()
       profileData = fallback as typeof profileData
-    }
-
-    // Fallback 2: colunas minimas garantidas — evita redirect indevido pro onboarding
-    if (!profileData) {
-      const { data: fallback2 } = await supabase
-        .from('profiles')
-        .select('id, name, birthdate, bio, gender, city, state, photo_best')
-        .eq('id', profileId)
-        .single()
-      profileData = fallback2 as typeof profileData
     }
 
     const { data: filtersData } = await supabase
@@ -296,13 +287,13 @@ export default function VerPerfilPage() {
     setFilters(filtersData)
     setBadgeShowcase((profileData as any)?.badge_showcase ?? [])
 
-    // Busca dados de status para StatusPills
-    const { data: userData } = await supabase
-      .from('profiles')
-      .select('verified, last_seen, created_at, verified_plus')
-      .eq('id', profileId)
-      .single()
-    setUserRow(userData)
+    // Dados de status para StatusPills — reutilizados do select principal (sem roundtrip extra)
+    setUserRow(profileData ? {
+      verified: (profileData as any).verified,
+      last_seen: (profileData as any).last_seen ?? (profileData as any).last_active_at,
+      created_at: (profileData as any).created_at,
+      verified_plus: (profileData as any).verified_plus,
+    } : null)
 
     // Carrega badges do banco
     const { data: badgesData } = await supabase
@@ -383,19 +374,17 @@ export default function VerPerfilPage() {
       haptics.tap()
     }
 
-    if (action === 'dislike') {
-      // CORRECAO: salva dislike no banco via RPC (mesma que useSwipe usa)
-      await supabase.rpc('process_swipe', {
-        p_from: userId,
-        p_to: profileId,
-        p_type: 'dislike',
-      })
-    } else {
-      await supabase.rpc('process_swipe', {
-        p_from: userId,
-        p_to: profileId,
-        p_type: action === 'superlike' ? 'superlike' : 'like',
-      })
+    const swipeType = action === 'superlike' ? 'superlike' : action === 'like' ? 'like' : 'dislike'
+    const { error: swipeErr } = await supabase.rpc('process_swipe', {
+      p_from: userId,
+      p_to: profileId,
+      p_type: swipeType,
+    })
+
+    if (swipeErr) {
+      toast.show('Nao foi possivel registrar a acao. Tente novamente.', 'error')
+      setSwipeAction(null)
+      return
     }
 
     setTimeout(() => router.back(), 800)
@@ -432,7 +421,7 @@ export default function VerPerfilPage() {
     ? Math.floor((Date.now() - new Date(profile.birthdate).getTime()) / 31557600000)
     : null
 
-  const photos = [
+  const photos = [...new Set([
     profile.photo_best,
     profile.photo_face,
     profile.photo_body,
@@ -440,7 +429,7 @@ export default function VerPerfilPage() {
     profile.photo_extra1,
     profile.photo_extra2,
     profile.photo_extra3,
-  ].filter(Boolean) as string[]
+  ].filter(Boolean))] as string[]
 
   const isOwnProfile = profileId === userId
 
@@ -1071,7 +1060,7 @@ export default function VerPerfilPage() {
                       })
                       setDenunciaEnviado(true)
                     } catch {
-                      // silently ignore — denuncia pode ter falhado, mas nao exibimos erro ao user
+                      toast.show('Falha ao enviar denuncia. Tente novamente.', 'error')
                     } finally {
                       setDenunciaEnviando(false)
                     }
