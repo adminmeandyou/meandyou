@@ -13,7 +13,7 @@ const PLANS = [
     price: 9.97,
     icon: Zap,
     color: 'rgba(248,249,250,0.70)',
-    checkoutUrl: 'https://pay.cakto.com.br/cip6fy9_797209',
+    checkoutUrl: '#', // TODO: configurar URL do novo gateway de pagamentos
     features: [
       'Até 10 fotos no perfil',
       '5 curtidas por dia',
@@ -30,7 +30,7 @@ const PLANS = [
     price: 39.97,
     icon: Star,
     color: '#E11D48',
-    checkoutUrl: 'https://pay.cakto.com.br/3arwn9f',
+    checkoutUrl: '#', // TODO: configurar URL do novo gateway de pagamentos
     highlight: true,
     badge: 'Melhor Custo-Beneficio',
     features: [
@@ -51,7 +51,7 @@ const PLANS = [
     price: 99.97,
     icon: Crown,
     color: '#F59E0B',
-    checkoutUrl: 'https://pay.cakto.com.br/hftqkrj',
+    checkoutUrl: '#', // TODO: configurar URL do novo gateway de pagamentos
     features: [
       'Até 10 fotos no perfil',
       'Curtidas ilimitadas',

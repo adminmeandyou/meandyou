@@ -18,45 +18,46 @@ const PACKAGES: Record<StoreItemType, { title: string; icon: React.ReactNode; it
     title: 'SuperLikes',
     icon: <Star size={18} className="text-yellow-400" />,
     items: [
-      { label: '1 SuperLike',   description: 'Se destaque para quem você mais quer', price: 'R$ 5',  url: 'https://pay.cakto.com.br/3cg973u' },
-      { label: '5 SuperLikes',  description: 'Melhor custo-benefício',               price: 'R$ 10', url: 'https://pay.cakto.com.br/8imgsen', highlight: true },
-      { label: '10 SuperLikes', description: 'Para quem quer se destacar muito',     price: 'R$ 15', url: 'https://pay.cakto.com.br/nhx6ei3' },
+      // TODO: configurar URLs do novo gateway de pagamentos
+      { label: '1 SuperLike',   description: 'Se destaque para quem você mais quer', price: 'R$ 5',  url: '#' },
+      { label: '5 SuperLikes',  description: 'Melhor custo-benefício',               price: 'R$ 10', url: '#', highlight: true },
+      { label: '10 SuperLikes', description: 'Para quem quer se destacar muito',     price: 'R$ 15', url: '#' },
     ],
   },
   boost: {
     title: 'Boosts',
     icon: <Zap size={18} className="text-white" />,
     items: [
-      { label: '1 Boost',   description: '30 min em destaque na sua região', price: 'R$ 6',  url: 'https://pay.cakto.com.br/mdpn9zu' },
-      { label: '5 Boosts',  description: 'Melhor custo-benefício',           price: 'R$ 25', url: 'https://pay.cakto.com.br/vyaecjn', highlight: true },
-      { label: '10 Boosts', description: 'Estoque completo para o mês',      price: 'R$ 45', url: 'https://pay.cakto.com.br/v2hkztt' },
+      { label: '1 Boost',   description: '30 min em destaque na sua região', price: 'R$ 6',  url: '#' },
+      { label: '5 Boosts',  description: 'Melhor custo-benefício',           price: 'R$ 25', url: '#', highlight: true },
+      { label: '10 Boosts', description: 'Estoque completo para o mês',      price: 'R$ 45', url: '#' },
     ],
   },
   lupa: {
     title: 'Lupas',
     icon: <Search size={18} className="text-blue-400" />,
     items: [
-      { label: '1 Lupa',    description: 'Revele um perfil no Destaque', price: 'R$ 7',  url: 'https://pay.cakto.com.br/hnou4rx' },
-      { label: '5 Lupas',   description: 'Melhor custo-benefício',       price: 'R$ 17', url: 'https://pay.cakto.com.br/t8mzpty', highlight: true },
-      { label: '10 Lupas',  description: 'Para explorar bastante',       price: 'R$ 29', url: 'https://pay.cakto.com.br/skksymv' },
+      { label: '1 Lupa',    description: 'Revele um perfil no Destaque', price: 'R$ 7',  url: '#' },
+      { label: '5 Lupas',   description: 'Melhor custo-benefício',       price: 'R$ 17', url: '#', highlight: true },
+      { label: '10 Lupas',  description: 'Para explorar bastante',       price: 'R$ 29', url: '#' },
     ],
   },
   rewind: {
     title: 'Desfazer Curtida',
     icon: <RotateCcw size={18} className="text-purple-400" />,
     items: [
-      { label: '1 Desfazer',   description: 'Volte atrás em 1 perfil',       price: 'R$ 5',  url: 'https://pay.cakto.com.br/jra25ti' },
-      { label: '5 Desfazer',   description: 'Melhor custo-benefício',         price: 'R$ 17', url: 'https://pay.cakto.com.br/tffexvs', highlight: true },
-      { label: '10 Desfazer',  description: 'Para quem muda de ideia muito',  price: 'R$ 29', url: 'https://pay.cakto.com.br/7e5fjbx' },
+      { label: '1 Desfazer',   description: 'Volte atrás em 1 perfil',       price: 'R$ 5',  url: '#' },
+      { label: '5 Desfazer',   description: 'Melhor custo-benefício',         price: 'R$ 17', url: '#', highlight: true },
+      { label: '10 Desfazer',  description: 'Para quem muda de ideia muito',  price: 'R$ 29', url: '#' },
     ],
   },
   ghost: {
     title: 'Modo Fantasma',
     icon: <Ghost size={18} strokeWidth={1.5} style={{ color: '#9ca3af' }} />,
     items: [
-      { label: '7 dias',  description: 'Some das buscas temporariamente', price: 'R$ 9',  url: 'https://pay.cakto.com.br/ct79bui' },
-      { label: '35 dias', description: 'Melhor custo-benefício',           price: 'R$ 29', url: 'https://pay.cakto.com.br/jesigqc', highlight: true },
-      { label: '70 dias', description: 'Invisibilidade por 2+ meses',      price: 'R$ 49', url: 'https://pay.cakto.com.br/8b75h6z' },
+      { label: '7 dias',  description: 'Some das buscas temporariamente', price: 'R$ 9',  url: '#' },
+      { label: '35 dias', description: 'Melhor custo-benefício',           price: 'R$ 29', url: '#', highlight: true },
+      { label: '70 dias', description: 'Invisibilidade por 2+ meses',      price: 'R$ 49', url: '#' },
     ],
   },
 }

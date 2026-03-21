@@ -13,16 +13,17 @@ import {
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
 
-// ─── Itens premium (compra direta via Cakto, sem fichas) ──────────────────
-const PACOTE_LENDARIO_URL  = 'https://pay.cakto.com.br/pacote_lendario'  // R$ 179,97
+// ─── Itens premium (compra direta) ────────────────────────────────────────
+// TODO: configurar URL do novo gateway de pagamentos
+const PACOTE_LENDARIO_URL  = '#'  // R$ 179,97
 
-// ─── Pacotes de fichas (compra via Cakto) ─────────────────────────────────
-// ATENÇÃO: substitua as URLs pelos links reais da Cakto após criar os produtos
+// ─── Pacotes de fichas ────────────────────────────────────────────────────
+// TODO: configurar URLs do novo gateway de pagamentos
 const FICHAS_PACKAGES = [
-  { label: '50 fichas',   price: 'R$ 5,97',  url: 'https://pay.cakto.com.br/fichas_50',   highlight: false, tag: null },
-  { label: '150 fichas',  price: 'R$ 14,97', url: 'https://pay.cakto.com.br/fichas_150',  highlight: true,  tag: 'Mais popular' },
-  { label: '400 fichas',  price: 'R$ 34,97', url: 'https://pay.cakto.com.br/fichas_400',  highlight: false, tag: null },
-  { label: '900 fichas',  price: 'R$ 59,97', url: 'https://pay.cakto.com.br/fichas_900',  highlight: false, tag: 'Melhor valor' },
+  { label: '50 fichas',   price: 'R$ 5,97',  url: '#', highlight: false, tag: null },
+  { label: '150 fichas',  price: 'R$ 14,97', url: '#', highlight: true,  tag: 'Mais popular' },
+  { label: '400 fichas',  price: 'R$ 34,97', url: '#', highlight: false, tag: null },
+  { label: '900 fichas',  price: 'R$ 59,97', url: '#', highlight: false, tag: 'Melhor valor' },
 ]
 
 // ─── Itens compraveis com fichas ──────────────────────────────────────────
@@ -680,7 +681,7 @@ export default function LojaPage() {
         </div>}
 
         <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(248,249,250,0.20)', paddingBottom: '8px' }}>
-          {lojaTab === 'recargas' ? 'Fichas adquiridas via Cakto. Pagamento unico, sem reembolso.' : 'Itens debitados do saldo de fichas da conta.'}
+          {lojaTab === 'recargas' ? 'Fichas adquiridas via pagamento unico, sem reembolso.' : 'Itens debitados do saldo de fichas da conta.'}
         </p>
         </>}
 

@@ -182,7 +182,7 @@ export default function MinhaAssinaturaPage() {
             <div style={{ backgroundColor: 'var(--bg)', padding: '12px 20px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Ativo desde: <span style={{ color: 'var(--text)' }}>{formatDate(active.starts_at)}</span></p>
               <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Valido ate: <span style={{ color: 'var(--text)', fontWeight: 600 }}>{formatDate(active.ends_at)}</span></p>
-              <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Pedido: <span style={{ color: 'var(--text)', fontFamily: 'monospace', fontSize: '11px' }}>{active.cakto_order_id}</span></p>
+              {active.cakto_order_id && <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>N. pedido: <span style={{ color: 'var(--text)', fontFamily: 'monospace', fontSize: '11px' }}>{active.cakto_order_id}</span></p>}
             </div>
 
             {/* Acoes */}

@@ -27,7 +27,7 @@ const CATEGORIAS = [
 ]
 
 const TERMS_KEY = 'camarote_terms_v1'
-const RESGATE_URL = 'https://pay.cakto.com.br/i73nbfm'
+const RESGATE_URL = '#' // TODO: configurar URL do novo gateway de pagamentos
 
 const G = '#F59E0B'               // gold
 const G_SOFT = 'rgba(245,158,11,0.10)'

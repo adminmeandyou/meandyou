@@ -38,7 +38,7 @@ const FAQS: FAQ[] = [
   {
     categoria: 'Planos',
     pergunta: 'Como cancelo minha assinatura?',
-    resposta: 'O cancelamento e feito diretamente pela plataforma Cakto (processadora de pagamentos). Acesse o email de confirmacao da assinatura e clique em "Gerenciar assinatura". Apos o cancelamento, o plano fica ativo ate o fim do periodo pago.',
+    resposta: 'O cancelamento pode ser solicitado pelo app em "Minha assinatura". Apos o cancelamento, o plano fica ativo ate o fim do periodo pago.',
   },
   {
     categoria: 'Planos',

@@ -39,21 +39,11 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // Buscar total gasto por usuário via cakto_webhook_log
+  // TODO: buscar total gasto por usuário quando novo gateway for configurado
+  // (era via cakto_webhook_log — tabela específica da Cakto)
   const userIds = (users ?? []).map((u: any) => u.id)
   const totalGastoPorUser: Record<string, number> = {}
-
-  if (userIds.length > 0) {
-    const { data: gastos } = await supabaseAdmin
-      .from('cakto_webhook_log')
-      .select('user_id, amount_brl')
-      .in('user_id', userIds)
-
-    for (const g of gastos ?? []) {
-      if (!totalGastoPorUser[g.user_id]) totalGastoPorUser[g.user_id] = 0
-      totalGastoPorUser[g.user_id] += Number(g.amount_brl ?? 0)
-    }
-  }
+  void userIds // evitar warning de unused variable
 
   function getStatus(u: any) {
     if (u.banned) return 'banido'

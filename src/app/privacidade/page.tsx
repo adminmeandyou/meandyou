@@ -87,7 +87,7 @@ export default function Privacidade() {
           Esses dados são processados exclusivamente para verificar sua identidade e descartados após confirmação. Armazenamos apenas o resultado (verificado/não verificado).<br /><br />
           <strong>Dados do perfil:</strong> nome de exibição, data de nascimento, bio, localização aproximada (cidade/estado), fotos de perfil, características físicas e preferências que você cadastrar voluntariamente.<br /><br />
           <strong>Dados de uso:</strong> curtidas, matches, mensagens, tempo de uso da plataforma, dispositivo e sistema operacional (para segurança e prevenção de fraudes).<br /><br />
-          <strong>Dados de pagamento:</strong> processados diretamente pela Caktopay. Não armazenamos dados de cartão de crédito.
+          <strong>Dados de pagamento:</strong> processados diretamente pelo gateway de pagamentos. Não armazenamos dados de cartão de crédito.
         </Section>
 
         <Section titulo="3. Como usamos seus dados">
@@ -103,7 +103,7 @@ export default function Privacidade() {
         </Section>
 
         <Section titulo="6. Compartilhamento de dados">
-          Não vendemos seus dados. Podemos compartilhar com: (a) <strong>Provedores de serviço</strong>: Supabase (banco de dados), Vercel (hospedagem), Resend (e-mail), LiveKit (videochamada), Caktopay (pagamentos) — todos sob acordos de confidencialidade; (b) <strong>Autoridades</strong>: quando exigido por ordem judicial ou obrigação legal. Todos os prestadores de serviço são obrigados a tratar seus dados com o mesmo nível de proteção aplicado por nós.
+          Não vendemos seus dados. Podemos compartilhar com: (a) <strong>Provedores de serviço</strong>: Supabase (banco de dados), Vercel (hospedagem), Resend (e-mail), LiveKit (videochamada), gateway de pagamentos — todos sob acordos de confidencialidade; (b) <strong>Autoridades</strong>: quando exigido por ordem judicial ou obrigação legal. Todos os prestadores de serviço são obrigados a tratar seus dados com o mesmo nível de proteção aplicado por nós.
         </Section>
 
         <Section titulo="7. Armazenamento e segurança">

@@ -144,32 +144,16 @@ export default function CancelamentosPage() {
         flexWrap: 'wrap',
       }}>
         <p style={{ color: '#f59e0b', fontSize: '14px', margin: 0, lineHeight: '1.5' }}>
-          ⚠️ O cancelamento deve ser feito <strong>MANUALMENTE no painel da Cakto</strong> antes de marcar como processado.
+          ⚠️ Gateway de pagamentos pendente de configuracao. Cancelar manualmente no painel do novo gateway antes de marcar como processado.
         </p>
-        <a
-          href="https://app.cakto.com.br"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{
-            backgroundColor: '#f59e0b',
-            color: '#000',
-            fontWeight: '600',
-            fontSize: '13px',
-            padding: '8px 16px',
-            borderRadius: '8px',
-            textDecoration: 'none',
-            whiteSpace: 'nowrap',
-          }}
-        >
-          Abrir painel Cakto →
-        </a>
+        {/* TODO: adicionar link para o painel do novo gateway de pagamentos */}
       </div>
 
       {/* Header */}
       <div style={{ marginBottom: '24px' }}>
         <h1 style={{ fontSize: '24px', fontWeight: '700', margin: '0 0 4px' }}>Cancelamentos</h1>
         <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', margin: 0 }}>
-          Solicitações de cancelamento aguardando processamento manual na Cakto
+          Solicitações de cancelamento aguardando processamento manual no gateway de pagamentos
         </p>
       </div>
 
