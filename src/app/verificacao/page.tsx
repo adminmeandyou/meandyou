@@ -3,22 +3,24 @@
 import { useEffect, useState, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, ArrowRight, ScanFace, Smile, Camera, FolderOpen, RefreshCw, Check, AlertCircle, Lightbulb } from 'lucide-react'
+import { ArrowLeft, ArrowRight, EyeOff, ScanFace, Smile, Camera, FolderOpen, RefreshCw, Check, AlertCircle, Lightbulb } from 'lucide-react'
 
 type Status = 'loading' | 'desktop' | 'aguardando' | 'dados' | 'doc_frente' | 'doc_verso' | 'selfie' | 'enviando' | 'sucesso' | 'erro' | 'expirado' | 'usado'
 type ModoCaptura = 'escolha' | 'camera' | 'arquivo'
 
 const PASSOS_LIVENESS = [
-  { id: 'direita',  instrucao: 'Vire o rosto para a direita' },
-  { id: 'esquerda', instrucao: 'Vire o rosto para a esquerda'},
-  { id: 'frente',   instrucao: 'Olhe para a câmera'          },
-  { id: 'sorriso',  instrucao: 'Sorria!'                     },
+  { id: 'esquerda', instrucao: 'Olhe para a esquerda'  },
+  { id: 'direita',  instrucao: 'Olhe para a direita'   },
+  { id: 'frente',   instrucao: 'Olhe para a câmera'    },
+  { id: 'piscar',   instrucao: 'Pisque duas vezes'     },
+  { id: 'sorriso',  instrucao: 'Sorria!'               },
 ]
 
 const LIVENESS_ICON: Record<string, React.ReactNode> = {
-  direita:  <ArrowRight size={40} strokeWidth={1.5} />,
   esquerda: <ArrowLeft  size={40} strokeWidth={1.5} />,
+  direita:  <ArrowRight size={40} strokeWidth={1.5} />,
   frente:   <ScanFace   size={40} strokeWidth={1.5} />,
+  piscar:   <EyeOff     size={40} strokeWidth={1.5} />,
   sorriso:  <Smile      size={40} strokeWidth={1.5} />,
 }
 
@@ -399,7 +401,7 @@ function Verificacao() {
   useEffect(() => {
     if (!deteccaoAtiva || !faceApiCarregado || livenessOk) return
     holdCountRef.current = 0
-    deteccaoLoopRef.current = setInterval(() => detectarPasso(), 500)
+    deteccaoLoopRef.current = setInterval(() => detectarPasso(), 300)
     return () => { if (deteccaoLoopRef.current) clearInterval(deteccaoLoopRef.current) }
   }, [deteccaoAtiva, faceApiCarregado, passoAtual, livenessOk])
 
@@ -438,7 +440,8 @@ function Verificacao() {
     }
 
     if (passoId === 'esquerda') {
-      // Virar para a esquerda fisicamente → nariz move para a DIREITA nos pixels brutos.
+      // Video CSS-mirrored (scaleX(-1)): olhar para a esquerda fisicamente
+      // → nariz move para a DIREITA nos pixels brutos (x aumenta)
       const nose = landmarks.getNose()
       const jaw = landmarks.getJawOutline()
       const noseTip = nose[3]
@@ -463,27 +466,53 @@ function Verificacao() {
       else { holdCountRef.current = 0; setFeedbackLiveness('Olhe diretamente para a câmera') }
     }
 
+    if (passoId === 'piscar') {
+      // EAR (Eye Aspect Ratio): (dist(p1,p5) + dist(p2,p4)) / (2 * dist(p0,p3))
+      // Olho fechado: EAR < 0.25 | Olho aberto: EAR > 0.30
+      // Maquina de estado: olhosAbertosRef evita contar o mesmo piscar multiplas vezes
+      const leftEye  = landmarks.getLeftEye()
+      const rightEye = landmarks.getRightEye()
+      const ear = (calcularEAR(leftEye) + calcularEAR(rightEye)) / 2
+
+      if (ear < 0.25 && olhosAbertosRef.current) {
+        // Olhos acabaram de fechar → conta uma piscada
+        olhosAbertosRef.current = false
+        piscarContRef.current += 1
+        setFeedbackLiveness(`Piscada ${piscarContRef.current} de 2 detectada!`)
+      } else if (ear > 0.30) {
+        // Olhos voltaram a abrir → libera para a próxima piscada
+        olhosAbertosRef.current = true
+      }
+      if (piscarContRef.current >= 2) { condicaoOk = true }
+      // Sem holdCount para piscar — a maquina de estado ja garante precisao
+    }
+
     if (passoId === 'sorriso') {
+      // getMouth() retorna 20 pontos: outer (0-11) + inner (12-19)
+      // mouth[0] = canto esquerdo outer, mouth[6] = canto direito outer
+      // mouth[3] = labio superior centro, mouth[9] = labio inferior centro
       const mouth = landmarks.getMouth()
-      // mouth[0] = canto esquerdo, mouth[6] = canto direito
-      // mouth[3] = centro superior, mouth[9] = centro inferior
-      const mouthWidth = dist(mouth[0], mouth[6])
+      const mouthWidth  = dist(mouth[0], mouth[6])
       const mouthHeight = dist(mouth[3], mouth[9])
-      const smileRatio = mouthWidth > 0 ? mouthHeight / mouthWidth : 0
-      if (smileRatio > 0.28) { condicaoOk = true }
+      const smileRatio  = mouthWidth > 0 ? mouthHeight / mouthWidth : 0
+      if (smileRatio > 0.22) { condicaoOk = true }
       else { holdCountRef.current = 0; setFeedbackLiveness('Sorria mostrando os dentes!') }
     }
 
-    // Exige 3 frames consecutivos para confirmar (evita falso positivo por frame unico)
-    if (condicaoOk) {
-      holdCountRef.current += 1
-      if (holdCountRef.current < 3) {
-        setFeedbackLiveness('Mantenha a posição...')
-        return
+    // Exige 3 frames consecutivos para confirmar posicao (nao se aplica ao piscar)
+    if (passoId !== 'piscar') {
+      if (condicaoOk) {
+        holdCountRef.current += 1
+        if (holdCountRef.current < 3) {
+          setFeedbackLiveness('Mantenha a posição...')
+          return
+        }
       }
     }
 
-    const passou = condicaoOk && holdCountRef.current >= 3
+    const passou = passoId === 'piscar'
+      ? piscarContRef.current >= 2
+      : condicaoOk && holdCountRef.current >= 3
 
     if (passou) {
       holdCountRef.current = 0
