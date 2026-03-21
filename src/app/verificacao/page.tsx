@@ -679,7 +679,14 @@ function Verificacao() {
         body: JSON.stringify({ token: tokenAtual, userId, cpf: cpfLimpo }),
       }))
       const data = await res.json()
-      if (data.ok) { limparVerifDraft(); setStatus('sucesso'); setTimeout(() => router.push('/busca'), 3000) }
+      if (data.ok) {
+        limparVerifDraft()
+        setStatus('sucesso')
+        setTimeout(async () => {
+          const { data: profile } = await supabase.from('profiles').select('onboarding_done').eq('id', userId).single()
+          router.push(profile?.onboarding_done ? '/busca' : '/onboarding')
+        }, 2500)
+      }
       else { setStatus('selfie'); setErroForm(data.error || 'Erro ao confirmar verificação. Tente novamente.') }
     } catch (e: any) {
       setStatus('selfie')
