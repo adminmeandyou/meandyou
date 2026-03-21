@@ -148,7 +148,10 @@ export async function proxy(req: NextRequest) {
       return res
     }
 
-    // Step 3: acesso completo — continua normalmente
+    // Step 3: acesso completo — bloqueia /onboarding para quem ja concluiu
+    if (pathname.startsWith('/onboarding')) {
+      return NextResponse.redirect(new URL('/dashboard', req.url))
+    }
   }
 
   return res

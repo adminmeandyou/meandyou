@@ -52,8 +52,9 @@ function CadastroInner() {
   const [temCodigo, setTemCodigo]       = useState<boolean | null>(draft?.temCodigo ?? null)
   const [refCode, setRefCode]           = useState<string>(draft?.refCode ?? searchParams.get('ref') ?? '')
 
-  const [loading, setLoading] = useState(false)
-  const [erro, setErro]       = useState('')
+  const [loading, setLoading]     = useState(false)
+  const [avancando, setAvancando] = useState(false)
+  const [erro, setErro]           = useState('')
   const [sucesso, setSucesso] = useState(false)
   const [cfToken, setCfToken] = useState('')
   const turnstileRef          = useRef<HTMLDivElement>(null)
@@ -125,6 +126,7 @@ function CadastroInner() {
   }, [step, email, nomeCompleto, nomeExibicao, cpf, telefone, temCodigo, refCode])
 
   const avancar = () => {
+    if (avancando) return
     setErro('')
 
     if (step === 0) {
@@ -164,7 +166,11 @@ function CadastroInner() {
       }
     }
 
-    setStep(s => s + 1)
+    setAvancando(true)
+    setTimeout(() => {
+      setAvancando(false)
+      setStep(s => s + 1)
+    }, 700)
   }
 
   function resetTurnstile() {
@@ -367,7 +373,8 @@ function CadastroInner() {
                 setCpf(formatted)
                 if (formatted.replace(/\D/g, '').length === 11) {
                   setErro('')
-                  setTimeout(() => setStep(s => s + 1), 400)
+                  setAvancando(true)
+                  setTimeout(() => { setAvancando(false); setStep(s => s + 1) }, 700)
                 }
               }}
               onKeyDown={handleKeyDown}
@@ -387,7 +394,8 @@ function CadastroInner() {
                 setTelefone(formatted)
                 if (formatted.replace(/\D/g, '').length === 11) {
                   setErro('')
-                  setTimeout(() => setStep(s => s + 1), 400)
+                  setAvancando(true)
+                  setTimeout(() => { setAvancando(false); setStep(s => s + 1) }, 700)
                 }
               }}
               onKeyDown={handleKeyDown}
@@ -448,10 +456,15 @@ function CadastroInner() {
       {/* Botão de ação */}
       <div style={{ padding: '20px 24px 44px', maxWidth: '480px', margin: '0 auto', width: '100%' }}>
         {step < 6 ? (
-          <button onClick={avancar}
-            style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(225,29,72,0.25)' }}>
-            Continuar <ChevronRight size={20} />
-          </button>
+          avancando ? (
+            <div style={{ display: 'flex', justifyContent: 'center', padding: '16px' }}>
+              <div style={{ width: '24px', height: '24px', border: '3px solid var(--border)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+            </div>
+          ) : (
+            <p style={{ textAlign: 'center', color: 'var(--muted-2)', fontSize: '13px', padding: '10px 0', fontFamily: 'var(--font-jakarta)' }}>
+              Pressione Enter para continuar
+            </p>
+          )
         ) : (
           <button
             onClick={temCodigo === null ? () => setErro('Escolha uma das opções acima para continuar') : handleCadastro}

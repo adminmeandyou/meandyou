@@ -30,7 +30,7 @@ export default function OnboardingPage() {
         .eq('id', user.id)
         .single()
 
-      if (profile?.onboarding_done) { router.push('/busca'); return }
+      if (profile?.onboarding_done) { router.push('/dashboard'); return }
       if (profile?.name) setNome(profile.name)
       setCarregando(false)
     })
