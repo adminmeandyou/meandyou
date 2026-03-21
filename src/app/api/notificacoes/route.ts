@@ -22,18 +22,7 @@ export async function GET(req: NextRequest) {
 
     const { data: notificacoes, error } = await supabaseAdmin
       .from('notifications')
-      .select(`
-        id,
-        type,
-        read,
-        created_at,
-        data,
-        from_user:from_user_id (
-          id,
-          name,
-          photo_best
-        )
-      `)
+      .select('id, type, read, created_at, data, from_user_id')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(50)

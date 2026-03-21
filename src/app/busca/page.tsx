@@ -1259,6 +1259,8 @@ export default function BuscaPage() {
   // ── Filter handlers ───────────────────────────────────────────────────────
 
   function validateRequired(): boolean {
+    // Em modo discovery, filtros avançados não são exibidos — validação não se aplica
+    if (viewMode === 'discovery') { setRequiredError(null); return true }
     for (const cat of FILTER_CATEGORIES.filter(c => c.required)) {
       const opts = cat.groups.flatMap(g => g.options)
       if (!opts.some(o => localFilters[o.key])) {
