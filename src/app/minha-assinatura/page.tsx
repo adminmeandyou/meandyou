@@ -9,7 +9,7 @@ type Subscription = {
   id: string
   plan: string
   status: string
-  cakto_order_id: string
+  gateway_order_id: string
   starts_at: string
   ends_at: string
   created_at: string
@@ -182,7 +182,7 @@ export default function MinhaAssinaturaPage() {
             <div style={{ backgroundColor: 'var(--bg)', padding: '12px 20px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Ativo desde: <span style={{ color: 'var(--text)' }}>{formatDate(active.starts_at)}</span></p>
               <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Valido ate: <span style={{ color: 'var(--text)', fontWeight: 600 }}>{formatDate(active.ends_at)}</span></p>
-              {active.cakto_order_id && <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>N. pedido: <span style={{ color: 'var(--text)', fontFamily: 'monospace', fontSize: '11px' }}>{active.cakto_order_id}</span></p>}
+              {active.gateway_order_id && <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>N. pedido: <span style={{ color: 'var(--text)', fontFamily: 'monospace', fontSize: '11px' }}>{active.gateway_order_id}</span></p>}
             </div>
 
             {/* Acoes */}
@@ -232,7 +232,7 @@ export default function MinhaAssinaturaPage() {
                     <div>
                       <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', margin: '0 0 2px' }}>{PLAN_LABELS[s.plan] ?? s.plan}</p>
                       <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '0 0 2px' }}>{formatDate(s.starts_at)} ate {formatDate(s.ends_at)}</p>
-                      <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)', fontFamily: 'monospace', margin: 0 }}>{s.cakto_order_id}</p>
+                      <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)', fontFamily: 'monospace', margin: 0 }}>{s.gateway_order_id}</p>
                     </div>
                     <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '100px', backgroundColor: statusBg, color: statusColor, flexShrink: 0, marginLeft: '12px' }}>
                       {statusLabel}
