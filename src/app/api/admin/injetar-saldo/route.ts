@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, createClient as createServerClient } from '@/lib/supabase/server'
 
-type BalanceTable = 'user_tickets' | 'user_superlikes' | 'user_boosts' | 'user_lupas' | 'user_rewinds'
+type BalanceTable = 'user_tickets' | 'user_superlikes' | 'user_boosts' | 'user_lupas' | 'user_rewinds' | 'user_fichas'
 
 async function addBalance(admin: ReturnType<typeof createAdminClient>, table: BalanceTable, user_id: string, amount: number) {
   const { data } = await admin.from(table).select('amount').eq('user_id', user_id).single()
@@ -20,12 +20,13 @@ export async function POST(req: NextRequest) {
   const { data: profile } = await sessionClient.from('profiles').select('role').eq('id', user.id).single()
   if (profile?.role !== 'admin') return NextResponse.json({ error: 'Acesso negado' }, { status: 403 })
 
-  const { user_id, tickets, superlikes, boosts, lupas, rewinds } = await req.json()
+  const { user_id, fichas, tickets, superlikes, boosts, lupas, rewinds } = await req.json()
   if (!user_id) return NextResponse.json({ error: 'user_id obrigatorio' }, { status: 400 })
 
   const admin = createAdminClient()
   const ops: Promise<any>[] = []
 
+  if (fichas)     ops.push(addBalance(admin, 'user_fichas',     user_id, Number(fichas)))
   if (tickets)    ops.push(addBalance(admin, 'user_tickets',    user_id, Number(tickets)))
   if (superlikes) ops.push(addBalance(admin, 'user_superlikes', user_id, Number(superlikes)))
   if (boosts)     ops.push(addBalance(admin, 'user_boosts',     user_id, Number(boosts)))

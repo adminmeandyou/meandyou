@@ -20,7 +20,7 @@ export default function AdminUsuarios() {
   const [banModal, setBanModal] = useState<{ id: string; name: string } | null>(null)
   const [banReason, setBanReason] = useState('')
   const [saldoModal, setSaldoModal] = useState<{ id: string; name: string } | null>(null)
-  const [saldoForm, setSaldoForm] = useState({ tickets: '', superlikes: '', boosts: '', lupas: '', rewinds: '' })
+  const [saldoForm, setSaldoForm] = useState({ fichas: '', tickets: '', superlikes: '', boosts: '', lupas: '', rewinds: '' })
   const [saldoLoading, setSaldoLoading] = useState(false)
   const [saldoMsg, setSaldoMsg] = useState('')
   const [exporting, setExporting] = useState(false)
@@ -62,6 +62,7 @@ export default function AdminUsuarios() {
     setSaldoLoading(true)
     setSaldoMsg('')
     const body: Record<string, any> = { user_id: saldoModal.id }
+    if (saldoForm.fichas)     body.fichas     = saldoForm.fichas
     if (saldoForm.tickets)    body.tickets    = saldoForm.tickets
     if (saldoForm.superlikes) body.superlikes = saldoForm.superlikes
     if (saldoForm.boosts)     body.boosts     = saldoForm.boosts
@@ -72,7 +73,7 @@ export default function AdminUsuarios() {
     setSaldoLoading(false)
     if (data.ok) {
       setSaldoMsg('Saldo injetado com sucesso!')
-      setSaldoForm({ tickets: '', superlikes: '', boosts: '', lupas: '', rewinds: '' })
+      setSaldoForm({ fichas: '', tickets: '', superlikes: '', boosts: '', lupas: '', rewinds: '' })
     } else {
       setSaldoMsg('Erro: ' + (data.error || 'desconhecido'))
     }
@@ -244,7 +245,8 @@ export default function AdminUsuarios() {
             <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '18px', marginBottom: '4px' }}>Injetar saldo</h3>
             <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', marginBottom: '20px' }}>{saldoModal.name}</p>
             {[
-              { key: 'tickets',    label: 'Tickets' },
+              { key: 'fichas',     label: 'Fichas (loja)' },
+              { key: 'tickets',    label: 'Tickets (roleta)' },
               { key: 'superlikes', label: 'Supercurtidas' },
               { key: 'boosts',     label: 'Boosts' },
               { key: 'lupas',      label: 'Lupas' },
