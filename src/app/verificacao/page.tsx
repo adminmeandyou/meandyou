@@ -241,7 +241,11 @@ function Verificacao() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
     const { data } = await supabase.from('users').select('verified, email').eq('id', user.id).single()
-    if (data?.verified) { router.push('/busca'); return }
+    if (data?.verified) {
+      const { data: profile } = await supabase.from('profiles').select('onboarding_completed').eq('id', user.id).single()
+      window.location.href = profile?.onboarding_completed ? '/dashboard' : '/onboarding'
+      return
+    }
     setStatus('aguardando')
 
     // Checar se já existe token válido antes de gerar novo — preserva rate limit
@@ -614,7 +618,10 @@ function Verificacao() {
 
   // Upload imediato ao tirar/selecionar foto de documento
   const uploadDocImediato = async (file: File, tipo: 'frente' | 'verso') => {
-    if (!userId || !tokenAtual) return
+    if (!userId || !tokenAtual) {
+      setErroForm('Erro de sessão. Recarregue a página e tente novamente.')
+      return
+    }
     if (tipo === 'frente') { setFrenteUploadando(true); setFrenteFeita(false); setFrenteUploadFalhou(false) }
     else { setVersoUploadando(true); setVersoFeita(false); setVersoUploadFalhou(false) }
     setErroForm('')

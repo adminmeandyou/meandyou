@@ -207,6 +207,7 @@ export async function POST(req: NextRequest) {
     }).eq('id', userId)
 
     // Inicializar campos de progresso do cadastro no profile
+    let regSalvo = false
     for (let t = 0; t < 3; t++) {
       const { data: updated } = await supabase
         .from('profiles')
@@ -224,8 +225,12 @@ export async function POST(req: NextRequest) {
         .eq('id', userId)
         .select('id')
         .single()
-      if (updated) break
+      if (updated) { regSalvo = true; break }
       await new Promise(r => setTimeout(r, 400))
+    }
+    if (!regSalvo) {
+      await rollback('update de profiles reg_* falhou apos 3 tentativas')
+      return NextResponse.json({ error: 'Erro ao configurar conta. Tente novamente.' }, { status: 500 })
     }
 
     // Enviar email de verificação (fire-and-forget)

@@ -1,5 +1,6 @@
 // src/app/api/auth/reenviar-verificacao-email/route.ts
 import { createClient } from '@supabase/supabase-js'
+import { createClient as createSessionClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendInstitutionalEmail } from '@/app/lib/email'
 import { randomUUID } from 'crypto'
@@ -19,6 +20,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
     }
 
+    // Verificar se o userId pertence ao usuario da sessao atual
+    const sessionClient = await createSessionClient()
+    const { data: { user: sessionUser } } = await sessionClient.auth.getUser()
+    if (!sessionUser || sessionUser.id !== userId) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 403 })
+    }
+
     const { data: userRow } = await supabase
       .from('users')
       .select('email, email_verified, email_verify_token_expires_at')
@@ -33,12 +41,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Email já verificado' }, { status: 400 })
     }
 
-    // Rate limit: só reenviar se o token atual expirou ou se falta menos de 27min (3 reenvios/hora = 1 a cada 20min)
+    // Rate limit: so permite reenvio se o token atual tem menos de 20 minutos restantes
+    // (token dura 30min, entao o usuario pode reenviar apos 10min de espera)
     if (userRow.email_verify_token_expires_at) {
       const expiresAt = new Date(userRow.email_verify_token_expires_at)
       const minutosRestantes = (expiresAt.getTime() - Date.now()) / 60000
-      if (minutosRestantes > 27) {
-        const aguardar = Math.ceil(minutosRestantes - 27)
+      if (minutosRestantes > 20) {
+        const aguardar = Math.ceil(minutosRestantes - 20)
         return NextResponse.json(
           { error: `Aguarde ${aguardar} minuto(s) antes de reenviar.` },
           { status: 429 }
@@ -64,7 +73,7 @@ export async function POST(req: NextRequest) {
     const nome = profile?.name || 'novo membro'
     const link = `${APP_URL}/verificar-email?token=${token}`
 
-    await sendInstitutionalEmail(
+    sendInstitutionalEmail(
       userRow.email,
       nome,
       'Confirme seu email - MeAndYou',
@@ -72,7 +81,7 @@ export async function POST(req: NextRequest) {
       'Clique no botão abaixo para verificar seu endereço de email e acessar o MeAndYou. Este link expira em 30 minutos.',
       'Verificar email',
       link
-    )
+    ).catch(err => console.error('[reenviar-verificacao-email] Falha ao enviar email:', err))
 
     return NextResponse.json({ ok: true })
   } catch (err) {

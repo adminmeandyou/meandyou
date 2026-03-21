@@ -1,14 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import { Heart, Search, Star, Zap, Shield, ChevronRight, Check, MapPin, Bell } from 'lucide-react'
 
 const PASSOS = ['Bem-vindo', 'Como funciona', 'Permissoes', 'Pronto']
 
 export default function OnboardingPage() {
-  const router = useRouter()
   const [passo, setPasso] = useState(0)
   const [nome, setNome] = useState('')
   const [carregando, setCarregando] = useState(true)
@@ -22,7 +20,7 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { router.push('/login'); return }
+      if (!user) { window.location.href = '/login'; return }
 
       const { data: profile } = await supabase
         .from('profiles')

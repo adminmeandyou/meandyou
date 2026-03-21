@@ -1,12 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import { Mail, RefreshCw, LogOut, CheckCircle } from 'lucide-react'
 
 export default function AguardandoEmailPage() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [userId, setUserId] = useState('')
   const [carregando, setCarregando] = useState(true)
@@ -17,7 +15,7 @@ export default function AguardandoEmailPage() {
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
-      if (!user) { router.replace('/login'); return }
+      if (!user) { window.location.href = '/login'; return }
 
       setUserId(user.id)
       setEmail(user.email ?? '')
@@ -25,14 +23,13 @@ export default function AguardandoEmailPage() {
       // Verificar se email já foi confirmado (usuário pode ter voltado)
       const { data: userRow } = await supabase
         .from('users')
-        .select('email_verified, cadastro_step')
+        .select('email_verified')
         .eq('id', user.id)
         .single()
 
       if (userRow?.email_verified) {
         setVerificado(true)
-        // proxy lê cadastro_step e redireciona para o passo correto
-        setTimeout(() => { window.location.href = '/busca' }, 1500)
+        setTimeout(() => { window.location.href = '/verificacao' }, 1500)
         return
       }
 
@@ -72,7 +69,7 @@ export default function AguardandoEmailPage() {
   const verificarAgora = async () => {
     setCarregando(true)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.replace('/login'); return }
+    if (!user) { window.location.href = '/login'; return }
 
     const { data: userRow } = await supabase
       .from('users')
@@ -82,7 +79,7 @@ export default function AguardandoEmailPage() {
 
     if (userRow?.email_verified) {
       setVerificado(true)
-      setTimeout(() => { window.location.href = '/busca' }, 1500)
+      setTimeout(() => { window.location.href = '/verificacao' }, 1500)
     } else {
       setCarregando(false)
       setErro('Email ainda não verificado. Clique no link que enviamos.')

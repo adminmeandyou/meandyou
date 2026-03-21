@@ -10,7 +10,7 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { token, userId, cpf } = await req.json()
+    const { token, userId } = await req.json()
     if (!token || !userId) {
       return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
     }
@@ -50,16 +50,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Erro ao verificar usuário. Tente novamente.' }, { status: 500 })
     }
 
-    // 3. Salvar CPF (se fornecido) — enviado pela page após liveness detection
-    if (cpf && /^\d{11}$/.test(cpf)) {
-      const { error: cpfError } = await supabase
-        .from('users')
-        .update({ cpf })
-        .eq('id', userId)
-      if (cpfError) console.error('Erro ao salvar CPF:', cpfError)
-    }
-
-    // 3b. Marcar verificacao facial como concluida no progresso do cadastro
+    // 3. Marcar verificacao facial como concluida no progresso do cadastro
     await supabase
       .from('profiles')
       .update({ reg_facial_verified: true })
