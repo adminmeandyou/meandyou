@@ -127,7 +127,7 @@ export default function EditarPerfilPage() {
   const [emblemasTitulos, setEmblemasTitulos] = useState<string[]>([])
   const [loading, setLoading] = useState(true)
   const [secaoAberta, setSecaoAberta] = useState<string | null>('fotos-bio')
-  const [cadastroStep, setCadastroStep] = useState<number>(3)
+  const [needsVerification, setNeedsVerification] = useState(false)
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -135,7 +135,7 @@ export default function EditarPerfilPage() {
       setUserId(user.id)
       const [{ data: p, error: pErr }, { data: f }, { data: bData }] = await Promise.all([
         supabase.from('profiles')
-          .select('bio, photo_face, photo_body, photo_side, photo_extra1, photo_extra2, photo_extra3, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at, profile_question, profile_question_answer, cadastro_step')
+          .select('bio, photo_face, photo_body, photo_side, photo_extra1, photo_extra2, photo_extra3, photo_best, highlight_tags, highlight_tags_edited_at, profile_edited_at, status_temp, status_temp_expires_at, profile_question, profile_question_answer, reg_email_verified, reg_facial_verified')
           .eq('id', user.id).single(),
         supabase.from('filters').select('*').eq('user_id', user.id).single(),
         supabase.from('user_badges').select('badges(name)').eq('user_id', user.id),
@@ -149,7 +149,7 @@ export default function EditarPerfilPage() {
         profile_question: null, profile_question_answer: null,
       }
       setProfileData(p ? (p as ProfileData) : profileDefault)
-      if (p && typeof (p as any).cadastro_step === 'number') setCadastroStep((p as any).cadastro_step)
+      if (p) setNeedsVerification((p as any).reg_email_verified === true && (p as any).reg_facial_verified !== true)
       setFiltersData(f)
       setEmblemasTitulos(((bData ?? []) as any[]).map((ub: any) => ub.badges?.name).filter(Boolean))
       setLoading(false)
@@ -368,21 +368,15 @@ export default function EditarPerfilPage() {
           )}
         </Acordeao>
 
-        {/* ── Banner de continuacao para novos usuarios (step 2) ── */}
-        {cadastroStep === 2 && (
+        {/* ── Banner de continuacao para novos usuarios ── */}
+        {needsVerification && (
           <div style={{ margin: '8px 0', padding: '16px 20px', borderRadius: '14px', backgroundColor: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             <div>
               <p style={{ color: 'var(--text)', fontSize: '14px', fontWeight: 600, margin: '0 0 2px' }}>Perfil salvo!</p>
               <p style={{ color: 'var(--muted)', fontSize: '13px', margin: 0 }}>Proximo passo: verificacao de identidade</p>
             </div>
             <button
-              onClick={async () => {
-                const { data: { user } } = await supabase.auth.getUser()
-                if (user) {
-                  await supabase.from('profiles').update({ cadastro_step: 2 }).eq('id', user.id)
-                }
-                window.location.href = '/verificacao'
-              }}
+              onClick={() => { window.location.href = '/verificacao' }}
               style={{ flexShrink: 0, padding: '10px 16px', borderRadius: '10px', backgroundColor: 'var(--accent)', color: '#fff', fontSize: '13px', fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
             >
               Continuar
