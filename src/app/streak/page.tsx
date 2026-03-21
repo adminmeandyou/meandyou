@@ -59,9 +59,9 @@ export default function StreakPage() {
 
     // Gera calendário se vazio, ou estende quando streak está chegando ao fim do ciclo
     if (!cal || cal.length === 0) {
-      await supabase.rpc('generate_streak_calendar', { p_user_id: user!.id })
+      await fetch('/api/streak/sincronizar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'generate' }) })
     } else if (currentStreak + 5 >= maxDay) {
-      await supabase.rpc('extend_streak_calendar', { p_user_id: user!.id })
+      await fetch('/api/streak/sincronizar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'extend' }) })
     }
 
     // Recarrega calendário atualizado
@@ -76,10 +76,13 @@ export default function StreakPage() {
 
   async function handleClaim(dayNumber: number) {
     setClaiming(dayNumber)
-    const { data, error } = await supabase.rpc('claim_streak_reward', { p_user_id: user!.id, p_day_number: dayNumber })
-    // claim_streak_reward retorna TABLE (array) — acessar o primeiro elemento
-    const result = Array.isArray(data) ? data[0] : data
-    if (error || !result?.success) {
+    const res = await fetch('/api/streak/resgatar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ day_number: dayNumber }),
+    })
+    const result = res.ok ? await res.json().catch(() => null) : null
+    if (!res.ok || !result?.success) {
       const msgs: Record<string, string> = { already_claimed: 'Já resgatado hoje.', not_reached: 'Dia ainda não alcançado.', streak_reset: 'Seu streak foi resetado.' }
       setClaimMsg({ day: dayNumber, text: msgs[result?.reason ?? ''] ?? 'Não foi possível resgatar.' })
     } else {

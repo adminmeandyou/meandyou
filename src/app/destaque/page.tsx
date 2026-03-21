@@ -62,11 +62,16 @@ export default function DestaquesPage() {
   }
 
   async function handleReveal(profileId: string) {
+    if (!user) return
     if (lupas <= 0) { toast.error('Sem lupas disponíveis. Compre na Loja.'); return }
     haptics.medium()
     setRevealing(profileId)
-    const { error } = await supabase.rpc('use_lupa', { p_user_id: user?.id, p_target_id: profileId })
-    if (!error) {
+    const res = await fetch('/api/destaque/revelar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ target_id: profileId }),
+    })
+    if (res.ok) {
       setRevealedIds((prev) => new Set(Array.from(prev).concat(profileId)))
       setLupas((l) => l - 1)
       haptics.success()
