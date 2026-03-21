@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
-import { Search, Ban, CheckCircle, Eye, Download } from 'lucide-react'
+import { Search, Ban, CheckCircle, Eye, Download, PlusCircle } from 'lucide-react'
 
 const FILTERS = ['todos', 'ativos', 'banidos', 'nao_verificados', 'excluidos', 'essencial', 'plus', 'black']
 const FILTER_LABELS: Record<string, string> = {
@@ -19,6 +19,10 @@ export default function AdminUsuarios() {
   const [loading, setLoading] = useState(true)
   const [banModal, setBanModal] = useState<{ id: string; name: string } | null>(null)
   const [banReason, setBanReason] = useState('')
+  const [saldoModal, setSaldoModal] = useState<{ id: string; name: string } | null>(null)
+  const [saldoForm, setSaldoForm] = useState({ tickets: '', superlikes: '', boosts: '', lupas: '', rewinds: '' })
+  const [saldoLoading, setSaldoLoading] = useState(false)
+  const [saldoMsg, setSaldoMsg] = useState('')
   const [exporting, setExporting] = useState(false)
   const [exportFormat, setExportFormat] = useState<'csv' | 'txt'>('csv')
   const [dateRange, setDateRange] = useState({ inicio: '', fim: '' })
@@ -51,6 +55,27 @@ export default function AdminUsuarios() {
     setBanModal(null)
     setBanReason('')
     loadUsers()
+  }
+
+  async function injetarSaldo() {
+    if (!saldoModal) return
+    setSaldoLoading(true)
+    setSaldoMsg('')
+    const body: Record<string, any> = { user_id: saldoModal.id }
+    if (saldoForm.tickets)    body.tickets    = saldoForm.tickets
+    if (saldoForm.superlikes) body.superlikes = saldoForm.superlikes
+    if (saldoForm.boosts)     body.boosts     = saldoForm.boosts
+    if (saldoForm.lupas)      body.lupas      = saldoForm.lupas
+    if (saldoForm.rewinds)    body.rewinds    = saldoForm.rewinds
+    const res = await fetch('/api/admin/injetar-saldo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    const data = await res.json()
+    setSaldoLoading(false)
+    if (data.ok) {
+      setSaldoMsg('Saldo injetado com sucesso!')
+      setSaldoForm({ tickets: '', superlikes: '', boosts: '', lupas: '', rewinds: '' })
+    } else {
+      setSaldoMsg('Erro: ' + (data.error || 'desconhecido'))
+    }
   }
 
   async function unbanUser(id: string) {
@@ -192,6 +217,9 @@ export default function AdminUsuarios() {
                     <a href={`/perfil/${u.id}`} target="_blank" style={{ color: 'rgba(248,249,250,0.40)', display: 'flex' }}>
                       <Eye size={16} />
                     </a>
+                    <button onClick={() => { setSaldoModal({ id: u.id, name: u.name }); setSaldoMsg('') }} title="Injetar saldo" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f59e0b', display: 'flex' }}>
+                      <PlusCircle size={16} />
+                    </button>
                     {u.banned ? (
                       <button onClick={() => unbanUser(u.id)} title="Desbanir" style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#22c55e', display: 'flex' }}>
                         <CheckCircle size={16} />
@@ -208,6 +236,44 @@ export default function AdminUsuarios() {
           </tbody>
         </table>
       </div>
+
+      {/* Modal injetar saldo */}
+      {saldoModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: '#000a', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '20px', padding: '28px', width: '100%', maxWidth: '400px' }}>
+            <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '18px', marginBottom: '4px' }}>Injetar saldo</h3>
+            <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', marginBottom: '20px' }}>{saldoModal.name}</p>
+            {[
+              { key: 'tickets',    label: 'Tickets' },
+              { key: 'superlikes', label: 'Supercurtidas' },
+              { key: 'boosts',     label: 'Boosts' },
+              { key: 'lupas',      label: 'Lupas' },
+              { key: 'rewinds',    label: 'Rewinds' },
+            ].map(({ key, label }) => (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                <label style={{ width: '110px', fontSize: '14px', color: 'rgba(248,249,250,0.60)', flexShrink: 0 }}>{label}</label>
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={saldoForm[key as keyof typeof saldoForm]}
+                  onChange={e => setSaldoForm(f => ({ ...f, [key]: e.target.value }))}
+                  style={{ flex: 1, backgroundColor: '#13161F', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '8px', padding: '8px 12px', color: '#fff', fontSize: '14px', outline: 'none' }}
+                />
+              </div>
+            ))}
+            {saldoMsg && (
+              <p style={{ fontSize: '13px', marginTop: '8px', color: saldoMsg.startsWith('Erro') ? '#ef4444' : '#22c55e' }}>{saldoMsg}</p>
+            )}
+            <div style={{ display: 'flex', gap: '10px', marginTop: '16px' }}>
+              <button onClick={() => { setSaldoModal(null); setSaldoMsg('') }} style={{ flex: 1, padding: '10px', backgroundColor: '#13161F', border: 'none', borderRadius: '10px', color: 'rgba(248,249,250,0.40)', cursor: 'pointer', fontSize: '14px' }}>Fechar</button>
+              <button onClick={injetarSaldo} disabled={saldoLoading} style={{ flex: 1, padding: '10px', backgroundColor: '#f59e0b', border: 'none', borderRadius: '10px', color: '#000', cursor: saldoLoading ? 'not-allowed' : 'pointer', fontSize: '14px', fontWeight: '600', opacity: saldoLoading ? 0.6 : 1 }}>
+                {saldoLoading ? 'Injetando...' : 'Injetar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal de ban */}
       {banModal && (
