@@ -700,9 +700,9 @@ function Verificacao() {
       if (data.ok) {
         limparVerifDraft()
         setStatus('sucesso')
-        setTimeout(async () => {
-          const { data: profile } = await supabase.from('profiles').select('onboarding_done').eq('id', userId).single()
-          router.push(profile?.onboarding_done ? '/busca' : '/onboarding')
+        setTimeout(() => {
+          // cadastro_step agora é 3 — proxy lê e libera acesso completo
+          window.location.href = '/busca'
         }, 2500)
       }
       else { setStatus('selfie'); setErroForm(data.error || 'Erro ao confirmar verificação. Tente novamente.') }

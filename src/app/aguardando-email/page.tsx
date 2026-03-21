@@ -31,7 +31,8 @@ export default function AguardandoEmailPage() {
 
       if (userRow?.email_verified) {
         setVerificado(true)
-        setTimeout(() => router.replace('/onboarding'), 1500)
+        // proxy lê cadastro_step e redireciona para o passo correto
+        setTimeout(() => { window.location.href = '/busca' }, 1500)
         return
       }
 
@@ -81,7 +82,7 @@ export default function AguardandoEmailPage() {
 
     if (userRow?.email_verified) {
       setVerificado(true)
-      setTimeout(() => router.replace('/onboarding'), 1500)
+      setTimeout(() => { window.location.href = '/busca' }, 1500)
     } else {
       setCarregando(false)
       setErro('Email ainda não verificado. Clique no link que enviamos.')
