@@ -12,7 +12,7 @@ const PASSOS_LIVENESS = [
   { id: 'esquerda', instrucao: 'Olhe para a esquerda'  },
   { id: 'direita',  instrucao: 'Olhe para a direita'   },
   { id: 'frente',   instrucao: 'Olhe para a câmera'    },
-  { id: 'piscar',   instrucao: 'Pisque duas vezes'     },
+  { id: 'piscar',   instrucao: 'Pisque uma vez'        },
   { id: 'sorriso',  instrucao: 'Sorria!'               },
 ]
 
@@ -24,10 +24,23 @@ const LIVENESS_ICON: Record<string, React.ReactNode> = {
   sorriso:  <Smile      size={40} strokeWidth={1.5} />,
 }
 
+const VERIF_DRAFT_KEY = 'meandyou_verif_draft'
+function salvarVerifDraft(dados: Record<string, unknown>) {
+  try { localStorage.setItem(VERIF_DRAFT_KEY, JSON.stringify(dados)) } catch {}
+}
+function carregarVerifDraft() {
+  try { const raw = localStorage.getItem(VERIF_DRAFT_KEY); return raw ? JSON.parse(raw) : null } catch { return null }
+}
+function limparVerifDraft() {
+  try { localStorage.removeItem(VERIF_DRAFT_KEY) } catch {}
+}
+
 function Verificacao() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const token = searchParams.get('token')
+
+  const draft = typeof window !== 'undefined' ? carregarVerifDraft() : null
 
   const [status, setStatus] = useState<Status>('loading')
   const [mensagem, setMensagem] = useState('')
@@ -36,8 +49,8 @@ function Verificacao() {
   const [userId, setUserId] = useState('')
   const [tokenAtual, setTokenAtual] = useState('')
 
-  const [cpf, setCpf] = useState('')
-  const [tipoDoc, setTipoDoc] = useState<'rg' | 'cnh' | 'cpf_doc'>('rg')
+  const [cpf, setCpf] = useState(draft?.cpf ?? '')
+  const [tipoDoc, setTipoDoc] = useState<'rg' | 'cnh' | 'cpf_doc'>(draft?.tipoDoc ?? 'rg')
   const [docFrente, setDocFrente] = useState<File | null>(null)
   const [docFrentePreview, setDocFrentePreview] = useState('')
   const [docVerso, setDocVerso] = useState<File | null>(null)
@@ -194,15 +207,10 @@ function Verificacao() {
     }
   }, [])
 
-  // ✅ CORREÇÃO AVISO 13: auto-submit após liveness concluído
-  // A spec documenta: "API chama POST /api/confirmar-verificacao automaticamente ao final do fluxo"
-  // Usa selfieFileRef para evitar problema de closure stale com o estado selfieFile
+  // Salva CPF e tipo de documento para retomar progresso
   useEffect(() => {
-    if (livenessOk && selfieFileRef.current) {
-      enviarVerificacao()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [livenessOk])
+    if (cpf || tipoDoc !== 'rg') salvarVerifDraft({ cpf, tipoDoc })
+  }, [cpf, tipoDoc])
 
   const pararTodasCameras = () => {
     [streamFrenteRef, streamVersoRef, streamSelfieRef].forEach(ref => {
@@ -468,22 +476,21 @@ function Verificacao() {
 
     if (passoId === 'piscar') {
       // EAR (Eye Aspect Ratio): (dist(p1,p5) + dist(p2,p4)) / (2 * dist(p0,p3))
-      // Olho fechado: EAR < 0.25 | Olho aberto: EAR > 0.30
-      // Maquina de estado: olhosAbertosRef evita contar o mesmo piscar multiplas vezes
+      // Tolerante: limiar baixo para capturar piscadas rápidas e lentas
       const leftEye  = landmarks.getLeftEye()
       const rightEye = landmarks.getRightEye()
       const ear = (calcularEAR(leftEye) + calcularEAR(rightEye)) / 2
 
-      if (ear < 0.25 && olhosAbertosRef.current) {
-        // Olhos acabaram de fechar → conta uma piscada
+      if (ear < 0.22 && olhosAbertosRef.current) {
+        // Olhos fecharam — qualquer velocidade conta
         olhosAbertosRef.current = false
         piscarContRef.current += 1
-        setFeedbackLiveness(`Piscada ${piscarContRef.current} de 2 detectada!`)
-      } else if (ear > 0.30) {
-        // Olhos voltaram a abrir → libera para a próxima piscada
+        setFeedbackLiveness('Piscada detectada!')
+      } else if (ear > 0.27) {
+        // Olhos abriram — pronto para próxima piscada
         olhosAbertosRef.current = true
       }
-      if (piscarContRef.current >= 2) { condicaoOk = true }
+      if (piscarContRef.current >= 1) { condicaoOk = true }
       // Sem holdCount para piscar — a maquina de estado ja garante precisao
     }
 
@@ -606,12 +613,12 @@ function Verificacao() {
       ])
     }
 
-    // Upload frente — se rejeitar como não-documento, volta à etapa para o usuário corrigir
+    // Upload frente
     try {
       await comTimeout(uploadArquivo(docFrente, `${userId}/frente.jpg`))
     } catch (e: any) {
-      setStatus('doc_frente')
-      setErroForm(e.message || 'Erro ao enviar a frente do documento.')
+      setStatus('selfie')
+      setErroForm(e.message || 'Erro ao enviar a frente do documento. Tente novamente.')
       return
     }
 
@@ -620,8 +627,8 @@ function Verificacao() {
       try {
         await comTimeout(uploadArquivo(docVerso, `${userId}/verso.jpg`))
       } catch (e: any) {
-        setStatus('doc_verso')
-        setErroForm(e.message || 'Erro ao enviar o verso do documento.')
+        setStatus('selfie')
+        setErroForm(e.message || 'Erro ao enviar o verso do documento. Tente novamente.')
         return
       }
     }
@@ -635,7 +642,7 @@ function Verificacao() {
         body: JSON.stringify({ token: tokenAtual, userId, cpf: cpfLimpo }),
       }))
       const data = await res.json()
-      if (data.ok) { setStatus('sucesso'); setTimeout(() => router.push('/busca'), 3000) }
+      if (data.ok) { limparVerifDraft(); setStatus('sucesso'); setTimeout(() => router.push('/busca'), 3000) }
       else { setStatus('erro'); setMensagem(data.error || 'Erro ao confirmar verificação. Tente novamente.') }
     } catch (e: any) {
       setStatus('erro')
@@ -948,24 +955,19 @@ function Verificacao() {
             <>
               <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
                 <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}><Check size={16} /> Verificação facial concluída!</p>
-                <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>Enviando automaticamente...</p>
               </div>
-              <img src={selfiePreview} alt="selfie" style={{ width: '100%', borderRadius: '16px', marginBottom: '12px', maxHeight: '240px', objectFit: 'cover' }} />
-            </>
-          )}
-
-          {erroForm && (
-            <>
-              <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '8px' }}>{erroForm}</p>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                <button onClick={() => { reiniciarLiveness(); setStatus(tipoDoc === 'cpf_doc' ? 'doc_frente' : 'doc_verso') }}
-                  style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
-                {livenessOk && selfieFile && (
-                  <button onClick={enviarVerificacao} style={{ flex: 2, backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>
-                    Tentar novamente ✓
-                  </button>
-                )}
-              </div>
+              <img src={selfiePreview} alt="selfie" style={{ width: '100%', borderRadius: '16px', marginBottom: '16px', maxHeight: '240px', objectFit: 'cover' }} />
+              {erroForm && (
+                <p style={{ color: 'var(--red)', fontSize: '13px', marginBottom: '12px' }}>{erroForm}</p>
+              )}
+              <button onClick={enviarVerificacao}
+                style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginBottom: '8px' }}>
+                Enviar verificação →
+              </button>
+              <button onClick={reiniciarLiveness}
+                style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '11px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>
+                Refazer verificação facial
+              </button>
             </>
           )}
 
