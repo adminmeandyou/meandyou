@@ -59,6 +59,12 @@ function Verificacao() {
   const [selfiePreview, setSelfiePreview] = useState('')
   const [erroForm, setErroForm] = useState('')
 
+  // Controla upload imediato de cada documento
+  const [frenteFeita, setFrenteFeita] = useState<boolean>(draft?.frenteFeita ?? false)
+  const [versoFeita, setVersoFeita] = useState<boolean>(draft?.versoFeita ?? false)
+  const [frenteUploadando, setFrenteUploadando] = useState(false)
+  const [versoUploadando, setVersoUploadando] = useState(false)
+
   const [modoFrente, setModoFrente] = useState<ModoCaptura>('escolha')
   const [modoVerso, setModoVerso] = useState<ModoCaptura>('escolha')
 
@@ -207,10 +213,18 @@ function Verificacao() {
     }
   }, [])
 
-  // Salva CPF e tipo de documento para retomar progresso
+  // Salva progresso sempre que qualquer campo relevante muda
   useEffect(() => {
-    if (cpf || tipoDoc !== 'rg') salvarVerifDraft({ cpf, tipoDoc })
-  }, [cpf, tipoDoc])
+    salvarVerifDraft({ cpf, tipoDoc, frenteFeita, versoFeita })
+  }, [cpf, tipoDoc, frenteFeita, versoFeita])
+
+  // Auto-submit após liveness concluído
+  useEffect(() => {
+    if (livenessOk && selfieFileRef.current) {
+      enviarVerificacao()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [livenessOk])
 
   const pararTodasCameras = () => {
     [streamFrenteRef, streamVersoRef, streamSelfieRef].forEach(ref => {
@@ -306,6 +320,7 @@ function Verificacao() {
     const url = file.type === 'application/pdf' ? '' : URL.createObjectURL(file)
     if (tipo === 'frente') { setDocFrente(file); setDocFrentePreview(url) }
     else { setDocVerso(file); setDocVersoPreview(url) }
+    uploadDocImediato(file, tipo)
   }
 
   const iniciarCamera = async (tipo: 'frente' | 'verso' | 'selfie') => {
@@ -356,8 +371,8 @@ function Verificacao() {
       const file = new File([blob], `${tipo}.jpg`, { type: 'image/jpeg' })
       const url = URL.createObjectURL(blob)
       pararCamera(tipo)
-      if (tipo === 'frente') { setDocFrente(file); setDocFrentePreview(url); setModoFrente('arquivo') }
-      else if (tipo === 'verso') { setDocVerso(file); setDocVersoPreview(url); setModoVerso('arquivo') }
+      if (tipo === 'frente') { setDocFrente(file); setDocFrentePreview(url); setModoFrente('arquivo'); uploadDocImediato(file, 'frente') }
+      else if (tipo === 'verso') { setDocVerso(file); setDocVersoPreview(url); setModoVerso('arquivo'); uploadDocImediato(file, 'verso') }
       else { setSelfieFile(file); setSelfiePreview(url) }
       if (!nitida) setErroForm('A foto pode estar borrada. Se a imagem não estiver nítida, tire outra foto.')
     }, 'image/jpeg', 0.92)
@@ -593,12 +608,30 @@ function Verificacao() {
     return caminho
   }
 
+  // Upload imediato ao tirar/selecionar foto de documento
+  const uploadDocImediato = async (file: File, tipo: 'frente' | 'verso') => {
+    if (!userId || !tokenAtual) return
+    if (tipo === 'frente') { setFrenteUploadando(true); setFrenteFeita(false) }
+    else { setVersoUploadando(true); setVersoFeita(false) }
+    setErroForm('')
+    try {
+      await uploadArquivo(file, `${userId}/${tipo}.jpg`)
+      if (tipo === 'frente') setFrenteFeita(true)
+      else setVersoFeita(true)
+    } catch (e: any) {
+      setErroForm(e.message || `Erro ao enviar foto. Tente novamente.`)
+    } finally {
+      if (tipo === 'frente') setFrenteUploadando(false)
+      else setVersoUploadando(false)
+    }
+  }
+
   const enviarVerificacao = async () => {
     setErroForm('')
     const cpfLimpo = cpf.replace(/\D/g, '')
     if (!validarCPF(cpfLimpo)) { setErroForm('CPF inválido. Verifique os dígitos.'); return }
-    if (!docFrente) { setErroForm('Anexe ou fotografe a frente do documento.'); return }
-    if (tipoDoc !== 'cpf_doc' && !docVerso) { setErroForm('Anexe ou fotografe o verso do documento.'); return }
+    if (!docFrente && !frenteFeita) { setErroForm('Fotografe ou anexe a frente do documento.'); return }
+    if (tipoDoc !== 'cpf_doc' && !docVerso && !versoFeita) { setErroForm('Fotografe ou anexe o verso do documento.'); return }
     if (!selfieFile) { setErroForm('Conclua a verificação de rosto antes de continuar.'); return }
     setStatus('enviando')
 
@@ -613,21 +646,25 @@ function Verificacao() {
       ])
     }
 
-    // Upload frente
-    try {
-      await comTimeout(uploadArquivo(docFrente, `${userId}/frente.jpg`))
-    } catch (e: any) {
-      setStatus('selfie')
-      setErroForm(e.message || 'Erro ao enviar a frente do documento. Tente novamente.')
-      return
+    // Upload frente — pula se já foi enviado antes
+    if (!frenteFeita && docFrente) {
+      try {
+        await comTimeout(uploadArquivo(docFrente, `${userId}/frente.jpg`))
+        setFrenteFeita(true)
+      } catch (e: any) {
+        setStatus('doc_frente')
+        setErroForm(e.message || 'Erro ao enviar a frente do documento. Tente novamente.')
+        return
+      }
     }
 
-    // Upload verso (quando aplicável)
-    if (docVerso) {
+    // Upload verso — pula se já foi enviado antes
+    if (!versoFeita && docVerso) {
       try {
         await comTimeout(uploadArquivo(docVerso, `${userId}/verso.jpg`))
+        setVersoFeita(true)
       } catch (e: any) {
-        setStatus('selfie')
+        setStatus('doc_verso')
         setErroForm(e.message || 'Erro ao enviar o verso do documento. Tente novamente.')
         return
       }
@@ -643,10 +680,10 @@ function Verificacao() {
       }))
       const data = await res.json()
       if (data.ok) { limparVerifDraft(); setStatus('sucesso'); setTimeout(() => router.push('/busca'), 3000) }
-      else { setStatus('erro'); setMensagem(data.error || 'Erro ao confirmar verificação. Tente novamente.') }
+      else { setStatus('selfie'); setErroForm(data.error || 'Erro ao confirmar verificação. Tente novamente.') }
     } catch (e: any) {
-      setStatus('erro')
-      setMensagem(e.message || 'Erro inesperado. Tente novamente.')
+      setStatus('selfie')
+      setErroForm(e.message || 'Erro inesperado. Tente novamente.')
     }
   }
 
@@ -819,13 +856,34 @@ function Verificacao() {
           {passos(2)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Frente do documento</h2>
           <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 2 de {totalPassos} — {tipoDoc === 'rg' ? 'RG' : tipoDoc === 'cnh' ? 'CNH' : 'CPF'} frente</p>
+          {frenteFeita && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
+              <Check size={16} color="#10b981" strokeWidth={2} />
+              <p style={{ fontSize: '13px', color: '#10b981', fontWeight: '600', margin: 0 }}>Foto enviada com sucesso</p>
+            </div>
+          )}
+          {frenteUploadando && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
+              <div style={{ width: '14px', height: '14px', border: '2px solid var(--border)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+              <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Enviando foto...</p>
+            </div>
+          )}
           {dicas(['Fundo liso, de preferência branco ou claro', 'Boa iluminação — evite sombras e reflexos', 'Documento inteiro visível, sem cortar bordas', 'Sem acessórios cobrindo o documento', 'Imagem nítida e sem borrão'])}
           {botoesCaptura('frente', modoFrente, setModoFrente, docFrentePreview, docFrente, cameraFrenteAtiva, videoFrenteRef, canvasFrenteRef)}
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
           <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
             <button onClick={() => { pararCamera('frente'); setStatus('dados') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
-            <button onClick={() => { if (!docFrente) { setErroForm('Fotografe ou anexe a frente do documento.'); return } setErroForm(''); setStatus(tipoDoc === 'cpf_doc' ? 'selfie' : 'doc_verso') }}
-              style={{ flex: 2, backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>Próximo →</button>
+            <button
+              disabled={frenteUploadando}
+              onClick={() => {
+                if (!docFrente && !frenteFeita) { setErroForm('Fotografe ou anexe a frente do documento.'); return }
+                if (frenteUploadando) return
+                if (!frenteFeita) { setErroForm('Aguarde o envio da foto.'); return }
+                setErroForm(''); setStatus(tipoDoc === 'cpf_doc' ? 'selfie' : 'doc_verso')
+              }}
+              style={{ flex: 2, backgroundColor: frenteUploadando ? 'var(--border)' : 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: frenteUploadando ? 'not-allowed' : 'pointer' }}>
+              {frenteUploadando ? 'Aguardando...' : 'Próximo →'}
+            </button>
           </div>
         </>)}
 
@@ -833,13 +891,34 @@ function Verificacao() {
           {passos(3)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Verso do documento</h2>
           <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 3 de {totalPassos} — {tipoDoc === 'rg' ? 'RG' : 'CNH'} verso</p>
+          {versoFeita && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
+              <Check size={16} color="#10b981" strokeWidth={2} />
+              <p style={{ fontSize: '13px', color: '#10b981', fontWeight: '600', margin: 0 }}>Foto enviada com sucesso</p>
+            </div>
+          )}
+          {versoUploadando && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
+              <div style={{ width: '14px', height: '14px', border: '2px solid var(--border)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
+              <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Enviando foto...</p>
+            </div>
+          )}
           {dicas(['Fundo liso, de preferência branco ou claro', 'Boa iluminação — evite sombras e reflexos', 'Documento inteiro visível, sem cortar bordas', 'Imagem nítida e sem borrão'])}
           {botoesCaptura('verso', modoVerso, setModoVerso, docVersoPreview, docVerso, cameraVersoAtiva, videoVersoRef, canvasVersoRef)}
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
           <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
             <button onClick={() => { pararCamera('verso'); setStatus('doc_frente') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
-            <button onClick={() => { if (!docVerso) { setErroForm('Fotografe ou anexe o verso do documento.'); return } setErroForm(''); setStatus('selfie') }}
-              style={{ flex: 2, backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer' }}>Próximo →</button>
+            <button
+              disabled={versoUploadando}
+              onClick={() => {
+                if (!docVerso && !versoFeita) { setErroForm('Fotografe ou anexe o verso do documento.'); return }
+                if (versoUploadando) return
+                if (!versoFeita) { setErroForm('Aguarde o envio da foto.'); return }
+                setErroForm(''); setStatus('selfie')
+              }}
+              style={{ flex: 2, backgroundColor: versoUploadando ? 'var(--border)' : 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: versoUploadando ? 'not-allowed' : 'pointer' }}>
+              {versoUploadando ? 'Aguardando...' : 'Próximo →'}
+            </button>
           </div>
         </>)}
 
@@ -955,19 +1034,22 @@ function Verificacao() {
             <>
               <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
                 <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}><Check size={16} /> Verificação facial concluída!</p>
+                {!erroForm && <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px', textAlign: 'center' }}>Enviando dados...</p>}
               </div>
-              <img src={selfiePreview} alt="selfie" style={{ width: '100%', borderRadius: '16px', marginBottom: '16px', maxHeight: '240px', objectFit: 'cover' }} />
+              <img src={selfiePreview} alt="selfie" style={{ width: '100%', borderRadius: '16px', marginBottom: '12px', maxHeight: '240px', objectFit: 'cover' }} />
               {erroForm && (
-                <p style={{ color: 'var(--red)', fontSize: '13px', marginBottom: '12px' }}>{erroForm}</p>
+                <>
+                  <p style={{ color: 'var(--red)', fontSize: '13px', marginBottom: '12px' }}>{erroForm}</p>
+                  <button onClick={enviarVerificacao}
+                    style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginBottom: '8px' }}>
+                    Tentar novamente →
+                  </button>
+                  <button onClick={reiniciarLiveness}
+                    style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '11px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>
+                    Refazer verificação facial
+                  </button>
+                </>
               )}
-              <button onClick={enviarVerificacao}
-                style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginBottom: '8px' }}>
-                Enviar verificação →
-              </button>
-              <button onClick={reiniciarLiveness}
-                style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '11px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>
-                Refazer verificação facial
-              </button>
             </>
           )}
 
