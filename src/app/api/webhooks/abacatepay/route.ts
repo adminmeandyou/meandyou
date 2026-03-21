@@ -69,17 +69,21 @@ export async function POST(req: NextRequest) {
       // Upsert na tabela subscriptions
       const days = CYCLE_DAYS[meta.cycle] ?? 30
       const endsAt = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString()
-      await supabase
-        .from('subscriptions')
-        .upsert({
-          user_id: payment.user_id,
-          plan: meta.plan,
-          status: 'active',
-          cycle: meta.cycle ?? 'monthly',
-          gateway_order_id: gatewayId,
-          starts_at: new Date().toISOString(),
-          ends_at: endsAt,
-        }, { onConflict: 'user_id' })
+      try {
+        await supabase
+          .from('subscriptions')
+          .upsert({
+            user_id: payment.user_id,
+            plan: meta.plan,
+            status: 'active',
+            cycle: meta.cycle ?? 'monthly',
+            gateway_order_id: gatewayId,
+            starts_at: new Date().toISOString(),
+            ends_at: endsAt,
+          }, { onConflict: 'user_id' })
+      } catch (e) {
+        console.error('subscriptions upsert error:', e)
+      }
 
       // Recompensa indicacao se houver
       try {
@@ -95,15 +99,15 @@ export async function POST(req: NextRequest) {
             p_amount: quantidade,
           })
         } catch (e) {
-          console.error('add_fichas error:', e)
-          // Fallback: update direto na tabela profiles
-          await supabase.rpc('increment_fichas', { p_user_id: payment.user_id, p_qty: quantidade })
-            .catch(() => console.error('increment_fichas fallback tambem falhou'))
+          console.error('add_fichas error — creditar manualmente para user', payment.user_id, ':', e)
         }
       }
 
     } else if (payment.type === 'camarote') {
       const resgatadoId = meta.resgatado_id
+      if (!resgatadoId) {
+        console.error('camarote sem resgatado_id no metadata, payment id:', payment.id)
+      }
       if (resgatadoId) {
         const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
         const { error: camaroteErr } = await supabase
