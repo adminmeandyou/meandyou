@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json()
     const { type, method, plan, cycle = 'monthly', amount_override, metadata = {} } = body
+    const { quantidade, resgatado_id } = metadata ?? {}
 
     // Valida inputs basicos
     if (!type || !method) return NextResponse.json({ error: 'type e method sao obrigatorios' }, { status: 400 })
@@ -40,7 +41,10 @@ export async function POST(req: NextRequest) {
       if (!amountCents) return NextResponse.json({ error: 'Plano/ciclo invalido' }, { status: 400 })
     } else {
       if (!amount_override) return NextResponse.json({ error: 'amount_override obrigatorio' }, { status: 400 })
-      amountCents = amount_override
+      amountCents = Number(amount_override)
+      if (!Number.isInteger(amountCents) || amountCents < 100) {
+        return NextResponse.json({ error: 'Valor invalido (minimo 100 centavos)' }, { status: 400 })
+      }
     }
 
     // Busca dados do usuario para AbacatePay
@@ -72,13 +76,13 @@ export async function POST(req: NextRequest) {
             cellphone: '00000000000',
             taxId: profile?.cpf ?? '00000000000',
           },
-          metadata: { user_id: user.id, type, plan, cycle, ...metadata },
+          metadata: { user_id: user.id, type, plan, cycle },
         }),
       })
 
       const pixData = await pixResp.json()
       if (!pixData.data?.id) {
-        console.error('AbacatePay PIX error:', pixData)
+        console.error('AbacatePay PIX error:', pixData?.error ?? pixData?.message ?? 'unknown')
         return NextResponse.json({ error: 'Erro ao criar PIX' }, { status: 502 })
       }
 
@@ -115,13 +119,13 @@ export async function POST(req: NextRequest) {
             taxId: profile?.cpf ?? '00000000000',
           },
           externalId: `${user.id}_${Date.now()}`,
-          metadata: { user_id: user.id, type, plan, cycle, ...metadata },
+          metadata: { user_id: user.id, type, plan, cycle },
         }),
       })
 
       const billingData = await billingResp.json()
       if (!billingData.data?.id) {
-        console.error('AbacatePay billing error:', billingData)
+        console.error('AbacatePay billing error:', billingData?.error ?? billingData?.message ?? 'unknown')
         return NextResponse.json({ error: 'Erro ao criar cobranca' }, { status: 502 })
       }
 
@@ -141,7 +145,12 @@ export async function POST(req: NextRequest) {
       method,
       amount: amountCents / 100,
       status: 'pending',
-      metadata: { plan, cycle, ...metadata },
+      metadata: {
+        ...(plan ? { plan } : {}),
+        ...(cycle ? { cycle } : {}),
+        ...(quantidade ? { quantidade } : {}),
+        ...(resgatado_id ? { resgatado_id } : {}),
+      },
     }).select('id').single()
 
     if (dbErr) {
