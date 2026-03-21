@@ -14,9 +14,18 @@ CREATE TABLE IF NOT EXISTS payments (
 
 ALTER TABLE payments ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "users see own payments" ON payments FOR SELECT USING (auth.uid() = user_id);
+-- INSERT/UPDATE/DELETE: feito apenas via service_role no backend (sem policy necessaria)
 
 -- 2. Renomear coluna na tabela subscriptions
-ALTER TABLE subscriptions RENAME COLUMN cakto_order_id TO gateway_order_id;
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'subscriptions' AND column_name = 'cakto_order_id'
+  ) THEN
+    ALTER TABLE subscriptions RENAME COLUMN cakto_order_id TO gateway_order_id;
+  END IF;
+END $$;
 
 -- 3. Adicionar coluna cycle
 ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS cycle text DEFAULT 'monthly'
@@ -24,3 +33,4 @@ ALTER TABLE subscriptions ADD COLUMN IF NOT EXISTS cycle text DEFAULT 'monthly'
 
 -- 4. Index para idempotencia no webhook
 CREATE INDEX IF NOT EXISTS payments_gateway_id_idx ON payments(gateway_id);
+CREATE INDEX IF NOT EXISTS payments_user_id_idx ON payments(user_id);
