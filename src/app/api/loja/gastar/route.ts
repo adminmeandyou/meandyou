@@ -126,11 +126,20 @@ export async function POST(req: NextRequest) {
       }
 
     } else if (item_key === 'caixa_surpresa') {
-      const { data: spinResult, error: spinError } = await supabaseAdmin.rpc('spin_roleta', { p_user_id: user.id })
-      if (spinError) return NextResponse.json({ error: spinError.message }, { status: 500 })
-      const prize = Array.isArray(spinResult) ? spinResult[0] : spinResult
-      if (!prize?.reward_type) return NextResponse.json({ error: 'Premio invalido' }, { status: 500 })
-      return NextResponse.json({ success: true, surpresa: prize })
+      // Premio aleatorio da caixa — NAO usa spin_roleta (sem deducao de ticket)
+      const { data: prizes } = await supabaseAdmin.from('roleta_prizes').select('reward_type, reward_amount, weight').eq('active', true)
+      const pool = prizes ?? []
+      if (pool.length === 0) return NextResponse.json({ error: 'Sem premios configurados' }, { status: 500 })
+      const totalWeight = pool.reduce((s: number, p: any) => s + p.weight, 0)
+      let rng = Math.random() * totalWeight
+      const chosen = pool.find((p: any) => { rng -= p.weight; return rng <= 0 }) ?? pool[0]
+      // Credita o premio
+      if (chosen.reward_type === 'ticket') await incrementarSaldo('user_tickets', user.id, chosen.reward_amount)
+      else if (chosen.reward_type === 'supercurtida') await incrementarSaldo('user_superlikes', user.id, chosen.reward_amount)
+      else if (chosen.reward_type === 'boost') await incrementarSaldo('user_boosts', user.id, chosen.reward_amount)
+      else if (chosen.reward_type === 'lupa') await incrementarSaldo('user_lupas', user.id, chosen.reward_amount)
+      else if (chosen.reward_type === 'rewind') await incrementarSaldo('user_rewinds', user.id, chosen.reward_amount)
+      return NextResponse.json({ success: true, surpresa: { reward_type: chosen.reward_type, reward_amount: chosen.reward_amount } })
 
     } else if (item_key === 'caixa_lendaria') {
       // Busca emblemas exclusivos da caixa lendária (condition_type = 'caixa_lendaria')
