@@ -224,15 +224,15 @@ function Verificacao() {
     const agora = new Date().toISOString()
     const { data: tokenExistente } = await supabase
       .from('verification_tokens')
-      .select('id')
+      .select('id, token')
       .eq('user_id', user.id)
       .eq('used', false)
       .gte('expires_at', agora)
       .maybeSingle()
 
     if (tokenExistente) {
-      // Email já foi enviado antes e o link ainda é válido — não gerar outro
-      setEmailEnviado(true)
+      // Token válido existe — redirecionar direto para a verificação de rosto
+      router.replace(`/verificacao?token=${tokenExistente.token}`)
       return
     }
 
