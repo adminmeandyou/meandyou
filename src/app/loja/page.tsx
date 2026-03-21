@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
@@ -127,6 +127,18 @@ const STORE_ITEMS: StoreItem[] = [
   },
 ]
 
+// ─── Config visual dos premios da caixa surpresa ─────────────────────────
+const SURPRESA_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
+  ticket:        { label: 'Ticket da Roleta', color: '#a855f7', bg: 'rgba(168,85,247,0.15)', icon: <Gift size={44} color="#a855f7" strokeWidth={1.5} /> },
+  supercurtida:  { label: 'SuperLike',        color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <Star size={44} color="#F59E0B" strokeWidth={1.5} /> },
+  boost:         { label: 'Boost',            color: '#E11D48', bg: 'rgba(225,29,72,0.15)',  icon: <Zap  size={44} color="#E11D48" strokeWidth={1.5} /> },
+  lupa:          { label: 'Lupa',             color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: <Search size={44} color="#3b82f6" strokeWidth={1.5} /> },
+  rewind:        { label: 'Desfazer',         color: '#a855f7', bg: 'rgba(168,85,247,0.15)', icon: <RotateCcw size={44} color="#a855f7" strokeWidth={1.5} /> },
+  invisivel_1d:  { label: '1 dia Invisivel',  color: '#9ca3af', bg: 'rgba(107,114,128,0.15)',icon: <Ghost size={44} color="#9ca3af" strokeWidth={1.5} /> },
+  plan_plus_1d:  { label: '1 dia Plus',       color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: <BadgeCheck size={44} color="#10b981" strokeWidth={1.5} /> },
+  plan_black_1d: { label: '1 dia Black',      color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <BadgeCheck size={44} color="#F59E0B" strokeWidth={1.5} /> },
+}
+
 // ─── Componente Sheet de confirmacao ─────────────────────────────────────
 
 function PurchaseSheet({
@@ -219,6 +231,43 @@ function PurchaseSheet({
   )
 }
 
+// ─── Confetti canvas ──────────────────────────────────────────────────────
+function Confetti() {
+  const ref = useRef<HTMLCanvasElement>(null)
+  useEffect(() => {
+    const c = ref.current; if (!c) return
+    const ctx = c.getContext('2d')!
+    c.width = window.innerWidth; c.height = window.innerHeight
+    const COLS = ['#E11D48','#F59E0B','#10b981','#3b82f6','#a855f7','#F43F5E','#ffffff','#f97316','#06b6d4']
+    type P = { x:number; y:number; vx:number; vy:number; color:string; w:number; h:number; r:number; rv:number }
+    const ps: P[] = Array.from({ length: 130 }, () => ({
+      x: Math.random() * c.width,
+      y: -30 - Math.random() * 400,
+      vx: (Math.random() - 0.5) * 6,
+      vy: Math.random() * 3 + 2,
+      color: COLS[Math.floor(Math.random() * COLS.length)],
+      w: Math.random() * 12 + 5, h: Math.random() * 6 + 3,
+      r: Math.random() * Math.PI * 2, rv: (Math.random() - 0.5) * 0.14,
+    }))
+    let alive = true
+    const tick = () => {
+      if (!alive) return
+      ctx.clearRect(0, 0, c.width, c.height)
+      for (const p of ps) {
+        p.x += p.vx; p.y += p.vy; p.vy += 0.07; p.r += p.rv
+        if (p.y > c.height + 30) { p.y = -30; p.x = Math.random() * c.width; p.vy = Math.random() * 3 + 2 }
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r)
+        ctx.fillStyle = p.color; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h)
+        ctx.restore()
+      }
+      requestAnimationFrame(tick)
+    }
+    tick()
+    return () => { alive = false }
+  }, [])
+  return <canvas ref={ref} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1 }} />
+}
+
 // ─── Pagina principal ─────────────────────────────────────────────────────
 
 export default function LojaPage() {
@@ -248,8 +297,8 @@ export default function LojaPage() {
     () => Object.fromEntries(STORE_ITEMS.map(i => [i.key, 1]))
   )
   const [openQty, setOpenQty] = useState(1)
-  const [lendariaResult, setLendariaResult] = useState<{ type: string; amount: number } | null>(null)
-  const [lendariaPhase, setLendariaPhase] = useState<'idle' | 'shake' | 'jump' | 'explode' | 'reveal'>('idle')
+  const [boxReveal, setBoxReveal] = useState<{ category: 'surpresa' | 'lendaria'; payload: any } | null>(null)
+  const [boxPhase, setBoxPhase] = useState<'idle' | 'shake' | 'jump' | 'explode' | 'reveal'>('idle')
 
   const plan = limits.plan
 
@@ -318,16 +367,20 @@ export default function LojaPage() {
       if (data.success) {
         haptics.success()
         setFichas(f => f - item.baseFichas * qty)
-        toast.success(`${item.label} adicionado ao seu saldo!`)
         if (data.surpresa) {
-          const SURPRESA_LABELS: Record<string, string> = { ticket: 'ticket(s) da roleta', supercurtida: 'supercurtida(s)', boost: 'boost(s)', lupa: 'lupa(s)', rewind: 'rewind(s)', invisivel_1d: '1 dia invisivel', plan_plus_1d: '1 dia Plus', plan_black_1d: '1 dia Black' }; const sLabel = SURPRESA_LABELS[data.surpresa.reward_type] ?? data.surpresa.reward_type; toast.success(`Caixa Surpresa: voce ganhou ${data.surpresa.reward_amount}x ${sLabel}!`)
-        }
-        if (data.caixa_lendaria) {
-          setLendariaResult(data.caixa_lendaria)
-          setLendariaPhase('shake')
-          setTimeout(() => setLendariaPhase('jump'), 700)
-          setTimeout(() => setLendariaPhase('explode'), 1200)
-          setTimeout(() => setLendariaPhase('reveal'), 1700)
+          setBoxReveal({ category: 'surpresa', payload: data.surpresa })
+          setBoxPhase('shake')
+          setTimeout(() => setBoxPhase('jump'), 700)
+          setTimeout(() => setBoxPhase('explode'), 1200)
+          setTimeout(() => setBoxPhase('reveal'), 1700)
+        } else if (data.caixa_lendaria) {
+          setBoxReveal({ category: 'lendaria', payload: data.caixa_lendaria })
+          setBoxPhase('shake')
+          setTimeout(() => setBoxPhase('jump'), 700)
+          setTimeout(() => setBoxPhase('explode'), 1200)
+          setTimeout(() => setBoxPhase('reveal'), 1700)
+        } else {
+          toast.success(`${item.label} adicionado ao seu saldo!`)
         }
         setOpenItem(null)
         await loadBalance()
@@ -699,33 +752,83 @@ export default function LojaPage() {
         />
       )}
 
-      {/* Modal Caixa Super Lendária */}
-      {lendariaPhase !== 'idle' && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 100, backgroundColor: 'rgba(0,0,0,0.85)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 24 }}>
-          <div style={{
-            fontSize: 80,
-            animation: lendariaPhase === 'shake' ? 'lend-shake 0.6s ease-in-out infinite' :
-                       lendariaPhase === 'jump'  ? 'lend-jump 0.4s ease-out' :
-                       lendariaPhase === 'explode' ? 'lend-explode 0.4s ease-out forwards' : 'none',
-          }}>🎁</div>
-          {lendariaPhase === 'reveal' && lendariaResult && (
-            <div style={{ textAlign: 'center', animation: 'lend-reveal 0.5s ease-out' }}>
-              <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 28, color: '#F59E0B', marginBottom: 8 }}>Voce ganhou!</p>
-              {lendariaResult.type === 'badge' || lendariaResult.type === 'badge_pending' ? (
+      {/* Modal Caixa (Surpresa e Lendaria) */}
+      {boxPhase !== 'idle' && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 100, backgroundColor: 'rgba(0,0,0,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28, overflow: 'hidden' }}>
+          {boxPhase === 'reveal' && <Confetti />}
+
+          {/* Caixa animada */}
+          {boxPhase !== 'reveal' && (
+            <div style={{
+              width: 130, height: 130, borderRadius: 26, flexShrink: 0,
+              backgroundColor: boxReveal?.category === 'lendaria' ? '#c07f00' : '#be123c',
+              border: `4px solid ${boxReveal?.category === 'lendaria' ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.30)'}`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: boxReveal?.category === 'lendaria'
+                ? '0 0 80px rgba(245,158,11,0.75), 0 0 30px rgba(245,158,11,0.45)'
+                : '0 0 80px rgba(225,29,72,0.75), 0 0 30px rgba(225,29,72,0.45)',
+              animation: boxPhase === 'shake'
+                ? 'box-shake 0.5s ease-in-out infinite'
+                : boxPhase === 'jump'
+                ? 'box-jump 0.45s cubic-bezier(0.34,1.56,0.64,1)'
+                : boxPhase === 'explode'
+                ? 'box-explode 0.45s ease-out forwards'
+                : 'none',
+              position: 'relative', zIndex: 2,
+            }}>
+              <Gift size={64} color="#fff" strokeWidth={1.5} />
+            </div>
+          )}
+
+          {/* Reveal */}
+          {boxPhase === 'reveal' && boxReveal && (
+            <div style={{ textAlign: 'center', animation: 'box-reveal 0.5s cubic-bezier(0.34,1.56,0.64,1)', position: 'relative', zIndex: 3, padding: '0 32px', maxWidth: 360 }}>
+
+              {boxReveal.category === 'surpresa' ? (
                 <>
-                  {lendariaResult.badge_icon && <img src={lendariaResult.badge_icon} alt="" style={{ width: 80, height: 80, margin: '0 auto 12px', display: 'block' }} />}
-                  <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#F59E0B', marginBottom: 4 }}>Emblema Super Lendario</p>
-                  <p style={{ fontSize: 20, color: 'var(--text)', fontWeight: 700 }}>{lendariaResult.badge_name ?? 'Emblema Exclusivo'}</p>
-                  {lendariaResult.type === 'badge_pending' && <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.40)', marginTop: 6 }}>Em breve disponivel no seu perfil</p>}
+                  <div style={{
+                    width: 100, height: 100, borderRadius: '50%', margin: '0 auto 18px',
+                    backgroundColor: SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.bg ?? 'rgba(225,29,72,0.15)',
+                    border: `3px solid ${SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.color ?? 'rgba(225,29,72,0.45)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    boxShadow: `0 0 40px ${SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.color ?? '#E11D48'}55`,
+                  }}>
+                    {SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.icon ?? <Gift size={44} color="#fff" strokeWidth={1.5} />}
+                  </div>
+                  <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(248,249,250,0.45)', margin: '0 0 8px' }}>CAIXA SURPRESA</p>
+                  <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 34, color: '#fff', margin: '0 0 8px', lineHeight: 1 }}>Voce ganhou!</p>
+                  <p style={{ fontSize: 24, fontWeight: 800, color: SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.color ?? '#E11D48', margin: '0 0 4px' }}>
+                    {(boxReveal.payload?.reward_amount ?? 1)}x {SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.label ?? boxReveal.payload?.reward_type ?? 'Premio'}
+                  </p>
                 </>
               ) : (
-                <p style={{ fontSize: 20, color: 'var(--text)', fontWeight: 700 }}>
-                  {lendariaResult.badge_name ?? ''}
-                </p>
+                <>
+                  {boxReveal.payload?.badge_icon ? (
+                    <img src={boxReveal.payload.badge_icon} alt="" style={{ width: 90, height: 90, margin: '0 auto 18px', display: 'block', filter: 'drop-shadow(0 0 24px #F59E0B)' }} />
+                  ) : (
+                    <div style={{ width: 90, height: 90, borderRadius: '50%', margin: '0 auto 18px', backgroundColor: 'rgba(245,158,11,0.15)', border: '3px solid rgba(245,158,11,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 40px rgba(245,158,11,0.45)' }}>
+                      <Gift size={44} color="#F59E0B" strokeWidth={1.5} />
+                    </div>
+                  )}
+                  <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#F59E0B', margin: '0 0 8px' }}>EMBLEMA SUPER LENDARIO</p>
+                  <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 34, color: '#fff', margin: '0 0 8px', lineHeight: 1 }}>Voce ganhou!</p>
+                  <p style={{ fontSize: 22, fontWeight: 800, color: '#F59E0B', margin: '0 0 4px' }}>{boxReveal.payload?.badge_name ?? 'Emblema Exclusivo'}</p>
+                  {boxReveal.payload?.type === 'badge_pending' && (
+                    <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.40)', marginTop: 6 }}>Em breve disponivel no seu perfil</p>
+                  )}
+                </>
               )}
+
               <button
-                onClick={() => { setLendariaPhase('idle'); setLendariaResult(null); loadBalance() }}
-                style={{ marginTop: 24, backgroundColor: '#F59E0B', color: '#000', border: 'none', borderRadius: 100, padding: '14px 32px', fontWeight: 700, fontSize: 15, cursor: 'pointer' }}
+                onClick={() => { setBoxPhase('idle'); setBoxReveal(null); loadBalance() }}
+                style={{
+                  marginTop: 28, border: 'none', borderRadius: 100,
+                  padding: '16px 44px', fontWeight: 700, fontSize: 16, cursor: 'pointer',
+                  fontFamily: 'var(--font-jakarta)',
+                  backgroundColor: boxReveal.category === 'lendaria' ? '#F59E0B' : '#E11D48',
+                  color: boxReveal.category === 'lendaria' ? '#000' : '#fff',
+                  boxShadow: boxReveal.category === 'lendaria' ? '0 8px 32px rgba(245,158,11,0.45)' : '0 8px 32px rgba(225,29,72,0.45)',
+                }}
               >
                 Boa!
               </button>
@@ -737,10 +840,30 @@ export default function LojaPage() {
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
-        @keyframes lend-shake { 0%,100%{transform:rotate(0)} 20%{transform:rotate(-8deg)} 40%{transform:rotate(8deg)} 60%{transform:rotate(-6deg)} 80%{transform:rotate(6deg)} }
-        @keyframes lend-jump { 0%{transform:translateY(0) scale(1)} 50%{transform:translateY(-40px) scale(1.2)} 100%{transform:translateY(0) scale(1)} }
-        @keyframes lend-explode { 0%{transform:scale(1);opacity:1} 100%{transform:scale(3);opacity:0} }
-        @keyframes lend-reveal { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
+        @keyframes box-shake {
+          0%,100%{transform:rotate(0) scale(1)}
+          15%{transform:rotate(-12deg) scale(1.06)}
+          30%{transform:rotate(12deg) scale(1.06)}
+          45%{transform:rotate(-8deg) scale(1.03)}
+          60%{transform:rotate(8deg) scale(1.03)}
+          80%{transform:rotate(-4deg) scale(1.01)}
+        }
+        @keyframes box-jump {
+          0%{transform:translateY(0) scale(1)}
+          40%{transform:translateY(-55px) scale(1.22)}
+          70%{transform:translateY(-30px) scale(1.12)}
+          100%{transform:translateY(0) scale(1)}
+        }
+        @keyframes box-explode {
+          0%{transform:scale(1);opacity:1;filter:blur(0)}
+          60%{transform:scale(2.5);opacity:0.5;filter:blur(2px)}
+          100%{transform:scale(4.5);opacity:0;filter:blur(8px)}
+        }
+        @keyframes box-reveal {
+          0%{opacity:0;transform:scale(0.4) translateY(40px)}
+          70%{transform:scale(1.06) translateY(-4px)}
+          100%{opacity:1;transform:scale(1) translateY(0)}
+        }
       `}</style>
     </div>
   )

@@ -139,7 +139,7 @@ export async function POST(req: NextRequest) {
       else if (chosen.reward_type === 'boost') await incrementarSaldo('user_boosts', user.id, chosen.reward_amount)
       else if (chosen.reward_type === 'lupa') await incrementarSaldo('user_lupas', user.id, chosen.reward_amount)
       else if (chosen.reward_type === 'rewind') await incrementarSaldo('user_rewinds', user.id, chosen.reward_amount)
-      return NextResponse.json({ success: true, surpresa: { reward_type: chosen.reward_type, reward_amount: chosen.reward_amount } })
+      return NextResponse.json({ success: true, surpresa: { reward_type: chosen.reward_type ?? 'supercurtida', reward_amount: chosen.reward_amount ?? 1 } })
 
     } else if (item_key === 'caixa_lendaria') {
       // Busca emblemas exclusivos da caixa lendária (condition_type = 'caixa_lendaria')
