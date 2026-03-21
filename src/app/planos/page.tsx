@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { Check, Zap, Star, Crown, ArrowLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import CheckoutModal from '@/components/CheckoutModal'
 
 const PLANS = [
   {
@@ -72,6 +73,8 @@ export default function PlanosPage() {
   const [currentPlan, setCurrentPlan] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [userEmail, setUserEmail] = useState<string>('')
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [checkoutPlan, setCheckoutPlan] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -97,12 +100,8 @@ export default function PlanosPage() {
   }
 
   function handleCheckout(plan: typeof PLANS[0]) {
-    if (currentPlan === plan.id) return
-    const email = userEmail || user?.email || ''
-    const url = email
-      ? `${plan.checkoutUrl}?email=${encodeURIComponent(email)}`
-      : plan.checkoutUrl
-    window.open(url, '_blank')
+    setCheckoutPlan(plan.id)
+    setCheckoutOpen(true)
   }
 
   return (
@@ -294,6 +293,15 @@ export default function PlanosPage() {
       <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(248,249,250,0.20)', padding: '0 20px 8px' }}>
         Pagamento seguro via PIX ou cartão · Cancele quando quiser
       </p>
+
+      {checkoutOpen && checkoutPlan && (
+        <CheckoutModal
+          open={checkoutOpen}
+          onClose={() => { setCheckoutOpen(false); setCheckoutPlan(null) }}
+          type="subscription"
+          plan={checkoutPlan}
+        />
+      )}
     </div>
   )
 }
