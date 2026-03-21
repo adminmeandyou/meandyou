@@ -12,6 +12,8 @@ export default function OnboardingPage() {
   const [passo, setPasso] = useState(0)
   const [nome, setNome] = useState('')
   const [carregando, setCarregando] = useState(true)
+  const [concluindo, setConcluindo] = useState(false)
+  const [erroConcluir, setErroConcluir] = useState('')
 
   const [gpsAtivo, setGpsAtivo] = useState(false)
   const [notifAtiva, setNotifAtiva] = useState(false)
@@ -35,13 +37,28 @@ export default function OnboardingPage() {
   }, [])
 
   const concluirOnboarding = async () => {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    const { error } = await supabase.from('profiles').update({ onboarding_done: true, cadastro_step: 2 }).eq('id', user.id)
-    if (error) {
-      await supabase.from('profiles').upsert({ id: user.id, onboarding_done: true, cadastro_step: 2 })
+    setConcluindo(true)
+    setErroConcluir('')
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) {
+        // Sessão perdida — redireciona para login
+        window.location.href = '/login'
+        return
+      }
+      const { error } = await supabase
+        .from('profiles')
+        .update({ onboarding_done: true, cadastro_step: 2 })
+        .eq('id', user.id)
+      if (error) {
+        await supabase.from('profiles').upsert({ id: user.id, onboarding_done: true, cadastro_step: 2 })
+      }
+      // window.location.href força o proxy a reler o cadastro_step atualizado
+      window.location.href = '/configuracoes/editar-perfil'
+    } catch {
+      setErroConcluir('Erro ao salvar. Tente novamente.')
+      setConcluindo(false)
     }
-    router.push('/configuracoes/editar-perfil')
   }
 
   const pedirGps = async () => {
@@ -240,10 +257,17 @@ export default function OnboardingPage() {
             Continuar <ChevronRight size={20} />
           </button>
         ) : (
-          <button onClick={concluirOnboarding}
-            style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(225,29,72,0.25)' }}>
-            Montar meu perfil <ChevronRight size={20} />
-          </button>
+          <>
+            {erroConcluir && (
+              <p style={{ color: 'var(--red)', fontSize: '14px', textAlign: 'center', marginBottom: '12px' }}>{erroConcluir}</p>
+            )}
+            <button
+              onClick={concluirOnboarding}
+              disabled={concluindo}
+              style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: concluindo ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(225,29,72,0.25)', opacity: concluindo ? 0.7 : 1 }}>
+              {concluindo ? 'Salvando...' : 'Montar meu perfil'} {!concluindo && <ChevronRight size={20} />}
+            </button>
+          </>
         )}
 
         {passo === 2 && (
