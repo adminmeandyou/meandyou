@@ -50,12 +50,12 @@ function calcTrustScore(profile: any, photos: string[], filters: any): number {
 
 // ─── Conquistas ───────────────────────────────────────────────────────────────
 
-function getConquistas(profile: any, photos: string[]): { emoji: string; label: string }[] {
-  const list: { emoji: string; label: string }[] = []
-  if (photos.length >= 9) list.push({ emoji: '⭐', label: 'Perfil completo' })
-  else if (photos.length >= 5) list.push({ emoji: '📸', label: 'Galeria rica' })
-  if (profile.bio?.length > 100) list.push({ emoji: '✍️', label: 'Bio detalhada' })
-  if (profile.highlight_tags?.length > 0) list.push({ emoji: '🏷️', label: 'Tags escolhidas' })
+function getConquistas(profile: any, photos: string[]): { label: string }[] {
+  const list: { label: string }[] = []
+  if (photos.length >= 9) list.push({ label: 'Perfil completo' })
+  else if (photos.length >= 5) list.push({ label: 'Galeria rica' })
+  if (profile.bio?.length > 100) list.push({ label: 'Bio detalhada' })
+  if (profile.highlight_tags?.length > 0) list.push({ label: 'Tags escolhidas' })
   return list
 }
 
@@ -615,6 +615,25 @@ export default function VerPerfilPage() {
             ) : (
               <p style={{ color: 'rgba(248,249,250,0.25)', fontSize: '14px', margin: 0, fontStyle: 'italic' }}>Adicione uma bio para se apresentar...</p>
             )}
+          </div>
+        )}
+
+        {/* Conquistas */}
+        {conquistas.length > 0 && (
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+            {conquistas.map((c, i) => (
+              <span
+                key={i}
+                style={{
+                  fontSize: '12px', fontWeight: 600,
+                  color: 'var(--accent)', background: 'var(--accent-light)',
+                  border: '1px solid var(--accent-border)',
+                  borderRadius: '100px', padding: '4px 12px',
+                }}
+              >
+                {c.label}
+              </span>
+            ))}
           </div>
         )}
 

@@ -119,7 +119,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-2)', letterSpacing: '0.08em', textTransform: 'uppercase', margin: '0 0 8px' }}>Acesso rapido</p>
             {[
               { href: '/busca',          label: 'Descobrir perfis' },
-              { href: '/matches',        label: 'Meus matches' },
+              { href: '/conversas',      label: 'Matches' },
               { href: '/streak',         label: 'Prêmios diários' },
               { href: '/loja',           label: 'Loja' },
               { href: '/planos',         label: 'Planos' },

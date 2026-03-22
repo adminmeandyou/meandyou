@@ -61,11 +61,25 @@ export default function MatchesPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    let channel: ReturnType<typeof supabase.channel> | null = null
+
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push('/login'); return }
       setUserId(user.id)
       loadMatches(user.id)
+
+      channel = supabase
+        .channel(`matches-page-${user.id}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+          loadMatches(user.id)
+        })
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'matches' }, () => {
+          loadMatches(user.id)
+        })
+        .subscribe()
     })
+
+    return () => { if (channel) supabase.removeChannel(channel) }
   }, [])
 
   async function loadMatches(uid: string) {
@@ -372,7 +386,7 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
   const nivel = getNivel(match.matched_at, match.last_message_at)
   return (
     <Link
-      href={`/conversas/${match.conversation_id}`}
+      href={`/conversas/${match.match_id}`}
       style={{
         display: 'flex', alignItems: 'center', gap: 14,
         padding: '12px 20px', borderBottom: '1px solid var(--border-soft)',

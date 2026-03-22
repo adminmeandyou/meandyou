@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
-import { MessageCircle, Search, Archive, Heart, Zap } from 'lucide-react'
+import { MessageCircle, Search, Archive, Heart, Zap, X, User } from 'lucide-react'
 import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
@@ -402,6 +402,10 @@ function AbaTodos({ matches, onEmpty, onOpen, searchTerm }: {
   onOpen: (matchId: string) => void
   searchTerm: string
 }) {
+  const router = useRouter()
+  const haptics = useHaptics()
+  const [selected, setSelected] = useState<Match | null>(null)
+
   if (matches.length === 0) {
     return (
       <EmptyState
@@ -414,43 +418,116 @@ function AbaTodos({ matches, onEmpty, onOpen, searchTerm }: {
   }
 
   return (
-    <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
-      {matches.map((m) => (
-        <button
-          key={m.match_id}
-          onClick={() => onOpen(m.match_id)}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'center' }}
-        >
-          <div style={{ position: 'relative', marginBottom: 6 }}>
-            <div style={{
-              width: '100%', aspectRatio: '1', borderRadius: 14, overflow: 'hidden',
-              background: 'var(--bg-card2)',
-              border: isOnline(m.last_active_at) && m.show_last_active !== false
-                ? '2px solid #2ec4a0'
-                : '1.5px solid var(--border)',
-            }}>
-              {m.photo_best ? (
-                <Image src={m.photo_best} alt={m.name} width={120} height={120} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
-              ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 28 }}>{m.name[0]}</span>
+    <>
+      <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+        {matches.map((m) => (
+          <button
+            key={m.match_id}
+            onClick={() => { haptics.tap(); setSelected(m) }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'center' }}
+          >
+            <div style={{ position: 'relative', marginBottom: 6 }}>
+              <div style={{
+                width: '100%', aspectRatio: '1', borderRadius: 14, overflow: 'hidden',
+                background: 'var(--bg-card2)',
+                border: isOnline(m.last_active_at) && m.show_last_active !== false
+                  ? '2px solid #2ec4a0'
+                  : '1.5px solid var(--border)',
+              }}>
+                {m.photo_best ? (
+                  <Image src={m.photo_best} alt={m.name} width={120} height={120} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 28 }}>{m.name[0]}</span>
+                  </div>
+                )}
+              </div>
+              {isOnline(m.last_active_at) && m.show_last_active !== false && (
+                <div style={{ position: 'absolute', bottom: 4, right: 4, width: 10, height: 10, borderRadius: '50%', background: '#2ec4a0', border: '2px solid var(--bg)' }} />
+              )}
+              {(m.unread_count || 0) > 0 && (
+                <div style={{ position: 'absolute', top: -4, right: -4, minWidth: 18, height: 18, borderRadius: 100, background: 'var(--accent)', border: '2px solid var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
+                  <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>{(m.unread_count || 0) > 9 ? '9+' : m.unread_count}</span>
                 </div>
               )}
             </div>
-            {isOnline(m.last_active_at) && m.show_last_active !== false && (
-              <div style={{ position: 'absolute', bottom: 4, right: 4, width: 10, height: 10, borderRadius: '50%', background: '#2ec4a0', border: '2px solid var(--bg)' }} />
-            )}
-            {(m.unread_count || 0) > 0 && (
-              <div style={{ position: 'absolute', top: -4, right: -4, minWidth: 18, height: 18, borderRadius: 100, background: 'var(--accent)', border: '2px solid var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>{(m.unread_count || 0) > 9 ? '9+' : m.unread_count}</span>
+            <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</p>
+            <p style={{ fontSize: 11, color: 'var(--muted)', margin: '2px 0 0' }}>{formatAgo(m.matched_at)}</p>
+          </button>
+        ))}
+      </div>
+
+      {/* Popup de acao ao clicar no match */}
+      {selected && (
+        <div
+          onClick={() => setSelected(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 50,
+            background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)',
+            display: 'flex', alignItems: 'flex-end',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 430, margin: '0 auto',
+              background: 'var(--bg-card)', borderRadius: '20px 20px 0 0',
+              border: '1px solid var(--border)', borderBottom: 'none',
+              padding: '20px 20px 32px',
+            }}
+          >
+            {/* Handle */}
+            <div style={{ width: 36, height: 4, borderRadius: 100, background: 'rgba(255,255,255,0.12)', margin: '0 auto 16px' }} />
+
+            {/* Perfil */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '2px solid var(--accent-border)', flexShrink: 0 }}>
+                {selected.photo_best ? (
+                  <Image src={selected.photo_best} alt={selected.name} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{selected.name[0]}</span>
+                  </div>
+                )}
               </div>
-            )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, fontWeight: 700, color: 'var(--text)', margin: 0 }}>{selected.name}</p>
+                <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0 0' }}>
+                  Match {formatAgo(selected.matched_at)}
+                  {isOnline(selected.last_active_at) && selected.show_last_active !== false && (
+                    <span style={{ color: '#2ec4a0', marginLeft: 6 }}>· Online agora</span>
+                  )}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelected(null)}
+                style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+              >
+                <X size={14} color="var(--muted)" strokeWidth={2} />
+              </button>
+            </div>
+
+            {/* Acoes */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button
+                onClick={() => { haptics.medium(); router.push(`/conversas/${selected.match_id}`) }}
+                style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'var(--accent)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)' }}
+              >
+                <MessageCircle size={18} strokeWidth={1.5} />
+                Enviar mensagem
+              </button>
+              <button
+                onClick={() => { haptics.tap(); router.push(`/perfil/${selected.other_user_id}`) }}
+                style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 15, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)' }}
+              >
+                <User size={18} strokeWidth={1.5} />
+                Ver perfil
+              </button>
+            </div>
           </div>
-          <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</p>
-          <p style={{ fontSize: 11, color: 'var(--muted)', margin: '2px 0 0' }}>{formatAgo(m.matched_at)}</p>
-        </button>
-      ))}
-    </div>
+        </div>
+      )}
+    </>
   )
 }
 
@@ -462,6 +539,10 @@ function AbaOnline({ matches, onEmpty, onOpen, searchTerm }: {
   onOpen: (matchId: string) => void
   searchTerm: string
 }) {
+  const router = useRouter()
+  const haptics = useHaptics()
+  const [selected, setSelected] = useState<Match | null>(null)
+
   if (matches.length === 0) {
     return (
       <EmptyState
@@ -474,46 +555,97 @@ function AbaOnline({ matches, onEmpty, onOpen, searchTerm }: {
   }
 
   return (
-    <div>
-      <p style={{ padding: '12px 20px 4px', fontSize: 12, color: 'var(--muted)', margin: 0 }}>
-        {matches.length} {matches.length === 1 ? 'match ativo' : 'matches ativos'} na ultima hora
-      </p>
-      {matches.map((m) => (
-        <button
-          key={m.match_id}
-          onClick={() => onOpen(m.match_id)}
-          style={{
-            width: '100%', background: 'none', border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: '12px 20px', borderBottom: '1px solid var(--border-soft)',
-            textAlign: 'left',
-          }}
-        >
-          <div style={{ position: 'relative', flexShrink: 0 }}>
-            <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '2px solid #2ec4a0' }}>
-              {m.photo_best ? (
-                <Image src={m.photo_best} alt={m.name} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
-              ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{m.name[0]}</span>
-                </div>
-              )}
+    <>
+      <div>
+        <p style={{ padding: '12px 20px 4px', fontSize: 12, color: 'var(--muted)', margin: 0 }}>
+          {matches.length} {matches.length === 1 ? 'match ativo' : 'matches ativos'} na ultima hora
+        </p>
+        {matches.map((m) => (
+          <button
+            key={m.match_id}
+            onClick={() => { haptics.tap(); setSelected(m) }}
+            style={{
+              width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: 14,
+              padding: '12px 20px', borderBottom: '1px solid var(--border-soft)',
+              textAlign: 'left',
+            }}
+          >
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '2px solid #2ec4a0' }}>
+                {m.photo_best ? (
+                  <Image src={m.photo_best} alt={m.name} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{m.name[0]}</span>
+                  </div>
+                )}
+              </div>
+              <div style={{ position: 'absolute', bottom: 1, right: 1, width: 12, height: 12, borderRadius: '50%', background: '#2ec4a0', border: '2px solid var(--bg)' }} />
             </div>
-            <div style={{ position: 'absolute', bottom: 1, right: 1, width: 12, height: 12, borderRadius: '50%', background: '#2ec4a0', border: '2px solid var(--bg)' }} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {m.name}
+              </p>
+              <p style={{ fontSize: 13, margin: 0, color: '#2ec4a0', fontWeight: 500 }}>
+                Ativo agora
+              </p>
+            </div>
+            <div style={{ padding: '6px 14px', borderRadius: 100, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>
+              Mensagem
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Popup de acao */}
+      {selected && (
+        <div
+          onClick={() => setSelected(null)}
+          style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end' }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: 430, margin: '0 auto', background: 'var(--bg-card)', borderRadius: '20px 20px 0 0', border: '1px solid var(--border)', borderBottom: 'none', padding: '20px 20px 32px' }}
+          >
+            <div style={{ width: 36, height: 4, borderRadius: 100, background: 'rgba(255,255,255,0.12)', margin: '0 auto 16px' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
+              <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '2px solid #2ec4a0', flexShrink: 0 }}>
+                {selected.photo_best ? (
+                  <Image src={selected.photo_best} alt={selected.name} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{selected.name[0]}</span>
+                  </div>
+                )}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, fontWeight: 700, color: 'var(--text)', margin: 0 }}>{selected.name}</p>
+                <p style={{ fontSize: 12, color: '#2ec4a0', margin: '2px 0 0', fontWeight: 500 }}>Online agora</p>
+              </div>
+              <button onClick={() => setSelected(null)} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <X size={14} color="var(--muted)" strokeWidth={2} />
+              </button>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <button
+                onClick={() => { haptics.medium(); router.push(`/conversas/${selected.match_id}`) }}
+                style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'var(--accent)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)' }}
+              >
+                <MessageCircle size={18} strokeWidth={1.5} />
+                Enviar mensagem
+              </button>
+              <button
+                onClick={() => { haptics.tap(); router.push(`/perfil/${selected.other_user_id}`) }}
+                style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 15, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)' }}
+              >
+                <User size={18} strokeWidth={1.5} />
+                Ver perfil
+              </button>
+            </div>
           </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {m.name}
-            </p>
-            <p style={{ fontSize: 13, margin: 0, color: '#2ec4a0', fontWeight: 500 }}>
-              Ativo agora
-            </p>
-          </div>
-          <div style={{ padding: '6px 14px', borderRadius: 100, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>
-            Mensagem
-          </div>
-        </button>
-      ))}
-    </div>
+        </div>
+      )}
+    </>
   )
 }

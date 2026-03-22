@@ -1,7 +1,9 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Dices, Gift, Star, ShoppingBag, ChevronRight, Flame } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
 interface HubCard {
   href: string
@@ -55,6 +57,21 @@ const CARDS: HubCard[] = [
 
 export default function RecompensasPage() {
   const router = useRouter()
+  const [checked, setChecked] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { router.replace('/login'); return }
+      setChecked(true)
+    })
+  }, [])
+
+  if (!checked) return (
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ width: 28, height: 28, border: '2px solid var(--border)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+    </div>
+  )
 
   return (
     <div style={{ padding: '20px 16px 24px', display: 'flex', flexDirection: 'column', gap: 24 }}>
