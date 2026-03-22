@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/app/lib/supabase'
 import { PaywallCard } from '@/components/PaywallCard'
 import {
@@ -31,6 +32,19 @@ interface Profile {
   city?: string
   bio?: string
   distance_km?: number
+  gender?: string
+}
+
+interface Room {
+  id: string
+  name: string
+  type: 'public' | 'private' | 'black'
+  description: string | null
+  emoji: string
+  max_members: number
+  created_by: string | null
+  is_active: boolean
+  member_count?: number
 }
 
 interface FiltersState {
@@ -546,7 +560,8 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
   useEffect(() => {
     if (!userId) return
     loadDaily()
-  }, [userId])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, localFilters])
 
   async function loadDaily() {
     setLoading(true)
@@ -682,7 +697,7 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
         <p style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'capitalize' }}>{todayLabel}</p>
         <p style={{ fontSize: 12, color: 'var(--muted-2)', marginTop: 4 }}>
           {active.length > 0
-            ? `${active.length} sugestão${active.length !== 1 ? 'ões' : ''} selecionada${active.length !== 1 ? 's' : ''} para você hoje`
+            ? `${active.length} ${active.length !== 1 ? 'sugestões' : 'sugestão'} selecionada${active.length !== 1 ? 's' : ''} para você hoje`
             : 'Voce já agiu em todas as sugestões de hoje!'}
         </p>
       </div>
@@ -941,34 +956,214 @@ function CamaroteModal({ onClose }: { onClose: () => void }) {
 
 // ─── Salas de Bate-papo ───────────────────────────────────────────────────────
 
-function RoomsPlaceholder({ userPlan }: { userPlan: string }) {
+function RoomsView({ userPlan }: { userPlan: string }) {
+  const router = useRouter()
   const canJoin = userPlan === 'plus' || userPlan === 'black'
-  const openRoom = null
+  const canJoinBlack = userPlan === 'black'
+  const [rooms, setRooms] = useState<Room[]>([])
+  const [loading, setLoading] = useState(true)
+  const [joiningRoom, setJoiningRoom] = useState<Room | null>(null)
+  const [nickname, setNickname] = useState('')
+  const [joinError, setJoinError] = useState('')
+  const [joining, setJoining] = useState(false)
 
-  return (
-    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
-      <div style={{ width: 72, height: 72, borderRadius: 20, backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Users size={36} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
-      </div>
-      <div style={{ textAlign: 'center' }}>
-        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>Salas de Bate-papo</p>
-        <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
-          Converse em grupo com quem tem os mesmos interesses.
-        </p>
-      </div>
-      {!canJoin ? (
+  useEffect(() => { loadRooms() }, [])
+
+  async function loadRooms() {
+    setLoading(true)
+    const { data } = await supabase
+      .from('chat_rooms')
+      .select('id, name, type, description, emoji, max_members, created_by, is_active')
+      .eq('is_active', true)
+      .order('name')
+    if (data) {
+      const roomsWithCount = await Promise.all(
+        data.map(async (room) => {
+          const { count } = await supabase
+            .from('room_members')
+            .select('*', { count: 'exact', head: true })
+            .eq('room_id', room.id)
+          return { ...room, member_count: count ?? 0 } as Room
+        })
+      )
+      setRooms(roomsWithCount)
+    }
+    setLoading(false)
+  }
+
+  async function handleJoin() {
+    if (!joiningRoom || joining) return
+    if (nickname.trim().length < 2) { setJoinError('Nome deve ter ao menos 2 caracteres'); return }
+    if (nickname.trim().length > 20) { setJoinError('Nome deve ter no maximo 20 caracteres'); return }
+    setJoining(true)
+    setJoinError('')
+    try {
+      const res = await fetch('/api/salas/entrar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ roomId: joiningRoom.id, nickname: nickname.trim() }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setJoinError(data.error ?? 'Erro ao entrar na sala'); setJoining(false); return }
+      router.push(`/salas/${joiningRoom.id}`)
+    } catch {
+      setJoinError('Erro de conexao. Tente novamente.')
+      setJoining(false)
+    }
+  }
+
+  if (!canJoin) {
+    return (
+      <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
+        <div style={{ width: 72, height: 72, borderRadius: 20, backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Users size={36} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+        </div>
+        <div style={{ textAlign: 'center' }}>
+          <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>Salas de Bate-papo</p>
+          <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>Converse em grupo com quem tem os mesmos interesses.</p>
+        </div>
         <PaywallCard
           title="Salas disponiveis no Plus e Black"
           description="Faca upgrade para entrar em salas tematicas e conhecer pessoas com os mesmos interesses."
           ctaLabel="Ver planos"
         />
-      ) : (
-        <a
-          href="/salas"
-          style={{ padding: '14px 32px', borderRadius: 14, backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 15, textDecoration: 'none', fontFamily: 'var(--font-jakarta)' }}
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+        <Loader2 size={24} style={{ color: 'var(--accent)', animation: 'ui-spin 1s linear infinite' }} />
+      </div>
+    )
+  }
+
+  // Sheet de entrada na sala
+  if (joiningRoom) {
+    const isBlack = joiningRoom.type === 'black'
+    return (
+      <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <button
+          onClick={() => { setJoiningRoom(null); setNickname(''); setJoinError('') }}
+          style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: 'var(--muted)', fontSize: 13, cursor: 'pointer', padding: 0, alignSelf: 'flex-start' }}
         >
-          Entrar nas salas
-        </a>
+          ← Voltar
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px', borderRadius: 16, backgroundColor: 'var(--bg-card)', border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : 'var(--border)'}` }}>
+          <div style={{ width: 52, height: 52, borderRadius: 14, flexShrink: 0, backgroundColor: isBlack ? 'rgba(245,158,11,0.10)' : 'rgba(225,29,72,0.10)', border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : 'rgba(225,29,72,0.20)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
+            {joiningRoom.emoji}
+          </div>
+          <div>
+            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 15, color: 'var(--text)', margin: '0 0 2px' }}>{joiningRoom.name}</p>
+            <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>{joiningRoom.description ?? 'Sala de bate-papo'}</p>
+          </div>
+        </div>
+        <div>
+          <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>Como quer ser chamado nessa sala?</p>
+          <input
+            value={nickname}
+            onChange={e => { setNickname(e.target.value); setJoinError('') }}
+            onKeyDown={e => e.key === 'Enter' && handleJoin()}
+            placeholder="Seu apelido na sala"
+            maxLength={20}
+            autoFocus
+            style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${joinError ? 'rgba(225,29,72,0.50)' : 'var(--border)'}`, backgroundColor: 'var(--bg-card)', color: 'var(--text)', fontSize: 14, fontFamily: 'var(--font-jakarta)', outline: 'none', boxSizing: 'border-box' }}
+          />
+          {joinError && <p style={{ fontSize: 12, color: '#f87171', marginTop: 6 }}>{joinError}</p>}
+        </div>
+        <button
+          onClick={handleJoin}
+          disabled={joining}
+          style={{ width: '100%', padding: '14px', borderRadius: 14, backgroundColor: 'var(--accent)', color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', cursor: joining ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', opacity: joining ? 0.7 : 1 }}
+        >
+          {joining ? 'Entrando...' : 'Entrar na sala'}
+        </button>
+      </div>
+    )
+  }
+
+  const publicRooms = rooms.filter(r => r.type === 'public')
+  const blackRooms = rooms.filter(r => r.type === 'black')
+
+  return (
+    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+        <div>
+          <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 2px' }}>Salas</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>Bate-papo em grupo por tema</p>
+        </div>
+        <Link href="/salas" style={{ fontSize: 12, color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>Ver todas →</Link>
+      </div>
+
+      {publicRooms.length === 0 && blackRooms.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <p style={{ color: 'var(--muted)', fontSize: 14 }}>Nenhuma sala disponivel no momento.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {publicRooms.length > 0 && (
+            <>
+              <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Publicas</p>
+              {publicRooms.map(room => {
+                const isFull = (room.member_count ?? 0) >= room.max_members
+                return (
+                  <button
+                    key={room.id}
+                    onClick={() => { if (!isFull) { setJoiningRoom(room); setNickname('') } }}
+                    disabled={isFull}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 16, width: '100%', textAlign: 'left', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', opacity: isFull ? 0.45 : 1, cursor: isFull ? 'default' : 'pointer' }}
+                  >
+                    <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{room.emoji}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, color: 'var(--text)', margin: '0 0 2px' }}>{room.name}</p>
+                      <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{isFull ? 'Sala cheia' : (room.description ?? 'Sala de bate-papo')}</p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                      <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isFull ? '#F59E0B' : '#10b981' }} />
+                      <span style={{ fontSize: 11, color: 'var(--muted)' }}>{room.member_count ?? 0}/{room.max_members}</span>
+                    </div>
+                  </button>
+                )
+              })}
+            </>
+          )}
+
+          {blackRooms.length > 0 && (
+            <>
+              <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '12px 0 6px' }}>Black</p>
+              {blackRooms.map(room => {
+                const isFull = (room.member_count ?? 0) >= room.max_members
+                const isLocked = !canJoinBlack
+                return (
+                  <button
+                    key={room.id}
+                    onClick={() => { if (!isLocked && !isFull) { setJoiningRoom(room); setNickname('') } }}
+                    disabled={isLocked || isFull}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 16, width: '100%', textAlign: 'left', backgroundColor: 'var(--bg-card)', border: '1px solid rgba(245,158,11,0.25)', opacity: isLocked || isFull ? 0.45 : 1, cursor: isLocked || isFull ? 'default' : 'pointer' }}
+                  >
+                    <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{room.emoji}</div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                        <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, color: 'var(--text)', margin: 0 }}>{room.name}</p>
+                        <Crown size={12} color="#F59E0B" strokeWidth={2} />
+                      </div>
+                      <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{isFull ? 'Sala cheia' : (room.description ?? 'Sala de bate-papo')}</p>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+                      {isLocked ? <Lock size={12} color="var(--muted)" strokeWidth={2} /> : (
+                        <>
+                          <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isFull ? '#F59E0B' : '#10b981' }} />
+                          <span style={{ fontSize: 11, color: 'var(--muted)' }}>{room.member_count ?? 0}/{room.max_members}</span>
+                        </>
+                      )}
+                    </div>
+                  </button>
+                )
+              })}
+            </>
+          )}
+        </div>
       )}
     </div>
   )
@@ -1106,6 +1301,7 @@ export default function BuscaPage() {
 
   // ── Boost ────────────────────────────────────────────────────────────────
   const [boostUntil, setBoostUntil] = useState<Date | null>(null)
+  const [boostAmount, setBoostAmount] = useState(0)
 
   // ── Novos states (Fase 4) ─────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState<ViewMode>('discovery')
@@ -1131,15 +1327,17 @@ export default function BuscaPage() {
   // ── Injeção do modeSelector no AppHeader ──────────────────────────────────
   const { setModeSelector } = useAppHeader()
 
+  const openFiltersStable = useCallback(() => openFilters(), [localFilters, filtersConfigured])
+
   useEffect(() => {
     setModeSelector(
       <ModeSelectorTabs
         viewMode={viewMode}
         onChange={(m) => { setViewMode(m); setShowHub(false) }}
-        onFilterClick={openFilters}
+        onFilterClick={openFiltersStable}
       />
     )
-  }, [viewMode, setModeSelector])
+  }, [viewMode, setModeSelector, openFiltersStable])
 
   useEffect(() => {
     return () => setModeSelector(null)
@@ -1179,11 +1377,12 @@ export default function BuscaPage() {
       const [todayLikesRes, avulsoRes, boostRes] = await Promise.all([
         supabase.from('likes').select('is_superlike').eq('user_id', user.id).gte('created_at', todayStart.toISOString()),
         supabase.from('user_superlikes').select('amount').eq('user_id', user.id).single(),
-        supabase.from('user_boosts').select('active_until').eq('user_id', user.id).gt('active_until', new Date().toISOString()).order('active_until', { ascending: false }).limit(1).maybeSingle(),
+        supabase.from('user_boosts').select('amount, active_until').eq('user_id', user.id).maybeSingle(),
       ])
-      if (boostRes.data?.active_until) {
+      if (boostRes.data?.active_until && new Date(boostRes.data.active_until) > new Date()) {
         setBoostUntil(new Date(boostRes.data.active_until))
       }
+      setBoostAmount(boostRes.data?.amount ?? 0)
       if (todayLikesRes.data) {
         setLikesUsed(todayLikesRes.data.filter(l => !l.is_superlike).length)
         setSuperlikesUsed(todayLikesRes.data.filter(l => l.is_superlike).length)
@@ -1284,6 +1483,11 @@ export default function BuscaPage() {
           const notBoosted = profiles.filter(p => !boostMap.has(p.id))
           profiles = [...boosted, ...notBoosted]
         }
+      }
+
+      // Filtro de gênero client-side (RPC não aceita o parâmetro)
+      if (filters.search_gender && filters.search_gender !== 'all') {
+        profiles = profiles.filter(p => p.gender === filters.search_gender)
       }
 
       // Modo Busca: aplica filtros de compatibilidade client-side
@@ -1451,6 +1655,39 @@ export default function BuscaPage() {
     setLocalFilters(prev => ({ ...prev, [key]: !prev[key] }))
   }
 
+  async function handleBoost() {
+    if (boostUntil && boostUntil > new Date()) {
+      toast.info('Voce ja tem um Boost ativo!')
+      return
+    }
+    if (boostAmount <= 0) {
+      window.location.href = '/loja'
+      return
+    }
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/boosts/activate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session?.access_token ?? ''}` },
+      })
+      const data = await res.json()
+      if (data?.success) {
+        haptics.success()
+        toast.success('Boost ativado! Voce esta em destaque por 30 minutos.')
+        setBoostUntil(new Date(data.active_until))
+        setBoostAmount(b => b - 1)
+      } else if (data?.reason === 'already_active') {
+        toast.info('Voce ja tem um Boost ativo!')
+      } else if (data?.reason === 'no_boosts') {
+        window.location.href = '/loja'
+      } else {
+        toast.error('Erro ao ativar boost. Tente novamente.')
+      }
+    } catch {
+      toast.error('Erro ao ativar boost. Tente novamente.')
+    }
+  }
+
   function openFilters() {
     // Expande categorias que já têm seleções para o usuário ver o que foi configurado
     const expanded: Record<string, boolean> = {}
@@ -1522,7 +1759,7 @@ export default function BuscaPage() {
         {showHub ? (
           <ModesHubView userPlan={userPlan} onSelect={(m) => { setViewMode(m); setShowHub(false) }} onCamarote={() => { if (userPlan === 'black') window.location.href = '/backstage'; else setCamaroteModal(true) }} />
         ) : viewMode === 'rooms' ? (
-          <RoomsPlaceholder userPlan={userPlan} />
+          <RoomsView userPlan={userPlan} />
         ) : viewMode === 'daily' ? (
           <DailyMatchView userId={userId} localFilters={localFilters} />
         ) : viewMode === 'search' ? (
@@ -1919,8 +2156,8 @@ export default function BuscaPage() {
                 variant="gold"
                 size="sm"
                 icon={<Zap size={18} strokeWidth={1.5} />}
-                label="Boost"
-                onClick={() => { setUpgradeReason('superlike'); setShowUpgradeModal(true) }}
+                label={boostAmount > 0 ? `Boost (${boostAmount})` : 'Boost'}
+                onClick={handleBoost}
               />
             </div>
           </div>
