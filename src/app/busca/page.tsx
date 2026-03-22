@@ -465,7 +465,7 @@ function ModeSelectorTabs({
             fontFamily: 'var(--font-jakarta)', cursor: 'pointer',
           }}
         >
-          <span>{MODE_LABELS[viewMode]}</span>
+          <span>Modos</span>
           <ChevronDown size={13} strokeWidth={1.5} color="var(--muted)" style={{ transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }} />
         </button>
 
