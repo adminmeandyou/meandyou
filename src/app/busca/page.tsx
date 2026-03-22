@@ -827,7 +827,7 @@ function ModesHubView({ userPlan, onSelect, onCamarote }: {
 }) {
   return (
     <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
-      <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 4px' }}>Escolha um modo</p>
+      <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 4px' }}>Modos</p>
       <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 20px' }}>Selecione como quer explorar o app</p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
@@ -1553,8 +1553,20 @@ export default function BuscaPage() {
             </button>
           </div>
         ) : !currentProfile ? (
-          /* Sem perfis — volta ao hub de modos */
-          <ModesHubView userPlan={userPlan} onSelect={(m) => { setViewMode(m); setShowHub(false) }} onCamarote={() => { if (userPlan === 'black') window.location.href = '/backstage'; else setCamaroteModal(true) }} />
+          /* Sem perfis — empty state com opção de recarregar */
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+              <Compass size={28} strokeWidth={1.5} color="var(--muted)" />
+            </div>
+            <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>Ninguém novo por aqui</p>
+            <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 24px', lineHeight: 1.5 }}>Tente aumentar o raio de busca ou mudar os filtros</p>
+            <button
+              onClick={() => userId && loadDeck(viewMode === 'search' ? localFilters : DEFAULT_FILTERS, userId, viewMode === 'search')}
+              style={{ padding: '12px 24px', borderRadius: 12, border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-jakarta)', cursor: 'pointer' }}
+            >
+              Recarregar
+            </button>
+          </div>
         ) : (
           /* Swipe view */
           <div
