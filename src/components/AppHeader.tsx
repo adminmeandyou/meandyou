@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Bell, Shield, ArrowLeft } from 'lucide-react'
+import { Bell, Settings, ArrowLeft } from 'lucide-react'
 
 interface AppHeaderProps {
   modeSelector?: React.ReactNode
@@ -107,7 +107,7 @@ export function AppHeader({ modeSelector, backHref, pageTitle }: AppHeaderProps)
           }}
           aria-label="Configuracoes e Seguranca"
         >
-          <Shield size={20} strokeWidth={1.5} />
+          <Settings size={20} strokeWidth={1.5} />
         </Link>
       </div>
     </header>
