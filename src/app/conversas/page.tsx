@@ -43,6 +43,14 @@ interface Match {
 
 type Aba = 'conversas' | 'todos' | 'online'
 
+interface Friend {
+  userId: string
+  name: string
+  photo: string | null
+  lastSeen: string | null
+  matchId: string | null
+}
+
 // ─── Utils ─────────────────────────────────────────────────────────────────────
 
 const ARCHIVED_KEY = 'meandyou_archived_convs'
@@ -95,6 +103,8 @@ export default function MatchesHubPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [aba, setAba] = useState<Aba>('conversas')
   const [archivedIds, setArchivedIds] = useState<Set<string>>(new Set())
+  const [onlineFriends, setOnlineFriends] = useState<Friend[]>([])
+  const [myShowOnline, setMyShowOnline] = useState(true)
 
   useEffect(() => {
     setArchivedIds(getArchivedIds())
@@ -148,6 +158,69 @@ export default function MatchesHubPage() {
       if (matchesResult.data) {
         setMatches(matchesResult.data)
       }
+
+      // Busca show_last_active do usuario logado
+      const { data: myProf } = await supabase
+        .from('profiles')
+        .select('show_last_active')
+        .eq('id', uid)
+        .single()
+
+      const canSeeOnline = myProf?.show_last_active !== false
+      setMyShowOnline(canSeeOnline)
+
+      if (canSeeOnline) {
+        const { data: friendships } = await supabase
+          .from('friendships')
+          .select('requester_id, receiver_id')
+          .or(`requester_id.eq.${uid},receiver_id.eq.${uid}`)
+          .eq('status', 'accepted')
+
+        if (friendships && friendships.length > 0) {
+          const friendIds = friendships.map(f =>
+            f.requester_id === uid ? f.receiver_id : f.requester_id
+          )
+
+          const { data: friendProfiles } = await supabase
+            .from('profiles')
+            .select('id, name, photo_best, last_seen, show_last_active')
+            .in('id', friendIds)
+
+          const orFilter = friendIds
+            .map(fId => `and(user1.eq.${uid},user2.eq.${fId}),and(user1.eq.${fId},user2.eq.${uid})`)
+            .join(',')
+          const { data: friendMatches } = await supabase
+            .from('matches')
+            .select('id, user1, user2')
+            .or(orFilter)
+
+          const now = Date.now()
+          const online: Friend[] = (friendProfiles || [])
+            .filter(p => {
+              if (p.show_last_active === false) return false
+              const t = p.last_seen ? new Date(p.last_seen).getTime() : 0
+              return t > 0 && (now - t) < 5 * 60 * 1000
+            })
+            .map(p => {
+              const m = (friendMatches || []).find(
+                x => x.user1 === p.id || x.user2 === p.id
+              )
+              return {
+                userId: p.id,
+                name: p.name ?? 'Usuario',
+                photo: p.photo_best ?? null,
+                lastSeen: p.last_seen ?? null,
+                matchId: m?.id ?? null,
+              }
+            })
+
+          setOnlineFriends(online)
+        } else {
+          setOnlineFriends([])
+        }
+      } else {
+        setOnlineFriends([])
+      }
     } catch {
       toast.error('Erro ao carregar matches')
     }
@@ -164,7 +237,6 @@ export default function MatchesHubPage() {
   }
 
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0)
-  const onlineMatches = matches.filter(m => isOnline(m.last_active_at) && m.show_last_active !== false)
 
   const convsAtivas = conversations
     .filter(c => !archivedIds.has(c.matchId))
@@ -173,13 +245,14 @@ export default function MatchesHubPage() {
   const todosFiltrados = matches
     .filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
-  const onlineFiltrados = onlineMatches
-    .filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  const onlineFiltrados = onlineFriends.filter(f =>
+    f.name.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   const tabs: { key: Aba; label: string; count: number }[] = [
     { key: 'conversas', label: 'Conversas', count: conversations.filter(c => !archivedIds.has(c.matchId)).length },
     { key: 'todos',     label: 'Todos',     count: matches.length },
-    { key: 'online',    label: 'Online',    count: onlineMatches.length },
+    { key: 'online',    label: 'Online',    count: onlineFriends.length },
   ]
 
   return (
@@ -281,9 +354,9 @@ export default function MatchesHubPage() {
           />
         ) : (
           <AbaOnline
-            matches={onlineFiltrados}
+            friends={onlineFiltrados}
+            myShowOnline={myShowOnline}
             onEmpty={() => router.push('/busca')}
-            onOpen={(matchId) => router.push(`/conversas/${matchId}`)}
             searchTerm={searchTerm}
           />
         )}
@@ -533,22 +606,33 @@ function AbaTodos({ matches, onEmpty, onOpen, searchTerm }: {
 
 // ─── Aba Online ────────────────────────────────────────────────────────────────
 
-function AbaOnline({ matches, onEmpty, onOpen, searchTerm }: {
-  matches: Match[]
+function AbaOnline({ friends, myShowOnline, onEmpty, searchTerm }: {
+  friends: Friend[]
+  myShowOnline: boolean
   onEmpty: () => void
-  onOpen: (matchId: string) => void
   searchTerm: string
 }) {
   const router = useRouter()
   const haptics = useHaptics()
-  const [selected, setSelected] = useState<Match | null>(null)
+  const [selected, setSelected] = useState<Friend | null>(null)
 
-  if (matches.length === 0) {
+  if (!myShowOnline) {
     return (
       <EmptyState
         icon={<Zap size={28} />}
-        title={searchTerm ? 'Nenhum match encontrado' : 'Nenhum match online agora'}
-        description={searchTerm ? undefined : 'Quando um match estiver ativo na ultima hora, aparece aqui.'}
+        title="Status online ocultado"
+        description="Voce ocultou seu status online. Ative nas configuracoes para ver amigos online."
+        action={{ label: 'Ir para configuracoes', onClick: () => router.push('/configuracoes') }}
+      />
+    )
+  }
+
+  if (friends.length === 0) {
+    return (
+      <EmptyState
+        icon={<Zap size={28} />}
+        title={searchTerm ? 'Nenhum amigo encontrado' : 'Nenhum amigo online agora'}
+        description={searchTerm ? undefined : 'Quando um amigo estiver ativo nos ultimos 5 minutos, aparece aqui.'}
         action={!searchTerm ? { label: 'Explorar perfis', onClick: onEmpty } : undefined}
       />
     )
@@ -558,12 +642,12 @@ function AbaOnline({ matches, onEmpty, onOpen, searchTerm }: {
     <>
       <div>
         <p style={{ padding: '12px 20px 4px', fontSize: 12, color: 'var(--muted)', margin: 0 }}>
-          {matches.length} {matches.length === 1 ? 'match ativo' : 'matches ativos'} na ultima hora
+          {friends.length} {friends.length === 1 ? 'amigo online' : 'amigos online'} agora
         </p>
-        {matches.map((m) => (
+        {friends.map((f) => (
           <button
-            key={m.match_id}
-            onClick={() => { haptics.tap(); setSelected(m) }}
+            key={f.userId}
+            onClick={() => { haptics.tap(); setSelected(f) }}
             style={{
               width: '100%', background: 'none', border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', gap: 14,
@@ -573,11 +657,11 @@ function AbaOnline({ matches, onEmpty, onOpen, searchTerm }: {
           >
             <div style={{ position: 'relative', flexShrink: 0 }}>
               <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '2px solid #2ec4a0' }}>
-                {m.photo_best ? (
-                  <Image src={m.photo_best} alt={m.name} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                {f.photo ? (
+                  <Image src={f.photo} alt={f.name} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
                 ) : (
                   <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{m.name[0]}</span>
+                    <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{f.name[0]}</span>
                   </div>
                 )}
               </div>
@@ -585,7 +669,7 @@ function AbaOnline({ matches, onEmpty, onOpen, searchTerm }: {
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {m.name}
+                {f.name}
               </p>
               <p style={{ fontSize: 13, margin: 0, color: '#2ec4a0', fontWeight: 500 }}>
                 Ativo agora
@@ -611,8 +695,8 @@ function AbaOnline({ matches, onEmpty, onOpen, searchTerm }: {
             <div style={{ width: 36, height: 4, borderRadius: 100, background: 'rgba(255,255,255,0.12)', margin: '0 auto 16px' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
               <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '2px solid #2ec4a0', flexShrink: 0 }}>
-                {selected.photo_best ? (
-                  <Image src={selected.photo_best} alt={selected.name} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                {selected.photo ? (
+                  <Image src={selected.photo} alt={selected.name} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
                 ) : (
                   <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{selected.name[0]}</span>
@@ -628,15 +712,17 @@ function AbaOnline({ matches, onEmpty, onOpen, searchTerm }: {
               </button>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              {selected.matchId ? (
+                <button
+                  onClick={() => { haptics.medium(); router.push(`/conversas/${selected.matchId}`) }}
+                  style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'var(--accent)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)' }}
+                >
+                  <MessageCircle size={18} strokeWidth={1.5} />
+                  Enviar mensagem
+                </button>
+              ) : null}
               <button
-                onClick={() => { haptics.medium(); router.push(`/conversas/${selected.match_id}`) }}
-                style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'var(--accent)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)' }}
-              >
-                <MessageCircle size={18} strokeWidth={1.5} />
-                Enviar mensagem
-              </button>
-              <button
-                onClick={() => { haptics.tap(); router.push(`/perfil/${selected.other_user_id}`) }}
+                onClick={() => { haptics.tap(); router.push(`/perfil/${selected.userId}`) }}
                 style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 15, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)' }}
               >
                 <User size={18} strokeWidth={1.5} />
