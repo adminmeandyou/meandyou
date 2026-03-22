@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase'
 import Image from 'next/image'
 import {
   ArrowLeft, MapPin, Heart, Star, X,
-  Eye, Calendar, Ruler, Weight, Crown, ShieldAlert, Award, Settings, Pencil, Check, ChevronDown, ChevronUp
+  Eye, Calendar, Ruler, Weight, Crown, ShieldAlert, Award, Pencil, Check, ChevronDown, ChevronUp
 } from 'lucide-react'
 import { SwipeButton } from '@/components/ui/SwipeButton'
 import { BadgePill } from '@/components/ui/BadgePill'
@@ -511,7 +511,7 @@ export default function VerPerfilPage() {
             style={{ position: 'absolute', top: '28px', right: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}
             title="Emergencia"
           >
-            <ShieldAlert size={17} color="rgba(255,255,255,0.22)" strokeWidth={1.5} />
+            <ShieldAlert size={17} color="rgba(248,249,250,0.75)" strokeWidth={1.5} />
           </button>
         )}
 
@@ -876,7 +876,7 @@ export default function VerPerfilPage() {
               boxShadow: '0 8px 28px rgba(225,29,72,0.35)',
             }}
           >
-            <Settings size={18} strokeWidth={1.5} />
+            <Pencil size={18} strokeWidth={1.5} />
             Editar perfil
           </button>
         ) : (
