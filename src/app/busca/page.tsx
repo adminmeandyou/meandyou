@@ -885,8 +885,7 @@ function ModesHubView({ userPlan, onSelect, onCamarote }: {
 
 // ─── Modal Camarote ────────────────────────────────────────────────────────────
 
-function CamaroteModal({ userPlan, onClose }: { userPlan: string; onClose: () => void }) {
-  const isBlack = userPlan === 'black'
+function CamaroteModal({ onClose }: { onClose: () => void }) {
   return (
     <div
       onClick={onClose}
@@ -926,21 +925,12 @@ function CamaroteModal({ userPlan, onClose }: { userPlan: string; onClose: () =>
           ))}
         </div>
 
-        {isBlack ? (
-          <a
-            href="/loja"
-            style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 14, background: 'linear-gradient(135deg, #F59E0B, #d97706)', color: '#000', fontWeight: 700, fontSize: 15, textAlign: 'center', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box' }}
-          >
-            Comprar Passaporte — 70 fichas
-          </a>
-        ) : (
-          <a
-            href="/planos"
-            style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 14, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 15, textAlign: 'center', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box' }}
-          >
-            Fazer upgrade para Black
-          </a>
-        )}
+        <a
+          href="/planos"
+          style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 14, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 15, textAlign: 'center', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box' }}
+        >
+          Fazer upgrade para Black
+        </a>
         <button onClick={onClose} style={{ width: '100%', marginTop: 12, background: 'none', border: 'none', color: 'var(--muted)', fontSize: 13, cursor: 'pointer' }}>
           Fechar
         </button>
@@ -1530,7 +1520,7 @@ export default function BuscaPage() {
       {/* Conteúdo principal */}
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         {showHub ? (
-          <ModesHubView userPlan={userPlan} onSelect={(m) => { setViewMode(m); setShowHub(false) }} onCamarote={() => setCamaroteModal(true)} />
+          <ModesHubView userPlan={userPlan} onSelect={(m) => { setViewMode(m); setShowHub(false) }} onCamarote={() => { if (userPlan === 'black') window.location.href = '/backstage'; else setCamaroteModal(true) }} />
         ) : viewMode === 'rooms' ? (
           <RoomsPlaceholder userPlan={userPlan} />
         ) : viewMode === 'daily' ? (
@@ -1564,7 +1554,7 @@ export default function BuscaPage() {
           </div>
         ) : !currentProfile ? (
           /* Sem perfis — volta ao hub de modos */
-          <ModesHubView userPlan={userPlan} onSelect={(m) => { setViewMode(m); setShowHub(false) }} onCamarote={() => setCamaroteModal(true)} />
+          <ModesHubView userPlan={userPlan} onSelect={(m) => { setViewMode(m); setShowHub(false) }} onCamarote={() => { if (userPlan === 'black') window.location.href = '/backstage'; else setCamaroteModal(true) }} />
         ) : (
           /* Swipe view */
           <div
@@ -2284,7 +2274,7 @@ export default function BuscaPage() {
       {/* ─── Modal de Upgrade ────────────────────────────────────────────────── */}
       {/* Modal Camarote */}
       {camaroteModal && (
-        <CamaroteModal userPlan={userPlan} onClose={() => setCamaroteModal(false)} />
+        <CamaroteModal onClose={() => setCamaroteModal(false)} />
       )}
 
       {showUpgradeModal && (
