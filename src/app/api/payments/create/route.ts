@@ -19,6 +19,14 @@ const PRICES: Record<string, Record<string, number>> = {
 // Preco fixo do camarote em centavos
 const CAMAROTE_PRICE_CENTS = 4990
 
+// Pacotes de fichas: package_id -> { cents, quantidade }
+const FICHAS_PACKAGES: Record<string, { cents: number; quantidade: number }> = {
+  fichas_50:  { cents: 597,  quantidade: 50  },
+  fichas_150: { cents: 1497, quantidade: 150 },
+  fichas_400: { cents: 3497, quantidade: 400 },
+  fichas_900: { cents: 5997, quantidade: 900 },
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Autenticacao
@@ -29,8 +37,7 @@ export async function POST(req: NextRequest) {
     if (authErr || !user) return NextResponse.json({ error: 'Sessao invalida' }, { status: 401 })
 
     const body = await req.json()
-    const { type, method, plan, cycle = 'monthly', amount_override, metadata = {} } = body
-    const { quantidade, resgatado_id } = metadata ?? {}
+    const { type, method, plan, cycle = 'monthly', package_id, resgatado_id } = body
 
     // Valida inputs basicos
     if (!type || !method) return NextResponse.json({ error: 'type e method sao obrigatorios' }, { status: 400 })
@@ -42,19 +49,15 @@ export async function POST(req: NextRequest) {
     if (type === 'subscription') {
       amountCents = PRICES[plan]?.[cycle]
       if (!amountCents) return NextResponse.json({ error: 'Plano/ciclo invalido' }, { status: 400 })
-    } else {
-      if (type === 'camarote') {
-        // Preco do camarote e fixo — ignora amount_override do cliente
-        amountCents = CAMAROTE_PRICE_CENTS
-      } else {
-        // fichas: valida amount_override contra pacotes conhecidos
-        const FICHAS_VALID = [990, 2490, 4990]
-        if (!amount_override) return NextResponse.json({ error: 'amount_override obrigatorio' }, { status: 400 })
-        amountCents = Number(amount_override)
-        if (!FICHAS_VALID.includes(amountCents)) {
-          return NextResponse.json({ error: 'Valor invalido para recarga de fichas' }, { status: 400 })
-        }
+    } else if (type === 'fichas') {
+      if (!package_id || !FICHAS_PACKAGES[package_id]) {
+        return NextResponse.json({ error: 'package_id invalido' }, { status: 400 })
       }
+      amountCents = FICHAS_PACKAGES[package_id].cents
+    } else if (type === 'camarote') {
+      amountCents = CAMAROTE_PRICE_CENTS
+    } else {
+      return NextResponse.json({ error: 'type invalido' }, { status: 400 })
     }
 
     // Busca dados do usuario para AbacatePay
@@ -158,7 +161,7 @@ export async function POST(req: NextRequest) {
       metadata: {
         ...(plan ? { plan } : {}),
         ...(cycle ? { cycle } : {}),
-        ...(quantidade ? { quantidade } : {}),
+        ...(type === 'fichas' && package_id ? { quantidade: String(FICHAS_PACKAGES[package_id].quantidade) } : {}),
         ...(resgatado_id ? { resgatado_id } : {}),
       },
     }).select('id').single()

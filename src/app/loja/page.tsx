@@ -20,10 +20,10 @@ const PACOTE_LENDARIO_URL  = '#'  // R$ 179,97
 
 // ─── Pacotes de fichas ────────────────────────────────────────────────────
 const FICHAS_PACKAGES = [
-  { label: '50 fichas',   price: 'R$ 5,97',  amountCents: 597,  qtd: 50,  highlight: false, tag: null },
-  { label: '150 fichas',  price: 'R$ 14,97', amountCents: 1497, qtd: 150, highlight: true,  tag: 'Mais popular' },
-  { label: '400 fichas',  price: 'R$ 34,97', amountCents: 3497, qtd: 400, highlight: false, tag: null },
-  { label: '900 fichas',  price: 'R$ 59,97', amountCents: 5997, qtd: 900, highlight: false, tag: 'Melhor valor' },
+  { label: '50 fichas',   price: 'R$ 5,97',  amountCents: 597,  qtd: 50,  highlight: false, tag: null,         packageId: 'fichas_50' },
+  { label: '150 fichas',  price: 'R$ 14,97', amountCents: 1497, qtd: 150, highlight: true,  tag: 'Mais popular', packageId: 'fichas_150' },
+  { label: '400 fichas',  price: 'R$ 34,97', amountCents: 3497, qtd: 400, highlight: false, tag: null,         packageId: 'fichas_400' },
+  { label: '900 fichas',  price: 'R$ 59,97', amountCents: 5997, qtd: 900, highlight: false, tag: 'Melhor valor', packageId: 'fichas_900' },
 ]
 
 // ─── Itens compraveis com fichas ──────────────────────────────────────────
@@ -300,8 +300,7 @@ export default function LojaPage() {
   const [boxReveal, setBoxReveal] = useState<{ category: 'surpresa' | 'lendaria'; payload: any } | null>(null)
   const [boxPhase, setBoxPhase] = useState<'idle' | 'shake' | 'jump' | 'explode' | 'reveal'>('idle')
   const [fichasModalOpen, setFichasModalOpen] = useState(false)
-  const [fichasAmount, setFichasAmount] = useState(0)
-  const [fichasQtd, setFichasQtd] = useState(0)
+  const [fichasPackageId, setFichasPackageId] = useState<string>('')
 
   const plan = limits.plan
 
@@ -646,8 +645,7 @@ export default function LojaPage() {
             onClick={() => {
               if (!selectedPackage) { toast.info('Selecione um pacote acima.'); return }
               haptics.medium()
-              setFichasQtd(selectedPackage.qtd)
-              setFichasAmount(selectedPackage.amountCents)
+              setFichasPackageId(selectedPackage.packageId)
               setFichasModalOpen(true)
             }}
             style={{
@@ -845,9 +843,8 @@ export default function LojaPage() {
           open={fichasModalOpen}
           onClose={() => setFichasModalOpen(false)}
           type="fichas"
-          amountCents={fichasAmount}
-          description={`${fichasQtd} Fichas`}
-          metadata={{ quantidade: String(fichasQtd) }}
+          packageId={fichasPackageId}
+          description={`Recarga de Fichas`}
         />
       )}
 

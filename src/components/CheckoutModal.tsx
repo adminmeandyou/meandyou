@@ -12,9 +12,17 @@ interface CheckoutModalProps {
   onClose: () => void
   type: CheckoutType
   plan?: string
-  amountCents?: number
+  packageId?: string        // 'fichas_50' | 'fichas_150' | 'fichas_400' | 'fichas_900' | 'camarote'
   description?: string
   metadata?: Record<string, string>
+}
+
+const DISPLAY_PRICES: Record<string, number> = {
+  fichas_50:  5.97,
+  fichas_150: 14.97,
+  fichas_400: 34.97,
+  fichas_900: 59.97,
+  camarote:   49.90,
 }
 
 const CYCLE_OPTIONS = [
@@ -302,7 +310,7 @@ function StepSuccess({ type, plan, cycle, onClose }: {
 }
 
 export default function CheckoutModal({
-  open, onClose, type, plan, amountCents, description, metadata = {}
+  open, onClose, type, plan, packageId, description, metadata = {}
 }: CheckoutModalProps) {
   const isSubscription = type === 'subscription'
   const [step, setStep] = useState(isSubscription ? 1 : 2)
@@ -383,8 +391,8 @@ export default function CheckoutModal({
       const body: Record<string, unknown> = {
         type,
         method: selectedMethod,
-        ...(isSubscription ? { plan, cycle } : { amount_override: amountCents }),
-        metadata,
+        ...(isSubscription ? { plan, cycle } : { package_id: packageId }),
+        ...(metadata?.resgatado_id ? { resgatado_id: metadata.resgatado_id } : {}),
       }
       const resp = await fetch('/api/payments/create', {
         method: 'POST',
@@ -411,7 +419,7 @@ export default function CheckoutModal({
     } finally {
       setLoading(false)
     }
-  }, [type, isSubscription, plan, cycle, amountCents, metadata])
+  }, [type, isSubscription, plan, cycle, packageId, metadata])
 
   const handleMethodSelect = (m: 'pix' | 'credit_card') => {
     setMethod(m)
@@ -427,7 +435,7 @@ export default function CheckoutModal({
 
   const currentAmount = isSubscription && plan
     ? calcPrice(plan, cycle)
-    : (amountCents ?? 0) / 100
+    : DISPLAY_PRICES[packageId ?? ''] ?? 0
 
   if (!open) return null
 
