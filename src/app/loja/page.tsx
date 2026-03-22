@@ -584,7 +584,7 @@ export default function LojaPage() {
         {/* ─── Tabs e conteúdo (ocultos quando mochila está aberta) ─── */}
         {!mochilaAberta && <>
         <div style={{ display: 'flex', backgroundColor: 'var(--bg-card)', borderRadius: 12, padding: 4, border: '1px solid var(--border)' }}>
-          {(['recargas', 'compras'] as const).map((tab) => (
+          {(['compras', 'recargas'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setLojaTab(tab)}
