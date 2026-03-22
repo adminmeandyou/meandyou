@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { timingSafeEqual } from 'crypto'
 import { NextRequest, NextResponse } from 'next/server'
 
 const supabase = createClient(
@@ -10,11 +11,24 @@ const CYCLE_DAYS: Record<string, number> = {
   monthly: 30, quarterly: 90, semiannual: 180, annual: 365,
 }
 
+// Pacotes de fichas: preco em centavos -> quantidade
+const FICHAS_PACKAGES: Record<number, number> = {
+  990:  50,
+  2490: 150,
+  4990: 350,
+}
+
+function fichasFromAmount(amountReais: number): number {
+  const cents = Math.round(amountReais * 100)
+  return FICHAS_PACKAGES[cents] ?? 0
+}
+
 export async function POST(req: NextRequest) {
   try {
-    // Valida secret na URL
-    const secret = req.nextUrl.searchParams.get('secret')
-    if (secret !== process.env.ABACATEPAY_WEBHOOK_SECRET) {
+    // Valida secret na URL (timing-safe para evitar timing attacks)
+    const secret = req.nextUrl.searchParams.get('secret') ?? ''
+    const expected = process.env.ABACATEPAY_WEBHOOK_SECRET ?? ''
+    if (!expected || !timingSafeEqual(Buffer.from(secret), Buffer.from(expected))) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
@@ -32,7 +46,7 @@ export async function POST(req: NextRequest) {
     // Idempotencia — busca pagamento pelo gateway_id
     const { data: payment } = await supabase
       .from('payments')
-      .select('id, user_id, type, status, metadata')
+      .select('id, user_id, type, status, amount, metadata')
       .eq('gateway_id', gatewayId)
       .single()
 
@@ -41,16 +55,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true })
     }
 
-    if (payment.status === 'paid') {
-      // Ja processado — idempotencia
-      return NextResponse.json({ ok: true })
-    }
-
-    // Marca como pago
-    await supabase
+    // Claim atomico: so processa se conseguir mudar de 'pending' para 'paid'
+    const { data: claimed } = await supabase
       .from('payments')
       .update({ status: 'paid', paid_at: new Date().toISOString() })
       .eq('id', payment.id)
+      .eq('status', 'pending')
+      .select('id')
+      .single()
+
+    if (!claimed) {
+      // Outro processo ja processou este webhook
+      return NextResponse.json({ ok: true })
+    }
 
     const meta = (payment.metadata ?? {}) as Record<string, string>
 
@@ -91,7 +108,7 @@ export async function POST(req: NextRequest) {
       } catch { /* ignora se RPC nao existir */ }
 
     } else if (payment.type === 'fichas') {
-      const quantidade = Number(meta.quantidade ?? 0)
+      const quantidade = fichasFromAmount(Number(payment.amount))
       if (quantidade > 0) {
         try {
           await supabase.rpc('add_fichas', {

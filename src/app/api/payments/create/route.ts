@@ -16,6 +16,9 @@ const PRICES: Record<string, Record<string, number>> = {
   black:     { monthly: 9997, quarterly: 26990, semiannual: 47980, annual: 83970 },
 }
 
+// Preco fixo do camarote em centavos
+const CAMAROTE_PRICE_CENTS = 4990
+
 export async function POST(req: NextRequest) {
   try {
     // Autenticacao
@@ -40,10 +43,17 @@ export async function POST(req: NextRequest) {
       amountCents = PRICES[plan]?.[cycle]
       if (!amountCents) return NextResponse.json({ error: 'Plano/ciclo invalido' }, { status: 400 })
     } else {
-      if (!amount_override) return NextResponse.json({ error: 'amount_override obrigatorio' }, { status: 400 })
-      amountCents = Number(amount_override)
-      if (!Number.isInteger(amountCents) || amountCents < 100) {
-        return NextResponse.json({ error: 'Valor invalido (minimo 100 centavos)' }, { status: 400 })
+      if (type === 'camarote') {
+        // Preco do camarote e fixo — ignora amount_override do cliente
+        amountCents = CAMAROTE_PRICE_CENTS
+      } else {
+        // fichas: valida amount_override contra pacotes conhecidos
+        const FICHAS_VALID = [990, 2490, 4990]
+        if (!amount_override) return NextResponse.json({ error: 'amount_override obrigatorio' }, { status: 400 })
+        amountCents = Number(amount_override)
+        if (!FICHAS_VALID.includes(amountCents)) {
+          return NextResponse.json({ error: 'Valor invalido para recarga de fichas' }, { status: 400 })
+        }
       }
     }
 
