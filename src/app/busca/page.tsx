@@ -1798,7 +1798,7 @@ export default function BuscaPage() {
             <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>Ninguém novo por aqui</p>
             <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 24px', lineHeight: 1.5 }}>Tente aumentar o raio de busca ou mudar os filtros</p>
             <button
-              onClick={() => userId && loadDeck(viewMode === 'search' ? localFilters : DEFAULT_FILTERS, userId, viewMode === 'search')}
+              onClick={() => userId && loadDeck(DEFAULT_FILTERS, userId, false)}
               style={{ padding: '12px 24px', borderRadius: 12, border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-jakarta)', cursor: 'pointer' }}
             >
               Recarregar
