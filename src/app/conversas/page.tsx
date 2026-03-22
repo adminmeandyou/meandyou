@@ -2,16 +2,17 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-// ✅ CORREÇÃO: import correto do supabase singleton
 import { supabase } from '../lib/supabase'
 import Link from 'next/link'
 import Image from 'next/image'
-import { MessageCircle, Search, Archive } from 'lucide-react'
+import { MessageCircle, Search, Archive, Heart, Zap } from 'lucide-react'
 import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
+
+// ─── Types ─────────────────────────────────────────────────────────────────────
 
 interface Conversation {
   matchId: string
@@ -26,6 +27,24 @@ interface Conversation {
   showLastActive?: boolean
 }
 
+interface Match {
+  match_id: string
+  other_user_id: string
+  name: string
+  photo_best: string | null
+  city: string | null
+  matched_at: string
+  last_message: string | null
+  last_message_at: string | null
+  unread_count: number
+  last_active_at?: string | null
+  show_last_active?: boolean
+}
+
+type Aba = 'conversas' | 'todos' | 'online'
+
+// ─── Utils ─────────────────────────────────────────────────────────────────────
+
 const ARCHIVED_KEY = 'meandyou_archived_convs'
 
 function getArchivedIds(): Set<string> {
@@ -35,24 +54,46 @@ function getArchivedIds(): Set<string> {
   } catch { return new Set() }
 }
 
-function toggleArchived(matchId: string): boolean {
-  const ids = getArchivedIds()
-  if (ids.has(matchId)) { ids.delete(matchId) } else { ids.add(matchId) }
-  localStorage.setItem(ARCHIVED_KEY, JSON.stringify(Array.from(ids)))
-  return ids.has(matchId)
+function isOnline(lastActiveAt: string | null | undefined): boolean {
+  if (!lastActiveAt) return false
+  return Date.now() - new Date(lastActiveAt).getTime() < 3600000
 }
 
-export default function ConversasPage() {
+function formatTime(dateStr: string): string {
+  const date = new Date(dateStr)
+  const now = new Date()
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000)
+  if (diffDays === 0) return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  if (diffDays === 1) return 'ontem'
+  if (diffDays < 7) return date.toLocaleDateString('pt-BR', { weekday: 'short' })
+  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+}
+
+function formatAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime()
+  const mins = Math.floor(diff / 60000)
+  const hrs = Math.floor(mins / 60)
+  const days = Math.floor(hrs / 24)
+  if (mins < 1) return 'agora'
+  if (mins < 60) return `${mins}m`
+  if (hrs < 24) return `${hrs}h`
+  if (days < 7) return `${days}d`
+  return new Date(dateStr).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+}
+
+// ─── Página principal ──────────────────────────────────────────────────────────
+
+export default function MatchesHubPage() {
   const router = useRouter()
   const toast = useToast()
   const haptics = useHaptics()
 
-  // ✅ CORREÇÃO: não usar useAuth — buscar user via supabase.auth.getUser()
   const [userId, setUserId] = useState<string | null>(null)
   const [conversations, setConversations] = useState<Conversation[]>([])
+  const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [aba, setAba] = useState<'ativos' | 'arquivados'>('ativos')
+  const [aba, setAba] = useState<Aba>('conversas')
   const [archivedIds, setArchivedIds] = useState<Set<string>>(new Set())
 
   useEffect(() => {
@@ -62,16 +103,12 @@ export default function ConversasPage() {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push('/login'); return }
       setUserId(user.id)
-      loadConversations(user.id)
+      loadAll(user.id)
 
       channel = supabase
-        .channel(`conversas-list-${user.id}`)
-        .on('postgres_changes', {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-        }, () => {
-          loadConversations(user.id)
+        .channel(`matches-hub-${user.id}`)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, () => {
+          loadAll(user.id)
         })
         .subscribe()
     })
@@ -79,63 +116,71 @@ export default function ConversasPage() {
     return () => { if (channel) supabase.removeChannel(channel) }
   }, [])
 
-  async function loadConversations(uid: string) {
+  async function loadAll(uid: string) {
     setLoading(true)
     try {
-      // ✅ CORREÇÃO: usar RPC para evitar N+1 queries (1 query ao invés de 3 por match)
-      // A RPC retorna os dados consolidados do servidor
-      const { data, error } = await supabase.rpc('get_my_conversations', {
-        p_user_id: uid,
-      })
+      const [convsResult, matchesResult] = await Promise.all([
+        supabase.rpc('get_my_conversations', { p_user_id: uid }),
+        supabase.rpc('get_my_matches', { p_user_id: uid }),
+      ])
 
-      if (error) throw error
+      if (convsResult.data) {
+        const convs: Conversation[] = convsResult.data.map((row: any) => ({
+          matchId: row.match_id,
+          otherUserId: row.other_user_id,
+          otherName: row.other_name ?? 'Usuario',
+          otherPhoto: row.other_photo ?? null,
+          lastMessage: row.last_message ?? null,
+          lastMessageAt: row.last_message_at ?? null,
+          lastSenderId: row.last_sender_id ?? null,
+          unreadCount: row.unread_count ?? 0,
+          lastActiveAt: row.other_last_active_at ?? null,
+          showLastActive: row.other_show_last_active ?? false,
+        }))
+        convs.sort((a, b) => {
+          if (!a.lastMessageAt) return 1
+          if (!b.lastMessageAt) return -1
+          return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
+        })
+        setConversations(convs)
+      }
 
-      // ✅ Mapeia resultado da RPC para o tipo Conversation
-      const convs: Conversation[] = (data || []).map((row: any) => ({
-        matchId: row.match_id,
-        otherUserId: row.other_user_id,
-        otherName: row.other_name ?? 'Usuário',
-        otherPhoto: row.other_photo ?? null,
-        lastMessage: row.last_message ?? null,
-        lastMessageAt: row.last_message_at ?? null,
-        lastSenderId: row.last_sender_id ?? null,
-        // ✅ CORREÇÃO: campo 'read' (boolean) — não 'read_at'
-        unreadCount: row.unread_count ?? 0,
-        lastActiveAt: row.other_last_active_at ?? null,
-        showLastActive: row.other_show_last_active ?? false,
-      }))
-
-      // Ordena por mais recente
-      convs.sort((a, b) => {
-        if (!a.lastMessageAt) return 1
-        if (!b.lastMessageAt) return -1
-        return new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime()
-      })
-
-      setConversations(convs)
+      if (matchesResult.data) {
+        setMatches(matchesResult.data)
+      }
     } catch {
-      setConversations([])
-      toast.error('Erro ao carregar conversas')
+      toast.error('Erro ao carregar matches')
     }
     setLoading(false)
   }
 
   function handleArchive(matchId: string) {
-    const nowArchived = toggleArchived(matchId)
-    const updated = getArchivedIds()
-    setArchivedIds(new Set(updated))
+    const ids = getArchivedIds()
+    if (ids.has(matchId)) { ids.delete(matchId) } else { ids.add(matchId) }
+    localStorage.setItem(ARCHIVED_KEY, JSON.stringify(Array.from(ids)))
+    setArchivedIds(new Set(ids))
     haptics.tap()
-    toast.success(nowArchived ? 'Conversa arquivada' : 'Conversa restaurada')
+    toast.success(ids.has(matchId) ? 'Conversa arquivada' : 'Conversa restaurada')
   }
 
-  const ativos    = conversations.filter(c => !archivedIds.has(c.matchId))
-  const arquivados = conversations.filter(c => archivedIds.has(c.matchId))
-
-  const filtered = (aba === 'ativos' ? ativos : arquivados).filter((c) =>
-    c.otherName.toLowerCase().includes(searchTerm.toLowerCase())
-  )
-
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0)
+  const onlineMatches = matches.filter(m => isOnline(m.last_active_at) && m.show_last_active !== false)
+
+  const convsAtivas = conversations
+    .filter(c => !archivedIds.has(c.matchId))
+    .filter(c => c.otherName.toLowerCase().includes(searchTerm.toLowerCase()))
+
+  const todosFiltrados = matches
+    .filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()))
+
+  const onlineFiltrados = onlineMatches
+    .filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()))
+
+  const tabs: { key: Aba; label: string; count: number }[] = [
+    { key: 'conversas', label: 'Conversas', count: conversations.filter(c => !archivedIds.has(c.matchId)).length },
+    { key: 'todos',     label: 'Todos',     count: matches.length },
+    { key: 'online',    label: 'Online',    count: onlineMatches.length },
+  ]
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'var(--font-jakarta)' }}>
@@ -147,22 +192,20 @@ export default function ConversasPage() {
         borderBottom: '1px solid var(--border)',
         padding: '16px 20px',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 26, color: 'var(--text)', margin: 0 }}>
-              Mensagens
-            </h1>
-            {totalUnread > 0 && (
-              <span style={{
-                minWidth: 22, height: 22, borderRadius: 100,
-                background: 'var(--accent)', color: '#fff',
-                fontSize: 11, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px',
-              }}>
-                {totalUnread > 9 ? '9+' : totalUnread}
-              </span>
-            )}
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 26, color: 'var(--text)', margin: 0 }}>
+            Matches
+          </h1>
+          {totalUnread > 0 && (
+            <span style={{
+              minWidth: 22, height: 22, borderRadius: 100,
+              background: 'var(--accent)', color: '#fff',
+              fontSize: 11, fontWeight: 700,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px',
+            }}>
+              {totalUnread > 9 ? '9+' : totalUnread}
+            </span>
+          )}
         </div>
 
         {/* Busca */}
@@ -170,7 +213,7 @@ export default function ConversasPage() {
           <Search size={14} color="rgba(248,249,250,0.3)" style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
           <input
             type="text"
-            placeholder="Buscar conversa..."
+            placeholder="Buscar..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
@@ -183,17 +226,14 @@ export default function ConversasPage() {
           />
         </div>
 
-        {/* Tabs Ativos / Arquivados */}
+        {/* Abas */}
         <div style={{ display: 'flex', gap: 8 }}>
-          {([
-            { key: 'ativos' as const, label: 'Ativos', Icon: MessageCircle },
-            { key: 'arquivados' as const, label: 'Arquivados', Icon: Archive },
-          ]).map(({ key, label, Icon }) => (
+          {tabs.map(({ key, label, count }) => (
             <button
               key={key}
-              onClick={() => { haptics.tap(); setAba(key) }}
+              onClick={() => { haptics.tap(); setAba(key); setSearchTerm('') }}
               style={{
-                display: 'flex', alignItems: 'center', gap: 6,
+                display: 'flex', alignItems: 'center', gap: 5,
                 padding: '6px 14px', borderRadius: 100,
                 border: aba === key ? '1px solid var(--accent)' : '1px solid var(--border)',
                 background: aba === key ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
@@ -202,185 +242,278 @@ export default function ConversasPage() {
                 cursor: 'pointer', transition: 'all 0.15s',
               }}
             >
-              <Icon size={12} />
               {label}
+              {count > 0 && (
+                <span style={{
+                  fontSize: 11, fontWeight: 700, padding: '1px 6px', borderRadius: 100,
+                  background: aba === key ? 'rgba(0,0,0,0.2)' : 'rgba(255,255,255,0.1)',
+                  color: aba === key ? '#fff' : 'rgba(248,249,250,0.6)',
+                }}>
+                  {count}
+                </span>
+              )}
             </button>
           ))}
         </div>
       </header>
 
-      {/* Lista */}
+      {/* Conteudo */}
       <main style={{ paddingBottom: 96 }}>
         {loading ? (
           <div style={{ padding: '12px 0' }}>
             <SkeletonList rows={6} />
           </div>
-        ) : filtered.length === 0 ? (
-          <EmptyState
-            icon={aba === 'arquivados' ? <Archive size={28} /> : <MessageCircle size={28} />}
-            title={
-              aba === 'arquivados'
-                ? 'Nenhuma conversa arquivada'
-                : searchTerm ? 'Nenhuma conversa encontrada' : 'Nenhuma conversa ainda'
-            }
-            description={
-              aba === 'arquivados'
-                ? 'Deslize para o lado em uma conversa para arquivar.'
-                : searchTerm ? undefined : 'Faça um match para começar a conversar!'
-            }
-            action={aba === 'ativos' && !searchTerm ? { label: 'Explorar pessoas', onClick: () => router.push('/busca') } : undefined}
+        ) : aba === 'conversas' ? (
+          <AbaConversas
+            conversations={convsAtivas}
+            currentUserId={userId ?? ''}
+            archivedIds={archivedIds}
+            onArchive={handleArchive}
+            onEmpty={() => router.push('/busca')}
+            searchTerm={searchTerm}
+          />
+        ) : aba === 'todos' ? (
+          <AbaTodos
+            matches={todosFiltrados}
+            onEmpty={() => router.push('/busca')}
+            onOpen={(matchId) => router.push(`/conversas/${matchId}`)}
+            searchTerm={searchTerm}
           />
         ) : (
-          <div>
-            {filtered.map((conv) => (
-              <ConversationItem
-                key={conv.matchId}
-                conv={conv}
-                currentUserId={userId!}
-                isArchived={archivedIds.has(conv.matchId)}
-                onArchive={handleArchive}
-              />
-            ))}
-          </div>
+          <AbaOnline
+            matches={onlineFiltrados}
+            onEmpty={() => router.push('/busca')}
+            onOpen={(matchId) => router.push(`/conversas/${matchId}`)}
+            searchTerm={searchTerm}
+          />
         )}
       </main>
     </div>
   )
 }
 
-// ─── Item de conversa ──────────────────────────────────────────────────────────
+// ─── Aba Conversas ─────────────────────────────────────────────────────────────
 
-function ConversationItem({
-  conv,
-  currentUserId,
-  isArchived,
-  onArchive,
+function AbaConversas({
+  conversations, currentUserId, archivedIds, onArchive, onEmpty, searchTerm,
 }: {
-  conv: Conversation
+  conversations: Conversation[]
   currentUserId: string
-  isArchived: boolean
+  archivedIds: Set<string>
   onArchive: (matchId: string) => void
+  onEmpty: () => void
+  searchTerm: string
 }) {
-  const isMyMessage = conv.lastSenderId === currentUserId
+  if (conversations.length === 0) {
+    return (
+      <EmptyState
+        icon={<MessageCircle size={28} />}
+        title={searchTerm ? 'Nenhuma conversa encontrada' : 'Nenhuma conversa ainda'}
+        description={searchTerm ? undefined : 'Quando der match e trocar mensagens, aparece aqui.'}
+        action={!searchTerm ? { label: 'Explorar pessoas', onClick: onEmpty } : undefined}
+      />
+    )
+  }
 
   return (
-    <div style={{ position: 'relative', overflow: 'hidden' }}>
-      {/* Botão arquivar (deslizando para o lado) */}
-      <button
-        onClick={() => onArchive(conv.matchId)}
-        style={{
-          position: 'absolute', right: 0, top: 0, bottom: 0,
-          width: 80, display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: isArchived ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)',
-          border: 'none', cursor: 'pointer', flexDirection: 'column', gap: 4,
-          borderLeft: '1px solid var(--border-soft)',
-        }}
-      >
-        <Archive size={16} color={isArchived ? '#10b981' : 'rgba(248,249,250,0.4)'} strokeWidth={1.5} />
-        <span style={{ fontSize: 10, color: isArchived ? '#10b981' : 'rgba(248,249,250,0.4)', fontWeight: 600 }}>
-          {isArchived ? 'Restaurar' : 'Arquivar'}
-        </span>
-      </button>
-
-    <Link
-      href={`/conversas/${conv.matchId}`}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 14,
-        padding: '12px 20px', borderBottom: '1px solid var(--border-soft)',
-        textDecoration: 'none', background: 'var(--bg)',
-        position: 'relative', zIndex: 1,
-        marginRight: 80,
-      }}
-    >
-      {/* Avatar */}
-      <div style={{ position: 'relative', flexShrink: 0 }}>
-        <div style={{
-          width: 56, height: 56, borderRadius: '50%',
-          overflow: 'hidden', position: 'relative',
-          background: 'var(--bg-card2)', border: '1px solid var(--border)',
-        }}>
-          {conv.otherPhoto ? (
-            <Image
-              src={conv.otherPhoto}
-              alt={conv.otherName}
-              width={56}
-              height={56}
-              className="object-cover w-full h-full"
-            />
-          ) : (
-            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>
-                {conv.otherName[0]}
+    <div>
+      {conversations.map((conv) => {
+        const isMyMessage = conv.lastSenderId === currentUserId
+        const isArchived = archivedIds.has(conv.matchId)
+        return (
+          <div key={conv.matchId} style={{ position: 'relative', overflow: 'hidden' }}>
+            <button
+              onClick={() => onArchive(conv.matchId)}
+              style={{
+                position: 'absolute', right: 0, top: 0, bottom: 0, width: 80,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: isArchived ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)',
+                border: 'none', cursor: 'pointer', flexDirection: 'column', gap: 4,
+                borderLeft: '1px solid var(--border-soft)',
+              }}
+            >
+              <Archive size={16} color={isArchived ? '#10b981' : 'rgba(248,249,250,0.4)'} strokeWidth={1.5} />
+              <span style={{ fontSize: 10, color: isArchived ? '#10b981' : 'rgba(248,249,250,0.4)', fontWeight: 600 }}>
+                {isArchived ? 'Restaurar' : 'Arquivar'}
               </span>
-            </div>
-          )}
-        </div>
-        {/* Indicador online (sobreposto) */}
-        {conv.unreadCount === 0 && (
-          <div style={{ position: 'absolute', bottom: 1, right: 1 }}>
-            <OnlineIndicator
-              lastActiveAt={conv.lastActiveAt}
-              showLastActive={conv.showLastActive}
-              mode="dot"
-              size={12}
-            />
-          </div>
-        )}
-        {/* Badge de nao lidas */}
-        {conv.unreadCount > 0 && (
-          <div style={{
-            position: 'absolute', top: -2, right: -2,
-            minWidth: 18, height: 18, borderRadius: 100,
-            background: 'var(--accent)', border: '2px solid var(--bg)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px',
-          }}>
-            <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>
-              {conv.unreadCount > 9 ? '9+' : conv.unreadCount}
-            </span>
-          </div>
-        )}
-      </div>
+            </button>
 
-      {/* Info */}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-          <p style={{
-            fontSize: 14, fontWeight: conv.unreadCount > 0 ? 700 : 500,
-            color: conv.unreadCount > 0 ? 'var(--text)' : 'rgba(248,249,250,0.80)',
-            margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>
-            {conv.otherName}
-          </p>
-          {conv.lastMessageAt && (
-            <span style={{ fontSize: 12, color: 'rgba(248,249,250,0.30)', flexShrink: 0, marginLeft: 8 }}>
-              {formatTime(conv.lastMessageAt)}
-            </span>
-          )}
-        </div>
-        <p style={{
-          fontSize: 13, margin: 0,
-          color: conv.unreadCount > 0 ? 'rgba(248,249,250,0.65)' : 'rgba(248,249,250,0.35)',
-          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-        }}>
-          {conv.lastMessage
-            ? `${isMyMessage ? 'Você: ' : ''}${conv.lastMessage}`
-            : 'Nenhuma mensagem ainda'}
-        </p>
-      </div>
-    </Link>
+            <Link
+              href={`/conversas/${conv.matchId}`}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 14,
+                padding: '12px 20px', borderBottom: '1px solid var(--border-soft)',
+                textDecoration: 'none', background: 'var(--bg)',
+                position: 'relative', zIndex: 1, marginRight: 80,
+              }}
+            >
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
+                  {conv.otherPhoto ? (
+                    <Image src={conv.otherPhoto} alt={conv.otherName} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+                  ) : (
+                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{conv.otherName[0]}</span>
+                    </div>
+                  )}
+                </div>
+                {conv.unreadCount === 0 && (
+                  <div style={{ position: 'absolute', bottom: 1, right: 1 }}>
+                    <OnlineIndicator lastActiveAt={conv.lastActiveAt} showLastActive={conv.showLastActive} mode="dot" size={12} />
+                  </div>
+                )}
+                {conv.unreadCount > 0 && (
+                  <div style={{ position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 100, background: 'var(--accent)', border: '2px solid var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>{conv.unreadCount > 9 ? '9+' : conv.unreadCount}</span>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+                  <p style={{ fontSize: 14, fontWeight: conv.unreadCount > 0 ? 700 : 500, color: conv.unreadCount > 0 ? 'var(--text)' : 'rgba(248,249,250,0.80)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {conv.otherName}
+                  </p>
+                  {conv.lastMessageAt && (
+                    <span style={{ fontSize: 12, color: 'rgba(248,249,250,0.30)', flexShrink: 0, marginLeft: 8 }}>
+                      {formatTime(conv.lastMessageAt)}
+                    </span>
+                  )}
+                </div>
+                <p style={{ fontSize: 13, margin: 0, color: conv.unreadCount > 0 ? 'rgba(248,249,250,0.65)' : 'rgba(248,249,250,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {conv.lastMessage
+                    ? `${isMyMessage ? 'Voce: ' : ''}${conv.lastMessage}`
+                    : 'Nenhuma mensagem ainda'}
+                </p>
+              </div>
+            </Link>
+          </div>
+        )
+      })}
     </div>
   )
 }
 
-// ─── Utils ─────────────────────────────────────────────────────────────────────
+// ─── Aba Todos ─────────────────────────────────────────────────────────────────
 
-function formatTime(dateStr: string): string {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000)
+function AbaTodos({ matches, onEmpty, onOpen, searchTerm }: {
+  matches: Match[]
+  onEmpty: () => void
+  onOpen: (matchId: string) => void
+  searchTerm: string
+}) {
+  if (matches.length === 0) {
+    return (
+      <EmptyState
+        icon={<Heart size={28} />}
+        title={searchTerm ? 'Nenhum match encontrado' : 'Nenhum match ainda'}
+        description={searchTerm ? undefined : 'Continue curtindo! Quando alguem curtir de volta, aparece aqui.'}
+        action={!searchTerm ? { label: 'Explorar perfis', onClick: onEmpty } : undefined}
+      />
+    )
+  }
 
-  if (diffDays === 0) return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-  if (diffDays === 1) return 'ontem'
-  if (diffDays < 7) return date.toLocaleDateString('pt-BR', { weekday: 'short' })
-  return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+  return (
+    <div style={{ padding: '16px 20px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
+      {matches.map((m) => (
+        <button
+          key={m.match_id}
+          onClick={() => onOpen(m.match_id)}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, textAlign: 'center' }}
+        >
+          <div style={{ position: 'relative', marginBottom: 6 }}>
+            <div style={{
+              width: '100%', aspectRatio: '1', borderRadius: 14, overflow: 'hidden',
+              background: 'var(--bg-card2)',
+              border: isOnline(m.last_active_at) && m.show_last_active !== false
+                ? '2px solid #2ec4a0'
+                : '1.5px solid var(--border)',
+            }}>
+              {m.photo_best ? (
+                <Image src={m.photo_best} alt={m.name} width={120} height={120} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 28 }}>{m.name[0]}</span>
+                </div>
+              )}
+            </div>
+            {isOnline(m.last_active_at) && m.show_last_active !== false && (
+              <div style={{ position: 'absolute', bottom: 4, right: 4, width: 10, height: 10, borderRadius: '50%', background: '#2ec4a0', border: '2px solid var(--bg)' }} />
+            )}
+            {(m.unread_count || 0) > 0 && (
+              <div style={{ position: 'absolute', top: -4, right: -4, minWidth: 18, height: 18, borderRadius: 100, background: 'var(--accent)', border: '2px solid var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
+                <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>{(m.unread_count || 0) > 9 ? '9+' : m.unread_count}</span>
+              </div>
+            )}
+          </div>
+          <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{m.name}</p>
+          <p style={{ fontSize: 11, color: 'var(--muted)', margin: '2px 0 0' }}>{formatAgo(m.matched_at)}</p>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+// ─── Aba Online ────────────────────────────────────────────────────────────────
+
+function AbaOnline({ matches, onEmpty, onOpen, searchTerm }: {
+  matches: Match[]
+  onEmpty: () => void
+  onOpen: (matchId: string) => void
+  searchTerm: string
+}) {
+  if (matches.length === 0) {
+    return (
+      <EmptyState
+        icon={<Zap size={28} />}
+        title={searchTerm ? 'Nenhum match encontrado' : 'Nenhum match online agora'}
+        description={searchTerm ? undefined : 'Quando um match estiver ativo na ultima hora, aparece aqui.'}
+        action={!searchTerm ? { label: 'Explorar perfis', onClick: onEmpty } : undefined}
+      />
+    )
+  }
+
+  return (
+    <div>
+      <p style={{ padding: '12px 20px 4px', fontSize: 12, color: 'var(--muted)', margin: 0 }}>
+        {matches.length} {matches.length === 1 ? 'match ativo' : 'matches ativos'} na ultima hora
+      </p>
+      {matches.map((m) => (
+        <button
+          key={m.match_id}
+          onClick={() => onOpen(m.match_id)}
+          style={{
+            width: '100%', background: 'none', border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 14,
+            padding: '12px 20px', borderBottom: '1px solid var(--border-soft)',
+            textAlign: 'left',
+          }}
+        >
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '2px solid #2ec4a0' }}>
+              {m.photo_best ? (
+                <Image src={m.photo_best} alt={m.name} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{m.name[0]}</span>
+                </div>
+              )}
+            </div>
+            <div style={{ position: 'absolute', bottom: 1, right: 1, width: 12, height: 12, borderRadius: '50%', background: '#2ec4a0', border: '2px solid var(--bg)' }} />
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {m.name}
+            </p>
+            <p style={{ fontSize: 13, margin: 0, color: '#2ec4a0', fontWeight: 500 }}>
+              Ativo agora
+            </p>
+          </div>
+          <div style={{ padding: '6px 14px', borderRadius: 100, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>
+            Mensagem
+          </div>
+        </button>
+      ))}
+    </div>
+  )
 }
