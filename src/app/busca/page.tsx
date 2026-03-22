@@ -8,7 +8,7 @@ import { PaywallCard } from '@/components/PaywallCard'
 import {
   SlidersHorizontal, X, Heart, Star, Search, AlertCircle,
   Loader2, Lock, Check, MapPin, RotateCcw, Zap, Undo2,
-  ChevronDown, ChevronUp, Users, Info,
+  ChevronDown, ChevronUp, Users, Info, Crown, Compass,
   Target, IdCard, Sparkles, Wind, Eye, Palette, Music, Home, Briefcase,
 } from 'lucide-react'
 import { SkeletonCard, skeletonCss } from '@/components/Skeleton'
@@ -782,6 +782,173 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
   )
 }
 
+// ─── Hub de Modos ─────────────────────────────────────────────────────────────
+
+const MODES_CONFIG = [
+  {
+    key: 'discovery' as ViewMode,
+    label: 'Descobrir',
+    subtitle: 'Explore perfis ao redor',
+    icon: <Compass size={28} strokeWidth={1.5} color="#E11D48" />,
+    bg: 'linear-gradient(135deg, #1a0810 0%, #3d0821 100%)',
+    border: 'rgba(225,29,72,0.30)',
+  },
+  {
+    key: 'search' as ViewMode,
+    label: 'Busca Avancada',
+    subtitle: 'Filtre por preferencias',
+    icon: <SlidersHorizontal size={28} strokeWidth={1.5} color="#60a5fa" />,
+    bg: 'linear-gradient(135deg, #080e1a 0%, #0d1a35 100%)',
+    border: 'rgba(96,165,250,0.25)',
+  },
+  {
+    key: 'daily' as ViewMode,
+    label: 'Match do Dia',
+    subtitle: '5 perfis compativeis por dia',
+    icon: <Star size={28} strokeWidth={1.5} color="#F59E0B" />,
+    bg: 'linear-gradient(135deg, #1a1000 0%, #2d1c00 100%)',
+    border: 'rgba(245,158,11,0.25)',
+  },
+  {
+    key: 'rooms' as ViewMode,
+    label: 'Salas',
+    subtitle: 'Bate-papo em grupo',
+    icon: <Users size={28} strokeWidth={1.5} color="#2ec4a0" />,
+    bg: 'linear-gradient(135deg, #001a14 0%, #002e22 100%)',
+    border: 'rgba(46,196,160,0.25)',
+    badge: 'Plus+',
+  },
+]
+
+function ModesHubView({ userPlan, onSelect, onCamarote }: {
+  userPlan: string
+  onSelect: (m: ViewMode) => void
+  onCamarote: () => void
+}) {
+  return (
+    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
+      <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 4px' }}>Escolha um modo</p>
+      <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 20px' }}>Selecione como quer explorar o app</p>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+        {MODES_CONFIG.map((m) => (
+          <button
+            key={m.key}
+            onClick={() => onSelect(m.key)}
+            style={{
+              background: m.bg, border: `1px solid ${m.border}`,
+              borderRadius: 16, padding: '18px 14px',
+              display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10,
+              cursor: 'pointer', textAlign: 'left', position: 'relative',
+            }}
+          >
+            {m.badge && (
+              <span style={{ position: 'absolute', top: 10, right: 10, fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 100, background: 'rgba(46,196,160,0.18)', color: '#2ec4a0', border: '1px solid rgba(46,196,160,0.30)' }}>
+                {m.badge}
+              </span>
+            )}
+            {m.icon}
+            <div>
+              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>{m.label}</p>
+              <p style={{ margin: '3px 0 0', fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--font-jakarta)' }}>{m.subtitle}</p>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* Camarote — card largo */}
+      <button
+        onClick={onCamarote}
+        style={{
+          width: '100%', background: 'linear-gradient(135deg, #1a1000 0%, #2a1a00 50%, #1a0010 100%)',
+          border: '1px solid rgba(245,158,11,0.35)', borderRadius: 16, padding: '20px 18px',
+          display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer', textAlign: 'left',
+        }}
+      >
+        <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Crown size={26} strokeWidth={1.5} color="#F59E0B" />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>Camarote</p>
+            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: 'rgba(245,158,11,0.15)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.30)', flexShrink: 0 }}>
+              Exclusivo Black
+            </span>
+          </div>
+          <p style={{ margin: 0, fontSize: 12, color: 'var(--muted)', fontFamily: 'var(--font-jakarta)' }}>Experiencias que vao além do comum</p>
+        </div>
+        <Lock size={16} strokeWidth={1.5} color="rgba(245,158,11,0.5)" style={{ flexShrink: 0 }} />
+      </button>
+    </div>
+  )
+}
+
+// ─── Modal Camarote ────────────────────────────────────────────────────────────
+
+function CamaroteModal({ userPlan, onClose }: { userPlan: string; onClose: () => void }) {
+  const isBlack = userPlan === 'black'
+  return (
+    <div
+      onClick={onClose}
+      style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{ width: '100%', maxWidth: 430, background: 'var(--bg-card)', borderRadius: '24px 24px 0 0', padding: '28px 24px 40px', border: '1px solid var(--border)' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Crown size={26} strokeWidth={1.5} color="#F59E0B" />
+          </div>
+          <div>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: 0 }}>Camarote</h2>
+            <p style={{ fontSize: 12, color: '#F59E0B', margin: '2px 0 0', fontWeight: 600 }}>Exclusivo para assinantes Black</p>
+          </div>
+        </div>
+
+        <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 20px' }}>
+          Um ambiente reservado para quem busca experiencias além do convencional. Dentro do Camarote voce encontra perfis e filtros que nao existem em nenhum outro lugar do app.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+          {[
+            { label: 'Sugar', desc: 'Encontros com beneficios mutuos', color: '#ec4899' },
+            { label: 'Fetiche', desc: 'Interesses e estilos de vida alternativos', color: '#a855f7' },
+            { label: 'Chat VIP', desc: 'Salas exclusivas para assinantes Black', color: '#F59E0B' },
+          ].map((item) => (
+            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
+              <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
+              <div>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{item.label}</p>
+                <p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>{item.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {isBlack ? (
+          <a
+            href="/loja"
+            style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 14, background: 'linear-gradient(135deg, #F59E0B, #d97706)', color: '#000', fontWeight: 700, fontSize: 15, textAlign: 'center', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box' }}
+          >
+            Comprar Passaporte — 70 fichas
+          </a>
+        ) : (
+          <a
+            href="/planos"
+            style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 14, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 15, textAlign: 'center', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box' }}
+          >
+            Fazer upgrade para Black
+          </a>
+        )}
+        <button onClick={onClose} style={{ width: '100%', marginTop: 12, background: 'none', border: 'none', color: 'var(--muted)', fontSize: 13, cursor: 'pointer' }}>
+          Fechar
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ─── Salas de Bate-papo ───────────────────────────────────────────────────────
 
 function RoomsPlaceholder({ userPlan }: { userPlan: string }) {
@@ -952,6 +1119,8 @@ export default function BuscaPage() {
 
   // ── Novos states (Fase 4) ─────────────────────────────────────────────────
   const [viewMode, setViewMode] = useState<ViewMode>('discovery')
+  const [showHub, setShowHub] = useState(true)
+  const [camaroteModal, setCamaroteModal] = useState(false)
   const [photoIdx, setPhotoIdx] = useState(0)
   const [userGender, setUserGender] = useState<string>('')
   const [locationDisplay, setLocationDisplay] = useState<string>('')
@@ -976,7 +1145,7 @@ export default function BuscaPage() {
     setModeSelector(
       <ModeSelectorTabs
         viewMode={viewMode}
-        onChange={setViewMode}
+        onChange={(m) => { setViewMode(m); setShowHub(false) }}
         onFilterClick={openFilters}
       />
     )
@@ -1360,7 +1529,9 @@ export default function BuscaPage() {
 
       {/* Conteúdo principal */}
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-        {viewMode === 'rooms' ? (
+        {showHub ? (
+          <ModesHubView userPlan={userPlan} onSelect={(m) => { setViewMode(m); setShowHub(false) }} onCamarote={() => setCamaroteModal(true)} />
+        ) : viewMode === 'rooms' ? (
           <RoomsPlaceholder userPlan={userPlan} />
         ) : viewMode === 'daily' ? (
           <DailyMatchView userId={userId} localFilters={localFilters} />
@@ -1392,38 +1563,8 @@ export default function BuscaPage() {
             </button>
           </div>
         ) : !currentProfile ? (
-          /* Sem perfis */
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, padding: '0 32px', textAlign: 'center' }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Users size={28} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
-            </div>
-            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: 0 }}>Por enquanto é só isso!</h2>
-            <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.5, margin: 0 }}>
-              Novos perfis aparecem o tempo todo. Amplie o raio de busca ou ajuste os filtros para descobrir mais pessoas.
-            </p>
-            <button
-              onClick={openFilters}
-              style={{
-                width: '100%',
-                padding: '14px 0',
-                borderRadius: 14,
-                backgroundColor: 'var(--accent)',
-                color: '#fff',
-                fontWeight: 600,
-                fontSize: 14,
-                border: 'none',
-                cursor: 'pointer',
-              }}
-            >
-              Editar filtros
-            </button>
-            <button
-              onClick={() => loadDeck(localFilters)}
-              style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: 13, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
-            >
-              <RotateCcw size={13} /> Recarregar
-            </button>
-          </div>
+          /* Sem perfis — volta ao hub de modos */
+          <ModesHubView userPlan={userPlan} onSelect={(m) => { setViewMode(m); setShowHub(false) }} onCamarote={() => setCamaroteModal(true)} />
         ) : (
           /* Swipe view */
           <div
@@ -2141,6 +2282,11 @@ export default function BuscaPage() {
       )}
 
       {/* ─── Modal de Upgrade ────────────────────────────────────────────────── */}
+      {/* Modal Camarote */}
+      {camaroteModal && (
+        <CamaroteModal userPlan={userPlan} onClose={() => setCamaroteModal(false)} />
+      )}
+
       {showUpgradeModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 1100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 24px' }}>
           <div

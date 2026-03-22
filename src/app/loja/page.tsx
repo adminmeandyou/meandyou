@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import {
   Star, Zap, ArrowLeft, CheckCircle, Loader2, ShoppingBag,
   Search, RotateCcw, Coins, Plus, Ghost, Eye, Gift, BadgeCheck,
-  TrendingUp, X, Package, ChevronRight, ChevronDown, Backpack,
+  TrendingUp, X, Package, ChevronRight, ChevronDown, Backpack, Crown,
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
@@ -31,6 +31,7 @@ type ItemKey =
   | 'superlike' | 'boost' | 'lupa' | 'rewind'
   | 'ghost_7d' | 'ghost_35d'
   | 'reveals_5' | 'xp_bonus_3d' | 'verified_plus' | 'caixa_surpresa' | 'caixa_lendaria'
+  | 'passaporte_camarote'
 
 interface StoreItem {
   key: ItemKey
@@ -40,6 +41,7 @@ interface StoreItem {
   icon: React.ReactNode
   baseFichas: number     // preco por unidade
   accentColor: string
+  blackOnly?: boolean
   accentBg: string
   accentBorder: string
   balanceKey?: string
@@ -123,6 +125,14 @@ const STORE_ITEMS: StoreItem[] = [
     unit: 'caixa',
     icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 2250, maxQty: 1,
     accentColor: '#F59E0B', accentBg: 'rgba(139,92,246,0.15)', accentBorder: 'rgba(245,158,11,0.50)',
+    new: true,
+  },
+  {
+    key: 'passaporte_camarote', label: 'Passaporte Camarote', description: 'Acesso ao Camarote por 30 dias — Sugar, Fetiche e salas VIP',
+    unit: 'acesso (30 dias)',
+    icon: <Crown size={20} strokeWidth={1.5} />, baseFichas: 70, maxQty: 1,
+    accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.30)',
+    blackOnly: true,
     new: true,
   },
 ]
@@ -678,10 +688,11 @@ export default function LojaPage() {
               const qty = qtys[item.key] ?? 1
               const total = item.baseFichas * qty
               const canAfford = fichas >= total
+              const locked = item.blackOnly && plan !== 'black'
               return (
                 <div
                   key={item.key}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: '16px', backgroundColor: 'var(--bg-card)', border: locked ? '1px solid rgba(245,158,11,0.25)' : '1px solid var(--border)', opacity: locked ? 0.75 : 1 }}
                 >
                   {/* Icone */}
                   <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: item.accentBg, border: `1px solid ${item.accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: item.accentColor }}>
@@ -722,12 +733,18 @@ export default function LojaPage() {
                   )}
 
                   {/* Botao comprar */}
-                  <button
-                    onClick={() => { haptics.tap(); setOpenItem(item); setOpenQty(qty) }}
-                    style={{ flexShrink: 0, padding: '7px 12px', borderRadius: 10, border: 'none', backgroundColor: canAfford ? '#E11D48' : 'rgba(255,255,255,0.06)', color: canAfford ? '#fff' : 'rgba(248,249,250,0.35)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
-                  >
-                    Comprar
-                  </button>
+                  {locked ? (
+                    <a href="/planos" style={{ flexShrink: 0, padding: '7px 12px', borderRadius: 10, background: 'rgba(245,158,11,0.12)', color: '#F59E0B', fontSize: 11, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-jakarta)', border: '1px solid rgba(245,158,11,0.25)', whiteSpace: 'nowrap' }}>
+                      Somente Black
+                    </a>
+                  ) : (
+                    <button
+                      onClick={() => { haptics.tap(); setOpenItem(item); setOpenQty(qty) }}
+                      style={{ flexShrink: 0, padding: '7px 12px', borderRadius: 10, border: 'none', backgroundColor: canAfford ? '#E11D48' : 'rgba(255,255,255,0.06)', color: canAfford ? '#fff' : 'rgba(248,249,250,0.35)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+                    >
+                      Comprar
+                    </button>
+                  )}
                 </div>
               )
             })}
