@@ -86,7 +86,8 @@ export default function MatchesPage() {
     setLoading(true)
     try {
       const { data, error } = await supabase.rpc('get_my_matches', { p_user_id: uid })
-      if (error) throw error
+      // PGRST116 = zero rows — conta nova sem matches, nao e erro real
+      if (error && error.code !== 'PGRST116') throw error
       setMatches(data || [])
     } catch {
       setMatches([])
@@ -188,9 +189,9 @@ export default function MatchesPage() {
         ) : matches.length === 0 ? (
           <EmptyState
             icon={<Heart size={28} />}
-            title="Nenhum match ainda"
-            description="Continue curtindo! Quando alguem curtir de volta, aparece aqui."
-            action={{ label: 'Explorar perfis', onClick: () => router.push('/busca') }}
+            title="Voce nao tem matches ainda"
+            description="Va para Modos, interaja com outros perfis e quando alguem curtir de volta o match aparece aqui."
+            action={{ label: 'Ir para Modos', onClick: () => router.push('/busca') }}
           />
 
         ) : (
