@@ -7,11 +7,12 @@ import { Bell, Settings, ArrowLeft } from 'lucide-react'
 
 interface AppHeaderProps {
   modeSelector?: React.ReactNode
+  rightActions?: React.ReactNode
   backHref?: string | null
   pageTitle?: string | null
 }
 
-export function AppHeader({ modeSelector, backHref, pageTitle }: AppHeaderProps) {
+export function AppHeader({ modeSelector, rightActions, backHref, pageTitle }: AppHeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [notifHovered, setNotifHovered] = useState(false)
@@ -76,6 +77,7 @@ export function AppHeader({ modeSelector, backHref, pageTitle }: AppHeaderProps)
 
       {/* Ícones à direita */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+        {rightActions}
         <Link
           href="/notificacoes"
           onMouseEnter={() => setNotifHovered(true)}

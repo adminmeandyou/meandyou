@@ -9,7 +9,7 @@ import {
   ArrowLeft, Send, Video, ShieldAlert,
   Loader2, AlertCircle, Lock, Mic,
   Sparkles, CalendarPlus, Zap, X, CalendarCheck, Star, Coffee,
-  MapPin, Shield, HeartCrack, Ghost, Phone, CheckCircle2, UserPlus, Check
+  MapPin, Shield, HeartCrack, Ghost, Phone, CheckCircle2, UserPlus, Check, Smile
 } from 'lucide-react'
 import { ChatBubble } from '@/components/ui/ChatBubble'
 import { ReportModal } from '@/components/ReportModal'
@@ -66,6 +66,7 @@ export default function ChatPage() {
   // Novas features
   const [showIcebreakers, setShowIcebreakers] = useState(false)
   const [showConvite, setShowConvite] = useState(false)
+  const [showEmojis, setShowEmojis] = useState(false)
   const [conviteText, setConviteText] = useState('')
   const [conviteLocal, setConviteLocal] = useState('')
   const [conviteDate, setConviteDate] = useState('')
@@ -985,8 +986,25 @@ export default function ChatPage() {
             )}
           </div>
 
+          {/* Emoji picker */}
+          {showEmojis && (
+            <div style={{ marginBottom: 8, padding: '10px', background: 'var(--bg-card2)', borderRadius: 12, border: '1px solid var(--border)', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+              {['😊','😂','🥰','😍','🔥','💕','❤️','✨','😘','🥺','😭','💀','😅','🤣','😉','😏','🤍','💯','🙏','👀','🫶','😈','💋','🥹','😇','🤗','😌','🫠','💫','🎉'].map(e => (
+                <button key={e} onClick={() => { setInput(v => v + e); setShowEmojis(false) }}
+                  style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', padding: '2px 4px', borderRadius: 6 }}
+                >{e}</button>
+              ))}
+            </div>
+          )}
+
           {/* Input + send */}
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
+            <button
+              onClick={() => setShowEmojis(v => !v)}
+              style={{ width: 36, height: 36, borderRadius: 10, border: 'none', background: showEmojis ? 'var(--accent-soft)' : 'transparent', color: showEmojis ? 'var(--accent)' : 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            >
+              <Smile size={18} strokeWidth={1.5} />
+            </button>
             <div style={{ flex: 1, position: 'relative' }}>
               <textarea
                 ref={inputRef}

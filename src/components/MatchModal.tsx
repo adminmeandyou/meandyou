@@ -1,8 +1,8 @@
 'use client'
 
 import Image from 'next/image'
-import { MessageCircle, Heart, X } from 'lucide-react'
-import { useEffect } from 'react'
+import { MessageCircle, Heart, X, UserPlus, Check } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 interface MatchModalProps {
   matchId: string
@@ -11,9 +11,19 @@ interface MatchModalProps {
   otherName: string
   onClose: () => void
   onStartChat: () => void
+  onAddFriend?: () => Promise<void>
 }
 
-export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartChat }: MatchModalProps) {
+export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartChat, onAddFriend }: MatchModalProps) {
+  const [friendSent, setFriendSent] = useState(false)
+  const [friendLoading, setFriendLoading] = useState(false)
+
+  async function handleAddFriend() {
+    if (!onAddFriend || friendSent || friendLoading) return
+    setFriendLoading(true)
+    try { await onAddFriend(); setFriendSent(true) } catch {}
+    setFriendLoading(false)
+  }
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     if (navigator.vibrate) navigator.vibrate([80, 40, 160])
@@ -195,6 +205,24 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
             <MessageCircle size={18} />
             Enviar mensagem
           </button>
+          {onAddFriend && (
+            <button
+              onClick={handleAddFriend}
+              disabled={friendSent || friendLoading}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+                padding: '13px 24px', borderRadius: 14,
+                background: friendSent ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.07)',
+                border: `1px solid ${friendSent ? 'rgba(16,185,129,0.30)' : 'rgba(255,255,255,0.10)'}`,
+                cursor: friendSent ? 'default' : 'pointer',
+                color: friendSent ? '#10b981' : 'rgba(248,249,250,0.70)',
+                fontFamily: 'var(--font-jakarta)', fontSize: 15,
+              }}
+            >
+              {friendSent ? <Check size={16} /> : <UserPlus size={16} />}
+              {friendSent ? 'Pedido enviado' : 'Adicionar como amigo'}
+            </button>
+          )}
           <button
             onClick={onClose}
             style={{

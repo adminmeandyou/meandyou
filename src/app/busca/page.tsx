@@ -3,7 +3,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/app/lib/supabase'
 import { PaywallCard } from '@/components/PaywallCard'
 import {
@@ -456,11 +456,9 @@ const MODE_LABELS: Record<ViewMode, string> = {
 function ModeSelectorTabs({
   viewMode,
   onChange,
-  onFilterClick,
 }: {
   viewMode: ViewMode
   onChange: (m: ViewMode) => void
-  onFilterClick: () => void
 }) {
   const [open, setOpen] = useState(false)
 
@@ -515,21 +513,6 @@ function ModeSelectorTabs({
           </>
         )}
       </div>
-
-      {/* Botão filtros */}
-      <button
-        onClick={onFilterClick}
-        title="Filtros"
-        style={{
-          width: 32, height: 32, borderRadius: 8,
-          border: '1px solid rgba(255,255,255,0.10)',
-          backgroundColor: 'transparent', color: 'var(--muted)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', flexShrink: 0,
-        }}
-      >
-        <SlidersHorizontal size={14} strokeWidth={1.5} />
-      </button>
     </div>
   )
 }
@@ -1306,8 +1289,12 @@ export default function BuscaPage() {
   const [dragY, setDragY] = useState(0)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradeReason, setUpgradeReason] = useState<'superlike' | 'fetiche'>('superlike')
-  const [matchResult, setMatchResult] = useState<{ name: string; photo?: string } | null>(null)
+  const [matchResult, setMatchResult] = useState<{ name: string; photo?: string; otherUserId?: string } | null>(null)
+  const [matchFriendSent, setMatchFriendSent] = useState(false)
   const [lastSwipe, setLastSwipe] = useState<{ dir: 'left' | 'right' | 'up'; profileId: string } | null>(null)
+
+  // ── Profile detail sheet (swipe down) ───────────────────────────────────
+  const [showProfileSheet, setShowProfileSheet] = useState(false)
 
   // ── Boost ────────────────────────────────────────────────────────────────
   const [boostUntil, setBoostUntil] = useState<Date | null>(null)
@@ -1333,25 +1320,68 @@ export default function BuscaPage() {
   const currentProfile = deck[currentIdx] ?? null
   const toast = useToast()
   const haptics = useHaptics()
+  const searchParams = useSearchParams()
 
-  // ── Injeção do modeSelector no AppHeader ──────────────────────────────────
-  const { setModeSelector } = useAppHeader()
+  // Abre filtros automaticamente se vier de /configuracoes com ?filtros=1
+  useEffect(() => {
+    if (searchParams.get('filtros') === '1') {
+      setShowFilters(true)
+      setShowHub(false)
+    }
+  }, [searchParams])
+
+  // ── Injeção do modeSelector e rightActions no AppHeader ──────────────────
+  const { setModeSelector, setRightActions } = useAppHeader()
 
   const openFiltersStable = useCallback(() => openFilters(), [localFilters, filtersConfigured])
 
   useEffect(() => {
+    if (showHub) {
+      setModeSelector(null)
+      setRightActions(null)
+      return
+    }
     setModeSelector(
       <ModeSelectorTabs
         viewMode={viewMode}
         onChange={(m) => { setViewMode(m); setShowHub(false) }}
-        onFilterClick={openFiltersStable}
       />
     )
-  }, [viewMode, setModeSelector, openFiltersStable])
+    setRightActions(
+      <>
+        <Link
+          href="/conversas"
+          style={{
+            width: 36, height: 36, borderRadius: 10,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--muted)', textDecoration: 'none',
+          }}
+          aria-label="Conversas"
+        >
+          <Search size={19} strokeWidth={1.5} style={{ display: 'none' }} />
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </Link>
+        <button
+          onClick={openFiltersStable}
+          title="Filtros"
+          style={{
+            width: 36, height: 36, borderRadius: 10,
+            border: 'none', backgroundColor: 'transparent', color: 'var(--muted)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          <SlidersHorizontal size={18} strokeWidth={1.5} />
+        </button>
+      </>
+    )
+  }, [viewMode, showHub, setModeSelector, setRightActions, openFiltersStable])
 
   useEffect(() => {
-    return () => setModeSelector(null)
-  }, [setModeSelector])
+    return () => { setModeSelector(null); setRightActions(null) }
+  }, [setModeSelector, setRightActions])
 
   // Reset photoIdx quando o card muda
   useEffect(() => { setPhotoIdx(0) }, [currentIdx])
@@ -1563,7 +1593,10 @@ export default function BuscaPage() {
     if (dragX > threshold) triggerSwipe('right')
     else if (dragX < -threshold) triggerSwipe('left')
     else if (dragY < -threshold) triggerSwipe('up')
-    else {
+    else if (dragY > threshold) {
+      setShowProfileSheet(true)
+      setDragX(0); setDragY(0)
+    } else {
       // Spring: anima de volta ao centro com overshoot
       setIsSnapping(true)
       setDragX(0); setDragY(0)
@@ -1596,7 +1629,8 @@ export default function BuscaPage() {
           p_is_superlike: dir === 'up',
         })
         if (data?.is_match) {
-          setMatchResult(savedProfile)
+          setMatchFriendSent(false)
+          setMatchResult({ ...savedProfile, otherUserId: profileId })
           supabase.auth.getSession().then(({ data: s }) => {
             const token = s.session?.access_token
             if (token) {
@@ -1717,9 +1751,11 @@ export default function BuscaPage() {
   const showLikeIndicator = isDragging && dragX > 20
   const showPassIndicator = isDragging && dragX < -20
   const showSuperIndicator = isDragging && dragY < -20
+  const showInfoIndicator = isDragging && dragY > 20
   const likeOpacity = isDragging ? Math.min(1, (dragX - 20) / 80) : 0
   const passOpacity = isDragging ? Math.min(1, (-dragX - 20) / 80) : 0
   const superOpacity = isDragging ? Math.min(1, (-dragY - 20) / 80) : 0
+  const infoOpacity = isDragging ? Math.min(1, (dragY - 20) / 80) : 0
 
   // ── Foto atual do card ────────────────────────────────────────────────────
 
@@ -2012,6 +2048,21 @@ export default function BuscaPage() {
                   </div>
                 )}
 
+                {/* Carimbo INFO (swipe down) */}
+                {showInfoIndicator && (
+                  <div
+                    style={{
+                      position: 'absolute', bottom: 80, left: '50%', transform: 'translateX(-50%)',
+                      border: '3px solid rgba(248,249,250,0.70)',
+                      borderRadius: 10, padding: '6px 14px',
+                      pointerEvents: 'none',
+                      opacity: infoOpacity,
+                    }}
+                  >
+                    <span style={{ color: 'rgba(248,249,250,0.90)', fontWeight: 800, fontSize: 18, letterSpacing: 2 }}>VER MAIS</span>
+                  </div>
+                )}
+
                 {/* Info do perfil */}
                 <div
                   style={{
@@ -2171,6 +2222,46 @@ export default function BuscaPage() {
           </div>
         )}
       </div>
+
+      {/* ─── BottomSheet de detalhes do perfil (swipe down) ────────────────── */}
+      <BottomSheet
+        isOpen={showProfileSheet}
+        onClose={() => setShowProfileSheet(false)}
+        title={currentProfile?.name ?? ''}
+      >
+        {currentProfile && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            {currentProfile.bio && (
+              <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
+                {currentProfile.bio}
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {currentProfile.age && (
+                <span style={{ fontSize: 13, color: 'var(--text)', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, padding: '5px 10px' }}>
+                  {currentProfile.age} anos
+                </span>
+              )}
+              {currentProfile.city && (
+                <span style={{ fontSize: 13, color: 'var(--text)', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <MapPin size={12} strokeWidth={1.5} /> {currentProfile.city}
+                </span>
+              )}
+              {currentProfile.distance_km !== undefined && (
+                <span style={{ fontSize: 13, color: 'var(--text)', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, padding: '5px 10px' }}>
+                  {Math.round(currentProfile.distance_km)} km
+                </span>
+              )}
+            </div>
+            <a
+              href={`/perfil/${currentProfile.id}`}
+              style={{ display: 'block', width: '100%', padding: '13px', borderRadius: 12, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 14, textAlign: 'center', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box' }}
+            >
+              Ver perfil completo
+            </a>
+          </div>
+        )}
+      </BottomSheet>
 
       {/* ─── BottomSheet de filtros ─────────────────────────────────────────── */}
       <BottomSheet
@@ -2518,6 +2609,32 @@ export default function BuscaPage() {
             >
               Ver matches
             </Link>
+            {matchResult.otherUserId && !matchFriendSent && (
+              <button
+                onClick={async () => {
+                  if (!userId) return
+                  try {
+                    await fetch('/api/amigos', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ friendId: matchResult!.otherUserId }),
+                    })
+                    setMatchFriendSent(true)
+                  } catch {}
+                }}
+                style={{
+                  width: '100%', padding: '12px 0', borderRadius: 14, marginBottom: 10,
+                  background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)',
+                  color: 'rgba(248,249,250,0.70)', fontSize: 14, cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                }}
+              >
+                <Check size={15} /> Adicionar como amigo
+              </button>
+            )}
+            {matchFriendSent && (
+              <p style={{ fontSize: 13, color: '#10b981', textAlign: 'center', marginBottom: 10 }}>Pedido de amizade enviado!</p>
+            )}
             <button
               onClick={() => setMatchResult(null)}
               style={{ background: 'none', border: 'none', color: 'var(--muted-2)', fontSize: 13, cursor: 'pointer' }}

@@ -8,7 +8,7 @@ import Image from 'next/image'
 import {
   ArrowLeft, ChevronRight, User, HelpCircle, FileText, Shield, Trash2,
   LogOut, CreditCard, Headphones, ShieldCheck, Monitor, Mail, Bell,
-  Eye, EyeOff, Lock, Smartphone, Bug, Paperclip, X, Heart, Users, Crown,
+  Eye, EyeOff, Lock, Smartphone, Bug, Paperclip, X, Heart, Users, Crown, Compass,
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
@@ -283,6 +283,17 @@ export default function ConfiguracoesPage() {
             <ChevronRight size={16} color="rgba(255,255,255,0.18)" />
           </Link>
         )}
+
+        {/* ── DESCOBERTA ── */}
+        <CardSection titulo="Descoberta">
+          <LinkRow
+            href="/busca?filtros=1"
+            icon={<Compass size={17} />}
+            label="Filtros de busca"
+            sub="Idade, distância, gênero e mais"
+            last
+          />
+        </CardSection>
 
         {/* ── CONTA ── */}
         <CardSection titulo="Conta">
