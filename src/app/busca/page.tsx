@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, Suspense } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -1264,7 +1264,7 @@ function applyCompatFilters(
 
 // ─── Página principal ─────────────────────────────────────────────────────────
 
-export default function BuscaPage() {
+function BuscaInner() {
   // ── State (preservado da versão anterior) ─────────────────────────────────
   const [userId, setUserId] = useState<string | null>(null)
   const [userPlan, setUserPlan] = useState('essencial')
@@ -2735,5 +2735,13 @@ export default function BuscaPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function BuscaPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)' }} />}>
+      <BuscaInner />
+    </Suspense>
   )
 }
