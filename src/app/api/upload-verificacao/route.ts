@@ -126,6 +126,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
+    // Salva a URL pública do arquivo na coluna correta do perfil
+    const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/documentos/${caminho}`
+    const profileUpdate: Record<string, string> = {}
+    if (caminho.includes('/frente')) profileUpdate.doc_frente_url = publicUrl
+    else if (caminho.includes('/verso')) profileUpdate.doc_verso_url = publicUrl
+    else if (caminho.includes('/selfie')) profileUpdate.selfie_url = publicUrl
+
+    if (Object.keys(profileUpdate).length > 0) {
+      await supabase.from('profiles').update(profileUpdate).eq('id', userId)
+    }
+
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('Erro em upload-verificacao:', err)
