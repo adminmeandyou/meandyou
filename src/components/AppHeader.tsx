@@ -8,11 +8,12 @@ import { Bell, Settings, ArrowLeft } from 'lucide-react'
 interface AppHeaderProps {
   modeSelector?: React.ReactNode
   rightActions?: React.ReactNode
+  leftAction?: React.ReactNode
   backHref?: string | null
   pageTitle?: string | null
 }
 
-export function AppHeader({ modeSelector, rightActions, backHref, pageTitle }: AppHeaderProps) {
+export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pageTitle }: AppHeaderProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [notifHovered, setNotifHovered] = useState(false)
@@ -34,8 +35,10 @@ export function AppHeader({ modeSelector, rightActions, backHref, pageTitle }: A
         zIndex: 100,
       }}
     >
-      {/* Esquerda: back button ou logo */}
-      {backHref ? (
+      {/* Esquerda: leftAction, back button ou logo */}
+      {leftAction ? (
+        <div style={{ flexShrink: 0 }}>{leftAction}</div>
+      ) : backHref ? (
         <button
           onClick={() => router.back()}
           style={{

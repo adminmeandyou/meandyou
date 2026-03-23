@@ -7,9 +7,9 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Headphones, Send, CheckCircle, Loader2, Crown, AlertCircle } from 'lucide-react'
 
 const CATEGORIAS = [
-  { value: 'verificacao', label: 'Verificação de identidade' },
+  { value: 'verificacao', label: 'Verificacao de identidade' },
   { value: 'pagamento',   label: 'Pagamento / Assinatura' },
-  { value: 'bug',         label: 'Bug / Problema técnico' },
+  { value: 'bug',         label: 'Bug / Problema tecnico' },
   { value: 'conta',       label: 'Minha conta' },
   { value: 'outro',       label: 'Outro' },
 ]
@@ -25,7 +25,7 @@ export default function SuportePage() {
 
   async function handleSubmit() {
     if (!form.categoria || !form.descricao.trim()) {
-      setError('Preencha a categoria e a descrição.')
+      setError('Preencha a categoria e a descricao.')
       return
     }
     if (form.descricao.trim().length < 20) {
@@ -46,9 +46,8 @@ export default function SuportePage() {
       .single()
 
     const plano = limits.isBlack ? 'Black' : limits.isPlus ? 'Plus' : 'Essencial'
-    const prioridade = limits.isBlack ? '🔴 PRIORITÁRIO (Black)' : limits.isPlus ? '🟡 Plus' : '⚪ Essencial'
+    const prioridade = limits.isBlack ? 'PRIORITARIO (Black)' : limits.isPlus ? 'Plus' : 'Essencial'
 
-    // Envia via API de email (Resend → adminmeandyou@proton.me)
     const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/suporte', {
       method: 'POST',
@@ -59,7 +58,7 @@ export default function SuportePage() {
       body: JSON.stringify({
         user_id: user.id,
         email: user.email,
-        nome: profile?.name ?? 'Usuário',
+        nome: profile?.name ?? 'Usuario',
         plano,
         prioridade,
         categoria: form.categoria,
@@ -72,27 +71,27 @@ export default function SuportePage() {
     if (res.ok) {
       setSent(true)
     } else {
-      setError('Não foi possível enviar. Tente novamente ou mande email para adminmeandyou@proton.me')
+      setError('Nao foi possivel enviar. Tente novamente ou mande email para adminmeandyou@proton.me')
     }
   }
 
   if (sent) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] font-jakarta flex flex-col items-center justify-center px-8 gap-5">
-        <div className="w-16 h-16 rounded-full bg-[var(--accent-light)] border border-[var(--accent-border)] flex items-center justify-center">
-          <CheckCircle size={28} className="text-[var(--accent)]" />
+      <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', gap: '20px' }}>
+        <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <CheckCircle size={28} color="var(--accent)" strokeWidth={1.5} />
         </div>
-        <div className="text-center">
-          <h2 className="font-fraunces text-2xl text-white mb-2">Mensagem enviada!</h2>
-          <p className="text-white/40 text-sm leading-relaxed max-w-xs">
+        <div style={{ textAlign: 'center' }}>
+          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', color: '#F8F9FA', margin: '0 0 8px' }}>Mensagem enviada!</h2>
+          <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', lineHeight: '1.6', margin: 0, maxWidth: '280px' }}>
             {limits.isBlack
-              ? 'Suporte prioritário Black — responderemos em até 24h.'
-              : 'Responderemos o mais breve possível pelo email cadastrado.'}
+              ? 'Suporte prioritario Black — responderemos em ate 24h.'
+              : 'Responderemos o mais breve possivel pelo email cadastrado.'}
           </p>
         </div>
         <button
           onClick={() => router.back()}
-          className="px-6 py-3 rounded-2xl bg-white/5 border border-white/10 text-white/60 text-sm hover:bg-white/10 transition"
+          style={{ padding: '12px 24px', borderRadius: '100px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', color: 'rgba(248,249,250,0.60)', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
         >
           Voltar
         </button>
@@ -101,62 +100,69 @@ export default function SuportePage() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] font-jakarta pb-24">
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '40px' }}>
 
-      <header className="sticky top-0 z-30 bg-[var(--bg)]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
-        <button onClick={() => router.back()} className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
-          <ArrowLeft size={18} className="text-white/60" />
+      {/* Header */}
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button
+          onClick={() => router.back()}
+          style={{ width: 36, height: 36, borderRadius: '50%', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+        >
+          <ArrowLeft size={18} color="rgba(248,249,250,0.60)" strokeWidth={1.5} />
         </button>
-        <div className="flex-1">
-          <h1 className="font-fraunces text-xl text-white">Suporte</h1>
-          <p className="text-white/30 text-xs">
-            {limits.isBlack ? '🔴 Prioritário — resposta em até 24h' : 'Fale com a equipe MeAndYou'}
+        <div style={{ flex: 1 }}>
+          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: '#F8F9FA', margin: 0 }}>Suporte</h1>
+          <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', margin: 0 }}>
+            {limits.isBlack ? 'Prioritario — resposta em ate 24h' : 'Fale com a equipe MeAndYou'}
           </p>
         </div>
         {limits.isBlack && (
-          <div className="flex items-center gap-1 px-2 py-1 rounded-full bg-[#f5c842]/10 border border-[#f5c842]/20">
-            <Crown size={11} className="text-[#f5c842]" />
-            <span className="text-[#f5c842] text-xs font-bold">Black</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '100px', backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.20)' }}>
+            <Crown size={11} color="#F59E0B" strokeWidth={1.5} />
+            <span style={{ color: '#F59E0B', fontSize: '11px', fontWeight: 700 }}>Black</span>
           </div>
         )}
       </header>
 
-      <div className="px-5 pt-6 space-y-5 max-w-md mx-auto">
+      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
         {/* Badge plano */}
-        <div className={`rounded-2xl p-4 border flex items-center gap-3 ${
-          limits.isBlack
-            ? 'bg-[#f5c842]/5 border-[#f5c842]/20'
-            : limits.isPlus
-              ? 'bg-violet-500/5 border-violet-500/20'
-              : 'bg-white/3 border-white/8'
-        }`}>
-          <Headphones size={20} className={limits.isBlack ? 'text-[#f5c842]' : limits.isPlus ? 'text-violet-400' : 'text-white/30'} />
+        <div style={{
+          borderRadius: '16px', padding: '16px', border: '1px solid',
+          borderColor: limits.isBlack ? 'rgba(245,158,11,0.20)' : limits.isPlus ? 'rgba(139,92,246,0.20)' : 'rgba(255,255,255,0.08)',
+          backgroundColor: limits.isBlack ? 'rgba(245,158,11,0.05)' : limits.isPlus ? 'rgba(139,92,246,0.05)' : 'rgba(255,255,255,0.03)',
+          display: 'flex', alignItems: 'center', gap: '12px',
+        }}>
+          <Headphones size={20} color={limits.isBlack ? '#F59E0B' : limits.isPlus ? '#8b5cf6' : 'rgba(248,249,250,0.30)'} strokeWidth={1.5} />
           <div>
-            <p className="text-white/70 text-sm font-semibold">
-              {limits.isBlack ? 'Suporte prioritário 24h' : limits.isPlus ? 'Suporte Plus' : 'Suporte Essencial'}
+            <p style={{ color: 'rgba(248,249,250,0.70)', fontSize: '14px', fontWeight: 600, margin: '0 0 2px' }}>
+              {limits.isBlack ? 'Suporte prioritario 24h' : limits.isPlus ? 'Suporte Plus' : 'Suporte Essencial'}
             </p>
-            <p className="text-white/30 text-xs">
+            <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', margin: 0 }}>
               {limits.isBlack
-                ? 'Sua mensagem será tratada com prioridade máxima'
-                : 'Para suporte prioritário, assine o plano Black'}
+                ? 'Sua mensagem sera tratada com prioridade maxima'
+                : 'Para suporte prioritario, assine o plano Black'}
             </p>
           </div>
         </div>
 
         {/* Categoria */}
         <div>
-          <label className="text-xs text-white/30 uppercase tracking-widest block mb-2">Categoria *</label>
-          <div className="space-y-2">
+          <label style={{ display: 'block', color: 'rgba(248,249,250,0.30)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
+            Categoria *
+          </label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {CATEGORIAS.map((cat) => (
               <button
                 key={cat.value}
                 onClick={() => setForm((f) => ({ ...f, categoria: cat.value }))}
-                className={`w-full py-3 px-4 rounded-xl border text-left text-sm transition ${
-                  form.categoria === cat.value
-                    ? 'bg-[var(--accent-light)] border-[#b8f542]/40 text-[var(--accent)] font-semibold'
-                    : 'bg-white/3 border-white/8 text-white/50 hover:border-white/20'
-                }`}
+                style={{
+                  width: '100%', padding: '12px 16px', borderRadius: '12px', textAlign: 'left', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.15s',
+                  border: form.categoria === cat.value ? '1px solid rgba(225,29,72,0.40)' : '1px solid rgba(255,255,255,0.08)',
+                  backgroundColor: form.categoria === cat.value ? 'rgba(225,29,72,0.08)' : 'rgba(255,255,255,0.03)',
+                  color: form.categoria === cat.value ? '#E11D48' : 'rgba(248,249,250,0.50)',
+                  fontWeight: form.categoria === cat.value ? 600 : 400,
+                }}
               >
                 {cat.label}
               </button>
@@ -164,47 +170,49 @@ export default function SuportePage() {
           </div>
         </div>
 
-        {/* Descrição */}
+        {/* Descricao */}
         <div>
-          <label className="text-xs text-white/30 uppercase tracking-widest block mb-2">
-            Descrição * <span className="text-white/20 normal-case">({form.descricao.length}/1000)</span>
+          <label style={{ display: 'block', color: 'rgba(248,249,250,0.30)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
+            Descricao * <span style={{ color: 'rgba(248,249,250,0.20)', textTransform: 'none', fontWeight: 400 }}>({form.descricao.length}/1000)</span>
           </label>
           <textarea
             value={form.descricao}
             onChange={(e) => setForm((f) => ({ ...f, descricao: e.target.value.slice(0, 1000) }))}
-            placeholder="Descreva o problema com o máximo de detalhes possível…"
+            placeholder="Descreva o problema com o maximo de detalhes possivel..."
             rows={6}
-            className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-white text-sm placeholder-white/20 focus:outline-none focus:border-[#b8f542]/40 resize-none"
+            style={{ width: '100%', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '14px 16px', color: '#F8F9FA', fontSize: '14px', fontFamily: 'var(--font-jakarta)', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
           />
         </div>
 
         {/* Erro */}
         {error && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/20">
-            <AlertCircle size={14} className="text-red-400 shrink-0" />
-            <p className="text-red-400 text-xs">{error}</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 14px', borderRadius: '12px', backgroundColor: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.20)' }}>
+            <AlertCircle size={14} color="#f87171" strokeWidth={1.5} style={{ flexShrink: 0 }} />
+            <p style={{ color: '#f87171', fontSize: '13px', margin: 0 }}>{error}</p>
           </div>
         )}
 
-        {/* Botão enviar */}
+        {/* Botao enviar */}
         <button
           onClick={handleSubmit}
           disabled={sending}
-          className="w-full py-4 rounded-2xl bg-[#b8f542] text-black font-bold text-sm flex items-center justify-center gap-2 hover:bg-[#a8e030] transition disabled:opacity-40 disabled:cursor-not-allowed"
+          style={{ width: '100%', padding: '15px', borderRadius: '100px', backgroundColor: '#E11D48', color: '#fff', fontWeight: 700, fontSize: '15px', border: 'none', cursor: sending ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: sending ? 0.5 : 1 }}
         >
-          {sending ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-          {sending ? 'Enviando…' : 'Enviar mensagem'}
+          {sending ? <Loader2 size={16} strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Send size={16} strokeWidth={1.5} />}
+          {sending ? 'Enviando...' : 'Enviar mensagem'}
         </button>
 
         {/* FAQ link */}
-        <p className="text-center text-white/20 text-xs">
-          Tem uma dúvida simples?{' '}
-          <a href="/ajuda" className="text-white/40 underline hover:text-white/60 transition">
+        <p style={{ textAlign: 'center', color: 'rgba(248,249,250,0.20)', fontSize: '13px', margin: 0 }}>
+          Tem uma duvida simples?{' '}
+          <a href="/ajuda" style={{ color: 'rgba(248,249,250,0.40)', textDecoration: 'underline' }}>
             Consulte o FAQ
           </a>
         </p>
 
       </div>
+
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
 }

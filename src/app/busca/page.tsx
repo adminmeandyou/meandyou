@@ -1339,8 +1339,8 @@ function BuscaInner() {
     }
   }, [searchParams])
 
-  // ── Injeção do modeSelector e rightActions no AppHeader ──────────────────
-  const { setModeSelector, setRightActions } = useAppHeader()
+  // ── Injeção do modeSelector, leftAction e rightActions no AppHeader ──────────────────
+  const { setModeSelector, setRightActions, setLeftAction } = useAppHeader()
 
   const openFiltersStable = useCallback(() => openFilters(), [localFilters, filtersConfigured])
 
@@ -1348,8 +1348,18 @@ function BuscaInner() {
     if (showHub) {
       setModeSelector(null)
       setRightActions(null)
+      setLeftAction(null)
       return
     }
+    setLeftAction(
+      <button
+        onClick={() => { setShowHub(true) }}
+        style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+        aria-label="Voltar para Modos"
+      >
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(248,249,250,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
+      </button>
+    )
     setModeSelector(
       <ModeSelectorTabs
         viewMode={viewMode}
@@ -1389,8 +1399,8 @@ function BuscaInner() {
   }, [viewMode, showHub, setModeSelector, setRightActions, openFiltersStable])
 
   useEffect(() => {
-    return () => { setModeSelector(null); setRightActions(null) }
-  }, [setModeSelector, setRightActions])
+    return () => { setModeSelector(null); setRightActions(null); setLeftAction(null) }
+  }, [setModeSelector, setRightActions, setLeftAction])
 
   // Reset photoIdx quando o card muda
   useEffect(() => { setPhotoIdx(0) }, [currentIdx])

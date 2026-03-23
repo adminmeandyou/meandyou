@@ -45,17 +45,48 @@ export default function SessoesPage() {
   async function carregar() {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) { router.push('/login'); return }
-    const res = await fetch('/api/auth/sessoes', {
-      headers: { Authorization: `Bearer ${session.access_token}` },
-    })
-    const json = await res.json()
-    setSessoes(json.sessoes ?? [])
+
+    try {
+      const res = await fetch('/api/auth/sessoes', {
+        headers: { Authorization: `Bearer ${session.access_token}` },
+      })
+      const json = await res.json()
+      const sessoesApi: Sessao[] = json.sessoes ?? []
+
+      // Se a API não retornou nada, mostra pelo menos a sessão atual
+      if (sessoesApi.length === 0) {
+        const ua = navigator.userAgent
+        const sessaoAtual: Sessao = {
+          id: 'current',
+          ip: null,
+          user_agent: ua,
+          device_info: null,
+          created_at: new Date().toISOString(),
+          last_active_at: new Date().toISOString(),
+        }
+        setSessoes([sessaoAtual])
+      } else {
+        setSessoes(sessoesApi)
+      }
+    } catch {
+      // Em caso de erro, mostra a sessão atual
+      const sessaoAtual: Sessao = {
+        id: 'current',
+        ip: null,
+        user_agent: navigator.userAgent,
+        device_info: null,
+        created_at: new Date().toISOString(),
+        last_active_at: new Date().toISOString(),
+      }
+      setSessoes([sessaoAtual])
+    }
     setLoading(false)
   }
 
   useEffect(() => { carregar() }, [])
 
   async function encerrar(id: string) {
+    if (id === 'current') { setSessoes([]); return }
     setEncerrando(id)
     const { data: { session } } = await supabase.auth.getSession()
     await fetch(`/api/auth/sessoes/${id}`, {
@@ -68,12 +99,12 @@ export default function SessoesPage() {
 
   async function encerrarTodas() {
     const { data: { session } } = await supabase.auth.getSession()
-    const promises = sessoes.map(s =>
-      fetch(`/api/auth/sessoes/${s.id}`, {
+    const promises = sessoes
+      .filter(s => s.id !== 'current')
+      .map(s => fetch(`/api/auth/sessoes/${s.id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${session?.access_token}` },
-      })
-    )
+      }))
     await Promise.all(promises)
     setSessoes([])
   }
@@ -127,7 +158,12 @@ export default function SessoesPage() {
                       }
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ color: '#fff', fontWeight: 600, fontSize: '14px', margin: '0 0 4px' }}>{dev.nome}</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                        <p style={{ color: '#fff', fontWeight: 600, fontSize: '14px', margin: 0 }}>{dev.nome}</p>
+                        {sessao.id === 'current' && (
+                          <span style={{ fontSize: '10px', fontWeight: 700, color: '#10b981', backgroundColor: 'rgba(16,185,129,0.10)', border: '1px solid rgba(16,185,129,0.25)', borderRadius: '100px', padding: '1px 7px' }}>Este dispositivo</span>
+                        )}
+                      </div>
                       <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px', margin: '0 0 2px' }}>
                         IP: {sessao.ip ?? 'desconhecido'}
                       </p>

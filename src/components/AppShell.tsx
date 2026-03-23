@@ -44,10 +44,10 @@ function usesShell(pathname: string): boolean {
   )
 }
 
-/** Lê o modeSelector, rightActions, backHref e pageTitle do contexto e passa para o AppHeader */
+/** Lê o modeSelector, leftAction, rightActions, backHref e pageTitle do contexto e passa para o AppHeader */
 function AppHeaderConnected() {
-  const { modeSelector, rightActions, backHref, pageTitle } = useAppHeader()
-  return <AppHeader modeSelector={modeSelector} rightActions={rightActions} backHref={backHref} pageTitle={pageTitle} />
+  const { modeSelector, leftAction, rightActions, backHref, pageTitle } = useAppHeader()
+  return <AppHeader modeSelector={modeSelector} leftAction={leftAction} rightActions={rightActions} backHref={backHref} pageTitle={pageTitle} />
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {

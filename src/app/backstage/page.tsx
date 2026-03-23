@@ -1298,9 +1298,10 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
           </a>
           <button
             onClick={() => setShowModal(true)}
-            style={{ width: '100%', padding: '14px', borderRadius: 16, border: `1px solid rgba(255,255,255,0.10)`, background: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.55)', fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, cursor: 'pointer' }}
+            style={{ width: '100%', padding: '14px', borderRadius: 16, border: `1px solid rgba(245,158,11,0.35)`, background: 'rgba(245,158,11,0.10)', color: '#F59E0B', fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 14, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
           >
-            Pedir acesso — entender como funciona
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+            Pedir acesso ao Camarote
           </button>
         </div>
       </div>
