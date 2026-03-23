@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Users, Lock, Crown, Search, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Plus, Users, Lock, Crown, Search, RefreshCw, Sparkles } from 'lucide-react'
 import Link from 'next/link'
 
 type Room = {
@@ -131,49 +131,190 @@ function RoomCard({
 }) {
   const isFull = (room.member_count ?? 0) >= room.max_members
   const isBlack = room.type === 'black'
-  const isLocked = !canJoin || (isBlack && plan !== 'black')
+  const planLocked = !canJoin || (isBlack && plan !== 'black')
 
   return (
     <button
-      onClick={() => !isLocked && !isFull && onJoin(room)}
-      disabled={isLocked || isFull}
+      onClick={() => onJoin(room)}
+      disabled={isFull && !planLocked}
       style={{
         display: 'flex', alignItems: 'center', gap: 14,
         padding: '14px 16px', borderRadius: 16, width: '100%', textAlign: 'left',
-        backgroundColor: 'var(--bg-card)', border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : 'var(--border)'}`,
-        opacity: isLocked || isFull ? 0.45 : 1, cursor: isLocked || isFull ? 'default' : 'pointer',
+        backgroundColor: 'var(--bg-card)',
+        border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : planLocked ? 'rgba(255,255,255,0.06)' : 'var(--border)'}`,
+        cursor: isFull && !planLocked ? 'default' : 'pointer',
         transition: 'all 0.15s',
+        position: 'relative', overflow: 'hidden',
       }}
     >
+      {/* Emoji / ícone */}
       <div style={{
         width: 48, height: 48, borderRadius: 14, flexShrink: 0,
-        backgroundColor: isBlack ? 'rgba(245,158,11,0.10)' : 'rgba(225,29,72,0.10)',
-        border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : 'rgba(225,29,72,0.20)'}`,
+        backgroundColor: isBlack ? 'rgba(245,158,11,0.10)' : planLocked ? 'rgba(255,255,255,0.04)' : 'rgba(225,29,72,0.10)',
+        border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : planLocked ? 'rgba(255,255,255,0.07)' : 'rgba(225,29,72,0.20)'}`,
         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22,
+        filter: planLocked ? 'grayscale(0.6) opacity(0.5)' : 'none',
       }}>
         {room.emoji}
       </div>
+
+      {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-          <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, color: 'var(--text)', margin: 0 }}>
+          <p style={{
+            fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14,
+            color: planLocked ? 'rgba(248,249,250,0.35)' : 'var(--text)', margin: 0,
+          }}>
             {room.name}
           </p>
-          {isBlack && <Crown size={12} color="#F59E0B" strokeWidth={2} />}
-          {room.type === 'private' && <Lock size={11} color="var(--muted)" strokeWidth={2} />}
+          {isBlack && <Crown size={12} color={planLocked ? 'rgba(245,158,11,0.4)' : '#F59E0B'} strokeWidth={2} />}
+          {room.type === 'private' && !planLocked && <Lock size={11} color="var(--muted)" strokeWidth={2} />}
         </div>
-        <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        <p style={{
+          fontSize: 12, color: planLocked ? 'rgba(248,249,250,0.22)' : 'var(--muted)',
+          margin: 0, lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>
           {isFull ? 'Sala cheia' : room.description ?? 'Sala de bate-papo'}
         </p>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-          <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isFull ? '#F59E0B' : '#10b981' }} />
-          <span style={{ fontSize: 11, color: 'var(--muted)' }}>
-            {room.member_count ?? 0}/{room.max_members}
-          </span>
-        </div>
+
+      {/* Direita: lock ou contagem */}
+      <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center' }}>
+        {planLocked ? (
+          <div style={{
+            width: 28, height: 28, borderRadius: 8,
+            backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Lock size={13} color="rgba(248,249,250,0.3)" strokeWidth={2} />
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isFull ? '#F59E0B' : '#10b981' }} />
+              <span style={{ fontSize: 11, color: 'var(--muted)' }}>
+                {room.member_count ?? 0}/{room.max_members}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </button>
+  )
+}
+
+// ─── Sheet de upgrade ─────────────────────────────────────────────────────────
+function UpgradeSheet({
+  room,
+  isBlackOnly,
+  onClose,
+}: {
+  room: Room
+  isBlackOnly: boolean
+  onClose: () => void
+}) {
+  const router = useRouter()
+  return (
+    <>
+      <div
+        onClick={onClose}
+        style={{ position: 'fixed', inset: 0, zIndex: 40, backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}
+      />
+      <div style={{
+        position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
+        width: '100%', maxWidth: 430, zIndex: 50,
+        backgroundColor: 'var(--bg-card)', borderRadius: '24px 24px 0 0',
+        borderTop: '1px solid var(--border)', padding: '24px 24px 48px',
+        animation: 'ui-slide-up 0.25s ease-out',
+      }}>
+        <div style={{ width: 36, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.12)', margin: '0 auto 24px' }} />
+
+        {/* Ícone + preview da sala */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+          <div style={{
+            width: 72, height: 72, borderRadius: 20,
+            backgroundColor: isBlackOnly ? 'rgba(245,158,11,0.10)' : 'rgba(225,29,72,0.10)',
+            border: `1px solid ${isBlackOnly ? 'rgba(245,158,11,0.30)' : 'rgba(225,29,72,0.25)'}`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34,
+          }}>
+            {room.emoji}
+          </div>
+          <div style={{ textAlign: 'center' }}>
+            <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: 0 }}>
+              {room.name}
+            </p>
+            <p style={{ fontSize: 13, color: 'var(--muted)', margin: '4px 0 0' }}>
+              {room.description ?? 'Sala de bate-papo'}
+            </p>
+          </div>
+        </div>
+
+        {/* Mensagem de bloqueio */}
+        <div style={{
+          padding: '14px 16px', borderRadius: 14, marginBottom: 20,
+          backgroundColor: isBlackOnly ? 'rgba(245,158,11,0.08)' : 'rgba(225,29,72,0.08)',
+          border: `1px solid ${isBlackOnly ? 'rgba(245,158,11,0.20)' : 'rgba(225,29,72,0.20)'}`,
+          display: 'flex', alignItems: 'flex-start', gap: 12,
+        }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+            backgroundColor: isBlackOnly ? 'rgba(245,158,11,0.15)' : 'rgba(225,29,72,0.15)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Lock size={15} color={isBlackOnly ? '#F59E0B' : 'var(--accent)'} strokeWidth={2} />
+          </div>
+          <div>
+            <p style={{ fontSize: 14, fontWeight: 700, color: isBlackOnly ? '#F59E0B' : 'var(--accent)', margin: 0 }}>
+              {isBlackOnly ? 'Exclusivo para assinantes Black' : 'Disponivel no plano Plus ou Black'}
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--muted)', margin: '4px 0 0', lineHeight: 1.5 }}>
+              {isBlackOnly
+                ? 'Faca upgrade para o plano Black e acesse salas exclusivas com perfis selecionados.'
+                : 'Faca upgrade e entre em salas para conhecer pessoas com os mesmos interesses que voce.'}
+            </p>
+          </div>
+        </div>
+
+        {/* Beneficios rapidos */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
+          {(isBlackOnly
+            ? ['Salas Black exclusivas', 'Acesso ilimitado a todas as salas', 'Beneficios VIP completos']
+            : ['Acesso a todas as salas publicas e privadas', 'Crie suas proprias salas', 'Converse sem limites']
+          ).map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Sparkles size={13} color={isBlackOnly ? '#F59E0B' : 'var(--accent)'} />
+              <span style={{ fontSize: 13, color: 'rgba(248,249,250,0.70)' }}>{item}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <button
+          onClick={() => router.push('/planos')}
+          style={{
+            width: '100%', padding: '15px', borderRadius: 14,
+            backgroundColor: isBlackOnly ? '#F59E0B' : 'var(--accent)', color: '#fff',
+            fontSize: 15, fontWeight: 700, cursor: 'pointer', border: 'none',
+            fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}
+        >
+          <Crown size={16} />
+          {isBlackOnly ? 'Ver plano Black' : 'Fazer upgrade agora'}
+        </button>
+
+        <button
+          onClick={onClose}
+          style={{
+            width: '100%', marginTop: 10, padding: '13px', borderRadius: 14,
+            backgroundColor: 'transparent', color: 'var(--muted)',
+            fontSize: 14, fontWeight: 500, cursor: 'pointer',
+            border: '1px solid var(--border)', fontFamily: 'var(--font-jakarta)',
+          }}
+        >
+          Agora nao
+        </button>
+      </div>
+    </>
   )
 }
 
@@ -187,6 +328,7 @@ export default function SalasPage() {
   const [tab, setTab] = useState<'public' | 'private' | 'black'>('public')
   const [search, setSearch] = useState('')
   const [joiningRoom, setJoiningRoom] = useState<Room | null>(null)
+  const [upgradeRoom, setUpgradeRoom] = useState<Room | null>(null)
   const [joinError, setJoinError] = useState('')
   const [joining, setJoining] = useState(false)
 
@@ -258,6 +400,15 @@ export default function SalasPage() {
   const canJoin = plan === 'plus' || plan === 'black'
   const canJoinBlack = plan === 'black'
 
+  function handleRoomClick(room: Room) {
+    const isBlackRoom = room.type === 'black'
+    if (!canJoin || (isBlackRoom && !canJoinBlack)) {
+      setUpgradeRoom(room)
+      return
+    }
+    setJoiningRoom(room)
+  }
+
   const filteredRooms = rooms.filter(r => {
     if (r.type !== tab) return false
     if (search.trim()) return r.name.toLowerCase().includes(search.toLowerCase())
@@ -328,18 +479,13 @@ export default function SalasPage() {
         ))}
       </div>
 
-      {/* Aviso de plano */}
+      {/* Hint sutil para plano essencial */}
       {!canJoin && (
-        <div style={{ margin: '14px 16px 0', padding: '12px 14px', borderRadius: 12, backgroundColor: 'rgba(225,29,72,0.07)', border: '1px solid rgba(225,29,72,0.18)' }}>
-          <p style={{ fontSize: 13, color: 'var(--accent)', margin: 0, fontWeight: 600 }}>Salas disponiveis no plano Plus e Black</p>
-          <p style={{ fontSize: 12, color: 'rgba(225,29,72,0.7)', margin: '4px 0 0', lineHeight: 1.4 }}>
-            Faca upgrade para entrar em salas e conhecer pessoas com os mesmos interesses.
+        <div style={{ margin: '12px 16px 0', display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <Lock size={13} color="rgba(248,249,250,0.30)" strokeWidth={2} />
+          <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.35)', margin: 0 }}>
+            Toque em uma sala para ver como fazer upgrade
           </p>
-        </div>
-      )}
-      {canJoin && !canJoinBlack && tab === 'black' && (
-        <div style={{ margin: '14px 16px 0', padding: '12px 14px', borderRadius: 12, backgroundColor: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.18)' }}>
-          <p style={{ fontSize: 13, color: '#F59E0B', margin: 0, fontWeight: 600 }}>Salas Black exclusivas para assinantes Black</p>
         </div>
       )}
 
@@ -362,7 +508,7 @@ export default function SalasPage() {
               key={room.id}
               room={room}
               canJoin={canJoin}
-              onJoin={setJoiningRoom}
+              onJoin={handleRoomClick}
               plan={plan}
             />
           ))
@@ -375,6 +521,15 @@ export default function SalasPage() {
           room={joiningRoom}
           onClose={() => { setJoiningRoom(null); setJoinError('') }}
           onJoin={handleJoin}
+        />
+      )}
+
+      {/* Upgrade Sheet */}
+      {upgradeRoom && (
+        <UpgradeSheet
+          room={upgradeRoom}
+          isBlackOnly={upgradeRoom.type === 'black' && canJoin}
+          onClose={() => setUpgradeRoom(null)}
         />
       )}
       {joinError && (
