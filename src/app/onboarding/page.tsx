@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
+import { saveUserLocation } from '../lib/location'
 import { Heart, Search, Star, Zap, Shield, ChevronRight, Check, MapPin, Bell } from 'lucide-react'
 
 const PASSOS = ['Bem-vindo', 'Como funciona', 'Permissoes', 'Pronto']
@@ -53,6 +54,8 @@ export default function OnboardingPage() {
       if (error) {
         await supabase.from('profiles').upsert({ id: user.id, onboarding_completed: true })
       }
+      // Garante localização salva mesmo se o usuário pulou o passo de GPS
+      saveUserLocation(user.id)
       // Mostra o tutorial de modos antes de ir para editar-perfil
       window.location.href = '/modos-guia?next=/configuracoes/editar-perfil'
     } catch {
@@ -65,12 +68,11 @@ export default function OnboardingPage() {
     if (gpsAtivo) return
     setGpsLoading(true)
     try {
-      await new Promise<GeolocationPosition>((resolve, reject) =>
-        navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 8000 })
-      )
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) await saveUserLocation(user.id)
       setGpsAtivo(true)
     } catch {
-      // usuario recusou ou nao disponivel — sem problema
+      // usuario recusou — fallback por IP já é tentado dentro de saveUserLocation
     } finally {
       setGpsLoading(false)
     }

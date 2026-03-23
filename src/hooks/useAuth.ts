@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { awardXp } from '@/app/lib/xp'
+import { saveUserLocation } from '@/app/lib/location'
 import type { User } from '@supabase/supabase-js'
 
 export function useAuth() {
@@ -16,14 +17,11 @@ export function useAuth() {
       setUser(user)
       setLoading(false)
       if (user) {
-        // fire-and-forget: registra atividade + atualiza streak diário
-        supabase.from('profiles')
-          .update({ last_seen: new Date().toISOString() })
-          .eq('id', user.id)
-          .then(() => {})
+        // fire-and-forget: registra atividade + atualiza streak diário + salva localização
         supabase.rpc('update_daily_streak', { p_user_id: user.id }).then(() => {
           awardXp(user.id, 'login_streak')
         })
+        saveUserLocation(user.id)
       }
     })
 

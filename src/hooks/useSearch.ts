@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
+import { getLocation, saveUserLocation } from '@/app/lib/location'
 
 export interface SearchFilters {
   maxDistanceKm: number
@@ -74,24 +75,9 @@ export function useSearch() {
 
   async function updateLocation(): Promise<boolean> {
     if (!user) return false
-    return new Promise((resolve) => {
-      navigator.geolocation.getCurrentPosition(
-        async (pos) => {
-          const { latitude: lat, longitude: lng } = pos.coords
-          await supabase
-            .from('profiles')
-            .update({ lat, lng, last_seen: new Date().toISOString() })
-            .eq('id', user.id)
-          setLocationGranted(true)
-          resolve(true)
-        },
-        () => {
-          setError('Precisamos da sua localização para buscar pessoas perto de você.')
-          resolve(false)
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-      )
-    })
+    await saveUserLocation(user.id)
+    setLocationGranted(true)
+    return true
   }
 
   const search = useCallback(async (customFilters?: SearchFilters) => {
@@ -102,15 +88,10 @@ export function useSearch() {
     const activeFilters = customFilters ?? filters
 
     try {
-      // Captura localização em tempo real (nullable — RPC aceita null)
-      const loc = await new Promise<{ lat: number; lng: number } | null>((resolve) => {
-        if (!navigator.geolocation) { resolve(null); return }
-        navigator.geolocation.getCurrentPosition(
-          (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
-          () => resolve(null),
-          { timeout: 5000 }
-        )
-      })
+      // Captura localização em tempo real com fallback por IP
+      const loc = await getLocation()
+      // Salva no perfil em background para manter lat/lng atualizado
+      if (loc && user) saveUserLocation(user.id)
 
       const { data, error: rpcError } = await supabase.rpc('search_profiles', {
         p_user_id:         user.id,
