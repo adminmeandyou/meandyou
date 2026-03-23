@@ -15,7 +15,7 @@ const PRIZE_CONFIG: Record<string, {
   label: string; color: string; bg: string; border: string; glow: string
   icon: React.ReactNode; rarity?: string
 }> = {
-  ticket:          { label: 'Ticket',          color: '#eab308', bg: 'rgba(234,179,8,0.12)',   border: 'rgba(234,179,8,0.35)',   glow: 'rgba(234,179,8,0.5)',   icon: <Ticket size={22} strokeWidth={1.5} /> },
+  fichas:          { label: 'Fichas',          color: '#F59E0B', bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.35)',  glow: 'rgba(245,158,11,0.5)',  icon: <Ticket size={22} strokeWidth={1.5} /> },
   supercurtida:    { label: 'SuperLike',       color: '#ec4899', bg: 'rgba(236,72,153,0.12)',  border: 'rgba(236,72,153,0.35)',  glow: 'rgba(236,72,153,0.5)',  icon: <Star size={22} strokeWidth={1.5} /> },
   boost:           { label: 'Boost',           color: '#E11D48', bg: 'rgba(225,29,72,0.12)',   border: 'rgba(225,29,72,0.35)',   glow: 'rgba(225,29,72,0.5)',   icon: <Zap size={22} strokeWidth={1.5} /> },
   lupa:            { label: 'Lupa',            color: '#ea580c', bg: 'rgba(234,88,12,0.12)',   border: 'rgba(234,88,12,0.35)',   glow: 'rgba(234,88,12,0.5)',   icon: <Search size={22} strokeWidth={1.5} /> },
@@ -29,13 +29,13 @@ const PRIZE_CONFIG: Record<string, {
 // ── Segmentos da roleta — inclui TODOS os prêmios possíveis ─────────────
 // Índices precisam bater exatamente com getSegIdx() abaixo
 const WHEEL_SEGMENTS = [
-  { type: 'ticket',          label: '1 Ticket',     colorA: '#78350f', colorB: '#d97706' }, // 0
+  { type: 'fichas',          label: '5 Fichas',     colorA: '#78350f', colorB: '#d97706' }, // 0
   { type: 'supercurtida',    label: 'SuperLike',    colorA: '#831843', colorB: '#ec4899' }, // 1
-  { type: 'ticket',          label: '2 Tickets',    colorA: '#78350f', colorB: '#f59e0b' }, // 2
+  { type: 'fichas',          label: '10 Fichas',    colorA: '#92400e', colorB: '#f59e0b' }, // 2
   { type: 'lupa',            label: 'Lupa',         colorA: '#7c2d12', colorB: '#ea580c' }, // 3
   { type: 'ver_quem_curtiu', label: 'Ver Curtidas', colorA: '#4c0519', colorB: '#F43F5E' }, // 4
   { type: 'boost',           label: 'Boost',        colorA: '#7f1d1d', colorB: '#E11D48' }, // 5
-  { type: 'ticket',          label: '3 Tickets',    colorA: '#78350f', colorB: '#f59e0b' }, // 6
+  { type: 'fichas',          label: '20 Fichas',    colorA: '#78350f', colorB: '#f59e0b' }, // 6
   { type: 'rewind',          label: 'Desfazer',     colorA: '#500724', colorB: '#be185d' }, // 7
   { type: 'invisivel_1d',    label: 'Invisivel',    colorA: '#1f2937', colorB: '#6b7280' }, // 8
   { type: 'plan_plus_1d',    label: '1 dia Plus',   colorA: '#2e1065', colorB: '#8b5cf6' }, // 9
@@ -44,9 +44,9 @@ const WHEEL_SEGMENTS = [
 
 // Mapeia o resultado da API para o índice correto no WHEEL_SEGMENTS
 function getSegIdx(rewardType: string, rewardAmount: number): number {
-  if (rewardType === 'ticket') {
-    if (rewardAmount >= 3) return 6
-    if (rewardAmount === 2) return 2
+  if (rewardType === 'fichas') {
+    if (rewardAmount >= 20) return 6
+    if (rewardAmount >= 10) return 2
     return 0
   }
   const map: Record<string, number> = {
@@ -720,7 +720,7 @@ export default function RoletaPage() {
 
         {/* ── CTA mais tickets ────────────────────────────────────────── */}
         <div style={{ width: '100%', borderRadius: '16px', padding: '18px', backgroundColor: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.06)', textAlign: 'center' }}>
-          <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 14px' }}>Quer mais tickets?</p>
+          <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 14px' }}>Quer mais giros?</p>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <a href="/indicar" style={{ padding: '9px 18px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', color: 'var(--muted)', fontSize: '13px', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', fontWeight: 600 }}>
               Indicar amigos (+5 tickets)
