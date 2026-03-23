@@ -53,8 +53,8 @@ export default function OnboardingPage() {
       if (error) {
         await supabase.from('profiles').upsert({ id: user.id, onboarding_completed: true })
       }
-      // Redireciona para editar perfil para o usuario preencher fotos e informacoes
-      window.location.href = '/configuracoes/editar-perfil'
+      // Mostra o tutorial de modos antes de ir para editar-perfil
+      window.location.href = '/modos-guia?next=/configuracoes/editar-perfil'
     } catch {
       setErroConcluir('Erro ao salvar. Tente novamente.')
       setConcluindo(false)

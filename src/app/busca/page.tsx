@@ -835,7 +835,16 @@ function ModesHubView({ userPlan, onSelect, onCamarote }: {
 }) {
   return (
     <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
-      <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 4px' }}>Modos</p>
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '4px' }}>
+        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: 0 }}>Modos</p>
+        <a
+          href="/modos-guia"
+          style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: 12, color: 'rgba(248,249,250,0.40)', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', paddingTop: '3px' }}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+          Como funciona
+        </a>
+      </div>
       <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 20px' }}>Selecione como quer explorar o app</p>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
