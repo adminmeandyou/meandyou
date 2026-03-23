@@ -214,7 +214,7 @@ export default function SalasPage() {
       .from('chat_rooms')
       .select('id, name, type, description, emoji, max_members, created_by, is_active')
       .eq('is_active', true)
-      .order('name')
+      .order('created_at', { ascending: true })
 
     if (data) {
       // Buscar contagem de membros para cada sala
@@ -274,7 +274,7 @@ export default function SalasPage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 16px 0', position: 'sticky', top: 0, backgroundColor: 'var(--bg)', zIndex: 20 }}>
-        <button onClick={() => router.back()} style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}>
+        <button onClick={() => router.push('/dashboard')} style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}>
           <ArrowLeft size={18} strokeWidth={2} />
         </button>
         <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, margin: 0 }}>Salas de Bate-papo</h1>

@@ -34,7 +34,11 @@ const SHELL_PREFIXES = [
   '/emblemas',
 ]
 
+// Rotas que recebem shell apenas em match exato (sem incluir sub-rotas)
+const SHELL_EXACT = ['/salas']
+
 function usesShell(pathname: string): boolean {
+  if (SHELL_EXACT.includes(pathname)) return true
   return SHELL_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(p + '/')
   )

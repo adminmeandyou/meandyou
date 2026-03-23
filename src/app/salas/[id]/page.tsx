@@ -196,6 +196,7 @@ export default function SalaChatPage() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const msgTimestamps = useRef<number[]>([]) // anti-flood
   const inputRef = useRef<HTMLTextAreaElement>(null)
+  const sessionStart = useRef<string>(new Date().toISOString()) // momento de entrada nesta sessao
 
   // ─── Scroll para o fim ────────────────────────────────────────────────────
   function scrollBottom() {
@@ -233,13 +234,13 @@ export default function SalaChatPage() {
       }
       setMyNickname(memberRow.nickname)
 
-      // Carregar mensagens recentes (ultimas 80)
+      // Carregar apenas mensagens desta sessao (a partir do momento que entrou)
       const { data: msgs } = await supabase
         .from('room_messages')
         .select('*')
         .eq('room_id', roomId)
+        .gte('created_at', sessionStart.current)
         .order('created_at', { ascending: true })
-        .limit(80)
       setMessages(msgs ?? [])
 
       // Carregar membros
