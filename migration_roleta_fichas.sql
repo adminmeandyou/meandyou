@@ -9,9 +9,9 @@ DELETE FROM public.roleta_prizes WHERE reward_type = 'ticket';
 -- 2. Inserir premios de fichas nos lugares dos tickets
 INSERT INTO public.roleta_prizes (reward_type, reward_amount, weight, active)
 VALUES
-  ('fichas', 5,  35, true),  -- comum: 5 fichas  (mesmo peso do "1 ticket" anterior)
-  ('fichas', 10, 15, true),  -- incomum: 10 fichas
-  ('fichas', 20,  3, true);  -- raro: 20 fichas
+  ('fichas', 1,  35, true),  -- comum: 1 ficha
+  ('fichas', 2,  15, true),  -- incomum: 2 fichas
+  ('fichas', 5,   3, true);  -- raro: 5 fichas
 
 -- 3. Atualizar a funcao spin_roleta para creditar fichas em user_fichas
 CREATE OR REPLACE FUNCTION public.spin_roleta(p_user_id uuid)

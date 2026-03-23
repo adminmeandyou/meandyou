@@ -29,13 +29,13 @@ const PRIZE_CONFIG: Record<string, {
 // ── Segmentos da roleta — inclui TODOS os prêmios possíveis ─────────────
 // Índices precisam bater exatamente com getSegIdx() abaixo
 const WHEEL_SEGMENTS = [
-  { type: 'fichas',          label: '5 Fichas',     colorA: '#78350f', colorB: '#d97706' }, // 0
+  { type: 'fichas',          label: '1 Ficha',      colorA: '#78350f', colorB: '#d97706' }, // 0
   { type: 'supercurtida',    label: 'SuperLike',    colorA: '#831843', colorB: '#ec4899' }, // 1
-  { type: 'fichas',          label: '10 Fichas',    colorA: '#92400e', colorB: '#f59e0b' }, // 2
+  { type: 'fichas',          label: '2 Fichas',     colorA: '#92400e', colorB: '#f59e0b' }, // 2
   { type: 'lupa',            label: 'Lupa',         colorA: '#7c2d12', colorB: '#ea580c' }, // 3
   { type: 'ver_quem_curtiu', label: 'Ver Curtidas', colorA: '#4c0519', colorB: '#F43F5E' }, // 4
   { type: 'boost',           label: 'Boost',        colorA: '#7f1d1d', colorB: '#E11D48' }, // 5
-  { type: 'fichas',          label: '20 Fichas',    colorA: '#78350f', colorB: '#f59e0b' }, // 6
+  { type: 'fichas',          label: '5 Fichas',     colorA: '#78350f', colorB: '#f59e0b' }, // 6
   { type: 'rewind',          label: 'Desfazer',     colorA: '#500724', colorB: '#be185d' }, // 7
   { type: 'invisivel_1d',    label: 'Invisivel',    colorA: '#1f2937', colorB: '#6b7280' }, // 8
   { type: 'plan_plus_1d',    label: '1 dia Plus',   colorA: '#2e1065', colorB: '#8b5cf6' }, // 9
@@ -45,8 +45,8 @@ const WHEEL_SEGMENTS = [
 // Mapeia o resultado da API para o índice correto no WHEEL_SEGMENTS
 function getSegIdx(rewardType: string, rewardAmount: number): number {
   if (rewardType === 'fichas') {
-    if (rewardAmount >= 20) return 6
-    if (rewardAmount >= 10) return 2
+    if (rewardAmount >= 5) return 6
+    if (rewardAmount >= 2) return 2
     return 0
   }
   const map: Record<string, number> = {
