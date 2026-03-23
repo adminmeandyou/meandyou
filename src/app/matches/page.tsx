@@ -208,8 +208,8 @@ export default function MatchesPage() {
                   <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>{matchesNovos.length}</span>
                 </div>
                 <div style={{
-                  display: 'flex', gap: 12,
-                  overflowX: 'auto', paddingLeft: 20, paddingRight: 20,
+                  display: 'flex', gap: 16,
+                  overflowX: 'auto', paddingLeft: 20, paddingRight: 20, paddingBottom: 4,
                   scrollSnapType: 'x mandatory',
                   WebkitOverflowScrolling: 'touch',
                   scrollbarWidth: 'none',
@@ -290,81 +290,65 @@ function NovoMatchCard({
 
   return (
     <div
+      onClick={onIniciarConversa}
       style={{
-        scrollSnapAlign: 'start', flexShrink: 0, width: 130,
-        background: 'var(--bg-card)', border: '1px solid var(--border)',
-        borderRadius: 16, padding: '14px 12px',
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
-        position: 'relative', textAlign: 'center',
+        scrollSnapAlign: 'start', flexShrink: 0, width: 80,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+        cursor: 'pointer', userSelect: 'none',
       }}
     >
-      {expiry && (
-        <span style={{
-          position: 'absolute', top: 10, right: 10,
-          fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 100,
-          background: expiry.urgent ? 'rgba(225,29,72,0.20)' : 'rgba(225,29,72,0.10)',
-          color: expiry.urgent ? '#F43F5E' : 'var(--accent)',
-          border: `1px solid ${expiry.urgent ? 'rgba(225,29,72,0.35)' : 'var(--accent-border)'}`,
+      {/* Avatar com badge de expiração e botão + */}
+      <div style={{ position: 'relative' }}>
+        <div style={{
+          width: 72, height: 72, borderRadius: '50%',
+          overflow: 'hidden', position: 'relative',
+          border: '2.5px solid var(--accent)',
+          boxShadow: '0 0 0 2px rgba(225,29,72,0.15)',
         }}>
-          {expiry.label}
-        </span>
-      )}
+          {match.photo_best ? (
+            <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="72px" />
+          ) : (
+            <div style={{ width: '100%', height: '100%', background: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{match.name[0]}</span>
+            </div>
+          )}
+        </div>
 
-      <div style={{
-        width: 76, height: 76, borderRadius: '50%',
-        overflow: 'hidden', position: 'relative',
-        border: '2px solid var(--accent-border)',
-        boxShadow: '0 4px 16px rgba(225,29,72,0.18)',
-      }}>
-        {match.photo_best ? (
-          <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="76px" />
-        ) : (
-          <div style={{ width: '100%', height: '100%', background: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 24 }}>{match.name[0]}</span>
-          </div>
+        {/* Botao adicionar amigo — canto inferior direito */}
+        <button
+          onClick={handleAddFriend}
+          style={{
+            position: 'absolute', bottom: 0, right: -2,
+            width: 22, height: 22, borderRadius: '50%',
+            background: friendSent ? '#10b981' : 'var(--bg-card)',
+            border: `2px solid var(--bg)`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: friendSent ? 'default' : 'pointer',
+            transition: 'background 0.2s',
+          }}
+        >
+          {friendSent
+            ? <Check size={11} color="#fff" strokeWidth={2.5} />
+            : <UserPlus size={11} color="rgba(248,249,250,0.7)" strokeWidth={2} />
+          }
+        </button>
+
+        {/* Badge de expiracao */}
+        {expiry && (
+          <span style={{
+            position: 'absolute', top: -2, left: -2,
+            fontSize: 8, fontWeight: 700, padding: '2px 5px', borderRadius: 100,
+            background: expiry.urgent ? 'rgba(225,29,72,0.90)' : 'rgba(225,29,72,0.75)',
+            color: '#fff',
+          }}>
+            {expiry.label}
+          </span>
         )}
       </div>
 
-      <div style={{ width: '100%' }}>
-        <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {match.name}
-        </p>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-          <Clock size={9} color="rgba(248,249,250,0.3)" />
-          <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.30)' }}>{formatTempo(match.matched_at)}</span>
-        </div>
-      </div>
-
-      <button
-        onClick={onIniciarConversa}
-        style={{
-          width: '100%', padding: '7px 0', borderRadius: 10, background: 'var(--accent)',
-          border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-          cursor: 'pointer',
-        }}
-      >
-        <MessageCircle size={11} color="#fff" />
-        <span style={{ fontSize: 11, fontWeight: 700, color: '#fff' }}>Conversar</span>
-      </button>
-
-      <button
-        onClick={handleAddFriend}
-        style={{
-          width: '100%', padding: '6px 0', borderRadius: 10,
-          background: friendSent ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.05)',
-          border: `1px solid ${friendSent ? 'rgba(16,185,129,0.25)' : 'var(--border)'}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-          cursor: friendSent ? 'default' : 'pointer',
-        }}
-      >
-        {friendSent
-          ? <Check size={11} color="#10b981" />
-          : <UserPlus size={11} color="rgba(248,249,250,0.5)" />
-        }
-        <span style={{ fontSize: 11, fontWeight: 600, color: friendSent ? '#10b981' : 'rgba(248,249,250,0.5)' }}>
-          {friendSent ? 'Pedido enviado' : 'Adicionar'}
-        </span>
-      </button>
+      <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', margin: 0, maxWidth: 76, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
+        {match.name}
+      </p>
     </div>
   )
 }
