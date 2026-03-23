@@ -747,7 +747,7 @@ function Verificacao() {
         setStatus('sucesso')
         setTimeout(() => {
           window.location.href = '/onboarding'
-        }, 2500)
+        }, 1500)
       }
       else { setStatus('selfie'); setErroForm(data.error || 'Erro ao confirmar verificação. Tente novamente.') }
     } catch (e: any) {
@@ -1168,6 +1168,7 @@ function Verificacao() {
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7' }}>Sua identidade foi confirmada com sucesso. Agora complete o seu perfil para começar.<br /><br />Redirecionando...</p>
           <div style={{ width: '48px', height: '48px', border: '4px solid var(--accent)', borderTop: '4px solid transparent', borderRadius: '50%', margin: '24px auto 0', animation: 'spin 1s linear infinite' }} />
+          <button onClick={() => { window.location.href = '/onboarding' }} style={{ marginTop: '20px', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '10px 24px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Continuar →</button>
           <style>{`@keyframes pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }`}</style>
         </>)}
 

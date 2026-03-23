@@ -31,6 +31,8 @@ export default function OnboardingPage() {
       if (profile?.onboarding_completed) { window.location.href = '/dashboard'; return }
       if (profile?.name) setNome(profile.name)
       setCarregando(false)
+    }).catch(() => {
+      window.location.href = '/login'
     })
   }, [])
 
