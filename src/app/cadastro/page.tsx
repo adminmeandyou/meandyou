@@ -75,9 +75,9 @@ function CadastroInner() {
     }
   }, [])
 
-  // Renderiza Turnstile quando chega no step 6 — tenta até o script estar pronto
+  // Renderiza Turnstile a partir do step 5 (pré-carrega escondido) — tenta até o script estar pronto
   useEffect(() => {
-    if (step !== 6 || !TURNSTILE_SITE_KEY) return
+    if (step < 5 || !TURNSTILE_SITE_KEY) return
 
     let attempts = 0
     const MAX = 40 // 20 segundos (40 × 500ms)
@@ -428,26 +428,28 @@ function CadastroInner() {
               </div>
             )}
 
-            {TURNSTILE_SITE_KEY && (
-              <>
-                <div
-                  ref={turnstileRef}
-                  style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}
-                />
-                {!cfToken && (
-                  <div style={{ textAlign: 'center', marginTop: '8px' }}>
-                    <button
-                      type="button"
-                      onClick={resetTurnstile}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: 'var(--muted)', textDecoration: 'underline', padding: '4px 8px' }}
-                    >
-                      Verificação não carregou? Recarregar
-                    </button>
-                  </div>
-                )}
-              </>
-            )}
           </>
+        )}
+
+        {/* Turnstile — sempre no DOM a partir do step 5, visível só no step 6 */}
+        {TURNSTILE_SITE_KEY && (
+          <div style={{ display: step === 6 ? 'block' : 'none' }}>
+            <div
+              ref={turnstileRef}
+              style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}
+            />
+            {step === 6 && !cfToken && (
+              <div style={{ textAlign: 'center', marginTop: '8px' }}>
+                <button
+                  type="button"
+                  onClick={resetTurnstile}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '13px', color: 'var(--muted)', textDecoration: 'underline', padding: '4px 8px' }}
+                >
+                  Verificação não carregou? Recarregar
+                </button>
+              </div>
+            )}
+          </div>
         )}
 
         {erro && <p style={{ color: 'var(--red)', fontSize: '14px', marginTop: '16px' }}>{erro}</p>}
