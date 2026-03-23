@@ -13,31 +13,24 @@ export default function Dashboard() {
 
   useEffect(() => {
     const verificarEstado = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) { router.push('/login'); return }
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) { router.push('/login'); return }
 
-      // Verifica se está verificado (campo em users, não em profiles)
-      const { data: userData } = await supabase
-        .from('users')
-        .select('verified, banned')
-        .eq('id', user.id)
-        .single()
+        // Proxy já garante que só chega aqui quem completou onboarding
+        // Buscamos apenas o nome para exibir na tela
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('name')
+          .eq('id', user.id)
+          .maybeSingle()
 
-      if (userData?.banned) { router.push('/banido'); return }
-      if (!userData?.verified) { router.push('/verificacao'); return }
-
-      // Busca perfil (usa maybeSingle para nao errar se row nao existe)
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('name')
-        .eq('id', user.id)
-        .maybeSingle()
-
-      // Sem nome = onboarding nao concluido
-      if (!profile?.name) { router.push('/onboarding'); return }
-
-      setNome(profile.name)
-      setCarregando(false)
+        setNome(profile?.name ?? '')
+        setCarregando(false)
+      } catch (err) {
+        console.error('[dashboard] Erro ao carregar:', err)
+        setCarregando(false)
+      }
     }
 
     verificarEstado()
