@@ -461,9 +461,18 @@ function CadastroInner() {
               <div style={{ width: '24px', height: '24px', border: '3px solid var(--border)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
             </div>
           ) : (
-            <p style={{ textAlign: 'center', color: 'var(--muted-2)', fontSize: '13px', padding: '10px 0', fontFamily: 'var(--font-jakarta)' }}>
-              Pressione Enter para continuar
-            </p>
+            <button
+              onClick={avancar}
+              style={{
+                width: '100%', padding: '16px', borderRadius: '100px', border: 'none',
+                backgroundColor: 'var(--accent)', color: '#fff',
+                fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                boxShadow: '0 8px 24px rgba(225,29,72,0.25)',
+              }}
+            >
+              Continuar <ChevronRight size={18} strokeWidth={2} />
+            </button>
           )
         ) : (
           <button

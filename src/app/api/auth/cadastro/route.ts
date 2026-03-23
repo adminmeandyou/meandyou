@@ -207,21 +207,23 @@ export async function POST(req: NextRequest) {
     }).eq('id', userId)
 
     // Inicializar campos de progresso do cadastro no profile
+    const regPayload = {
+      id:                     userId,
+      reg_credentials_set:    true,
+      reg_email_verified:     false,
+      reg_document_verified:  true,  // CPF validado algoritmicamente acima
+      reg_facial_verified:    false,
+      reg_name_confirmed:     true,
+      reg_username_confirmed: true,
+      reg_invite_provided:    !!refCode,
+      reg_invite_code:        refCode || null,
+      onboarding_completed:   false,
+    }
     let regSalvo = false
-    for (let t = 0; t < 3; t++) {
+    for (let t = 0; t < 8; t++) {
       const { data: updated } = await supabase
         .from('profiles')
-        .update({
-          reg_credentials_set:    true,
-          reg_email_verified:     false,
-          reg_document_verified:  true,  // CPF validado algoritmicamente acima
-          reg_facial_verified:    false,
-          reg_name_confirmed:     true,
-          reg_username_confirmed: true,
-          reg_invite_provided:    !!refCode,
-          reg_invite_code:        refCode || null,
-          onboarding_completed:   false,
-        })
+        .update(regPayload)
         .eq('id', userId)
         .select('id')
         .single()
@@ -229,8 +231,14 @@ export async function POST(req: NextRequest) {
       await new Promise(r => setTimeout(r, 400))
     }
     if (!regSalvo) {
-      await rollback('update de profiles reg_* falhou apos 3 tentativas')
-      return NextResponse.json({ error: 'Erro ao configurar conta. Tente novamente.' }, { status: 500 })
+      // Fallback: upsert direto caso o trigger ainda nao tenha criado a linha
+      const { error: upsertRegErr } = await supabase
+        .from('profiles')
+        .upsert(regPayload, { onConflict: 'id' })
+      if (upsertRegErr) {
+        await rollback('upsert de profiles reg_* falhou: ' + upsertRegErr.message)
+        return NextResponse.json({ error: 'Erro ao configurar conta. Tente novamente.' }, { status: 500 })
+      }
     }
 
     // Enviar email de verificação (fire-and-forget)
