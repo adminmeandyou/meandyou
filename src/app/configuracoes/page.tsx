@@ -284,17 +284,6 @@ export default function ConfiguracoesPage() {
           </Link>
         )}
 
-        {/* ── DESCOBERTA ── */}
-        <CardSection titulo="Descoberta">
-          <LinkRow
-            href="/busca?filtros=1"
-            icon={<Compass size={17} />}
-            label="Filtros de busca"
-            sub="Idade, distância, gênero e mais"
-            last
-          />
-        </CardSection>
-
         {/* ── CONTA ── */}
         <CardSection titulo="Conta">
           <LinkRow href="/configuracoes/editar-perfil" icon={<User size={17} />} label="Editar perfil" sub="Fotos, bio, aparência, filtros" />
