@@ -1,6 +1,3 @@
-// src/app/api/upload-verificacao/route.ts
-// ✅ CORREÇÃO CRÍTICA: uploads do bucket 'documentos' (privado) feitos via service role
-// Antes: page usava supabase singleton (anon key) sem sessão no celular → RLS bloqueava
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -9,19 +6,29 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+function normalizarTexto(s: string): string {
+  return s
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toUpperCase()
+    .replace(/[^A-Z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData()
-    const file = formData.get('file') as File | null
-    const caminho = formData.get('caminho') as string | null
-    const userId = formData.get('userId') as string | null
-    const token = formData.get('token') as string | null
+    const file     = formData.get('file')    as File   | null
+    const caminho  = formData.get('caminho') as string | null
+    const userId   = formData.get('userId')  as string | null
+    const token    = formData.get('token')   as string | null
 
     if (!file || !caminho || !userId || !token) {
       return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
     }
 
-    // Validar que o token pertence ao userId e não está expirado/usado
+    // Validar token
     const { data: tokenData } = await supabase
       .from('verification_tokens')
       .select('user_id, expires_at, used')
@@ -37,19 +44,30 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Token inválido ou expirado' }, { status: 401 })
     }
 
-    // Garantir que o caminho pertence ao userId (evitar path traversal)
     if (!caminho.startsWith(`${userId}/`)) {
       return NextResponse.json({ error: 'Caminho inválido' }, { status: 403 })
     }
 
     const buffer = await file.arrayBuffer()
 
-    // Valida documento via Google Cloud Vision (apenas frente/verso, não selfie)
-    const isDocumento = caminho.includes('/frente') || caminho.includes('/verso')
-    if (isDocumento) {
-      const visionKey = process.env.GOOGLE_CLOUD_VISION_API_KEY
-      if (visionKey) {
-        const base64 = Buffer.from(buffer).toString('base64')
+    // Validação com Google Vision — apenas para frente do documento
+    const isDocFrente = caminho.includes('/frente')
+    const visionKey   = process.env.GOOGLE_CLOUD_VISION_API_KEY
+
+    if (isDocFrente && visionKey) {
+      // Busca CPF e nome cadastrados para comparação
+      const { data: userData } = await supabase
+        .from('users')
+        .select('cpf, nome_completo')
+        .eq('id', userId)
+        .single()
+
+      const cpfCadastrado  = (userData?.cpf ?? '').replace(/\D/g, '')
+      const nomeCadastrado = normalizarTexto(userData?.nome_completo ?? '')
+      const primeiroNome   = nomeCadastrado.split(' ')[0] ?? ''
+      const ultimoNome     = nomeCadastrado.split(' ').pop() ?? ''
+
+      try {
         const visionRes = await fetch(
           `https://vision.googleapis.com/v1/images:annotate?key=${visionKey}`,
           {
@@ -57,20 +75,42 @@ export async function POST(req: NextRequest) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               requests: [{
-                image: { content: base64 },
+                image: { content: Buffer.from(buffer).toString('base64') },
                 features: [{ type: 'TEXT_DETECTION', maxResults: 1 }],
               }],
             }),
           }
         )
+
         const visionData = await visionRes.json()
-        const textos = visionData?.responses?.[0]?.textAnnotations
-        if (!textos || textos.length === 0) {
-          return NextResponse.json(
-            { error: 'A imagem não parece ser um documento. Verifique se o documento está legível e bem enquadrado.' },
-            { status: 422 }
-          )
+        const textoRaw   = visionData?.responses?.[0]?.textAnnotations?.[0]?.description ?? ''
+
+        if (textoRaw) {
+          const textoNorm = normalizarTexto(textoRaw)
+
+          // Verifica se CPF está no documento
+          const cpfNoDoc = cpfCadastrado.length === 11 && textoNorm.includes(cpfCadastrado)
+
+          // Verifica se pelo menos primeiro ou último nome está no documento
+          const nomeNoDoc =
+            (primeiroNome.length >= 3 && textoNorm.includes(primeiroNome)) ||
+            (ultimoNome.length   >= 3 && textoNorm.includes(ultimoNome))
+
+          if (!cpfNoDoc && !nomeNoDoc && cpfCadastrado.length === 11) {
+            return NextResponse.json(
+              {
+                error:
+                  'Os dados do documento não batem com o cadastro. ' +
+                  'Use o documento que contém seu CPF ou nome completo visíveis na foto.',
+              },
+              { status: 422 }
+            )
+          }
         }
+        // Sem texto extraído → aceita (foto fica salva para revisão manual)
+      } catch (visionErr) {
+        // Erro na Vision API → não bloqueia o usuário
+        console.error('[upload-verificacao] Vision API error:', visionErr)
       }
     }
 
