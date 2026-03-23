@@ -395,7 +395,7 @@ function LocationAutocomplete({
 function getLikeLimit(plan: string) {
   if (plan === 'black') return Infinity
   if (plan === 'plus') return 30
-  return 5
+  return 20
 }
 
 function getSuperlikeLimit(plan: string) {
@@ -551,8 +551,9 @@ function calcCompatibility(myFilters: Record<string, boolean>, theirFilters: Rec
 function DailyMatchView({ userId, localFilters }: { userId: string | null; localFilters: FiltersState }) {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
-  const [liked, setLiked] = useState<Record<string, boolean>>({})
-  const [passed, setPassed] = useState<Record<string, boolean>>({})
+  const [flipped, setFlipped] = useState<Set<string>>(new Set())
+  const [liked, setLiked] = useState<Set<string>>(new Set())
+  const [passed, setPassed] = useState<Set<string>>(new Set())
   const [scores, setScores] = useState<Record<string, number>>({})
   const toast = useToast()
   const haptics = useHaptics()
@@ -649,7 +650,7 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
 
   async function handleLike(profile: Profile) {
     if (!userId) return
-    setLiked(prev => ({ ...prev, [profile.id]: true }))
+    setLiked(prev => new Set(prev).add(profile.id))
     haptics.medium()
     try {
       await supabase.rpc('process_like', {
@@ -662,12 +663,17 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
   }
 
   function handlePass(profileId: string) {
-    setPassed(prev => ({ ...prev, [profileId]: true }))
+    setPassed(prev => new Set(prev).add(profileId))
     haptics.tap()
   }
 
-  const active = profiles.filter(p => !liked[p.id] && !passed[p.id])
+  function handleFlip(profileId: string) {
+    haptics.tap()
+    setFlipped(prev => new Set(prev).add(profileId))
+  }
+
   const todayLabel = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+  const allActed = profiles.length > 0 && profiles.every(p => liked.has(p.id) || passed.has(p.id))
 
   if (loading) {
     return (
@@ -689,110 +695,114 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
 
   return (
     <div style={{ padding: '16px 16px 20px', overflowY: 'auto', height: '100%' }}>
-      <div style={{ marginBottom: 16 }}>
+      <div style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <Heart size={15} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+          <Sparkles size={15} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
           <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)' }}>Match do Dia</span>
         </div>
-        <p style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'capitalize' }}>{todayLabel}</p>
-        <p style={{ fontSize: 12, color: 'var(--muted-2)', marginTop: 4 }}>
-          {active.length > 0
-            ? `${active.length} ${active.length !== 1 ? 'sugestões' : 'sugestão'} selecionada${active.length !== 1 ? 's' : ''} para você hoje`
-            : 'Voce já agiu em todas as sugestões de hoje!'}
+        <p style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'capitalize', marginBottom: 4 }}>{todayLabel}</p>
+        <p style={{ fontSize: 12, color: 'var(--muted-2)' }}>
+          {allActed
+            ? 'Voce ja agiu em todas as sugestoes de hoje!'
+            : 'Escolha uma carta na sorte e descubra quem pode ser seu match'}
         </p>
       </div>
 
-      {active.length === 0 && (
+      {allActed ? (
         <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '24px 20px', textAlign: 'center' }}>
           <p style={{ fontSize: 15, color: 'var(--text)', fontWeight: 600, marginBottom: 8 }}>Volte amanha!</p>
-          <p style={{ fontSize: 13, color: 'var(--muted)' }}>Novas sugestões aparecem todo dia às 00:00.</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)' }}>Novas sugestoes aparecem todo dia as 00:00.</p>
         </div>
-      )}
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10 }}>
+          {profiles.map((profile, idx) => {
+            const isFlipped = flipped.has(profile.id)
+            const isLiked = liked.has(profile.id)
+            const isPassed = passed.has(profile.id)
+            const isActed = isLiked || isPassed
+            const photo = profile.photos?.[0] ?? profile.photo_best
+            const score = scores[profile.id]
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        {active.map((profile) => {
-          const photos = profile.photos?.length ? profile.photos : profile.photo_best ? [profile.photo_best] : []
-          const photo = photos[0]
-          const score = scores[profile.id]
-          const hasScore = score !== undefined
-          const isGoodMatch = hasScore && score >= 59
-
-          return (
-            <div
-              key={profile.id}
-              style={{
-                backgroundColor: 'var(--bg-card)',
-                border: isGoodMatch ? '1px solid rgba(225,29,72,0.30)' : '1px solid var(--border)',
-                borderRadius: 16, overflow: 'hidden',
-              }}
-            >
-              {/* Badge de compatibilidade */}
-              {hasScore && (
-                <div style={{
-                  padding: '8px 14px 0',
-                  display: 'flex', alignItems: 'center', gap: 6,
-                }}>
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    padding: '3px 10px', borderRadius: 100,
-                    backgroundColor: isGoodMatch ? 'rgba(225,29,72,0.12)' : 'rgba(255,255,255,0.06)',
-                    border: isGoodMatch ? '1px solid rgba(225,29,72,0.25)' : '1px solid rgba(255,255,255,0.08)',
-                  }}>
-                    <Heart size={10} strokeWidth={2} style={{ color: isGoodMatch ? 'var(--accent)' : 'var(--muted)' }} fill={isGoodMatch ? 'var(--accent)' : 'none'} />
-                    <span style={{ fontSize: 11, fontWeight: 600, color: isGoodMatch ? 'var(--accent)' : 'var(--muted)' }}>
-                      {score}% de acordo com o que voce procura
-                    </span>
+            if (!isFlipped) {
+              return (
+                <div
+                  key={profile.id}
+                  onClick={() => handleFlip(profile.id)}
+                  style={{
+                    aspectRatio: '3/4', borderRadius: 16, cursor: 'pointer',
+                    background: 'linear-gradient(160deg, var(--bg-card2) 0%, var(--bg-card) 100%)',
+                    border: '1px solid rgba(225,29,72,0.20)',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
+                    userSelect: 'none', position: 'relative', overflow: 'hidden',
+                    transition: 'transform 0.12s, border-color 0.12s',
+                  }}
+                >
+                  <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 30% 30%, rgba(225,29,72,0.07) 0%, transparent 60%), radial-gradient(circle at 70% 70%, rgba(225,29,72,0.04) 0%, transparent 60%)', pointerEvents: 'none' }} />
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', border: '2px solid rgba(225,29,72,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Heart size={20} color="rgba(225,29,72,0.45)" strokeWidth={1.5} />
                   </div>
+                  <p style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600 }}>Carta {idx + 1}</p>
+                  <p style={{ fontSize: 10, color: 'var(--muted-2)' }}>Toque para revelar</p>
                 </div>
-              )}
+              )
+            }
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '10px 14px 12px' }}>
-                <div style={{ width: 64, height: 64, borderRadius: 12, overflow: 'hidden', flexShrink: 0, backgroundColor: 'rgba(255,255,255,0.05)' }}>
-                  {photo ? (
-                    <Image src={photo} alt={profile.name} width={64} height={64} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <Heart size={20} color="rgba(255,255,255,0.20)" strokeWidth={1} />
-                    </div>
-                  )}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 15, color: 'var(--text)', marginBottom: 2 }}>
+            return (
+              <div
+                key={profile.id}
+                style={{
+                  aspectRatio: '3/4', borderRadius: 16, overflow: 'hidden', position: 'relative',
+                  border: isLiked ? '1px solid rgba(16,185,129,0.35)' : isPassed ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(225,29,72,0.25)',
+                  opacity: isActed ? 0.65 : 1, transition: 'opacity 0.2s',
+                  backgroundColor: 'var(--bg-card)',
+                }}
+              >
+                {photo ? (
+                  <Image src={photo} alt={profile.name} fill style={{ objectFit: 'cover' }} sizes="200px" />
+                ) : (
+                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Heart size={28} color="rgba(255,255,255,0.10)" strokeWidth={1} />
+                  </div>
+                )}
+                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,9,14,0.95) 0%, rgba(8,9,14,0.15) 55%, transparent 100%)' }} />
+
+                {score !== undefined && (
+                  <div style={{ position: 'absolute', top: 7, left: 7, padding: '2px 7px', borderRadius: 100, background: 'rgba(8,9,14,0.85)', border: '1px solid rgba(225,29,72,0.25)', display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <Heart size={8} strokeWidth={2} color="var(--accent)" fill="var(--accent)" />
+                    <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent)' }}>{score}%</span>
+                  </div>
+                )}
+
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px 8px 6px' }}>
+                  <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 12, color: '#fff', margin: '0 0 6px', lineHeight: 1.2 }}>
                     {profile.name}{profile.age ? `, ${profile.age}` : ''}
                   </p>
-                  {profile.city && (
-                    <p style={{ fontSize: 12, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 3, marginBottom: isGoodMatch ? 4 : 0 }}>
-                      <MapPin size={10} strokeWidth={1.5} /> {profile.city}
+                  {!isActed ? (
+                    <div style={{ display: 'flex', gap: 5 }}>
+                      <button
+                        onClick={() => handleLike(profile)}
+                        style={{ flex: 1, padding: '6px', borderRadius: 8, border: 'none', background: 'rgba(16,185,129,0.20)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        <Heart size={13} color="#10b981" strokeWidth={2} />
+                      </button>
+                      <button
+                        onClick={() => handlePass(profile.id)}
+                        style={{ flex: 1, padding: '6px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.07)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      >
+                        <X size={13} color="rgba(255,255,255,0.45)" strokeWidth={2} />
+                      </button>
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: 10, color: isLiked ? '#10b981' : 'rgba(255,255,255,0.30)', fontWeight: 600, margin: 0 }}>
+                      {isLiked ? 'Curtido' : 'Passado'}
                     </p>
                   )}
-                  {isGoodMatch && (
-                    <button
-                      onClick={() => handleLike(profile)}
-                      style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontSize: 11, color: 'var(--accent)', fontWeight: 600, textAlign: 'left' }}
-                    >
-                      Curtir e tentar conversar →
-                    </button>
-                  )}
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
-                  <button
-                    onClick={() => handleLike(profile)}
-                    style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(16,185,129,0.30)', backgroundColor: 'rgba(16,185,129,0.10)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                  >
-                    <Heart size={16} strokeWidth={2} />
-                  </button>
-                  <button
-                    onClick={() => handlePass(profile.id)}
-                    style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', backgroundColor: 'transparent', color: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-                  >
-                    <X size={16} strokeWidth={2} />
-                  </button>
                 </div>
               </div>
-            </div>
-          )
-        })}
-      </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
@@ -1762,8 +1772,6 @@ export default function BuscaPage() {
           <RoomsView userPlan={userPlan} />
         ) : viewMode === 'daily' ? (
           <DailyMatchView userId={userId} localFilters={localFilters} />
-        ) : viewMode === 'search' ? (
-          <SearchGrid deck={deck} />
         ) : loadingDeck ? (
           /* Loading — skeleton deck */
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 20px', gap: 12 }}>

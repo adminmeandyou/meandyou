@@ -5,7 +5,7 @@ import { supabase } from '@/app/lib/supabase'
 import { useRouter, useParams } from 'next/navigation'
 import {
   ArrowLeft, Send, Users, X, Check, ChevronDown,
-  UserCircle, MessageCircle, Ban, VolumeX, Crown, AlertTriangle,
+  UserCircle, MessageCircle, Ban, VolumeX, Crown, AlertTriangle, UserPlus,
 } from 'lucide-react'
 import Link from 'next/link'
 import { moderateContent, getModerationMessage } from '@/app/lib/moderation'
@@ -85,7 +85,7 @@ function MembersSheet({
   myUserId: string
   myNickname: string
   onClose: () => void
-  onAction: (member: RoomMember, action: 'profile' | 'chat' | 'block' | 'mute') => void
+  onAction: (member: RoomMember, action: 'profile' | 'chat' | 'block' | 'mute' | 'friend') => void
   blocked: Set<string>
 }) {
   const [selected, setSelected] = useState<RoomMember | null>(null)
@@ -142,6 +142,7 @@ function MembersSheet({
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
+                { action: 'friend' as const,  icon: <UserPlus size={18} />, label: 'Adicionar como amigo' },
                 { action: 'profile' as const, icon: <UserCircle size={18} />, label: 'Solicitar ver perfil' },
                 { action: 'chat' as const,    icon: <MessageCircle size={18} />, label: 'Solicitar chat privado' },
                 { action: 'mute' as const,    icon: <VolumeX size={18} />, label: blocked.has(selected.user_id) ? 'Desbloquear mensagens' : 'Silenciar na sala' },
@@ -418,7 +419,20 @@ export default function SalaChatPage() {
   }
 
   // ─── Acoes em membros ─────────────────────────────────────────────────────
-  async function handleMemberAction(member: RoomMember, action: 'profile' | 'chat' | 'block' | 'mute') {
+  async function handleMemberAction(member: RoomMember, action: 'profile' | 'chat' | 'block' | 'mute' | 'friend') {
+    if (action === 'friend') {
+      try {
+        await fetch('/api/amigos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ receiverId: member.user_id }),
+        })
+        setModError('Pedido de amizade enviado!')
+        setTimeout(() => setModError(''), 3000)
+      } catch { setModError('Erro ao enviar pedido') }
+      return
+    }
+
     if (action === 'profile') {
       // Enviar solicitacao de perfil
       try {
