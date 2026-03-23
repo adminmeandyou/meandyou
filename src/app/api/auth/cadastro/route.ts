@@ -241,6 +241,14 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Garantia final: force onboarding_completed = false independente do trigger do banco.
+    // O trigger handle_new_user pode criar o perfil com onboarding_completed = true (heranca
+    // de versoes antigas com onboarding_done = true). Este update garante o valor correto.
+    await supabase
+      .from('profiles')
+      .update({ onboarding_completed: false, reg_facial_verified: false, reg_email_verified: false })
+      .eq('id', userId)
+
     // Enviar email de verificação (fire-and-forget)
     const verifyLink = `${APP_URL}/verificar-email?token=${verifyToken}`
     sendInstitutionalEmail(
