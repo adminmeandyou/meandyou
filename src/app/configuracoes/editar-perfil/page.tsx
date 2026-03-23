@@ -513,6 +513,7 @@ function FotosBioSection({ userId, profileData, onSaved }: {
       </div>
 
       {/* Grade de fotos */}
+      {erro && <p style={{ color: '#f87171', fontSize: '13px', margin: '0 0 10px', padding: '8px 12px', backgroundColor: 'rgba(248,113,113,0.08)', borderRadius: '8px', border: '1px solid rgba(248,113,113,0.20)' }}>{erro}</p>}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '16px' }}>
         {fotoSlots.map((_, i) => (
           <div key={i} style={{ position: 'relative', aspectRatio: '3/4', borderRadius: '12px', overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.03)', border: fotoPrincipal === i ? '2px solid #E11D48' : '1.5px dashed rgba(255,255,255,0.10)' }}>
@@ -648,8 +649,6 @@ function FotosBioSection({ userId, profileData, onSaved }: {
           </>
         )}
       </div>
-
-      {erro && <p style={{ color: '#f87171', fontSize: '13px', margin: '8px 0 0' }}>{erro}</p>}
 
       <BotaoSalvar loading={salvando} sucesso={sucesso} onClick={salvar} />
     </div>
