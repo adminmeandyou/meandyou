@@ -191,7 +191,7 @@ export default function MatchesPage() {
             icon={<Heart size={28} />}
             title="Voce nao tem matches ainda"
             description="Va para Modos, interaja com outros perfis e quando alguem curtir de volta o match aparece aqui."
-            action={{ label: 'Ir para Modos', onClick: () => router.push('/busca') }}
+            action={{ label: 'Ir para Modos', onClick: () => router.push('/modos') }}
           />
 
         ) : (

@@ -76,7 +76,7 @@ export default function Dashboard() {
         {/* Atalhos principais */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
           {[
-            { label: 'Buscar',      rota: '/busca',      icon: <Search size={18} strokeWidth={1.5} /> },
+            { label: 'Buscar',      rota: '/modos',      icon: <Search size={18} strokeWidth={1.5} /> },
             { label: 'Conversas',   rota: '/conversas',  icon: <MessageCircle size={18} strokeWidth={1.5} /> },
             { label: 'Destaque',    rota: '/destaque',   icon: <Star size={18} strokeWidth={1.5} /> },
             { label: 'Roleta',      rota: '/roleta',     icon: <Dices size={18} strokeWidth={1.5} /> },
@@ -89,7 +89,7 @@ export default function Dashboard() {
           ))}
         </div>
 
-        <button onClick={() => router.push('/busca')}
+        <button onClick={() => router.push('/modos')}
           style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginBottom: '12px' }}>
           Começar a explorar →
         </button>

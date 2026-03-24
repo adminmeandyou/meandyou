@@ -46,7 +46,7 @@ export default function Login() {
       }
 
       // Hard redirect garante que o middleware leia os cookies recém-setados
-      window.location.href = '/busca'
+      window.location.href = '/modos'
 
     } catch {
       setErro('Erro de conexão. Tente novamente.')
@@ -66,7 +66,7 @@ export default function Login() {
       })
       const data = await res.json()
       if (!res.ok) { setErro(data.error || 'Código inválido'); return }
-      window.location.href = '/busca'
+      window.location.href = '/modos'
     } catch {
       setErro('Erro de conexão. Tente novamente.')
     } finally {

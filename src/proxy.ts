@@ -7,7 +7,7 @@ import { createServerClient } from '@supabase/ssr'
 // que pode não ter sessão naquele dispositivo. A page /verificacao gerencia sua própria
 // autenticação internamente via token na URL ou via supabase.auth.getUser().
 const PROTECTED_ROUTES = [
-  '/busca', '/match', '/matches', '/chat', '/perfil', '/planos', '/dashboard',
+  '/modos', '/match', '/matches', '/chat', '/perfil', '/planos', '/dashboard',
   '/conversas', '/loja', '/destaque', '/indicar', '/backstage',
   '/roleta', '/streak', '/onboarding', '/notificacoes', '/suporte',
   '/ajuda', '/deletar-conta', '/minha-assinatura', '/videochamada', '/curtidas',
@@ -62,7 +62,7 @@ export async function proxy(req: NextRequest) {
       .single()
 
     if (!staff) {
-      return NextResponse.redirect(new URL('/busca', req.url))
+      return NextResponse.redirect(new URL('/modos', req.url))
     }
 
     // Permissões por cargo — quais rotas cada role pode acessar
@@ -96,7 +96,7 @@ export async function proxy(req: NextRequest) {
   // Rota pública com login → redireciona para /busca
   const isPublicOnly = PUBLIC_ONLY_ROUTES.some(r => pathname.startsWith(r))
   if (isPublicOnly && user) {
-    return NextResponse.redirect(new URL('/busca', req.url))
+    return NextResponse.redirect(new URL('/modos', req.url))
   }
 
   // Verificar progresso do cadastro para rotas protegidas

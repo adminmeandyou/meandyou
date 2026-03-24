@@ -342,13 +342,13 @@ export default function MatchesHubPage() {
             currentUserId={userId ?? ''}
             archivedIds={archivedIds}
             onArchive={handleArchive}
-            onEmpty={() => router.push('/busca')}
+            onEmpty={() => router.push('/modos')}
             searchTerm={searchTerm}
           />
         ) : aba === 'todos' ? (
           <AbaTodos
             matches={todosFiltrados}
-            onEmpty={() => router.push('/busca')}
+            onEmpty={() => router.push('/modos')}
             onOpen={(matchId) => router.push(`/conversas/${matchId}`)}
             searchTerm={searchTerm}
           />
@@ -356,7 +356,7 @@ export default function MatchesHubPage() {
           <AbaOnline
             friends={onlineFiltrados}
             myShowOnline={myShowOnline}
-            onEmpty={() => router.push('/busca')}
+            onEmpty={() => router.push('/modos')}
             searchTerm={searchTerm}
           />
         )}

@@ -288,7 +288,7 @@ export async function sendPlanActivatedEmail(email: string, nome: string, plano:
     ${heading(`Seu plano ${planoDisplay} está ativo, ${nome}!`)}
     ${sub(`Pagamento confirmado${valorPago ? ` de <strong style="color:#ffffff;">${valorPago}</strong>` : ''}. Confira seus benefícios:`)}
     ${infoBox('Seus benefícios:', features, cor)}
-    ${btn(`${APP_URL}/busca`, 'Começar a usar agora')}
+    ${btn(`${APP_URL}/modos`, 'Começar a usar agora')}
     ${note('Em caso de dúvidas sobre cobranças, acesse o suporte.')}
   `
   await enviar({
@@ -548,7 +548,7 @@ export async function sendVerificationApprovedEmail(email: string, nome: string)
       'Mais destaque nos resultados de busca',
       'Maior confiança para outros usuários',
     ], '#22c55e')}
-    ${btn(`${APP_URL}/busca`, 'Explorar perfis agora')}
+    ${btn(`${APP_URL}/modos`, 'Explorar perfis agora')}
   `
   await enviar({
     from: FROM, to: email,
@@ -696,7 +696,7 @@ export async function sendNewProfilesNearbyEmail(email: string, nome: string, qt
     ${badge('🗺️ Novos perfis perto de você')}
     ${heading(`${qtd} novos perfis em ${cidade}`)}
     ${sub(`Olá, ${nome}! <strong style="color:#ffffff;">${qtd} novos usuários</strong> entraram no MeAndYou em ${cidade}. Pode ser alguém especial!`)}
-    ${btn(`${APP_URL}/busca`, 'Explorar perfis')}
+    ${btn(`${APP_URL}/modos`, 'Explorar perfis')}
   `
   await enviar({
     from: FROM, to: email,
@@ -711,7 +711,7 @@ export async function sendCompatibleProfilesEmail(email: string, nome: string, q
     ${badge('🎯 Alta compatibilidade')}
     ${heading(`Encontramos ${qtd} perfis compatíveis com você`)}
     ${sub(`Olá, ${nome}! Com base nos seus filtros e interesses, identificamos <strong style="color:#ffffff;">${qtd} pessoas</strong> com alta compatibilidade.`)}
-    ${btn(`${APP_URL}/busca`, 'Ver perfis compatíveis')}
+    ${btn(`${APP_URL}/modos`, 'Ver perfis compatíveis')}
     ${note('Quanto mais completo seu perfil, mais precisa fica a compatibilidade.')}
   `
   await enviar({
