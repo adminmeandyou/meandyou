@@ -152,7 +152,13 @@ export async function proxy(req: NextRequest) {
       return res
     }
 
-    // Nenhum campo preenchido → cadastro
+    // reg_credentials_set é null → conta criada antes do sistema de progresso
+    // Libera acesso para não causar loop de redirecionamento com contas antigas
+    if (profile?.reg_credentials_set === null || profile?.reg_credentials_set === undefined) {
+      return res
+    }
+
+    // reg_credentials_set = false explícito → cadastro incompleto
     return NextResponse.redirect(new URL('/cadastro', req.url))
   }
 
