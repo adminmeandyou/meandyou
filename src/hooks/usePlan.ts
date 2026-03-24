@@ -43,7 +43,7 @@ export interface PlanLimits {
 // Limites estáticos por plano — valores dinâmicos (saldos) vêm do banco
 const PLAN_CONFIG: Record<string, Partial<PlanLimits>> = {
   essencial: {
-    likesPerDay:            5,
+    likesPerDay:            20,
     superlikesPerDay:       1,
     canUndo:                false,
     canSeeWhoLiked:         false,
@@ -192,7 +192,7 @@ export function usePlan() {
 
   function getUpgradeMessage(feature: string): string {
     const msgs: Record<string, string> = {
-      likes:      `Você usou todas as ${limits.likesPerDay} curtidas de hoje. Faça upgrade para curtir mais!`,
+      likes:      `Voce usou todas as ${limits.likesPerDay} curtidas de hoje. Faca upgrade para curtir mais!`,
       superlike:  'SuperLike está disponível a partir do plano Plus.',
       undo:       'Desfazer curtida está disponível a partir do plano Plus.',
       whoLiked:   'Ver quem curtiu você está disponível a partir do plano Plus.',

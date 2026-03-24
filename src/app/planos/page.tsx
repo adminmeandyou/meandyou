@@ -17,7 +17,7 @@ const PLANS = [
     checkoutUrl: '#', // TODO: configurar URL do novo gateway de pagamentos
     features: [
       'Até 10 fotos no perfil',
-      '5 curtidas por dia',
+      '20 curtidas por dia',
       '1 SuperCurtida/dia',
       '1 Ticket de roleta/dia',
       '1 Lupa por dia',
@@ -271,7 +271,7 @@ export default function PlanosPage() {
             ))}
           </div>
           {[
-            { label: 'Curtidas',      values: ['5/dia', '30/dia', 'Ilimitadas'] },
+            { label: 'Curtidas',      values: ['20/dia', '30/dia', 'Ilimitadas'] },
             { label: 'SuperCurtidas', values: ['1/dia', '4/dia', '10/dia'] },
             { label: 'Lupas',         values: ['1/dia', '1/dia', '2/dia'] },
             { label: 'Tickets',       values: ['1/dia', '2/dia', '3/dia'] },
