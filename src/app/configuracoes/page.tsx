@@ -295,7 +295,6 @@ export default function ConfiguracoesPage() {
         {profile?.plan === 'black' && (
           <CardSection titulo="Plano Black">
             <LinkRow href="/backstage" icon={<Crown size={17} />} label="Camarote Black" sub="Vitrine exclusiva e resgates" badge={<Badge label="Black" cor="#F59E0B" />} />
-            <LinkRow href="/configuracoes/casal" icon={<Heart size={17} />} label="Perfil de Casal" sub="Apareca como casal no feed" badge={<Badge label="Black" cor="#F59E0B" />} />
             <LinkRow href="/amigos" icon={<Users size={17} />} label="Amigos" sub="Ver amigos online" last />
           </CardSection>
         )}
