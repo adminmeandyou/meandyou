@@ -36,14 +36,17 @@ function tryGPS(): Promise<{ lat: number; lng: number } | null> {
 
 async function tryIPFallback(): Promise<{ lat: number; lng: number } | null> {
   try {
-    const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(5000) })
+    const controller = new AbortController()
+    const timer = setTimeout(() => controller.abort(), 5000)
+    const res = await fetch('https://ipapi.co/json/', { signal: controller.signal })
+    clearTimeout(timer)
     if (!res.ok) return null
     const data = await res.json()
     if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
       return { lat: data.latitude, lng: data.longitude }
     }
   } catch {
-    // sem internet ou serviço indisponível — não bloqueia
+    // sem internet, timeout ou serviço indisponível — não bloqueia
   }
   return null
 }
