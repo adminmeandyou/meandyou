@@ -13,21 +13,6 @@
   }
 }
 
-/* ── BACKUP identidade v1 (clara com verde-água) ──────────────────────
-:root-backup-v1 {
-  --bg: #f8faf9;
-  --white: #ffffff;
-  --accent: #2ec4a0;
-  --accent-dark: #1fa082;
-  --accent-light: #e6f7f3;
-  --text: #111a17;
-  --muted: #7a9189;
-  --border: #e0ece8;
-  --shadow: 0 4px 24px rgba(46,196,160,0.12);
-  --red: #e84545;
-  --gold: #d4a017;
-}
-──────────────────────────────────────────────────────────────────────── */
 
 /* ── Identidade v2: Dark Romantic (preto + vermelho) ── */
 :root {
