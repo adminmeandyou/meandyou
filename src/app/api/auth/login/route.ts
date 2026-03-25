@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
       })()
     }
 
-    // 7a. Registrar sessão ativa (fire-and-forget)
+    // 7a. Registrar sessão ativa — mantém no máximo 5 por usuário (fire-and-forget)
     const deviceInfo = ua.slice(0, 200)
     ;(async () => {
       try {
@@ -202,6 +202,16 @@ export async function POST(req: NextRequest) {
           user_agent: ua.slice(0, 500),
           device_info: deviceInfo,
         })
+        // Apaga as mais antigas se houver mais de 5
+        const { data: sessions } = await supabaseAdmin
+          .from('user_sessions')
+          .select('id, created_at')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false })
+        if (sessions && sessions.length > 5) {
+          const toDelete = sessions.slice(5).map((s: any) => s.id)
+          await supabaseAdmin.from('user_sessions').delete().in('id', toDelete)
+        }
       } catch {}
     })()
 
