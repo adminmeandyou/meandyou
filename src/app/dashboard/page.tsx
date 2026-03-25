@@ -39,9 +39,6 @@ export default function Dashboard() {
   const handleLogout = async () => {
     // Faz signOut no Supabase e limpa cookies de sessão
     await supabase.auth.signOut()
-    // Limpa os cookies setados manualmente pelo /api/auth/login
-    document.cookie = 'sb-access-token=; Max-Age=0; path=/'
-    document.cookie = 'sb-refresh-token=; Max-Age=0; path=/'
     window.location.href = '/login'
   }
 

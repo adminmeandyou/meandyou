@@ -15,6 +15,7 @@ import { ToastProvider } from './Toast'
 const SHELL_PREFIXES = [
   '/dashboard',
   '/modos',
+  '/busca',
   '/match',
   '/matches',
   '/chat',
@@ -32,6 +33,9 @@ const SHELL_PREFIXES = [
   '/notificacoes',
   '/backstage',
   '/emblemas',
+  '/curtidas',
+  '/amigos',
+  '/casal',
 ]
 
 // Rotas que recebem shell apenas em match exato (sem incluir sub-rotas)
