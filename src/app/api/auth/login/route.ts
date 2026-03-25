@@ -8,6 +8,7 @@ import {
   sendSuspiciousLoginEmail,
   sendNewDeviceLoginEmail,
 } from '@/app/lib/email'
+import { encryptSecret } from '@/app/api/auth/2fa/gerar/route'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -161,8 +162,8 @@ export async function POST(req: NextRequest) {
       await supabaseAdmin.from('auth_2fa_pending').insert({
         user_id: userId,
         temp_token: tempToken,
-        access_token: authData.session.access_token,
-        refresh_token: authData.session.refresh_token,
+        access_token: encryptSecret(authData.session.access_token),
+        refresh_token: encryptSecret(authData.session.refresh_token),
         expires_at: expiresAt,
       })
       return NextResponse.json({ requires_2fa: true, temp_token: tempToken })
@@ -208,7 +209,7 @@ export async function POST(req: NextRequest) {
     Promise.all([
       supabaseAdmin.rpc('update_streak_on_login', { p_user_id: userId }),
       supabaseAdmin.from('profiles')
-        .update({ last_seen: new Date().toISOString() })
+        .update({ last_seen: new Date().toISOString(), last_active_at: new Date().toISOString() })
         .eq('id', userId),
     ]).catch(err => console.error('Erro ao atualizar streak/last_active:', err))
 

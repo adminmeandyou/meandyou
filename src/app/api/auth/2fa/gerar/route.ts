@@ -9,8 +9,8 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// Criptografa o secret TOTP com AES-256-GCM usando a SERVICE_ROLE_KEY como chave
-function encryptSecret(plain: string): string {
+// Criptografa dados sensíveis com AES-256-GCM usando a SERVICE_ROLE_KEY como chave
+export function encryptSecret(plain: string): string {
   const key = Buffer.from(process.env.SUPABASE_SERVICE_ROLE_KEY!.slice(0, 32).padEnd(32, '0'))
   const iv = randomBytes(16)
   const cipher = createCipheriv('aes-256-gcm', key, iv)

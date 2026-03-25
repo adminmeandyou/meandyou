@@ -86,8 +86,8 @@ export async function POST(req: NextRequest) {
     )
 
     await ssrClient.auth.setSession({
-      access_token: pending.access_token,
-      refresh_token: pending.refresh_token,
+      access_token: decryptSecret(pending.access_token),
+      refresh_token: decryptSecret(pending.refresh_token),
     })
 
     return response

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/server'
 
 // Chamado pelo Supabase Scheduled Webhooks ou cron externo (cron-job.org)
 // Protegido por CRON_SECRET no header Authorization
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const supabase = await createClient()
+  const supabase = createAdminClient()
 
   // Notifica matches que vão expirar em 24h (antes de deletar)
   const { error: notifyErr } = await supabase.rpc('notify_expiring_matches')

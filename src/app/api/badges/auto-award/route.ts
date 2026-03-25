@@ -162,7 +162,8 @@ export async function POST(req: NextRequest) {
     }
 
     case 'video_calls_gte': {
-      const { data } = await supabase.from('video_sessions').select('user_id')
+      // Tabela real: video_minutes (cada linha = 1 sessão de vídeo)
+      const { data } = await supabase.from('video_minutes').select('user_id')
       const counts: Record<string, number> = {}
       for (const r of data ?? []) { if (r.user_id) counts[r.user_id] = (counts[r.user_id] || 0) + 1 }
       userIds = Object.entries(counts).filter(([, c]) => c >= count).map(([uid]) => uid)
@@ -170,34 +171,19 @@ export async function POST(req: NextRequest) {
     }
 
     case 'video_minutes_gte': {
-      const { data } = await supabase.from('video_minutes_usage').select('user_id, minutes_used')
+      // Tabela real: video_minutes com coluna minutes
+      const { data } = await supabase.from('video_minutes').select('user_id, minutes')
       const totals: Record<string, number> = {}
-      for (const r of data ?? []) { if (r.user_id) totals[r.user_id] = (totals[r.user_id] || 0) + (r.minutes_used || 0) }
+      for (const r of data ?? []) { if (r.user_id) totals[r.user_id] = (totals[r.user_id] || 0) + (r.minutes || 0) }
       userIds = Object.entries(totals).filter(([, t]) => t >= count).map(([uid]) => uid)
       break
     }
 
-    case 'store_purchase': {
-      const { data } = await supabase.from('store_orders').select('user_id')
-      userIds = [...new Set((data ?? []).map((r: any) => r.user_id))]
-      break
-    }
-
-    case 'store_spent_gte': {
-      const { data } = await supabase.from('store_orders').select('user_id, amount')
-      const totals: Record<string, number> = {}
-      for (const r of data ?? []) { if (r.user_id) totals[r.user_id] = (totals[r.user_id] || 0) + (r.amount || 0) }
-      userIds = Object.entries(totals).filter(([, t]) => t >= count).map(([uid]) => uid)
-      break
-    }
-
+    case 'store_purchase':
+    case 'store_spent_gte':
     case 'store_item': {
-      const item = badge.condition_value?.item ?? badge.condition_extra?.item
-      if (item) {
-        const { data } = await supabase.from('store_orders').select('user_id').eq('item_key', item)
-        userIds = [...new Set((data ?? []).map((r: any) => r.user_id))]
-      }
-      break
+      // Compras de itens não têm tabela de histórico no momento — concessão manual necessária
+      return NextResponse.json({ ok: true, awarded: 0, note: 'Compras de loja requerem concessão manual até que store_orders seja implementado.' })
     }
 
     case 'meetup_scheduled': {
