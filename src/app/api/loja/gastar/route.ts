@@ -22,18 +22,12 @@ const ITEM_CONFIG: Record<string, { fichasPorUnidade: number; label: string }> =
 }
 
 async function incrementarSaldo(tabela: string, userId: string, amount: number): Promise<void> {
-  const { data: cur } = await supabaseAdmin
-    .from(tabela)
-    .select('amount')
-    .eq('user_id', userId)
-    .single()
-
-  await supabaseAdmin
-    .from(tabela)
-    .upsert(
-      { user_id: userId, amount: (cur?.amount ?? 0) + amount },
-      { onConflict: 'user_id' }
-    )
+  // Operação atômica via RPC — evita race condition em compras simultâneas
+  await supabaseAdmin.rpc('increment_user_balance', {
+    p_table:   tabela,
+    p_user_id: userId,
+    p_amount:  amount,
+  })
 }
 
 export async function POST(req: NextRequest) {
