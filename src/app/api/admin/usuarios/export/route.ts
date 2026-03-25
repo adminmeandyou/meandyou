@@ -39,11 +39,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // TODO: buscar total gasto por usuário quando novo gateway for configurado
-  // (era via cakto_webhook_log — tabela específica da Cakto)
   const userIds = (users ?? []).map((u: any) => u.id)
   const totalGastoPorUser: Record<string, number> = {}
-  void userIds // evitar warning de unused variable
+  if (userIds.length > 0) {
+    const { data: pagamentos } = await supabaseAdmin
+      .from('payments')
+      .select('user_id, amount_cents')
+      .in('user_id', userIds)
+      .eq('status', 'paid')
+    for (const p of pagamentos ?? []) {
+      totalGastoPorUser[p.user_id] = (totalGastoPorUser[p.user_id] ?? 0) + (p.amount_cents ?? 0)
+    }
+  }
 
   function getStatus(u: any) {
     if (u.banned) return 'banido'
@@ -60,7 +67,7 @@ export async function GET(req: NextRequest) {
     plano: u.plan ?? 'sem plano',
     status: getStatus(u),
     data_cadastro: new Date(u.created_at).toLocaleDateString('pt-BR'),
-    total_gasto_rs: (totalGastoPorUser[u.id] ?? 0).toFixed(2),
+    total_gasto_rs: ((totalGastoPorUser[u.id] ?? 0) / 100).toFixed(2),
   }))
 
   const headers = ['Nome', 'Email', 'CPF', 'Telefone', 'Plano', 'Status', 'Data Cadastro', 'Total Gasto (R$)']

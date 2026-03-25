@@ -34,10 +34,18 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // Concede badge "seguranca" ao usar o recurso pela primeira vez
-  await supabase
-    .from('user_badges')
-    .upsert({ user_id: user.id, badge_id: 'seguranca' }, { onConflict: 'user_id,badge_id', ignoreDuplicates: true })
+  // Concede badge de segurança ao usar o recurso pela primeira vez
+  const { data: badgeSeguranca } = await supabase
+    .from('badges')
+    .select('id')
+    .ilike('name', '%segurança%')
+    .limit(1)
+    .maybeSingle()
+  if (badgeSeguranca?.id) {
+    await supabase
+      .from('user_badges')
+      .upsert({ user_id: user.id, badge_id: badgeSeguranca.id }, { onConflict: 'user_id,badge_id', ignoreDuplicates: true })
+  }
 
   return NextResponse.json({ ok: true, id: data.id })
 }

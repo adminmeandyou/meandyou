@@ -7,7 +7,7 @@ import { createServerClient } from '@supabase/ssr'
 // que pode não ter sessão naquele dispositivo. A page /verificacao gerencia sua própria
 // autenticação internamente via token na URL ou via supabase.auth.getUser().
 const PROTECTED_ROUTES = [
-  '/modos', '/match', '/matches', '/chat', '/perfil', '/planos', '/dashboard',
+  '/modos', '/busca', '/match', '/matches', '/chat', '/perfil', '/planos', '/dashboard',
   '/conversas', '/loja', '/destaque', '/indicar', '/backstage',
   '/roleta', '/streak', '/onboarding', '/notificacoes', '/suporte',
   '/ajuda', '/deletar-conta', '/minha-assinatura', '/videochamada', '/curtidas',

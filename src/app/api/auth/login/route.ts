@@ -157,11 +157,13 @@ export async function POST(req: NextRequest) {
     // 5b. Se 2FA ativo, não criar sessão ainda — retornar temp_token
     if ((userRow as any)?.totp_enabled) {
       const tempToken = randomBytes(32).toString('hex')
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString() // 5 minutos
       await supabaseAdmin.from('auth_2fa_pending').insert({
         user_id: userId,
         temp_token: tempToken,
         access_token: authData.session.access_token,
         refresh_token: authData.session.refresh_token,
+        expires_at: expiresAt,
       })
       return NextResponse.json({ requires_2fa: true, temp_token: tempToken })
     }

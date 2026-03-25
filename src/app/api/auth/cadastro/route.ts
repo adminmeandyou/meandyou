@@ -150,6 +150,7 @@ export async function POST(req: NextRequest) {
       supabase.from('user_superlikes').insert({ user_id: userId, amount: 0 }),
       supabase.from('user_boosts').insert({ user_id: userId, amount: 0 }),
       supabase.from('user_rewinds').insert({ user_id: userId, amount: 0 }),
+      supabase.from('user_fichas').insert({ user_id: userId, amount: 0 }),
       supabase.from('daily_streaks').insert({
         user_id: userId,
         current_streak: 0,

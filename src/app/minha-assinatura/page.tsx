@@ -34,9 +34,9 @@ const PLAN_COLORS: Record<string, { color: string; bg: string; border: string }>
 }
 
 const PLAN_FEATURES: Record<string, string[]> = {
-  essencial: ['5 curtidas/dia', '1 SuperCurtida/dia', '1 ticket de roleta/dia', 'Verificacao de identidade', '1 filtro ativo'],
-  plus:      ['30 curtidas/dia', '4 SuperCurtidas/dia', '2 tickets/dia', '1 Lupa/dia', 'Desfazer curtida (1/dia)', 'Filtros avancados', 'Ver quem curtiu'],
-  black:     ['Curtidas ilimitadas', '10 SuperCurtidas/dia', '3 tickets/dia', '2 Lupas/dia', 'Boost automatico diario', 'Backstage (Sugar e Fetiche)', 'Suporte prioritario 24h'],
+  essencial: ['20 curtidas/dia', '1 SuperCurtida/dia', '1 ticket de roleta/dia', 'Verificacao de identidade', '1 filtro ativo'],
+  plus:      ['50 curtidas/dia', '5 SuperCurtidas/dia', '2 tickets/dia', '1 Lupa/dia', 'Desfazer curtida', 'Filtros avancados', 'Ver quem curtiu'],
+  black:     ['Curtidas ilimitadas', '10 SuperCurtidas/dia', '3 tickets/dia', '2 Lupas/dia', 'Backstage (Sugar e Fetiche)', 'Suporte prioritario 24h'],
 }
 
 function formatDate(iso: string) {
