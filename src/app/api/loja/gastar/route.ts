@@ -14,7 +14,7 @@ const ITEM_CONFIG: Record<string, { fichasPorUnidade: number; label: string }> =
   rewind:        { fichasPorUnidade: 20,   label: 'Desfazer' },
   ghost_7d:      { fichasPorUnidade: 60,   label: 'Fantasma 7 dias' },
   ghost_35d:     { fichasPorUnidade: 220,  label: 'Fantasma 35 dias' },
-  reveals_5:     { fichasPorUnidade: 50,   label: 'Ver quem curtiu (5 perfis)' },
+  reveals_5:     { fichasPorUnidade: 50,   label: 'Ver quem curtiu (24h)' },
   xp_bonus_3d:   { fichasPorUnidade: 50,   label: 'Bonus de XP (3 dias)' },
   verified_plus: { fichasPorUnidade: 200,  label: 'Selo Verificado Plus' },
   caixa_surpresa:{ fichasPorUnidade: 35,   label: 'Caixa Surpresa' },

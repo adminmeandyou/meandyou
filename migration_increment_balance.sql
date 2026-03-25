@@ -17,8 +17,7 @@ SECURITY DEFINER
 AS $$
 BEGIN
   EXECUTE format(
-    'INSERT INTO public.%I (user_id, amount) VALUES ($1, $2)
-     ON CONFLICT (user_id) DO UPDATE SET amount = public.%I.amount + $2',
+    'INSERT INTO public.%I (user_id, amount) VALUES ($1, $2) ON CONFLICT (user_id) DO UPDATE SET amount = public.%I.amount + $2',
     p_table, p_table
   ) USING p_user_id, p_amount;
 END;

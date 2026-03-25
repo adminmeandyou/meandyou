@@ -11,11 +11,12 @@ const CYCLE_DAYS: Record<string, number> = {
   monthly: 30, quarterly: 90, semiannual: 180, annual: 365,
 }
 
-// Pacotes de fichas: preco em centavos -> quantidade
+// Pacotes de fichas: preco em centavos -> quantidade (deve coincidir com payments/create)
 const FICHAS_PACKAGES: Record<number, number> = {
-  990:  50,
-  2490: 150,
-  4990: 350,
+  597:  50,
+  1497: 150,
+  3497: 400,
+  5997: 900,
 }
 
 function fichasFromAmount(amountReais: number): number {
@@ -28,7 +29,9 @@ export async function POST(req: NextRequest) {
     // Valida secret na URL (timing-safe para evitar timing attacks)
     const secret = req.nextUrl.searchParams.get('secret') ?? ''
     const expected = process.env.ABACATEPAY_WEBHOOK_SECRET ?? ''
-    if (!expected || !timingSafeEqual(Buffer.from(secret), Buffer.from(expected))) {
+    const secretBuf = Buffer.from(secret)
+    const expectedBuf = Buffer.from(expected)
+    if (!expected || secretBuf.byteLength !== expectedBuf.byteLength || !timingSafeEqual(secretBuf, expectedBuf)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 

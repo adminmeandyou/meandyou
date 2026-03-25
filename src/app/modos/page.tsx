@@ -1443,7 +1443,7 @@ function BuscaInner() {
 
       const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
       const [todayLikesRes, avulsoRes, boostRes, modeLikesRes] = await Promise.all([
-        supabase.from('likes').select('is_superlike').eq('user_id', user.id).gte('created_at', todayStart.toISOString()),
+        supabase.from('likes').select('is_superlike').eq('from_user', user.id).gte('created_at', todayStart.toISOString()),
         supabase.from('user_superlikes').select('amount').eq('user_id', user.id).single(),
         supabase.from('user_boosts').select('amount, active_until').eq('user_id', user.id).maybeSingle(),
         supabase.from('mode_likes').select('mode').eq('user_id', user.id).gte('created_at', todayStart.toISOString()),

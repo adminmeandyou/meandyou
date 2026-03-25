@@ -87,9 +87,9 @@ export async function POST(req: NextRequest) {
     }
 
     case 'likes_sent_gte': {
-      const { data } = await supabase.from('likes').select('user_id')
+      const { data } = await supabase.from('likes').select('from_user')
       const counts: Record<string, number> = {}
-      for (const r of data ?? []) { if (r.user_id) counts[r.user_id] = (counts[r.user_id] || 0) + 1 }
+      for (const r of data ?? []) { if (r.from_user) counts[r.from_user] = (counts[r.from_user] || 0) + 1 }
       userIds = Object.entries(counts).filter(([, c]) => c >= count).map(([uid]) => uid)
       break
     }

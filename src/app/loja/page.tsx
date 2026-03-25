@@ -93,8 +93,8 @@ const STORE_ITEMS: StoreItem[] = [
     balanceKey: 'ghost',
   },
   {
-    key: 'reveals_5', label: 'Ver quem curtiu', description: 'Revela 5 perfis da fila de admiradores',
-    unit: 'revelação (5 perfis)',
+    key: 'reveals_5', label: 'Ver quem curtiu', description: 'Revela todos os perfis que curtiram voce por 24 horas',
+    unit: 'acesso (24h)',
     icon: <Eye size={20} strokeWidth={1.5} />, baseFichas: 50, maxQty: 5,
     accentColor: '#ec4899', accentBg: 'rgba(236,72,153,0.10)', accentBorder: 'rgba(236,72,153,0.25)',
     new: true,
