@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
     }
 
     // 3. Extrair matchId e userId do nome da sala
-    // Padrão do nome da sala: "match-{matchId}-{userId}"
+    // Padrão do nome da sala: "match-{matchId}" (matchId é um UUID com hífens)
     const roomName: string = event.room?.name ?? ''
     const parts = roomName.split('-')
 
