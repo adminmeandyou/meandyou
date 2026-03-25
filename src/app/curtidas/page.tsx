@@ -54,9 +54,8 @@ export default function CurtidasPage() {
     // Busca IDs + tipo de curtida
     const { data: rawLikes } = await supabase
       .from('likes')
-      .select('from_user, type, created_at')
-      .eq('to_user', user!.id)
-      .in('type', ['like', 'superlike'])
+      .select('user_id, is_superlike, created_at')
+      .eq('target_id', user!.id)
       .order('created_at', { ascending: false })
       .limit(30)
 
@@ -67,7 +66,7 @@ export default function CurtidasPage() {
     }
 
     // Busca perfis via view pública
-    const ids = rawLikes.map((l: any) => l.from_user)
+    const ids = rawLikes.map((l: any) => l.user_id)
     const { data: profiles } = await supabase
       .from('public_profiles')
       .select('id, name, photo_best, city')
@@ -76,13 +75,13 @@ export default function CurtidasPage() {
     const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]))
 
     const result: LikerProfile[] = rawLikes.map((l: any) => {
-      const p = profileMap.get(l.from_user)
+      const p = profileMap.get(l.user_id)
       return {
-        from_user: l.from_user,
+        from_user: l.user_id,
         name: p?.name ?? '...',
         photo_best: p?.photo_best ?? null,
         city: p?.city ?? null,
-        type: l.type,
+        type: l.is_superlike ? 'superlike' : 'like',
       }
     })
 
@@ -93,10 +92,10 @@ export default function CurtidasPage() {
   async function handleLikeBack(profileId: string) {
     haptics.medium()
     try {
-      await supabase.rpc('process_swipe', {
-        p_from: user!.id,
-        p_to: profileId,
-        p_type: 'like',
+      await supabase.rpc('process_like', {
+        p_user_id: user!.id,
+        p_target_id: profileId,
+        p_is_superlike: false,
       })
       toast.success('Curtida enviada!')
     } catch {

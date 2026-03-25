@@ -426,10 +426,9 @@ function CamaroteVitrine({
   async function handleLike() {
     if (!user || !currentProfile) return
     setLikedIds(prev => new Set(prev).add(currentProfile.id))
-    await supabase.rpc('process_swipe', {
+    await supabase.rpc('process_like', {
       p_user_id: user.id,
       p_target_id: currentProfile.id,
-      p_action: 'like',
       p_is_superlike: false,
     })
   }

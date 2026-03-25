@@ -60,7 +60,7 @@ const PLAN_CONFIG: Record<string, Partial<PlanLimits>> = {
     isPlus:                 false,
   },
   plus: {
-    likesPerDay:            30,
+    likesPerDay:            50,
     superlikesPerDay:       5,
     canUndo:                true,
     canSeeWhoLiked:         true,

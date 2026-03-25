@@ -374,17 +374,22 @@ export default function VerPerfilPage() {
       haptics.tap()
     }
 
-    const swipeType = action === 'superlike' ? 'superlike' : action === 'like' ? 'like' : 'dislike'
-    const { error: swipeErr } = await supabase.rpc('process_swipe', {
-      p_from: userId,
-      p_to: profileId,
-      p_type: swipeType,
-    })
-
-    if (swipeErr) {
-      toast.show('Nao foi possivel registrar a acao. Tente novamente.', 'error')
-      setSwipeAction(null)
-      return
+    if (action === 'dislike') {
+      await supabase.from('dislikes').upsert(
+        { from_user: userId, to_user: profileId },
+        { onConflict: 'from_user,to_user' }
+      )
+    } else {
+      const { error: swipeErr } = await supabase.rpc('process_like', {
+        p_user_id: userId,
+        p_target_id: profileId,
+        p_is_superlike: action === 'superlike',
+      })
+      if (swipeErr) {
+        toast.show('Nao foi possivel registrar a acao. Tente novamente.', 'error')
+        setSwipeAction(null)
+        return
+      }
     }
 
     setTimeout(() => router.back(), 800)

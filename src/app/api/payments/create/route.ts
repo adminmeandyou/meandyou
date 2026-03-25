@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     // Busca dados do usuario para AbacatePay
     const { data: profile } = await supabase
       .from('profiles')
-      .select('display_name, cpf')
+      .select('display_name, cpf, phone')
       .eq('id', user.id)
       .single()
 
@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
           customer: {
             name: customerName,
             email: user.email,
-            cellphone: '00000000000',
+            cellphone: profile?.phone ?? '00000000000',
             taxId: profile?.cpf ?? '00000000000',
           },
           metadata: { user_id: user.id, type, plan, cycle },
@@ -128,7 +128,7 @@ export async function POST(req: NextRequest) {
           customer: {
             name: customerName,
             email: user.email!,
-            cellphone: '00000000000',
+            cellphone: profile?.phone ?? '00000000000',
             taxId: profile?.cpf ?? '00000000000',
           },
           externalId: `${user.id}_${Date.now()}`,

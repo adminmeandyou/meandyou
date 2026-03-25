@@ -392,10 +392,19 @@ function LocationAutocomplete({
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function getLikeLimit(plan: string) {
+function getModeLimit(plan: string, mode: ViewMode): number {
+  // Match do Dia: limite e o tamanho do deck (controlado em loadDaily)
+  if (mode === 'daily' || mode === 'rooms') return Infinity
+  // Descobrir e Busca Avancada: limite por plano
   if (plan === 'black') return Infinity
-  if (plan === 'plus') return 30
+  if (plan === 'plus') return 50
   return 20
+}
+
+function getDailyMatchLimit(plan: string): number {
+  if (plan === 'black') return 8
+  if (plan === 'plus') return 3
+  return 1
 }
 
 function getSuperlikeLimit(plan: string) {
@@ -589,17 +598,17 @@ function DailyMatchView({ userId, localFilters }: { userId: string | null; local
               const scoreBtoA = calcCompatibility(row as Record<string, boolean>, myFilters)
               scoreMap[row.user_id] = Math.round((scoreAtoB + scoreBtoA) / 2)
             }
-            // Filtra mínimo 59% de compatibilidade mútua, pega os 5 melhores
+            // Filtra mínimo 59% de compatibilidade mútua, pega os melhores por plano
             daily = candidates
               .filter(p => (scoreMap[p.id] ?? 0) >= 59)
               .sort((a, b) => (scoreMap[b.id] ?? 0) - (scoreMap[a.id] ?? 0))
-              .slice(0, 5)
+              .slice(0, getDailyMatchLimit(userPlan))
             setScores(scoreMap)
           } else {
-            daily = candidates.slice(0, 5)
+            daily = candidates.slice(0, getDailyMatchLimit(userPlan))
           }
         } catch {
-          daily = candidates.slice(0, 5)
+          daily = candidates.slice(0, getDailyMatchLimit(userPlan))
         }
 
         setProfiles(daily)
@@ -812,7 +821,7 @@ const MODES_CONFIG = [
   {
     key: 'daily' as ViewMode,
     label: 'Match do Dia',
-    subtitle: '5 perfis compativeis por dia',
+    subtitle: 'Perfis compativeis selecionados para voce',
     icon: <Star size={28} strokeWidth={1.5} color="#F59E0B" />,
     bg: 'linear-gradient(135deg, #1a1000 0%, #2d1c00 100%)',
     border: 'rgba(245,158,11,0.25)',
@@ -1287,7 +1296,7 @@ function BuscaInner() {
   const [loadingDeck, setLoadingDeck] = useState(true)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  const [likesUsed, setLikesUsed] = useState(0)
+  const [modeLikesUsed, setModeLikesUsed] = useState<Record<string, number>>({})
   const [superlikesUsed, setSuperlikesUsed] = useState(0)
   const [superlikesAvulso, setSuperlikesAvulso] = useState(0)
   const [limitReached, setLimitReached] = useState(false)
@@ -1324,7 +1333,7 @@ function BuscaInner() {
   const cardRef = useRef<HTMLDivElement>(null)
 
   const countdown = useCountdown()
-  const likeLimit = getLikeLimit(userPlan)
+  const likeLimit = getModeLimit(userPlan, viewMode)
   const superlikeLimit = getSuperlikeLimit(userPlan) + superlikesAvulso
   const currentProfile = deck[currentIdx] ?? null
   const toast = useToast()
@@ -1433,20 +1442,25 @@ function BuscaInner() {
       setUserGender(profileRes.data?.gender ?? '')
 
       const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
-      const [todayLikesRes, avulsoRes, boostRes] = await Promise.all([
+      const [todayLikesRes, avulsoRes, boostRes, modeLikesRes] = await Promise.all([
         supabase.from('likes').select('is_superlike').eq('user_id', user.id).gte('created_at', todayStart.toISOString()),
         supabase.from('user_superlikes').select('amount').eq('user_id', user.id).single(),
         supabase.from('user_boosts').select('amount, active_until').eq('user_id', user.id).maybeSingle(),
+        supabase.from('mode_likes').select('mode').eq('user_id', user.id).gte('created_at', todayStart.toISOString()),
       ])
       if (boostRes.data?.active_until && new Date(boostRes.data.active_until) > new Date()) {
         setBoostUntil(new Date(boostRes.data.active_until))
       }
       setBoostAmount(boostRes.data?.amount ?? 0)
       if (todayLikesRes.data) {
-        setLikesUsed(todayLikesRes.data.filter(l => !l.is_superlike).length)
         setSuperlikesUsed(todayLikesRes.data.filter(l => l.is_superlike).length)
       }
       setSuperlikesAvulso(avulsoRes.data?.amount ?? 0)
+      const modeUsage: Record<string, number> = {}
+      for (const r of modeLikesRes.data ?? []) {
+        modeUsage[r.mode] = (modeUsage[r.mode] || 0) + 1
+      }
+      setModeLikesUsed(modeUsage)
 
       if (filtersRes.data?.search_saved) {
         // Tenta restaurar do localStorage (backup quando colunas do banco estão ausentes)
@@ -1625,7 +1639,7 @@ function BuscaInner() {
 
   async function triggerSwipe(dir: 'left' | 'right' | 'up') {
     if (!currentProfile || !userId) return
-    if (dir === 'right' && likesUsed >= likeLimit) {
+    if (dir === 'right' && (modeLikesUsed[viewMode] ?? 0) >= likeLimit) {
       setDragX(0); setDragY(0); setLimitReached(true); return
     }
     if (dir === 'up' && superlikesUsed >= superlikeLimit) {
@@ -1638,7 +1652,10 @@ function BuscaInner() {
     setTimeout(async () => {
       setSwipeDir(null); setDragX(0); setDragY(0)
       setCurrentIdx(i => i + 1)
-      if (dir === 'right') setLikesUsed(v => v + 1)
+      if (dir === 'right') {
+        setModeLikesUsed(prev => ({ ...prev, [viewMode]: (prev[viewMode] || 0) + 1 }))
+        supabase.from('mode_likes').insert({ user_id: userId, mode: viewMode }).catch(() => {})
+      }
       if (dir === 'up') setSuperlikesUsed(v => v + 1)
       try {
         if (dir === 'left') return
@@ -1889,7 +1906,7 @@ function BuscaInner() {
                 </span>
                 <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.10)' }}>·</span>
                 <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>
-                  <Heart size={10} strokeWidth={1.5} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 2 }} />{likesUsed}/{likeLimit}
+                  <Heart size={10} strokeWidth={1.5} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 2 }} />{modeLikesUsed[viewMode] ?? 0}/{likeLimit === Infinity ? '∞' : likeLimit}
                 </span>
               </div>
             )}
@@ -2193,7 +2210,7 @@ function BuscaInner() {
                         .delete()
                         .eq('user_id', userId)
                         .eq('target_id', lastSwipe.profileId)
-                      if (lastSwipe.dir === 'right') setLikesUsed(v => Math.max(0, v - 1))
+                      if (lastSwipe.dir === 'right') setModeLikesUsed(prev => ({ ...prev, [viewMode]: Math.max(0, (prev[viewMode] || 0) - 1) }))
                       if (lastSwipe.dir === 'up') setSuperlikesUsed(v => Math.max(0, v - 1))
                     } catch {}
                   }

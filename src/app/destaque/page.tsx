@@ -85,10 +85,10 @@ export default function DestaquesPage() {
 
   async function handleLike(profileId: string) {
     haptics.medium()
-    await supabase.rpc('process_swipe', {
-      p_from: user?.id,
-      p_to: profileId,
-      p_type: 'like',
+    await supabase.rpc('process_like', {
+      p_user_id: user?.id,
+      p_target_id: profileId,
+      p_is_superlike: false,
     })
     setProfiles((prev) => prev.filter((p) => p.profile_id !== profileId))
     toast.success('Curtida enviada!')
