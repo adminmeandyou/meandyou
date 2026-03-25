@@ -189,10 +189,12 @@ export async function POST(req: NextRequest) {
           status: 'pending',
         })
 
-        // Novo usuário indicado ganha 3 tickets de boas-vindas
-        // Usa upsert para garantir o valor correto independente de ordem de execução
-        await supabase.from('user_tickets')
-          .upsert({ user_id: userId, amount: 3 }, { onConflict: 'user_id' })
+        // Novo usuário indicado ganha 3 tickets de boas-vindas (soma, não sobrescreve)
+        await supabase.rpc('increment_user_balance', {
+          p_table:   'user_tickets',
+          p_user_id: userId,
+          p_amount:  3,
+        })
       }
     }
 
