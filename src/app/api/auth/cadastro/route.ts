@@ -190,9 +190,9 @@ export async function POST(req: NextRequest) {
         })
 
         // Novo usuário indicado ganha 3 tickets de boas-vindas
+        // Usa upsert para garantir o valor correto independente de ordem de execução
         await supabase.from('user_tickets')
-          .update({ amount: 3 })
-          .eq('user_id', userId)
+          .upsert({ user_id: userId, amount: 3 }, { onConflict: 'user_id' })
       }
     }
 
