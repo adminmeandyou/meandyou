@@ -6,8 +6,12 @@
  * Requer Node.js 18+ (fetch nativo).
  */
 
-const SUPABASE_URL = 'https://akignnxgjyryqcgxesqn.supabase.co'
-const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFraWdubnhnanlyeXFjZ3hlc3FuIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3MjgyMDQzMSwiZXhwIjoyMDg4Mzk2NDMxfQ.rDv6ColeBlumfvo9B-0aPQk3T5T0fbB2ri-ytHczaPo'
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://akignnxgjyryqcgxesqn.supabase.co'
+const SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
+if (!SERVICE_ROLE_KEY) {
+  console.error('ERRO: defina SUPABASE_SERVICE_ROLE_KEY no ambiente antes de rodar este script.')
+  process.exit(1)
+}
 
 const DEV_EMAIL    = 'devadmin@meandyou.dev'
 const DEV_PASSWORD = 'DevAdmin@MeAndYou2025!'
