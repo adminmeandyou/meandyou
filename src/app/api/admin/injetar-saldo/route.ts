@@ -23,15 +23,20 @@ export async function POST(req: NextRequest) {
   const { user_id, fichas, tickets, superlikes, boosts, lupas, rewinds } = await req.json()
   if (!user_id) return NextResponse.json({ error: 'user_id obrigatorio' }, { status: 400 })
 
+  function parseQty(val: unknown): number | null {
+    const n = Math.floor(Number(val))
+    return Number.isFinite(n) && n >= 1 && n <= 99999 ? n : null
+  }
+
   const admin = createAdminClient()
   const ops: Promise<any>[] = []
 
-  if (fichas)     ops.push(addBalance(admin, 'user_fichas',     user_id, Number(fichas)))
-  if (tickets)    ops.push(addBalance(admin, 'user_tickets',    user_id, Number(tickets)))
-  if (superlikes) ops.push(addBalance(admin, 'user_superlikes', user_id, Number(superlikes)))
-  if (boosts)     ops.push(addBalance(admin, 'user_boosts',     user_id, Number(boosts)))
-  if (lupas)      ops.push(addBalance(admin, 'user_lupas',      user_id, Number(lupas)))
-  if (rewinds)    ops.push(addBalance(admin, 'user_rewinds',    user_id, Number(rewinds)))
+  if (fichas     != null) { const q = parseQty(fichas);     if (!q) return NextResponse.json({ error: 'fichas invalido (1-99999)'     }, { status: 400 }); ops.push(addBalance(admin, 'user_fichas',     user_id, q)) }
+  if (tickets    != null) { const q = parseQty(tickets);    if (!q) return NextResponse.json({ error: 'tickets invalido (1-99999)'    }, { status: 400 }); ops.push(addBalance(admin, 'user_tickets',    user_id, q)) }
+  if (superlikes != null) { const q = parseQty(superlikes); if (!q) return NextResponse.json({ error: 'superlikes invalido (1-99999)' }, { status: 400 }); ops.push(addBalance(admin, 'user_superlikes', user_id, q)) }
+  if (boosts     != null) { const q = parseQty(boosts);     if (!q) return NextResponse.json({ error: 'boosts invalido (1-99999)'     }, { status: 400 }); ops.push(addBalance(admin, 'user_boosts',     user_id, q)) }
+  if (lupas      != null) { const q = parseQty(lupas);      if (!q) return NextResponse.json({ error: 'lupas invalido (1-99999)'      }, { status: 400 }); ops.push(addBalance(admin, 'user_lupas',      user_id, q)) }
+  if (rewinds    != null) { const q = parseQty(rewinds);    if (!q) return NextResponse.json({ error: 'rewinds invalido (1-99999)'    }, { status: 400 }); ops.push(addBalance(admin, 'user_rewinds',    user_id, q)) }
 
   if (ops.length === 0) return NextResponse.json({ error: 'Nenhum valor informado' }, { status: 400 })
 

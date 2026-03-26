@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient as createServerClient } from '@/lib/supabase/server'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,13 +19,18 @@ function normalizarTexto(s: string): string {
 
 export async function POST(req: NextRequest) {
   try {
+    // Valida sessão autenticada — userId vem da sessão, não do formulário
+    const sessionClient = await createServerClient()
+    const { data: { user } } = await sessionClient.auth.getUser()
+    if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+    const userId = user.id
+
     const formData = await req.formData()
     const file     = formData.get('file')    as File   | null
     const caminho  = formData.get('caminho') as string | null
-    const userId   = formData.get('userId')  as string | null
     const token    = formData.get('token')   as string | null
 
-    if (!file || !caminho || !userId || !token) {
+    if (!file || !caminho || !token) {
       return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
     }
 
