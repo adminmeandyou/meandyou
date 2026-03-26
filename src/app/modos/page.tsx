@@ -540,7 +540,7 @@ function calcCompatibility(myFilters: Record<string, boolean>, theirFilters: Rec
   return Math.round((matches / myKeys.length) * 100)
 }
 
-function DailyMatchView({ userId, localFilters }: { userId: string | null; localFilters: FiltersState }) {
+function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | null; localFilters: FiltersState; userPlan: string }) {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [flipped, setFlipped] = useState<Set<string>>(new Set())
@@ -1654,7 +1654,7 @@ function BuscaInner() {
       setCurrentIdx(i => i + 1)
       if (dir === 'right') {
         setModeLikesUsed(prev => ({ ...prev, [viewMode]: (prev[viewMode] || 0) + 1 }))
-        supabase.from('mode_likes').insert({ user_id: userId, mode: viewMode }).catch(() => {})
+        void supabase.from('mode_likes').insert({ user_id: userId, mode: viewMode })
       }
       if (dir === 'up') setSuperlikesUsed(v => v + 1)
       try {
@@ -1843,7 +1843,7 @@ function BuscaInner() {
         ) : viewMode === 'rooms' ? (
           <RoomsView userPlan={userPlan} />
         ) : viewMode === 'daily' ? (
-          <DailyMatchView userId={userId} localFilters={localFilters} />
+          <DailyMatchView userId={userId} localFilters={localFilters} userPlan={userPlan} />
         ) : loadingDeck ? (
           /* Loading — skeleton deck */
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 20px', gap: 12 }}>

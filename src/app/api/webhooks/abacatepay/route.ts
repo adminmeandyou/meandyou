@@ -19,8 +19,18 @@ const FICHAS_PACKAGES: Record<number, number> = {
   5997: 900,
 }
 
+function calcPacoteLendarioFichas(): number {
+  const now = new Date()
+  const day = now.getDate()
+  const month = now.getMonth()
+  const bonusOpcoes = [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70]
+  const bonus = bonusOpcoes[((day * 13) + (month * 7)) % bonusOpcoes.length]
+  return Math.round(2700 * (1 + bonus / 100) / 100) * 100
+}
+
 function fichasFromAmount(amountReais: number): number {
   const cents = Math.round(amountReais * 100)
+  if (cents === 17997) return calcPacoteLendarioFichas()
   return FICHAS_PACKAGES[cents] ?? 0
 }
 

@@ -18,11 +18,12 @@ interface CheckoutModalProps {
 }
 
 const DISPLAY_PRICES: Record<string, number> = {
-  fichas_50:  5.97,
-  fichas_150: 14.97,
-  fichas_400: 34.97,
-  fichas_900: 59.97,
-  camarote:   49.90,
+  fichas_50:       5.97,
+  fichas_150:      14.97,
+  fichas_400:      34.97,
+  fichas_900:      59.97,
+  camarote:        49.90,
+  pacote_lendario: 179.97,
 }
 
 const CYCLE_OPTIONS = [

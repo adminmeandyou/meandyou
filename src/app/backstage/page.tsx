@@ -13,6 +13,7 @@ import {
   AlertTriangle, Flame, Clock, User, MessageCircle,
   Star, ThumbsUp, ThumbsDown, HeartHandshake, Trophy, Flag,
 } from 'lucide-react'
+import CheckoutModal from '@/components/CheckoutModal'
 
 // ─── Constantes ────────────────────────────────────────────────────────────────
 
@@ -27,7 +28,6 @@ const CATEGORIAS = [
 ]
 
 const TERMS_KEY = 'camarote_terms_v1'
-const RESGATE_URL = '#' // TODO: configurar URL do novo gateway de pagamentos
 
 const G = '#F59E0B'               // gold
 const G_SOFT = 'rgba(245,158,11,0.10)'
@@ -872,6 +872,7 @@ function ResgatesSection() {
   const [ratingFor, setRatingFor] = useState<{ id: string; otherId: string } | null>(null)
   const [ratingSubmitting, setRatingSubmitting] = useState(false)
   const [ratedIds, setRatedIds] = useState<Set<string>>(new Set())
+  const [camaroteCheckoutOpen, setCamaroteCheckoutOpen] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -915,9 +916,8 @@ function ResgatesSection() {
     setRatingSubmitting(false)
   }
 
-  function handleResgate(req: AccessRequest) {
-    const url = `${RESGATE_URL}?email=${encodeURIComponent(user?.email ?? '')}&metadata[request_id]=${req.id}`
-    window.open(url, '_blank')
+  function handleResgate(_req: AccessRequest) {
+    setCamaroteCheckoutOpen(true)
   }
 
   function daysLeft(expiresAt: string) {
@@ -1086,9 +1086,20 @@ function ResgatesSection() {
       {/* Nota explicativa */}
       <div style={{ marginTop: 24, padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.30)', lineHeight: 1.6, margin: 0 }}>
-          Ao resgatar, voce paga R$ 15,00 para iniciar uma conversa por 30 dias. Isso nao e garantia de encontro — apenas o inicio de uma conversa.
+          Ao resgatar, voce paga R$ 49,90 para iniciar uma conversa por 30 dias. Isso nao e garantia de encontro — apenas o inicio de uma conversa.
         </p>
       </div>
+
+      {/* Checkout Camarote */}
+      {camaroteCheckoutOpen && user && (
+        <CheckoutModal
+          open={camaroteCheckoutOpen}
+          onClose={() => setCamaroteCheckoutOpen(false)}
+          type="camarote"
+          description="Camarote Black — Acesso por 30 dias"
+          metadata={{ resgatado_id: user.id }}
+        />
+      )}
 
       {/* Overlay de avaliacao */}
       {ratingFor && (

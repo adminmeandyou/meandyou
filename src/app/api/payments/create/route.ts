@@ -21,10 +21,20 @@ const CAMAROTE_PRICE_CENTS = 4990
 
 // Pacotes de fichas: package_id -> { cents, quantidade }
 const FICHAS_PACKAGES: Record<string, { cents: number; quantidade: number }> = {
-  fichas_50:  { cents: 597,  quantidade: 50  },
-  fichas_150: { cents: 1497, quantidade: 150 },
-  fichas_400: { cents: 3497, quantidade: 400 },
-  fichas_900: { cents: 5997, quantidade: 900 },
+  fichas_50:       { cents: 597,   quantidade: 50   },
+  fichas_150:      { cents: 1497,  quantidade: 150  },
+  fichas_400:      { cents: 3497,  quantidade: 400  },
+  fichas_900:      { cents: 5997,  quantidade: 900  },
+  pacote_lendario: { cents: 17997, quantidade: calcPacoteLendarioFichas() },
+}
+
+function calcPacoteLendarioFichas(): number {
+  const now = new Date()
+  const day = now.getDate()
+  const month = now.getMonth()
+  const bonusOpcoes = [20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70]
+  const bonus = bonusOpcoes[((day * 13) + (month * 7)) % bonusOpcoes.length]
+  return Math.round(2700 * (1 + bonus / 100) / 100) * 100
 }
 
 export async function POST(req: NextRequest) {

@@ -14,10 +14,6 @@ import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
 import CheckoutModal from '@/components/CheckoutModal'
 
-// ─── Itens premium (compra direta) ────────────────────────────────────────
-// TODO: configurar URL do novo gateway de pagamentos
-const PACOTE_LENDARIO_URL  = '#'  // R$ 179,97
-
 // ─── Pacotes de fichas ────────────────────────────────────────────────────
 const FICHAS_PACKAGES = [
   { label: '50 fichas',   price: 'R$ 5,97',  amountCents: 597,  qtd: 50,  highlight: false, tag: null,         packageId: 'fichas_50' },
@@ -522,12 +518,9 @@ export default function LojaPage() {
         {/* ─── Pacote Lendário (aparece em periodos estratégicos) ───── */}
         {lendariaConfig.show && (
           <div>
-            <a
-              href={PACOTE_LENDARIO_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => haptics.success()}
-              style={{ display: 'block', textDecoration: 'none' }}
+            <div
+              onClick={() => { haptics.success(); setFichasPackageId('pacote_lendario'); setFichasModalOpen(true) }}
+              style={{ display: 'block', cursor: 'pointer' }}
             >
               <div style={{
                 borderRadius: 18, padding: '18px 20px',
@@ -572,12 +565,12 @@ export default function LojaPage() {
                     </div>
                   ) : <div />}
                   <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                    <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: '#F59E0B', margin: 0, lineHeight: 1 }}>R$ 174,62</p>
+                    <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: '#F59E0B', margin: 0, lineHeight: 1 }}>R$ 179,97</p>
                     <p style={{ fontSize: 10, color: 'rgba(248,249,250,0.35)', margin: '2px 0 0' }}>pagamento único</p>
                   </div>
                 </div>
               </div>
-            </a>
+            </div>
           </div>
         )}
 
