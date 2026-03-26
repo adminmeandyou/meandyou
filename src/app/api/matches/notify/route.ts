@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendNewMatchEmail } from '@/app/lib/email'
-import { enviarPushParaUsuario } from '@/app/api/push/send/route'
+import { enviarPushParaUsuario } from '@/lib/push'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { createServerClient } from '@supabase/ssr'
 import { verify } from 'otplib'
 import { createHash } from 'crypto'
-import { decryptSecret } from '../gerar/route'
+import { decryptSecret } from '@/lib/totp'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

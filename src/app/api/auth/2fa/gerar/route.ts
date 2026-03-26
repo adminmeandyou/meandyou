@@ -2,33 +2,12 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { generateSecret, generateURI } from 'otplib'
 import QRCode from 'qrcode'
-import { createCipheriv, createDecipheriv, randomBytes } from 'crypto'
+import { encryptSecret } from '@/lib/totp'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
-
-// Criptografa dados sensíveis com AES-256-GCM usando a SERVICE_ROLE_KEY como chave
-export function encryptSecret(plain: string): string {
-  const key = Buffer.from(process.env.SUPABASE_SERVICE_ROLE_KEY!.slice(0, 32).padEnd(32, '0'))
-  const iv = randomBytes(16)
-  const cipher = createCipheriv('aes-256-gcm', key, iv)
-  const encrypted = Buffer.concat([cipher.update(plain, 'utf8'), cipher.final()])
-  const tag = cipher.getAuthTag()
-  return iv.toString('hex') + ':' + tag.toString('hex') + ':' + encrypted.toString('hex')
-}
-
-export function decryptSecret(enc: string): string {
-  const [ivHex, tagHex, dataHex] = enc.split(':')
-  const key = Buffer.from(process.env.SUPABASE_SERVICE_ROLE_KEY!.slice(0, 32).padEnd(32, '0'))
-  const iv = Buffer.from(ivHex, 'hex')
-  const tag = Buffer.from(tagHex, 'hex')
-  const data = Buffer.from(dataHex, 'hex')
-  const decipher = createDecipheriv('aes-256-gcm', key, iv)
-  decipher.setAuthTag(tag)
-  return Buffer.concat([decipher.update(data), decipher.final()]).toString('utf8')
-}
 
 export async function POST(req: NextRequest) {
   try {

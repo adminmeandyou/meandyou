@@ -8,7 +8,7 @@ import {
   sendSuspiciousLoginEmail,
   sendNewDeviceLoginEmail,
 } from '@/app/lib/email'
-import { encryptSecret } from '@/app/api/auth/2fa/gerar/route'
+import { encryptSecret } from '@/lib/totp'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

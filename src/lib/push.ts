@@ -1,4 +1,3 @@
-// src/app/api/push/send/route.ts
 import { createClient } from '@supabase/supabase-js'
 import webpush from 'web-push'
 
@@ -26,7 +25,6 @@ interface SendPushParams {
   fromUserId?:  string
 }
 
-// Função utilitária exportada — pode ser chamada de qualquer API route
 export async function enviarPushParaUsuario({
   targetUserId,
   type,
@@ -83,5 +81,3 @@ export async function enviarPushParaUsuario({
 
   await Promise.allSettled(promises)
 }
-
-// Este endpoint nao e exposto via HTTP — use enviarPushParaUsuario() diretamente nas API routes
