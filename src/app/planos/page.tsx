@@ -14,7 +14,6 @@ const PLANS = [
     price: 9.97,
     icon: Zap,
     color: 'rgba(248,249,250,0.70)',
-    checkoutUrl: '#', // TODO: configurar URL do novo gateway de pagamentos
     features: [
       'Até 10 fotos no perfil',
       '20 curtidas por dia',
@@ -31,7 +30,6 @@ const PLANS = [
     price: 39.97,
     icon: Star,
     color: '#E11D48',
-    checkoutUrl: '#', // TODO: configurar URL do novo gateway de pagamentos
     highlight: true,
     badge: 'Melhor Custo-Beneficio',
     features: [
@@ -52,7 +50,6 @@ const PLANS = [
     price: 99.97,
     icon: Crown,
     color: '#F59E0B',
-    checkoutUrl: '#', // TODO: configurar URL do novo gateway de pagamentos
     features: [
       'Até 10 fotos no perfil',
       'Curtidas ilimitadas',
