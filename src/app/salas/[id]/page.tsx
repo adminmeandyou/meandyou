@@ -276,7 +276,10 @@ export default function SalaChatPage() {
         filter: `room_id=eq.${roomId}`,
       }, (payload) => {
         const msg = payload.new as RoomMessage
-        setMessages(prev => [...prev, msg])
+        setMessages(prev => {
+          if (prev.find(m => m.id === msg.id)) return prev
+          return [...prev, msg]
+        })
         setTimeout(scrollBottom, 50)
       })
       .on('postgres_changes', {
@@ -383,21 +386,44 @@ export default function SalaChatPage() {
       return
     }
 
+    const tempId = `temp-${Date.now()}`
+    const optimisticMsg: RoomMessage = {
+      id: tempId,
+      room_id: roomId,
+      sender_id: myUserId,
+      nickname: myNickname,
+      content,
+      is_system: false,
+      created_at: new Date().toISOString(),
+    }
+
     setText('')
     setSending(true)
     msgTimestamps.current = [...recent, now]
+    setMessages(prev => [...prev, optimisticMsg])
+    setTimeout(scrollBottom, 50)
 
     try {
-      await supabase.from('room_messages').insert({
+      const { data, error } = await supabase.from('room_messages').insert({
         room_id: roomId,
         sender_id: myUserId,
         nickname: myNickname,
         content,
-      })
-    } catch { /* silencioso */ }
+      }).select('id').single()
 
-    setSending(false)
-    inputRef.current?.focus()
+      if (error) {
+        // Rollback — remove mensagem otimista
+        setMessages(prev => prev.filter(m => m.id !== tempId))
+      } else if (data) {
+        // Trocar id temporario pelo real
+        setMessages(prev => prev.map(m => m.id === tempId ? { ...m, id: data.id } : m))
+      }
+    } catch {
+      setMessages(prev => prev.filter(m => m.id !== tempId))
+    } finally {
+      setSending(false)
+      inputRef.current?.focus()
+    }
   }
 
   // ─── Sair da sala ─────────────────────────────────────────────────────────

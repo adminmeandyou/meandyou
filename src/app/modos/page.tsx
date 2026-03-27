@@ -572,6 +572,7 @@ function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | n
 
     if (!daily.length) {
       try {
+        const matchGender = localFilters.search_gender && localFilters.search_gender !== 'all' ? localFilters.search_gender : null
         const { data } = await supabase.rpc('search_profiles', {
           p_user_id:         userId,
           p_lat:             null,
@@ -579,6 +580,7 @@ function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | n
           p_max_distance_km: localFilters.search_max_distance_km,
           p_min_age:         localFilters.search_min_age,
           p_max_age:         localFilters.search_max_age >= 60 ? 120 : localFilters.search_max_age,
+          p_gender:          matchGender,
         })
         // Busca candidatos para filtrar por compatibilidade mútua
         const candidates = (data ?? []).slice(0, 20) as Profile[]
@@ -1517,6 +1519,7 @@ function BuscaInner() {
       if (loc && id) {
         await supabase.from('profiles').update({ lat: loc.lat, lng: loc.lng }).eq('id', id)
       }
+      const genderParam = filters.search_gender && filters.search_gender !== 'all' ? filters.search_gender : null
       const { data } = await supabase.rpc('search_profiles', {
         p_user_id:         id,
         p_lat:             loc?.lat ?? null,
@@ -1524,6 +1527,7 @@ function BuscaInner() {
         p_max_distance_km: filters.search_max_distance_km,
         p_min_age:         filters.search_min_age,
         p_max_age:         filters.search_max_age >= 60 ? 120 : filters.search_max_age,
+        p_gender:          genderParam,
       })
       let profiles = (data ?? []) as Profile[]
 
@@ -1558,9 +1562,9 @@ function BuscaInner() {
         }
       }
 
-      // Filtro de gênero client-side (RPC não aceita o parâmetro)
-      if (filters.search_gender && filters.search_gender !== 'all') {
-        profiles = profiles.filter(p => p.gender === filters.search_gender)
+      // Filtro de gênero client-side (fallback caso p_gender não tenha sido passado)
+      if (genderParam) {
+        profiles = profiles.filter(p => p.gender === genderParam)
       }
 
       // Modo Busca: aplica filtros de compatibilidade client-side

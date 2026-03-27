@@ -76,6 +76,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, nickname: existing.nickname, alreadyIn: true })
   }
 
+  // Limpar membros fantasmas (mais de 24h na sala)
+  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  await supabaseAdmin
+    .from('room_members')
+    .delete()
+    .eq('room_id', roomId)
+    .lt('joined_at', cutoff)
+
   // Verificar capacidade
   const { count } = await supabaseAdmin
     .from('room_members')
