@@ -1026,20 +1026,85 @@ function RoomsView({ userPlan }: { userPlan: string }) {
   }
 
   if (!canJoin) {
+    const fakeRooms = [
+      { emoji: '🔥', name: 'Paquera Livre', members: 12, max: 20 },
+      { emoji: '🎵', name: 'Musica e Conversa', members: 8, max: 15 },
+      { emoji: '🌙', name: 'Noturno(a)s', members: 5, max: 10 },
+    ]
     return (
-      <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
-        <div style={{ width: 72, height: 72, borderRadius: 20, backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Users size={36} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+      <div style={{ padding: '0 16px 20px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+        {/* Glow atmosferico */}
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle, rgba(225,29,72,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+
+        {/* Header */}
+        <div style={{ textAlign: 'center', paddingTop: 32, marginBottom: 24, position: 'relative', zIndex: 1 }}>
+          <div style={{ width: 64, height: 64, borderRadius: 18, background: 'linear-gradient(135deg, rgba(225,29,72,0.15) 0%, rgba(225,29,72,0.05) 100%)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <Users size={28} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 24, color: 'var(--text)', margin: '0 0 8px' }}>Salas de Bate-papo</h2>
+          <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.6, maxWidth: 280, marginLeft: 'auto', marginRight: 'auto' }}>
+            Converse anonimamente em salas tematicas com pessoas que compartilham seus interesses.
+          </p>
         </div>
-        <div style={{ textAlign: 'center' }}>
-          <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>Salas de Bate-papo</p>
-          <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>Converse em grupo com quem tem os mesmos interesses.</p>
+
+        {/* Preview de salas (blur) */}
+        <div style={{ position: 'relative', marginBottom: 24 }}>
+          <div style={{ filter: 'blur(4px)', opacity: 0.5, pointerEvents: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {fakeRooms.map((room, i) => (
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 16, backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>{room.emoji}</div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: '0 0 2px' }}>{room.name}</p>
+                  <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>Sala ativa agora</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#10b981' }} />
+                  <span style={{ fontSize: 11, color: 'var(--muted)' }}>{room.members}/{room.max}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Overlay de bloqueio sobre o preview */}
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 100, backgroundColor: 'rgba(8,9,14,0.85)', border: '1px solid rgba(225,29,72,0.25)', backdropFilter: 'blur(4px)' }}>
+              <Lock size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>Disponivel no Plus e Black</span>
+            </div>
+          </div>
         </div>
-        <PaywallCard
-          title="Salas disponiveis no Plus e Black"
-          description="Faca upgrade para entrar em salas tematicas e conhecer pessoas com os mesmos interesses."
-          ctaLabel="Ver planos"
-        />
+
+        {/* Beneficios */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+          {[
+            { icon: <Users size={16} strokeWidth={1.5} />, text: 'Salas tematicas com ate 20 pessoas' },
+            { icon: <Lock size={16} strokeWidth={1.5} />, text: 'Identidade protegida com apelidos' },
+            { icon: <Crown size={16} strokeWidth={1.5} />, text: 'Salas exclusivas Black com categorias VIP' },
+          ].map((item, i) => (
+            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-soft)' }}>
+              <div style={{ color: 'var(--accent)', flexShrink: 0 }}>{item.icon}</div>
+              <span style={{ fontSize: 13, color: 'rgba(248,249,250,0.70)', lineHeight: 1.4 }}>{item.text}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <Link
+          href="/planos"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+            width: '100%', padding: '15px', borderRadius: 14,
+            background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
+            color: '#fff', fontWeight: 700, fontSize: 15,
+            textDecoration: 'none', fontFamily: 'var(--font-jakarta)',
+            boxShadow: '0 8px 32px rgba(225,29,72,0.25)',
+          }}
+        >
+          Fazer upgrade
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+        </Link>
+        <p style={{ fontSize: 11, color: 'var(--muted-2)', textAlign: 'center', margin: '10px 0 0' }}>
+          A partir de R$9,97/mes no plano Plus
+        </p>
       </div>
     )
   }
