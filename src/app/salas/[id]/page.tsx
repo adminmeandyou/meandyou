@@ -193,7 +193,6 @@ export default function SalaChatPage() {
   const [pendingChatReqs, setPendingChatReqs] = useState<ChatRequest[]>([])
   const [revealedProfile, setRevealedProfile] = useState<PublicProfile | null>(null)
   const [leaving, setLeaving] = useState(false)
-  const [rtStatus, setRtStatus] = useState<string>('conectando...')
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const msgTimestamps = useRef<number[]>([]) // anti-flood
@@ -277,10 +276,7 @@ export default function SalaChatPage() {
         filter: `room_id=eq.${roomId}`,
       }, (payload) => {
         const msg = payload.new as RoomMessage
-        setMessages(prev => {
-          if (prev.some(m => m.id === msg.id)) return prev
-          return [...prev, msg]
-        })
+        setMessages(prev => [...prev, msg])
         setTimeout(scrollBottom, 50)
       })
       .on('postgres_changes', {
@@ -295,32 +291,9 @@ export default function SalaChatPage() {
         table: 'room_members',
         filter: `room_id=eq.${roomId}`,
       }, () => loadMembers())
-      .subscribe((status) => {
-        setRtStatus(status)
-      })
+      .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [myUserId, loading, roomId])
-
-  // ─── Fallback polling (caso Realtime falhe) ─────────────────────────────
-  useEffect(() => {
-    if (!myUserId || loading) return
-    const interval = setInterval(async () => {
-      const { data: msgs } = await supabase
-        .from('room_messages')
-        .select('*')
-        .eq('room_id', roomId)
-        .gte('created_at', sessionStart.current)
-        .order('created_at', { ascending: true })
-      if (msgs) {
-        setMessages(prev => {
-          if (msgs.length === prev.length) return prev
-          return msgs
-        })
-      }
-      await loadMembers()
-    }, 5000)
-    return () => clearInterval(interval)
   }, [myUserId, loading, roomId])
 
   // ─── Realtime: solicitacoes para este usuario ─────────────────────────────
@@ -572,13 +545,9 @@ export default function SalaChatPage() {
         <div style={{ fontSize: 20, flexShrink: 0 }}>{room.emoji}</div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 16, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{room.name}</p>
-          <p style={{ fontSize: 11, color: 'var(--muted)', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+          <p style={{ fontSize: 11, color: 'var(--muted)', margin: 0 }}>
             {members.length}/{room.max_members} pessoas
-            {room.type === 'black' && <Crown size={10} color="#F59E0B" />}
-            <span style={{
-              display: 'inline-block', width: 6, height: 6, borderRadius: '50%',
-              backgroundColor: rtStatus === 'SUBSCRIBED' ? '#10b981' : rtStatus === 'CHANNEL_ERROR' || rtStatus === 'TIMED_OUT' ? '#ef4444' : '#F59E0B',
-            }} title={rtStatus} />
+            {room.type === 'black' && <Crown size={10} color="#F59E0B" style={{ marginLeft: 4, verticalAlign: 'middle' }} />}
           </p>
         </div>
         <button
