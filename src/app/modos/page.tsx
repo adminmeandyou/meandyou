@@ -1844,6 +1844,8 @@ function BuscaInner() {
           <RoomsView userPlan={userPlan} />
         ) : viewMode === 'daily' ? (
           <DailyMatchView userId={userId} localFilters={localFilters} userPlan={userPlan} />
+        ) : viewMode === 'search' && !loadingDeck ? (
+          <SearchGrid deck={deck} />
         ) : loadingDeck ? (
           /* Loading — skeleton deck */
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 20px', gap: 12 }}>

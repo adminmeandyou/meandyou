@@ -172,28 +172,33 @@ export default function ChatPage() {
         filter: `match_id=eq.${matchId}`,
       }, async (payload) => {
         const newMsg = payload.new as Message
+
+        // Adiciona mensagem com dedup (evita duplicatas do optimistic update)
         setMessages(prev => {
-          // Detecta convite recebido e atualiza banner
-          if (newMsg.sender_id !== uid && newMsg.content.startsWith(CONVITE_PREFIX)) {
-            const text = newMsg.content.slice(CONVITE_PREFIX.length)
-            setPendingConvite(text)
+          if (prev.find(m => m.id === newMsg.id)) return prev
+          return [...prev, newMsg]
+        })
+
+        // Side effects fora do state updater (React exige updaters puros)
+        if (newMsg.sender_id !== uid) {
+          // Convite recebido
+          if (newMsg.content.startsWith(CONVITE_PREFIX)) {
+            setPendingConvite(newMsg.content.slice(CONVITE_PREFIX.length))
           }
           // Nudge recebido: haptics + shake
-          if (newMsg.sender_id !== uid && newMsg.content === NUDGE_TOKEN) {
+          if (newMsg.content === NUDGE_TOKEN) {
             if (typeof navigator !== 'undefined' && navigator.vibrate) {
               navigator.vibrate([200, 100, 200])
             }
             setShake(true)
             setTimeout(() => setShake(false), 700)
           }
-          return [...prev, newMsg]
-        })
-        // Se a mensagem é do outro, marca como lida automaticamente
-        if (newMsg.sender_id !== uid) {
-          await supabase
+          // Marca como lida automaticamente
+          supabase
             .from('messages')
             .update({ read: true })
             .eq('id', newMsg.id)
+            .then(() => {})
         }
         scrollToBottom()
       })
@@ -293,23 +298,49 @@ export default function ChatPage() {
     setError('')
     setRateLimited(false)
 
-    const { data: { session } } = await supabase.auth.getSession()
-    const res = await fetch('/api/chat/send', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.access_token ?? ''}`,
-      },
-      body: JSON.stringify({ matchId, content }),
-    })
-
-    if (!res.ok) {
-      const json = await res.json()
-      setError(json.error ?? 'Erro ao enviar mensagem. Tente novamente.')
+    // Optimistic update: mostra a mensagem imediatamente
+    const tempId = crypto.randomUUID()
+    const tempMsg: Message = {
+      id: tempId,
+      sender_id: userId,
+      content,
+      created_at: new Date().toISOString(),
+      read: false,
     }
-
-    setSending(false)
+    setMessages(prev => [...prev, tempMsg])
     scrollToBottom()
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/chat/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({ matchId, content }),
+      })
+
+      if (!res.ok) {
+        const json = await res.json()
+        // Remove a mensagem otimista em caso de erro
+        setMessages(prev => prev.filter(m => m.id !== tempId))
+        setError(json.error ?? 'Erro ao enviar mensagem. Tente novamente.')
+      } else {
+        const json = await res.json()
+        // Substitui a mensagem otimista pela real (com id do banco)
+        if (json.message) {
+          setMessages(prev => prev.map(m => m.id === tempId ? json.message : m))
+        }
+      }
+    } catch {
+      // Rede falhou — remove a mensagem otimista
+      setMessages(prev => prev.filter(m => m.id !== tempId))
+      setError('Erro de conexao. Tente novamente.')
+    } finally {
+      setSending(false)
+      scrollToBottom()
+    }
   }
 
   async function handleSend() {
