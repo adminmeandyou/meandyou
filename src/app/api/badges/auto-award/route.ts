@@ -52,7 +52,7 @@ export async function POST(req: NextRequest) {
     }
 
     case 'on_verify': {
-      const { data } = await supabase.from('profiles').select('id').eq('verified', true)
+      const { data } = await supabase.from('users').select('id').eq('verified', true)
       userIds = (data ?? []).map((r: any) => r.id)
       break
     }

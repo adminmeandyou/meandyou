@@ -33,13 +33,14 @@ const CYCLE_OPTIONS = [
   { value: 'annual',     label: 'Anual',      discount: 30,  suffix: ' total', badge: 'Melhor desconto' },
 ]
 
-const PLAN_MONTHLY: Record<string, number> = { essencial: 9.97, plus: 39.97, black: 99.97 }
+const PLAN_PRICES: Record<string, Record<string, number>> = {
+  essencial: { monthly: 9.97, quarterly: 26.90, semiannual: 47.80, annual: 83.70 },
+  plus:      { monthly: 39.97, quarterly: 107.90, semiannual: 191.80, annual: 335.70 },
+  black:     { monthly: 99.97, quarterly: 269.90, semiannual: 479.80, annual: 839.70 },
+}
 
 function calcPrice(plan: string, cycle: PaymentCycle): number {
-  const monthly = PLAN_MONTHLY[plan] ?? 0
-  const months = { monthly: 1, quarterly: 3, semiannual: 6, annual: 12 }[cycle]
-  const discount = { monthly: 0, quarterly: 0.10, semiannual: 0.20, annual: 0.30 }[cycle]
-  return parseFloat((monthly * months * (1 - discount)).toFixed(2))
+  return PLAN_PRICES[plan]?.[cycle] ?? 0
 }
 
 function formatBRL(value: number) {
