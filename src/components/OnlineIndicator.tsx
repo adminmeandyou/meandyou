@@ -3,9 +3,9 @@
 /**
  * OnlineIndicator — exibe status de atividade do usuário.
  *
- * Regras (igual ao WhatsApp):
+ * Regras:
  *  - Se show_last_active = false, não exibe nada
- *  - < 1h → ponto verde + "Ativo agora"
+ *  - < 5min → ponto verde + "Online agora"
  *  - hoje → ponto âmbar + "Ativo hoje"
  *  - ontem → sem ponto + "Ativo ontem"
  *  - esta semana → sem ponto + "Ativo esta semana"
@@ -27,8 +27,9 @@ type Status = 'recent' | 'today' | 'yesterday' | 'week' | 'hidden'
 function getStatus(lastActiveAt: string | null | undefined): Status {
   if (!lastActiveAt) return 'hidden'
   const diff = Date.now() - new Date(lastActiveAt).getTime()
+  const minutes = diff / 60_000
+  if (minutes < 5) return 'recent'
   const hours = diff / 3_600_000
-  if (hours < 1) return 'recent'
   if (hours < 24) return 'today'
   if (hours < 48) return 'yesterday'
   if (hours < 168) return 'week'
@@ -43,7 +44,7 @@ const STATUS_COLOR: Record<Exclude<Status, 'hidden'>, string> = {
 }
 
 const STATUS_LABEL: Record<Exclude<Status, 'hidden'>, string> = {
-  recent:    'Ativo agora',
+  recent:    'Online agora',
   today:     'Ativo hoje',
   yesterday: 'Ativo ontem',
   week:      'Ativo esta semana',

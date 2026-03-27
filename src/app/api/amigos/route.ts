@@ -120,20 +120,24 @@ export async function GET(req: NextRequest) {
     .neq('status', 'declined')
     .order('updated_at', { ascending: false })
 
-  if (!friendships) return NextResponse.json({ friends: [], pending: [] })
+  if (!friendships || friendships.length === 0) return NextResponse.json({ friends: [], pending: [] })
 
-  // Enriquecer com dados do perfil do outro usuario
-  const enriched = await Promise.all(
-    friendships.map(async (f) => {
-      const otherId = f.requester_id === user.id ? f.receiver_id : f.requester_id
-      const { data: p } = await supabaseAdmin
-        .from('public_profiles')
-        .select('id, name, photo_best, city, plan, last_seen')
-        .eq('id', otherId)
-        .single()
-      return { ...f, other: p }
-    })
+  // Coletar todos os IDs de amigos e buscar em uma unica query
+  const otherIds = friendships.map(f =>
+    f.requester_id === user.id ? f.receiver_id : f.requester_id
   )
+
+  const { data: profiles } = await supabaseAdmin
+    .from('public_profiles')
+    .select('id, name, photo_best, city, plan, last_seen')
+    .in('id', otherIds)
+
+  const profileMap = new Map((profiles ?? []).map(p => [p.id, p]))
+
+  const enriched = friendships.map(f => {
+    const otherId = f.requester_id === user.id ? f.receiver_id : f.requester_id
+    return { ...f, other: profileMap.get(otherId) ?? null }
+  })
 
   const friends = enriched.filter(f => f.status === 'accepted')
   const pending = enriched.filter(f => f.status === 'pending')
