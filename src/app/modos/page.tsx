@@ -1788,8 +1788,10 @@ function BuscaInner() {
     if (!validateRequired() || !userId) return
     setSaving(true)
     try {
+      const { search_max_distance_km, search_min_age, search_max_age, search_gender, search_state } = localFilters
       await supabase.from('filters').upsert({
-        ...localFilters, user_id: userId, search_saved: true,
+        user_id: userId, search_saved: true,
+        search_max_distance_km, search_min_age, search_max_age, search_gender, search_state,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
       // Backup em localStorage para persistir mesmo com colunas ausentes no banco
