@@ -1510,7 +1510,7 @@ function BuscaInner() {
 
       const todayStart = new Date(); todayStart.setHours(0, 0, 0, 0)
       const [todayLikesRes, avulsoRes, boostRes, modeLikesRes] = await Promise.all([
-        supabase.from('likes').select('is_superlike').eq('from_user', user.id).gte('created_at', todayStart.toISOString()),
+        supabase.from('likes').select('is_superlike').eq('user_id', user.id).gte('created_at', todayStart.toISOString()),
         supabase.from('user_superlikes').select('amount').eq('user_id', user.id).single(),
         supabase.from('user_boosts').select('amount, active_until').eq('user_id', user.id).maybeSingle(),
         supabase.from('mode_likes').select('mode').eq('user_id', user.id).gte('created_at', todayStart.toISOString()),
@@ -1792,7 +1792,6 @@ function BuscaInner() {
       await supabase.from('filters').upsert({
         user_id: userId, search_saved: true,
         search_max_distance_km, search_min_age, search_max_age, search_gender, search_state,
-        updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
       // Backup em localStorage para persistir mesmo com colunas ausentes no banco
       try { localStorage.setItem(`filters_${userId}`, JSON.stringify(localFilters)) } catch {}
