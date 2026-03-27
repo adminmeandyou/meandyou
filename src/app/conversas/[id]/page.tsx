@@ -21,8 +21,7 @@ interface Message {
   sender_id: string
   content: string
   created_at: string
-  // ✅ campo correto: 'read' boolean, não 'read_at'
-  read: boolean
+  read_at: string | null
 }
 
 interface OtherUser {
@@ -196,7 +195,7 @@ export default function ChatPage() {
           // Marca como lida automaticamente
           supabase
             .from('messages')
-            .update({ read: true })
+            .update({ read_at: new Date().toISOString() })
             .eq('id', newMsg.id)
             .then(() => {})
         }
@@ -229,7 +228,7 @@ export default function ChatPage() {
   async function loadMessages(uid: string) {
     const { data } = await supabase
       .from('messages')
-      .select('id, sender_id, content, created_at, read')
+      .select('id, sender_id, content, created_at, read_at')
       .eq('match_id', matchId)
       .order('created_at', { ascending: true })
       .limit(100)
@@ -238,13 +237,12 @@ export default function ChatPage() {
   }
 
   async function marcarComoLidas(uid: string) {
-    // ✅ CORREÇÃO: campo 'read' boolean (não 'read_at')
     await supabase
       .from('messages')
-      .update({ read: true })
+      .update({ read_at: new Date().toISOString() })
       .eq('match_id', matchId)
       .neq('sender_id', uid)
-      .eq('read', false)
+      .is('read_at', null)
   }
 
   function detectPendingConvite(uid: string) {
@@ -305,7 +303,7 @@ export default function ChatPage() {
       sender_id: userId,
       content,
       created_at: new Date().toISOString(),
-      read: false,
+      read_at: null,
     }
     setMessages(prev => [...prev, tempMsg])
     scrollToBottom()
@@ -599,7 +597,7 @@ export default function ChatPage() {
         message={msg.content}
         direction={isMe ? 'sent' : 'received'}
         time={formatMsgTime(msg.created_at)}
-        status={isMe ? (msg.read ? 'read' : 'delivered') : undefined}
+        status={isMe ? (msg.read_at ? 'read' : 'delivered') : undefined}
       />
     )
   }

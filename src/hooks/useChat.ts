@@ -12,7 +12,7 @@ export interface Message {
   sender_id: string
   content: string
   created_at: string
-  read: boolean   // campo correto no schema — não é read_at
+  read_at: string | null
 }
 
 const MAX_CHARS = 500
@@ -64,14 +64,14 @@ export function useChat(matchId: string) {
   async function markAsRead(msgs: Message[]) {
     if (!user) return
     const unread = msgs
-      .filter(m => m.sender_id !== user.id && !m.read)
+      .filter(m => m.sender_id !== user.id && !m.read_at)
       .map(m => m.id)
 
     if (unread.length === 0) return
 
     await supabase
       .from('messages')
-      .update({ read: true })
+      .update({ read_at: new Date().toISOString() })
       .in('id', unread)
   }
 
@@ -100,7 +100,7 @@ export function useChat(matchId: string) {
 
             supabase
               .from('messages')
-              .update({ read: true })
+              .update({ read_at: new Date().toISOString() })
               .eq('id', newMsg.id)
               .then(() => {})
           }
@@ -148,7 +148,7 @@ export function useChat(matchId: string) {
       sender_id: user.id,
       content: trimmed,
       created_at: new Date().toISOString(),
-      read: false,
+      read_at: null,
     }
     setMessages(prev => [...prev, tempMsg])
 

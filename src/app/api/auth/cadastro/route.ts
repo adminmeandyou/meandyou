@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
       cpfSalvo = true
     }
 
-    // 4. Inicializar saldos zerados
+    // 4. Inicializar saldos zerados + filtros padrão
     const saldoResults = await Promise.allSettled([
       supabase.from('user_tickets').insert({ user_id: userId, amount: 0 }),
       supabase.from('user_lupas').insert({ user_id: userId, amount: 0 }),
@@ -156,6 +156,14 @@ export async function POST(req: NextRequest) {
         current_streak: 0,
         longest_streak: 0,
         last_login_date: null,
+      }),
+      supabase.from('filters').insert({
+        user_id: userId,
+        search_max_distance_km: 40,
+        search_min_age: 18,
+        search_max_age: 60,
+        search_gender: 'all',
+        search_saved: false,
       }),
     ])
     saldoResults.forEach((r, i) => {
