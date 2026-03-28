@@ -76,13 +76,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, nickname: existing.nickname, alreadyIn: true })
   }
 
-  // Limpar membros fantasmas (mais de 24h na sala)
-  const cutoff = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+  // Limpar membros fantasmas (sem heartbeat ha mais de 2 minutos)
+  const cutoff = new Date(Date.now() - 2 * 60 * 1000).toISOString()
   await supabaseAdmin
     .from('room_members')
     .delete()
     .eq('room_id', roomId)
-    .lt('joined_at', cutoff)
+    .lt('last_heartbeat', cutoff)
 
   // Verificar capacidade
   const { count } = await supabaseAdmin
@@ -97,10 +97,10 @@ export async function POST(req: NextRequest) {
   // Gerar ou usar nickname
   const nickname = customNickname?.trim() || generateNickname()
 
-  // Inserir membro
+  // Inserir membro com heartbeat inicial
   const { error: insertErr } = await supabaseAdmin
     .from('room_members')
-    .insert({ room_id: roomId, user_id: user.id, nickname })
+    .insert({ room_id: roomId, user_id: user.id, nickname, last_heartbeat: new Date().toISOString() })
 
   if (insertErr) {
     return NextResponse.json({ error: 'Erro ao entrar na sala' }, { status: 500 })

@@ -1,11 +1,8 @@
--- Migration: RPCs get_my_matches e get_my_conversations
+-- Migration: RPCs get_my_matches e get_my_conversations + tabela filters
 -- Data: 2026-03-27
--- Descricao: Cria as RPCs que as paginas /matches e /conversas precisam
+-- Status: JA RODADA no Supabase
+-- Correcao: usa read_at (timestamp) em vez de read (boolean)
 
--- ============================================================
--- RPC: get_my_matches
--- Retorna todos os matches ativos do usuario com dados do outro perfil
--- ============================================================
 CREATE OR REPLACE FUNCTION public.get_my_matches(p_user_id uuid)
 RETURNS TABLE(
   match_id text,
@@ -53,7 +50,7 @@ AS $$
     SELECT COUNT(*)::bigint AS cnt
     FROM messages
     WHERE messages.match_id = m.id
-      AND messages.read = false
+      AND messages.read_at IS NULL
       AND messages.sender_id != p_user_id
   ) unread ON true
   WHERE m.status = 'active'
@@ -61,10 +58,6 @@ AS $$
   ORDER BY COALESCE(last_msg.created_at, m.created_at) DESC;
 $$;
 
--- ============================================================
--- RPC: get_my_conversations
--- Retorna matches que JA TEM mensagens (para a aba "Conversas")
--- ============================================================
 CREATE OR REPLACE FUNCTION public.get_my_conversations(p_user_id uuid)
 RETURNS TABLE(
   match_id text,
@@ -106,7 +99,7 @@ AS $$
     SELECT COUNT(*)::bigint AS cnt
     FROM messages
     WHERE messages.match_id = m.id
-      AND messages.read = false
+      AND messages.read_at IS NULL
       AND messages.sender_id != p_user_id
   ) unread ON true
   WHERE m.status = 'active'
@@ -114,9 +107,6 @@ AS $$
   ORDER BY last_msg.created_at DESC;
 $$;
 
--- ============================================================
--- Garantir que a tabela filters existe e tem as colunas certas
--- ============================================================
 CREATE TABLE IF NOT EXISTS public.filters (
   user_id              uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   search_max_distance_km integer DEFAULT 40,
@@ -128,23 +118,19 @@ CREATE TABLE IF NOT EXISTS public.filters (
   created_at           timestamptz DEFAULT now()
 );
 
--- RLS para filters
 ALTER TABLE public.filters ENABLE ROW LEVEL SECURITY;
 
--- Usuarios podem ler e atualizar seus proprios filtros
-CREATE POLICY IF NOT EXISTS "Users can read own filters"
-  ON public.filters FOR SELECT
-  USING (auth.uid() = user_id);
-
-CREATE POLICY IF NOT EXISTS "Users can update own filters"
-  ON public.filters FOR UPDATE
-  USING (auth.uid() = user_id);
-
-CREATE POLICY IF NOT EXISTS "Users can insert own filters"
-  ON public.filters FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
--- Service role precisa de acesso para o cadastro
-CREATE POLICY IF NOT EXISTS "Service role full access on filters"
-  ON public.filters FOR ALL
-  USING (auth.role() = 'service_role');
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'filters' AND policyname = 'Users can read own filters') THEN
+    CREATE POLICY "Users can read own filters" ON public.filters FOR SELECT USING (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'filters' AND policyname = 'Users can update own filters') THEN
+    CREATE POLICY "Users can update own filters" ON public.filters FOR UPDATE USING (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'filters' AND policyname = 'Users can insert own filters') THEN
+    CREATE POLICY "Users can insert own filters" ON public.filters FOR INSERT WITH CHECK (auth.uid() = user_id);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'filters' AND policyname = 'Service role full access on filters') THEN
+    CREATE POLICY "Service role full access on filters" ON public.filters FOR ALL USING (auth.role() = 'service_role');
+  END IF;
+END $$;

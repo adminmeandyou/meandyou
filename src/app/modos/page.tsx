@@ -659,6 +659,16 @@ function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | n
   function handlePass(profileId: string) {
     setPassed(prev => new Set(prev).add(profileId))
     haptics.tap()
+    // Gravar dislike no banco para não reaparecer por 30 dias
+    if (userId) {
+      supabase
+        .from('dislikes')
+        .upsert(
+          { from_user: userId, to_user: profileId },
+          { onConflict: 'from_user,to_user' }
+        )
+        .then(({ error }) => { if (error) console.error('Erro ao gravar dislike:', error) })
+    }
   }
 
   function handleFlip(profileId: string) {
@@ -1727,7 +1737,17 @@ function BuscaInner() {
       }
       if (dir === 'up') setSuperlikesUsed(v => v + 1)
       try {
-        if (dir === 'left') return
+        if (dir === 'left') {
+          // Gravar dislike no banco para não reaparecer por 30 dias
+          supabase
+            .from('dislikes')
+            .upsert(
+              { from_user: userId, to_user: profileId },
+              { onConflict: 'from_user,to_user' }
+            )
+            .then(({ error }) => { if (error) console.error('Erro ao gravar dislike:', error) })
+          return
+        }
         const { data } = await supabase.rpc('process_like', {
           p_user_id:      userId,
           p_target_id:    profileId,

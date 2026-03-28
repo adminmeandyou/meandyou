@@ -198,6 +198,8 @@ export default function SalaChatPage() {
   const msgTimestamps = useRef<number[]>([]) // anti-flood
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const sessionStart = useRef<string>(new Date().toISOString()) // momento de entrada nesta sessao
+  const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const cleanupRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   // ─── Scroll para o fim ────────────────────────────────────────────────────
   function scrollBottom() {
@@ -262,6 +264,68 @@ export default function SalaChatPage() {
     }
     init()
   }, [roomId])
+
+  // ─── Heartbeat: sinaliza presenca a cada 30s ──────────────────────────────
+  useEffect(() => {
+    if (!myUserId || loading) return
+
+    // Heartbeat imediato + intervalo
+    function sendHeartbeat() {
+      supabase.rpc('room_heartbeat', { p_room_id: roomId, p_user_id: myUserId }).then()
+    }
+    sendHeartbeat()
+    heartbeatRef.current = setInterval(sendHeartbeat, 30_000)
+
+    // Cleanup de inativos a cada 60s
+    async function runCleanup() {
+      const { data } = await supabase.rpc('room_cleanup_inactive', { p_room_id: roomId })
+      if (data && Array.isArray(data) && data.length > 0) {
+        // Inserir mensagens de sistema para cada usuario removido
+        for (const removed of data) {
+          await supabase.from('room_messages').insert({
+            room_id: roomId,
+            sender_id: removed.user_id,
+            nickname: 'Sistema',
+            content: `${removed.nickname} saiu da sala`,
+            is_system: true,
+          })
+        }
+        loadMembers()
+      }
+    }
+    cleanupRef.current = setInterval(runCleanup, 60_000)
+
+    // Cleanup ao sair da pagina (fechar aba, navegar fora)
+    function handleBeforeUnload() {
+      // Usar sendBeacon para garantir envio mesmo ao fechar
+      const url = `${window.location.origin}/api/salas/sair`
+      const body = JSON.stringify({ roomId, userId: myUserId, nickname: myNickname })
+      navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }))
+    }
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'hidden') {
+        // Pausar heartbeat quando a aba esta oculta (sera removido pelo cleanup)
+        if (heartbeatRef.current) clearInterval(heartbeatRef.current)
+        heartbeatRef.current = null
+      } else {
+        // Retomar heartbeat ao voltar
+        if (!heartbeatRef.current) {
+          sendHeartbeat()
+          heartbeatRef.current = setInterval(sendHeartbeat, 30_000)
+        }
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      if (heartbeatRef.current) clearInterval(heartbeatRef.current)
+      if (cleanupRef.current) clearInterval(cleanupRef.current)
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [myUserId, loading, roomId, myNickname])
 
   // ─── Realtime: novas mensagens ────────────────────────────────────────────
   useEffect(() => {
@@ -430,6 +494,9 @@ export default function SalaChatPage() {
   async function leaveRoom() {
     if (leaving) return
     setLeaving(true)
+    // Parar heartbeat e cleanup imediatamente
+    if (heartbeatRef.current) { clearInterval(heartbeatRef.current); heartbeatRef.current = null }
+    if (cleanupRef.current) { clearInterval(cleanupRef.current); cleanupRef.current = null }
     try {
       // Mensagem de sistema
       await supabase.from('room_messages').insert({
