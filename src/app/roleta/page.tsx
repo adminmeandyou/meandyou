@@ -676,7 +676,7 @@ export default function RoletaPage() {
 
         {/* ── Card de resultado ───────────────────────────────────────── */}
         {result && (() => {
-          const config = PRIZE_CONFIG[result.reward_type] ?? PRIZE_CONFIG['ticket']
+          const config = PRIZE_CONFIG[result.reward_type] ?? PRIZE_CONFIG['fichas']
           return (
             <div style={{ width: '100%', borderRadius: '20px', padding: '20px', border: `1px solid ${config.border}`, backgroundColor: config.bg, boxShadow: `0 0 32px ${config.glow}40`, display: 'flex', alignItems: 'center', gap: '16px', animation: 'result-enter 0.4s cubic-bezier(0.34,1.56,0.64,1)' }}>
               <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: config.bg, border: `2px solid ${config.border}`, boxShadow: `0 0 20px ${config.glow}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: config.color, flexShrink: 0 }}>
@@ -703,7 +703,7 @@ export default function RoletaPage() {
             <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '10px' }}>Ultimos giros</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {history.map((h, i) => {
-                const cfg = PRIZE_CONFIG[h.reward_type] ?? PRIZE_CONFIG['ticket']
+                const cfg = PRIZE_CONFIG[h.reward_type] ?? PRIZE_CONFIG['fichas']
                 return (
                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '11px 14px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.05)' }}>
                     <div style={{ color: cfg.color, display: 'flex', flexShrink: 0 }}>{cfg.icon}</div>
