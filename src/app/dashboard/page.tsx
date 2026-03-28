@@ -44,7 +44,7 @@ export default function Dashboard() {
 
   if (carregando) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+      <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(225,29,72,0.06) 0%, transparent 60%), var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
         <style>{skeletonCss}</style>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16, width: '100%', maxWidth: 280 }}>
           <SkeletonAvatar size={64} />
@@ -59,7 +59,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(225,29,72,0.06) 0%, transparent 60%), var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
       <div style={{ textAlign: 'center', maxWidth: '400px' }}>
         <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '32px', color: 'var(--text)', marginBottom: '8px' }}>
           MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
@@ -79,7 +79,7 @@ export default function Dashboard() {
             { label: 'Roleta',      rota: '/roleta',     icon: <Dices size={18} strokeWidth={1.5} /> },
           ].map(({ label, rota, icon }) => (
             <button key={rota} onClick={() => router.push(rota)}
-              style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '20px 12px', fontSize: '14px', fontWeight: '600', color: 'var(--text)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+              style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '20px 12px', fontSize: '14px', fontWeight: '600', color: 'var(--text)', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}>
               <span style={{ color: 'var(--accent)' }}>{icon}</span>
               {label}
             </button>
@@ -87,12 +87,12 @@ export default function Dashboard() {
         </div>
 
         <button onClick={() => router.push('/modos')}
-          style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginBottom: '12px' }}>
+          style={{ width: '100%', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginBottom: '12px', boxShadow: '0 4px 20px rgba(225,29,72,0.25)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}>
           Começar a explorar →
         </button>
 
         <button onClick={handleLogout}
-          style={{ background: 'none', border: '2px solid var(--border)', borderRadius: '100px', padding: '14px 32px', color: 'var(--muted)', fontFamily: 'var(--font-jakarta)', fontSize: '15px', fontWeight: '600', cursor: 'pointer', width: '100%' }}>
+          style={{ background: 'none', border: '2px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '14px 32px', color: 'var(--muted)', fontFamily: 'var(--font-jakarta)', fontSize: '15px', fontWeight: '600', cursor: 'pointer', width: '100%', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}>
           Sair
         </button>
       </div>

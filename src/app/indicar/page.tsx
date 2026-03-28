@@ -90,10 +90,10 @@ export default function IndicarPage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
       {/* Header */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button
           onClick={() => router.back()}
-          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
         >
           <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
@@ -106,7 +106,7 @@ export default function IndicarPage() {
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '480px', margin: '0 auto' }}>
 
         {/* O que voces ganham */}
-        <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+        <div style={{ borderRadius: '16px', padding: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
           <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px' }}>O que voces ganham</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div style={{ backgroundColor: 'rgba(234,179,8,0.08)', borderRadius: '12px', padding: '14px 12px', textAlign: 'center', border: '1px solid rgba(234,179,8,0.25)' }}>
@@ -149,7 +149,7 @@ export default function IndicarPage() {
         </div>
 
         {/* Seu codigo */}
-        <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+        <div style={{ borderRadius: '16px', padding: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
           <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px' }}>Seu codigo de convite</p>
 
           <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', border: '1px solid var(--border-soft)' }}>
@@ -158,7 +158,7 @@ export default function IndicarPage() {
             </span>
             <button
               onClick={copyLink}
-              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: copied ? 'var(--accent)' : 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'color 0.15s' }}
+              style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: copied ? 'var(--accent)' : 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
             >
               {copied ? <Check size={14} strokeWidth={2} /> : <Copy size={14} strokeWidth={1.5} />}
               {copied ? 'Copiado!' : 'Copiar link'}
@@ -167,7 +167,7 @@ export default function IndicarPage() {
 
           <button
             onClick={shareNative}
-            style={{ width: '100%', padding: '14px', borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-jakarta)', transition: 'background-color 0.2s' }}
+            style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
           >
             <Share2 size={16} strokeWidth={1.5} />
             Compartilhar convite
@@ -176,18 +176,18 @@ export default function IndicarPage() {
 
         {/* Stats */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-          <div style={{ borderRadius: '16px', padding: '18px 16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', textAlign: 'center' }}>
+          <div style={{ borderRadius: '16px', padding: '18px 16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)', textAlign: 'center' }}>
             <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: '32px', fontWeight: 700, color: 'var(--accent)', margin: 0, lineHeight: 1 }}>{rewarded}</p>
             <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '6px 0 0' }}>Convertidas</p>
           </div>
-          <div style={{ borderRadius: '16px', padding: '18px 16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', textAlign: 'center' }}>
+          <div style={{ borderRadius: '16px', padding: '18px 16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)', textAlign: 'center' }}>
             <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: '32px', fontWeight: 700, color: 'var(--muted)', margin: 0, lineHeight: 1 }}>{pending}</p>
             <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '6px 0 0' }}>Aguardando assinar</p>
           </div>
         </div>
 
         {/* Saldo atual */}
-        <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+        <div style={{ borderRadius: '16px', padding: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
           <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px' }}>Seu saldo atual</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'center' }}>
             <div>
@@ -211,7 +211,7 @@ export default function IndicarPage() {
 
         {/* Lista de indicacoes */}
         {referrals.length > 0 && (
-          <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+          <div style={{ borderRadius: '16px', padding: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
             <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Users size={12} strokeWidth={1.5} />
               Suas indicacoes ({referrals.length})

@@ -31,9 +31,7 @@ export function FAB({
   const bg =
     variant === 'primary'
       ? pressed && isInteractive
-        ? '#be123c'
-        : hovered && isInteractive
-        ? '#be123c'
+        ? '#9f1239'
         : 'var(--accent)'
       : pressed && isInteractive
       ? 'rgba(255,255,255,0.10)'
@@ -41,12 +39,18 @@ export function FAB({
       ? 'rgba(255,255,255,0.08)'
       : 'var(--bg-card)'
 
+  const bgGradient = variant === 'primary'
+    ? pressed && isInteractive
+      ? undefined
+      : 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)'
+    : undefined
+
   const shadow =
     variant === 'primary' && !disabled
       ? hovered
-        ? '0 8px 28px rgba(225,29,72,0.55)'
-        : '0 4px 20px rgba(225,29,72,0.35)'
-      : '0 4px 20px rgba(0,0,0,0.35)'
+        ? '0 4px 12px rgba(225,29,72,0.3), 0 8px 28px rgba(225,29,72,0.45), 0 0 50px rgba(225,29,72,0.12)'
+        : '0 2px 8px rgba(225,29,72,0.2), 0 4px 20px rgba(225,29,72,0.3)'
+      : '0 2px 8px rgba(0,0,0,0.2), 0 4px 20px rgba(0,0,0,0.3)'
 
   return (
     <button
@@ -61,15 +65,15 @@ export function FAB({
         width: dim,
         height: dim,
         borderRadius: '50%',
-        border: variant === 'surface' ? '1px solid var(--border)' : 'none',
-        backgroundColor: bg,
+        border: variant === 'surface' ? '1px solid rgba(255,255,255,0.08)' : 'none',
+        ...(bgGradient ? { background: bgGradient } : { backgroundColor: bg }),
         color: variant === 'primary' ? '#fff' : 'var(--text)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         cursor: disabled ? 'not-allowed' : loading ? 'default' : 'pointer',
         boxShadow: disabled ? 'none' : shadow,
-        transition: 'all 0.18s',
+        transition: 'all 0.22s cubic-bezier(0.4,0,0.2,1)',
         transform: pressed && isInteractive ? 'scale(0.93)' : 'scale(1)',
         opacity: disabled ? 0.5 : 1,
         outline: 'none',

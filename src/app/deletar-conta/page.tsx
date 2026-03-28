@@ -92,13 +92,13 @@ export default function DeletarContaPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse at 50% 0%, rgba(225,29,72,0.06) 0%, #08090E 70%)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
       {/* Header */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 30,
         backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid var(--border)', padding: '14px 16px',
+        borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '14px 16px',
         display: 'flex', alignItems: 'center', gap: '12px',
       }}>
         <button

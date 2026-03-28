@@ -24,7 +24,7 @@ function ToggleSwitch({ ativo, onChange, loading }: { ativo: boolean; onChange: 
       style={{
         width: '44px', height: '26px', borderRadius: '100px', border: 'none', cursor: loading ? 'not-allowed' : 'pointer',
         backgroundColor: ativo ? 'var(--accent)' : 'rgba(255,255,255,0.12)',
-        position: 'relative', flexShrink: 0, transition: 'background-color 0.22s',
+        position: 'relative', flexShrink: 0, transition: 'background-color 0.25s cubic-bezier(0.4,0,0.2,1)',
         opacity: loading ? 0.5 : 1,
       }}
     >
@@ -91,7 +91,7 @@ function CardSection({ titulo, children }: { titulo: string; children: React.Rea
       <p style={{ color: 'rgba(255,255,255,0.30)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.5px', marginBottom: '8px', paddingLeft: '4px' }}>
         {titulo}
       </p>
-      <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
+      <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
         {children}
       </div>
     </div>
@@ -244,7 +244,7 @@ export default function ConfiguracoesPage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: '28px', height: '28px', border: '2px solid var(--border)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: '28px', height: '28px', border: '2px solid rgba(255,255,255,0.06)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     )
@@ -254,7 +254,7 @@ export default function ConfiguracoesPage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '48px' }}>
 
       {/* Header */}
-      <div style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button onClick={() => router.back()} style={{ width: '38px', height: '38px', borderRadius: '50%', border: 'none', backgroundColor: 'rgba(255,255,255,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
           <ArrowLeft size={18} color="rgba(255,255,255,0.8)" />
         </button>
@@ -410,7 +410,7 @@ export default function ConfiguracoesPage() {
       {/* Modal de reporte de bugs */}
       {bugModal && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 100 }}>
-          <div style={{ backgroundColor: '#0F1117', borderRadius: '20px 20px 0 0', width: '100%', maxWidth: '430px', padding: '24px 20px 36px' }}>
+          <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '20px 20px 0 0', width: '100%', maxWidth: '430px', padding: '24px 20px 36px', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
             {bugEnviado ? (
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
                 <p style={{ fontSize: '40px', marginBottom: '12px' }}>🙏</p>
@@ -418,7 +418,7 @@ export default function ConfiguracoesPage() {
                 <p style={{ color: 'rgba(255,255,255,0.50)', fontSize: '14px', lineHeight: 1.6 }}>
                   Nossa equipe ira analisar o problema. Se for constatado, voce recebera uma recompensa especial.
                 </p>
-                <button onClick={() => setBugModal(false)} style={{ marginTop: '20px', padding: '12px 24px', backgroundColor: '#e11d48', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: '600', cursor: 'pointer', width: '100%' }}>
+                <button onClick={() => setBugModal(false)} style={{ marginTop: '20px', padding: '12px 24px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: '600', cursor: 'pointer', width: '100%' }}>
                   Fechar
                 </button>
               </div>
@@ -448,7 +448,7 @@ export default function ConfiguracoesPage() {
                   onClick={enviarBug}
                   disabled={bugEnviando || bugDescricao.trim().length < 20}
                   style={{
-                    width: '100%', padding: '14px', backgroundColor: '#e11d48', color: '#fff',
+                    width: '100%', padding: '14px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff',
                     border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: '600',
                     cursor: bugDescricao.trim().length < 20 ? 'not-allowed' : 'pointer',
                     opacity: bugDescricao.trim().length < 20 ? 0.5 : 1,

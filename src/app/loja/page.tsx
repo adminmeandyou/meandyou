@@ -170,7 +170,7 @@ function PurchaseSheet({
     <>
       <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 40, backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }} />
       <div style={{ position: 'fixed', inset: '0 0 0 0', zIndex: 50, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pointerEvents: 'none' }}>
-        <div style={{ pointerEvents: 'all', backgroundColor: 'var(--bg-card)', borderRadius: '20px 20px 0 0', borderTop: '1px solid var(--border)', padding: '20px 20px 40px', animation: 'slideUp 0.25s ease-out' }}>
+        <div style={{ pointerEvents: 'all', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '20px 20px 0 0', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '20px 20px 40px', animation: 'slideUp 0.25s ease-out' }}>
           <div style={{ width: 36, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 auto 20px' }} />
 
           {/* Header */}
@@ -182,7 +182,7 @@ function PurchaseSheet({
               <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)', margin: 0 }}>{item.label}</p>
               <p style={{ fontSize: 12, color: 'var(--muted)', margin: '3px 0 0' }}>{item.description}</p>
             </div>
-            <button onClick={onClose} style={{ marginLeft: 'auto', width: 32, height: 32, borderRadius: 8, border: '1px solid var(--border)', backgroundColor: 'transparent', color: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+            <button onClick={onClose} style={{ marginLeft: 'auto', width: 32, height: 32, borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'transparent', color: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
               <X size={15} strokeWidth={1.5} />
             </button>
           </div>
@@ -216,7 +216,7 @@ function PurchaseSheet({
             <button
               onClick={onConfirm}
               disabled={loading}
-              style={{ width: '100%', padding: '16px', borderRadius: 14, border: 'none', backgroundColor: loading ? 'rgba(225,29,72,0.40)' : '#E11D48', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+              style={{ width: '100%', padding: '16px', borderRadius: 14, border: 'none', background: loading ? 'rgba(225,29,72,0.40)' : 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
             >
               {loading ? <Loader2 size={18} strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Coins size={18} strokeWidth={1.5} />}
               {loading ? 'Processando...' : `Confirmar — ${total} fichas`}
@@ -442,10 +442,10 @@ export default function LojaPage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
       {/* Header */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button
           onClick={() => router.back()}
-          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
         >
           <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
@@ -478,7 +478,7 @@ export default function LojaPage() {
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
         {/* Mochila colapsavel */}
-        <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', overflow: 'hidden' }}>
+        <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
           <button
             onClick={() => setMochilaAberta(v => !v)}
             style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
@@ -494,7 +494,7 @@ export default function LojaPage() {
                   <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: '700' }}>{fichas} fichas</span>
                 </div>
               )}
-              <ChevronDown size={16} color="rgba(248,249,250,0.35)" strokeWidth={1.5} style={{ transition: 'transform 0.2s', transform: mochilaAberta ? 'rotate(180deg)' : 'rotate(0deg)' }} />
+              <ChevronDown size={16} color="rgba(248,249,250,0.35)" strokeWidth={1.5} style={{ transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', transform: mochilaAberta ? 'rotate(180deg)' : 'rotate(0deg)' }} />
             </div>
           </button>
           {mochilaAberta && !loading && (
@@ -576,7 +576,7 @@ export default function LojaPage() {
 
         {/* ─── Tabs e conteúdo (ocultos quando mochila está aberta) ─── */}
         {!mochilaAberta && <>
-        <div style={{ display: 'flex', backgroundColor: 'var(--bg-card)', borderRadius: 12, padding: 4, border: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: 12, padding: 4, border: '1px solid rgba(255,255,255,0.06)' }}>
           {(['compras', 'recargas'] as const).map((tab) => (
             <button
               key={tab}
@@ -584,8 +584,8 @@ export default function LojaPage() {
               style={{
                 flex: 1, padding: '10px', borderRadius: 9, border: 'none', cursor: 'pointer',
                 fontSize: 13, fontWeight: 600, fontFamily: 'var(--font-jakarta)',
-                transition: 'all 0.2s',
-                backgroundColor: lojaTab === tab ? 'var(--accent)' : 'transparent',
+                transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+                background: lojaTab === tab ? 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)' : 'transparent',
                 color: lojaTab === tab ? '#fff' : 'var(--muted)',
               }}
             >
@@ -622,7 +622,7 @@ export default function LojaPage() {
                     backgroundColor: isSelected
                       ? 'rgba(245,158,11,0.14)'
                       : 'var(--bg-card)',
-                    cursor: 'pointer', transition: 'all 0.15s',
+                    cursor: 'pointer', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
                     boxShadow: isSelected ? '0 0 0 3px rgba(245,158,11,0.15)' : 'none',
                   }}
                 >
@@ -654,10 +654,10 @@ export default function LojaPage() {
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
               width: '100%', padding: '16px', borderRadius: 14, border: 'none',
-              backgroundColor: selectedPackage ? '#E11D48' : 'rgba(225,29,72,0.25)',
+              background: selectedPackage ? 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)' : 'rgba(225,29,72,0.25)',
               color: '#fff', fontSize: 15, fontWeight: 700,
               cursor: selectedPackage ? 'pointer' : 'not-allowed',
-              transition: 'all 0.2s',
+              transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
               boxShadow: selectedPackage ? '0 8px 24px rgba(225,29,72,0.35)' : 'none',
               fontFamily: 'var(--font-jakarta)',
               opacity: selectedPackage ? 1 : 0.6,
@@ -685,7 +685,7 @@ export default function LojaPage() {
               return (
                 <div
                   key={item.key}
-                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: '16px', backgroundColor: 'var(--bg-card)', border: locked ? '1px solid rgba(245,158,11,0.25)' : '1px solid var(--border)', opacity: locked ? 0.75 : 1 }}
+                  style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: locked ? '1px solid rgba(245,158,11,0.25)' : '1px solid var(--border)', opacity: locked ? 0.75 : 1 }}
                 >
                   {/* Icone */}
                   <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: item.accentBg, border: `1px solid ${item.accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: item.accentColor }}>
@@ -733,7 +733,7 @@ export default function LojaPage() {
                   ) : (
                     <button
                       onClick={() => { haptics.tap(); setOpenItem(item); setOpenQty(qty) }}
-                      style={{ flexShrink: 0, padding: '7px 12px', borderRadius: 10, border: 'none', backgroundColor: canAfford ? '#E11D48' : 'rgba(255,255,255,0.06)', color: canAfford ? '#fff' : 'rgba(248,249,250,0.35)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+                      style={{ flexShrink: 0, padding: '7px 12px', borderRadius: 10, border: 'none', background: canAfford ? 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)' : 'rgba(255,255,255,0.06)', color: canAfford ? '#fff' : 'rgba(248,249,250,0.35)', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
                     >
                       Comprar
                     </button>

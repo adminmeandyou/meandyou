@@ -32,12 +32,14 @@ export function AppBottomNav() {
   return (
     <nav
       style={{
-        height: 60,
+        height: 64,
         flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
-        borderTop: '1px solid var(--border)',
-        backgroundColor: 'var(--bg)',
+        borderTop: '1px solid rgba(255,255,255,0.05)',
+        background: 'rgba(8,9,14,0.88)',
+        backdropFilter: 'blur(24px) saturate(1.3)',
+        WebkitBackdropFilter: 'blur(24px) saturate(1.3)',
         paddingBottom: 'env(safe-area-inset-bottom, 0px)',
       }}
     >
@@ -65,14 +67,18 @@ export function AppBottomNav() {
                   width: 48,
                   height: 48,
                   borderRadius: '50%',
-                  backgroundColor: active ? 'var(--accent)' : 'rgba(225,29,72,0.12)',
-                  border: active ? 'none' : '1.5px solid rgba(225,29,72,0.30)',
+                  background: active
+                    ? 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)'
+                    : 'rgba(225,29,72,0.08)',
+                  border: active ? 'none' : '1.5px solid rgba(225,29,72,0.20)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: active ? '#fff' : 'var(--accent)',
-                  boxShadow: active ? '0 4px 18px rgba(225,29,72,0.40)' : 'none',
-                  transition: 'all 0.18s',
+                  boxShadow: active
+                    ? '0 4px 20px rgba(225,29,72,0.45), 0 0 40px rgba(225,29,72,0.15)'
+                    : 'none',
+                  transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
                   marginBottom: 2,
                 }}
               >
@@ -104,13 +110,13 @@ export function AppBottomNav() {
             <div
               style={{
                 width: 40,
-                height: 24,
-                borderRadius: 12,
-                backgroundColor: active ? 'var(--accent-light)' : 'transparent',
+                height: 26,
+                borderRadius: 13,
+                backgroundColor: active ? 'rgba(225,29,72,0.12)' : 'transparent',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'background-color 0.18s',
+                transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
               }}
             >
               <Icon size={22} strokeWidth={active ? 2.5 : 1.5} />

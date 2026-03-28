@@ -54,8 +54,8 @@ function VerificarEmailInner() {
   const card = 'var(--bg-card)'
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-      <div style={{ width: '100%', maxWidth: '360px', backgroundColor: card, borderRadius: '20px', border: '1px solid var(--border)', padding: '40px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', textAlign: 'center' }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse at 50% 0%, rgba(225,29,72,0.06) 0%, #08090E 70%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div style={{ width: '100%', maxWidth: '360px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)', padding: '40px 32px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '20px', textAlign: 'center' }}>
 
         {status === 'loading' && (
           <>
@@ -90,7 +90,7 @@ function VerificarEmailInner() {
               </p>
               <a
                 href="/login"
-                style={{ display: 'inline-block', padding: '12px 24px', borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', fontSize: '14px', fontWeight: 700, textDecoration: 'none' }}
+                style={{ display: 'inline-block', padding: '12px 24px', borderRadius: '12px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: '14px', fontWeight: 700, textDecoration: 'none' }}
               >
                 Ir para o login
               </a>

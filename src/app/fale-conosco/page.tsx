@@ -87,8 +87,8 @@ export default function FaleConosco() {
       <style>{`
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { background: #08090E; color: #F8F9FA; font-family: var(--font-jakarta, system-ui), sans-serif; }
-        .fc-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; background: #08090E; }
-        .fc-card { width: 100%; max-width: 620px; background: #0F1117; border: 1px solid rgba(255,255,255,0.07); border-radius: 24px; padding: 48px; }
+        .fc-wrap { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 60px 20px; background: radial-gradient(ellipse at 50% 0%, rgba(225,29,72,0.06) 0%, #08090E 70%); }
+        .fc-card { width: 100%; max-width: 620px; background: linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: 24px; padding: 48px; }
         .fc-back { display: inline-flex; align-items: center; gap: 8px; color: rgba(248,249,250,0.45); font-size: 13px; text-decoration: none; margin-bottom: 32px; transition: color 0.2s; }
         .fc-back:hover { color: rgba(248,249,250,0.75); }
         .fc-logo { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
@@ -98,7 +98,7 @@ export default function FaleConosco() {
         .fc-field { margin-bottom: 18px; }
         .fc-label { display: block; font-size: 12px; font-weight: 600; color: rgba(248,249,250,0.55); letter-spacing: 0.5px; margin-bottom: 7px; }
         .fc-input, .fc-select, .fc-textarea {
-          width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.09);
+          width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06);
           border-radius: 10px; color: #F8F9FA; font-family: inherit; font-size: 14px;
           padding: 12px 16px; outline: none; transition: border-color 0.2s;
           appearance: none; -webkit-appearance: none;
@@ -125,7 +125,7 @@ export default function FaleConosco() {
         .fc-preview-remove:hover { background: rgba(225,29,72,0.8); }
         .fc-error { background: rgba(244,63,94,0.08); border: 1px solid rgba(244,63,94,0.25); border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #F43F5E; margin-bottom: 18px; }
         .fc-btn {
-          width: 100%; padding: 14px; border-radius: 12px; background: #E11D48; color: #fff;
+          width: 100%; padding: 14px; border-radius: 12px; background: linear-gradient(135deg, #E11D48 0%, #be123c 100%); color: #fff;
           font-family: inherit; font-size: 15px; font-weight: 700; border: none; cursor: pointer;
           transition: background 0.2s, transform 0.15s; margin-top: 8px;
         }

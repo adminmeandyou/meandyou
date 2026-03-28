@@ -61,9 +61,10 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = 480 }: Moda
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.7)',
-          backdropFilter: 'blur(6px)',
-          transition: 'opacity 0.2s',
+          backgroundColor: 'rgba(0,0,0,0.65)',
+          backdropFilter: 'blur(12px) saturate(1.2)',
+          WebkitBackdropFilter: 'blur(12px) saturate(1.2)',
+          transition: 'opacity 0.25s ease',
           opacity: isOpen ? 1 : 0,
         }}
       />
@@ -72,17 +73,17 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = 480 }: Moda
       <div
         style={{
           position: 'relative',
-          backgroundColor: 'var(--bg-card)',
-          borderRadius: 16,
+          background: 'linear-gradient(180deg, rgba(19,22,31,0.98) 0%, rgba(15,17,23,0.99) 100%)',
+          borderRadius: 20,
           width: '100%',
           maxWidth,
           maxHeight: '90vh',
           overflowY: 'auto',
-          border: '1px solid var(--border)',
-          boxShadow: '0 24px 80px rgba(0,0,0,0.6)',
+          border: '1px solid rgba(255,255,255,0.06)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3), 0 24px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03) inset',
           transform: isOpen ? 'translateY(0) scale(1)' : 'translateY(16px) scale(0.97)',
           opacity: isOpen ? 1 : 0,
-          transition: 'transform 0.25s cubic-bezier(0.4,0,0.2,1), opacity 0.2s',
+          transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease',
         }}
       >
         {/* Header */}
@@ -111,15 +112,18 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = 480 }: Moda
               style={{
                 width: 32,
                 height: 32,
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                backgroundColor: 'transparent',
+                borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.08)',
+                backgroundColor: 'rgba(255,255,255,0.04)',
                 color: 'var(--muted)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
+                transition: 'all 0.2s ease',
               }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)' }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
             >
               <X size={16} strokeWidth={1.5} />
             </button>

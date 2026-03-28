@@ -106,7 +106,7 @@ export default function AguardandoEmailPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse at 50% 0%, rgba(225,29,72,0.06) 0%, #08090E 70%)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
       <div style={{ width: '100%', maxWidth: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
 
         {/* Icone */}
@@ -128,7 +128,7 @@ export default function AguardandoEmailPage() {
         </div>
 
         {/* Card de instrucoes */}
-        <div style={{ width: '100%', backgroundColor: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ width: '100%', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', padding: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
           {[
             'Abra o email que enviamos',
             'Clique em "Verificar email"',
@@ -158,7 +158,7 @@ export default function AguardandoEmailPage() {
         {/* Botao principal */}
         <button
           onClick={verificarAgora}
-          style={{ width: '100%', padding: '14px', borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', fontSize: '15px', fontWeight: 700, border: 'none', cursor: 'pointer' }}
+          style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: '15px', fontWeight: 700, border: 'none', cursor: 'pointer' }}
         >
           Ja verifiquei meu email
         </button>
@@ -167,7 +167,7 @@ export default function AguardandoEmailPage() {
         <button
           onClick={reenviarEmail}
           disabled={reenviando}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', borderRadius: '12px', backgroundColor: 'transparent', border: '1px solid var(--border)', color: 'var(--muted)', fontSize: '14px', cursor: reenviando ? 'default' : 'pointer', opacity: reenviando ? 0.6 : 1 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '12px 20px', borderRadius: '12px', backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--muted)', fontSize: '14px', cursor: reenviando ? 'default' : 'pointer', opacity: reenviando ? 0.6 : 1 }}
         >
           <RefreshCw size={15} strokeWidth={1.5} style={{ animation: reenviando ? 'spin 1s linear infinite' : 'none' }} />
           {reenviando ? 'Reenviando...' : 'Reenviar email'}

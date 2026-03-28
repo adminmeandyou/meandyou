@@ -62,9 +62,11 @@ function NovaSenhaInner() {
 
   if (sucesso) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backgroundColor: 'var(--bg)' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(225,29,72,0.06) 0%, transparent 60%), var(--bg)' }}>
         <div style={{ textAlign: 'center', maxWidth: '400px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '20px' }}>✅</div>
+          <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', marginBottom: '12px', color: 'var(--text)' }}>
             Senha redefinida!
           </h2>
@@ -77,15 +79,16 @@ function NovaSenhaInner() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backgroundColor: 'var(--bg)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(225,29,72,0.06) 0%, transparent 60%), var(--bg)' }}>
       <div style={{ width: '100%', maxWidth: '420px' }}>
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
-          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '36px', marginBottom: '8px', color: 'var(--text)' }}>
+        <div style={{ textAlign: 'center', marginBottom: '44px' }}>
+          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '38px', marginBottom: '10px', color: 'var(--text)', letterSpacing: '-0.02em' }}>
             MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
           </h1>
-          <p style={{ color: 'var(--muted)', fontSize: '15px' }}>Crie uma nova senha</p>
+          <p style={{ color: 'var(--muted)', fontSize: '15px', letterSpacing: '0.01em' }}>Crie uma nova senha</p>
         </div>
-        <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px', padding: '36px', boxShadow: 'var(--shadow)' }}>
+        <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '24px', padding: '36px', boxShadow: '0 4px 12px rgba(0,0,0,0.2), 0 16px 48px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.03) inset', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', position: 'relative' as const, overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: 0, left: '20%', right: '20%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(225,29,72,0.3), transparent)' }} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
               <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: '600' }}>

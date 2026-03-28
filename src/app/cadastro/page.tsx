@@ -14,8 +14,11 @@ function ProgressBar({ atual, total }: { atual: number; total: number }) {
       {Array.from({ length: total }).map((_, i) => (
         <div key={i} style={{
           flex: 1, height: '3px', borderRadius: '100px',
-          backgroundColor: i < atual ? 'var(--accent)' : 'var(--border)',
-          transition: 'background-color 0.3s',
+          background: i < atual
+            ? 'linear-gradient(90deg, #E11D48, #F43F5E)'
+            : 'rgba(255,255,255,0.06)',
+          transition: 'background 0.4s cubic-bezier(0.4,0,0.2,1)',
+          boxShadow: i < atual ? '0 0 8px rgba(225,29,72,0.3)' : 'none',
         }} />
       ))}
     </div>
@@ -242,15 +245,17 @@ function CadastroInner() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%', padding: '16px 18px', fontSize: '18px',
-    backgroundColor: 'var(--bg-card)', border: '1.5px solid var(--border)',
+    backgroundColor: 'var(--bg-card2)', border: '1.5px solid rgba(255,255,255,0.07)',
     borderRadius: '16px', color: 'var(--text)', outline: 'none',
     boxSizing: 'border-box', fontFamily: 'var(--font-jakarta)',
+    boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.2)',
+    transition: 'border-color 0.25s ease, box-shadow 0.25s ease',
   }
 
   const pergunta = (text: string, sub?: string) => (
     <div style={{ marginBottom: '28px' }}>
-      <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '26px', color: 'var(--text)', marginBottom: sub ? '6px' : 0, lineHeight: 1.25 }}>{text}</h2>
-      {sub && <p style={{ color: 'var(--muted)', fontSize: '14px', marginTop: '6px' }}>{sub}</p>}
+      <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', color: 'var(--text)', marginBottom: sub ? '8px' : 0, lineHeight: 1.2, letterSpacing: '-0.01em' }}>{text}</h2>
+      {sub && <p style={{ color: 'var(--muted)', fontSize: '14px', marginTop: '8px', lineHeight: 1.5 }}>{sub}</p>}
     </div>
   )
 
@@ -269,14 +274,16 @@ function CadastroInner() {
 
   if (sucesso) {
     return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', backgroundColor: 'var(--bg)' }}>
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(225,29,72,0.06) 0%, transparent 60%), var(--bg)' }}>
         <div style={{ textAlign: 'center', maxWidth: '400px' }}>
-          <div style={{ fontSize: '48px', marginBottom: '20px' }}>✅</div>
-          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', marginBottom: '12px', color: 'var(--text)' }}>Conta criada!</h2>
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', marginBottom: '12px', color: 'var(--text)', letterSpacing: '-0.01em' }}>Conta criada!</h2>
           <p style={{ color: 'var(--muted)', lineHeight: '1.6', marginBottom: '24px' }}>
-            Bem-vindo(a) ao MeAndYou, <strong style={{ color: 'var(--text)' }}>{nomeExibicao}</strong>!<br /><br />Faça login para continuar.
+            Bem-vindo(a) ao MeAndYou, <strong style={{ color: 'var(--text)' }}>{nomeExibicao}</strong>!<br /><br />Faca login para continuar.
           </p>
-          <Link href="/login" style={{ display: 'block', backgroundColor: 'var(--accent)', color: '#fff', padding: '14px 32px', borderRadius: '100px', textDecoration: 'none', fontWeight: '700', fontSize: '15px' }}>
+          <Link href="/login" className="btn-primary" style={{ display: 'block', textDecoration: 'none', textAlign: 'center' }}>
             Fazer login
           </Link>
         </div>
@@ -285,7 +292,7 @@ function CadastroInner() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg)' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'radial-gradient(ellipse 80% 40% at 50% 0%, rgba(225,29,72,0.05) 0%, transparent 60%), var(--bg)' }}>
 
       {/* Header */}
       <div style={{ padding: '20px 24px 0', maxWidth: '480px', margin: '0 auto', width: '100%' }}>
@@ -465,12 +472,9 @@ function CadastroInner() {
           ) : (
             <button
               onClick={avancar}
+              className="btn-primary"
               style={{
-                width: '100%', padding: '16px', borderRadius: '100px', border: 'none',
-                backgroundColor: 'var(--accent)', color: '#fff',
-                fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700',
-                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-                boxShadow: '0 8px 24px rgba(225,29,72,0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
               }}
             >
               Continuar <ChevronRight size={18} strokeWidth={2} />
@@ -478,9 +482,10 @@ function CadastroInner() {
           )
         ) : (
           <button
-            onClick={temCodigo === null ? () => setErro('Escolha uma das opções acima para continuar') : handleCadastro}
+            onClick={temCodigo === null ? () => setErro('Escolha uma das opcoes acima para continuar') : handleCadastro}
             disabled={loading || (!!TURNSTILE_SITE_KEY && !cfToken && temCodigo !== null)}
-            style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: loading ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: (loading || (!!TURNSTILE_SITE_KEY && !cfToken && temCodigo !== null)) ? 0.6 : 1, boxShadow: '0 8px 24px rgba(225,29,72,0.25)' }}>
+            className="btn-primary"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
             {loading ? 'Criando conta...' : (!!TURNSTILE_SITE_KEY && !cfToken && temCodigo !== null) ? 'Aguardando verificação...' : 'Criar conta'}
           </button>
         )}

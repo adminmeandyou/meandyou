@@ -120,10 +120,10 @@ export default function MinhaAssinaturaPage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '80px' }}>
 
       {/* Header */}
-      <header style={{ backgroundColor: 'var(--bg-card)', borderBottom: '1px solid var(--border)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <header style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button
           onClick={() => router.back()}
-          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
         >
           <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
@@ -146,7 +146,7 @@ export default function MinhaAssinaturaPage() {
 
         {/* Plano ativo */}
         {active && planStyle ? (
-          <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '20px', border: `2px solid ${planStyle.border}`, overflow: 'hidden' }}>
+          <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '20px', border: `2px solid ${planStyle.border}`, overflow: 'hidden' }}>
 
             {/* Topo */}
             <div style={{ padding: '20px 20px 16px' }}>
@@ -179,23 +179,23 @@ export default function MinhaAssinaturaPage() {
             </div>
 
             {/* Detalhes */}
-            <div style={{ backgroundColor: 'var(--bg)', padding: '12px 20px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ backgroundColor: 'var(--bg)', padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Ativo desde: <span style={{ color: 'var(--text)' }}>{formatDate(active.starts_at)}</span></p>
               <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Valido ate: <span style={{ color: 'var(--text)', fontWeight: 600 }}>{formatDate(active.ends_at)}</span></p>
               {active.gateway_order_id && <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>N. pedido: <span style={{ color: 'var(--text)', fontFamily: 'monospace', fontSize: '11px' }}>{active.gateway_order_id}</span></p>}
             </div>
 
             {/* Acoes */}
-            <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               <button
                 onClick={() => router.push('/planos')}
-                style={{ width: '100%', padding: '12px', borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'opacity 0.2s' }}
+                style={{ width: '100%', padding: '12px', borderRadius: '12px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
               >
                 Fazer upgrade de plano
               </button>
               <button
                 onClick={() => setShowConfirm(true)}
-                style={{ width: '100%', padding: '12px', borderRadius: '12px', backgroundColor: 'transparent', color: '#f87171', fontWeight: 500, fontSize: '14px', border: '1px solid rgba(239,68,68,0.25)', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'background-color 0.2s' }}
+                style={{ width: '100%', padding: '12px', borderRadius: '12px', backgroundColor: 'transparent', color: '#f87171', fontWeight: 500, fontSize: '14px', border: '1px solid rgba(239,68,68,0.25)', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
               >
                 Cancelar assinatura
               </button>
@@ -203,7 +203,7 @@ export default function MinhaAssinaturaPage() {
           </div>
         ) : (
           /* Sem plano ativo */
-          <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '20px', border: '1px solid var(--border)', padding: '32px 24px', textAlign: 'center' }}>
+          <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '20px', border: '1px solid rgba(255,255,255,0.06)', padding: '32px 24px', textAlign: 'center' }}>
             <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
               <AlertTriangle size={26} color="var(--accent)" strokeWidth={1.5} />
             </div>
@@ -211,7 +211,7 @@ export default function MinhaAssinaturaPage() {
             <p style={{ fontSize: '14px', color: 'var(--muted)', margin: '0 0 20px' }}>Assine um plano para desbloquear mais recursos e aparecer para mais pessoas.</p>
             <button
               onClick={() => router.push('/planos')}
-              style={{ padding: '12px 28px', borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+              style={{ padding: '12px 28px', borderRadius: '12px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
             >
               Ver planos disponiveis
             </button>
@@ -220,7 +220,7 @@ export default function MinhaAssinaturaPage() {
 
         {/* Historico */}
         {history.length > 0 && (
-          <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border)', overflow: 'hidden' }}>
+          <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
             <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', padding: '16px 20px 8px', margin: 0 }}>Historico de assinaturas</p>
             <div>
               {history.map((s, i) => {
@@ -245,14 +245,14 @@ export default function MinhaAssinaturaPage() {
         )}
 
         {/* Info / suporte */}
-        <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '16px', border: '1px solid var(--border)', padding: '20px' }}>
+        <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
           <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', margin: '0 0 8px' }}>Precisa de ajuda?</h3>
           <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 14px', lineHeight: 1.5 }}>
             Para contestar cobranças, reembolsos ou duvidas sobre sua assinatura, entre em contato com o suporte. Respondemos em ate 24h uteis.
           </p>
           <button
             onClick={() => router.push('/suporte')}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--muted)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '9px 16px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--muted)', fontSize: '13px', fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
           >
             <Headphones size={14} strokeWidth={1.5} />
             Abrir suporte
@@ -264,7 +264,7 @@ export default function MinhaAssinaturaPage() {
       {/* Modal de confirmacao de cancelamento */}
       {showConfirm && (
         <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.70)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 50, padding: '16px' }}>
-          <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '20px', width: '100%', maxWidth: '400px', padding: '24px', border: '1px solid var(--border)' }}>
+          <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '20px', width: '100%', maxWidth: '400px', padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ width: '48px', height: '48px', borderRadius: '50%', backgroundColor: 'rgba(239,68,68,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
               <AlertTriangle size={22} color="#f87171" strokeWidth={1.5} />
             </div>
@@ -278,14 +278,14 @@ export default function MinhaAssinaturaPage() {
               <button
                 onClick={() => setShowConfirm(false)}
                 disabled={cancelling}
-                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid var(--border)', backgroundColor: 'transparent', color: 'var(--text)', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'background-color 0.2s' }}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'transparent', color: 'var(--text)', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
               >
                 Manter plano
               </button>
               <button
                 onClick={handleCancel}
                 disabled={cancelling}
-                style={{ flex: 1, padding: '12px', borderRadius: '12px', backgroundColor: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.30)', color: '#f87171', fontSize: '14px', fontWeight: 700, cursor: cancelling ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', opacity: cancelling ? 0.6 : 1, transition: 'opacity 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                style={{ flex: 1, padding: '12px', borderRadius: '12px', backgroundColor: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.30)', color: '#f87171', fontSize: '14px', fontWeight: 700, cursor: cancelling ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', opacity: cancelling ? 0.6 : 1, transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
               >
                 {cancelling ? (
                   <>

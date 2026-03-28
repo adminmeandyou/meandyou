@@ -107,7 +107,7 @@ export default function CurtidasPage() {
   const FAKE_COUNT = 6
 
   return (
-    <div className="min-h-screen bg-[#08090E] font-jakarta pb-24">
+    <div className="min-h-screen font-jakarta pb-24" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(225,29,72,0.06) 0%, transparent 60%), #08090E' }}>
 
       {/* Header */}
       <header className="sticky top-0 z-30 bg-[#08090E]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">

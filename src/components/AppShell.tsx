@@ -107,7 +107,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             flexDirection: 'column',
             padding: '32px 24px',
             gap: 32,
-            borderLeft: '1px solid var(--border)',
+            borderLeft: '1px solid rgba(255,255,255,0.04)',
+            background: 'rgba(15,17,23,0.4)',
           }}
         >
           {/* Logo */}

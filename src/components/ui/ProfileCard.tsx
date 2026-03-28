@@ -63,13 +63,13 @@ export function ProfileCard({
       style={{
         width: '100%',
         aspectRatio: '3/4',
-        borderRadius: 20,
+        borderRadius: 22,
         overflow: 'hidden',
         position: 'relative',
         background: currentPhoto ? undefined : placeholderGrad,
         boxShadow: superliked
-          ? '0 0 0 3px #F59E0B, 0 12px 48px rgba(245,158,11,0.35)'
-          : '0 12px 40px rgba(0,0,0,0.55)',
+          ? '0 0 0 3px #F59E0B, 0 12px 48px rgba(245,158,11,0.35), 0 0 80px rgba(245,158,11,0.1)'
+          : '0 4px 12px rgba(0,0,0,0.3), 0 12px 40px rgba(0,0,0,0.45)',
         opacity: disabled ? 0.55 : 1,
         userSelect: 'none',
       }}
@@ -162,7 +162,7 @@ export function ProfileCard({
         style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, transparent 100%)',
+          background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.35) 40%, rgba(0,0,0,0.05) 65%, transparent 100%)',
           zIndex: 1,
         }}
       />

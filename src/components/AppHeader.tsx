@@ -28,8 +28,10 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 16px',
-        borderBottom: '1px solid var(--border)',
-        backgroundColor: 'var(--bg)',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        background: 'rgba(8,9,14,0.85)',
+        backdropFilter: 'blur(24px) saturate(1.3)',
+        WebkitBackdropFilter: 'blur(24px) saturate(1.3)',
         position: 'sticky',
         top: 0,
         zIndex: 100,
@@ -43,11 +45,14 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
           onClick={() => router.back()}
           style={{
             width: 36, height: 36, borderRadius: '50%',
-            border: '1px solid var(--border)',
+            border: '1px solid rgba(255,255,255,0.08)',
             backgroundColor: 'rgba(255,255,255,0.04)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
+            transition: 'all 0.2s ease',
           }}
+          onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)' }}
+          onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
           aria-label="Voltar"
         >
           <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />

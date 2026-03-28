@@ -759,7 +759,7 @@ function Verificacao() {
   // ─── Componentes visuais ─────────────────────────────────────────────────────
 
   const card = (children: React.ReactNode) => (
-    <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: '24px', padding: '28px', boxShadow: 'var(--shadow)', border: '1px solid var(--border)' }}>{children}</div>
+    <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '24px', padding: '28px', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.06)' }}>{children}</div>
   )
 
   const totalPassos = tipoDoc === 'cpf_doc' ? 3 : 4
@@ -828,8 +828,8 @@ function Verificacao() {
         </div>
         <canvas ref={canvasRef} style={{ display: 'none' }} />
         <div style={{ display: 'flex', gap: '8px' }}>
-          <button onClick={() => { pararCamera(tipo); setModo('escolha') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Cancelar</button>
-          {cameraAtiva && <button onClick={() => tirarFoto(tipo)} style={{ flex: 2, backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><Camera size={16} /> Fotografar</button>}
+          <button onClick={() => { pararCamera(tipo); setModo('escolha') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '12px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Cancelar</button>
+          {cameraAtiva && <button onClick={() => tirarFoto(tipo)} style={{ flex: 2, background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}><Camera size={16} /> Fotografar</button>}
         </div>
       </div>
     )
@@ -856,7 +856,7 @@ function Verificacao() {
             <span style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><RefreshCw size={13} /> Trocar arquivo</span>
           </label>
         )}
-        <button onClick={() => setModo('escolha')} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '10px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer', marginTop: '8px' }}>← Voltar às opções</button>
+        <button onClick={() => setModo('escolha')} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '10px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer', marginTop: '8px' }}>← Voltar às opções</button>
       </div>
     )
   }
@@ -892,7 +892,7 @@ function Verificacao() {
             <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>A selfie ao vivo só funciona no celular.</p>
           </div>
           {erroEmail && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '12px', fontWeight: '600' }}>{erroEmail}</p>}
-          {emailEnviado && <button onClick={reenviarEmail} style={{ backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '10px 24px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Reenviar email</button>}
+          {emailEnviado && <button onClick={reenviarEmail} style={{ backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '10px 24px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Reenviar email</button>}
         </>)}
 
         {status === 'dados' && card(<>
@@ -902,7 +902,7 @@ function Verificacao() {
           <div style={{ textAlign: 'left', marginBottom: '16px' }}>
             <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>CPF</label>
             <input type="tel" placeholder="000.000.000-00" value={cpf} onChange={e => setCpf(formatarCPF(e.target.value))}
-              style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1.5px solid var(--border)', fontSize: '15px', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box', backgroundColor: 'var(--bg-card2)', color: 'var(--text)' }} />
+              style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: '1.5px solid rgba(255,255,255,0.06)', fontSize: '15px', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box', backgroundColor: 'var(--bg-card2)', color: 'var(--text)' }} />
           </div>
           <div style={{ textAlign: 'left' }}>
             <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--muted)', display: 'block', marginBottom: '8px' }}>Tipo de documento</label>
@@ -916,7 +916,7 @@ function Verificacao() {
           </div>
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
           <button onClick={() => { const c = cpf.replace(/\D/g,''); if (!validarCPF(c)) { setErroForm('CPF inválido. Verifique os dígitos.'); return } setErroForm(''); setStatus('doc_frente') }}
-            style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '20px' }}>
+            style={{ width: '100%', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '20px' }}>
             Próximo →
           </button>
         </>)}
@@ -932,7 +932,7 @@ function Verificacao() {
             </div>
           )}
           {frenteUploadando && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
               <div style={{ width: '14px', height: '14px', border: '2px solid var(--border)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
               <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Enviando foto...</p>
             </div>
@@ -941,7 +941,7 @@ function Verificacao() {
           {botoesCaptura('frente', modoFrente, setModoFrente, docFrentePreview, docFrente, cameraFrenteAtiva, videoFrenteRef, canvasFrenteRef)}
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
           <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-            <button onClick={() => { pararCamera('frente'); setStatus('dados') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
+            <button onClick={() => { pararCamera('frente'); setStatus('dados') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
             <button
               disabled={frenteUploadando}
               onClick={() => {
@@ -968,7 +968,7 @@ function Verificacao() {
             </div>
           )}
           {versoUploadando && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
               <div style={{ width: '14px', height: '14px', border: '2px solid var(--border)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', flexShrink: 0 }} />
               <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Enviando foto...</p>
             </div>
@@ -977,7 +977,7 @@ function Verificacao() {
           {botoesCaptura('verso', modoVerso, setModoVerso, docVersoPreview, docVerso, cameraVersoAtiva, videoVersoRef, canvasVersoRef)}
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
           <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-            <button onClick={() => { pararCamera('verso'); setStatus('doc_frente') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
+            <button onClick={() => { pararCamera('verso'); setStatus('doc_frente') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
             <button
               disabled={versoUploadando}
               onClick={() => {
@@ -1000,11 +1000,11 @@ function Verificacao() {
 
           {!livnessIniciado && !livenessOk && (
             <>
-              <div style={{ backgroundColor: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: '16px', padding: '16px', marginBottom: '16px', textAlign: 'left' }}>
+              <div style={{ backgroundColor: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', marginBottom: '16px', textAlign: 'left' }}>
                 <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', marginBottom: '12px' }}>O que vai acontecer:</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
                   {PASSOS_LIVENESS.map((p, i) => (
-                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '10px', backgroundColor: 'var(--bg-card)' }}>
+                    <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', borderRadius: '10px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)' }}>
                       <div style={{ color: 'var(--accent)', flexShrink: 0, transform: 'scale(0.5)', transformOrigin: 'center', width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{LIVENESS_ICON[p.id]}</div>
                       <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0, lineHeight: '1.3' }}>{p.instrucao}</p>
                     </div>
@@ -1025,7 +1025,7 @@ function Verificacao() {
                   Tentar novamente
                 </button>
               ) : (
-                <button onClick={iniciarLiveness} style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
+                <button onClick={iniciarLiveness} style={{ width: '100%', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
                   Iniciar verificacao facial
                 </button>
               )}
@@ -1095,7 +1095,7 @@ function Verificacao() {
               </div>
               <canvas ref={canvasSelfieRef} style={{ display: 'none' }} />
 
-              <button onClick={reiniciarLiveness} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <button onClick={reiniciarLiveness} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '12px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
                 <RefreshCw size={14} /> Reiniciar verificação
               </button>
             </>
@@ -1112,11 +1112,11 @@ function Verificacao() {
                 <>
                   <p style={{ color: 'var(--red)', fontSize: '13px', marginBottom: '12px' }}>{erroForm}</p>
                   <button onClick={enviarVerificacao}
-                    style={{ width: '100%', backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginBottom: '8px' }}>
+                    style={{ width: '100%', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginBottom: '8px' }}>
                     Tentar novamente →
                   </button>
                   <button onClick={reiniciarLiveness}
-                    style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '11px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>
+                    style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '11px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>
                     Refazer verificação facial
                   </button>
                 </>
@@ -1127,7 +1127,7 @@ function Verificacao() {
           {!livenessOk && (
             <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
               <button onClick={() => { reiniciarLiveness(); setStatus(tipoDoc === 'cpf_doc' ? 'doc_frente' : 'doc_verso') }}
-                style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
+                style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
             </div>
           )}
         </>)}
@@ -1168,7 +1168,7 @@ function Verificacao() {
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7' }}>Sua identidade foi confirmada com sucesso. Agora complete o seu perfil para começar.<br /><br />Redirecionando...</p>
           <div style={{ width: '48px', height: '48px', border: '4px solid var(--accent)', borderTop: '4px solid transparent', borderRadius: '50%', margin: '24px auto 0', animation: 'spin 1s linear infinite' }} />
-          <button onClick={() => { window.location.href = '/onboarding' }} style={{ marginTop: '20px', backgroundColor: 'transparent', border: '1.5px solid var(--border)', borderRadius: '100px', padding: '10px 24px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Continuar →</button>
+          <button onClick={() => { window.location.href = '/onboarding' }} style={{ marginTop: '20px', backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '10px 24px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Continuar →</button>
           <style>{`@keyframes pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }`}</style>
         </>)}
 
@@ -1176,21 +1176,21 @@ function Verificacao() {
           <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(245,158,11,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><AlertCircle size={28} color="var(--gold)" strokeWidth={1.5} /></div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Link expirado</h2>
           <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>Este link expirou. Faça login para receber um novo.</p>
-          <button onClick={() => router.push('/login')} style={{ backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>Fazer login</button>
+          <button onClick={() => router.push('/login')} style={{ background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>Fazer login</button>
         </>)}
 
         {status === 'usado' && card(<>
           <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(245,158,11,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><AlertCircle size={28} color="var(--gold)" strokeWidth={1.5} /></div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Link já utilizado</h2>
           <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>Este link já foi usado. Faça login para receber um novo.</p>
-          <button onClick={() => router.push('/login')} style={{ backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>Fazer login</button>
+          <button onClick={() => router.push('/login')} style={{ background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>Fazer login</button>
         </>)}
 
         {status === 'erro' && card(<>
           <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><AlertCircle size={28} color="#ef4444" strokeWidth={1.5} /></div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Algo deu errado</h2>
           <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>{mensagem}</p>
-          <button onClick={() => router.push('/login')} style={{ backgroundColor: 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>Voltar ao login</button>
+          <button onClick={() => router.push('/login')} style={{ background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>Voltar ao login</button>
         </>)}
 
       </div>

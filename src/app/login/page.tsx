@@ -81,29 +81,36 @@ export default function Login() {
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px',
-      backgroundColor: 'var(--bg)',
+      background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(225,29,72,0.06) 0%, transparent 60%), var(--bg)',
     }}>
       <div style={{ width: '100%', maxWidth: '420px' }}>
 
-        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '44px' }}>
           <h1 style={{
             fontFamily: 'var(--font-fraunces)',
-            fontSize: '36px',
-            marginBottom: '8px',
+            fontSize: '38px',
+            marginBottom: '10px',
             color: 'var(--text)',
+            letterSpacing: '-0.02em',
           }}>
             MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
           </h1>
-          <p style={{ color: 'var(--muted)', fontSize: '15px' }}>Entre na sua conta</p>
+          <p style={{ color: 'var(--muted)', fontSize: '15px', letterSpacing: '0.01em' }}>Entre na sua conta</p>
         </div>
 
         <div style={{
-          backgroundColor: 'var(--bg-card)',
-          border: '1px solid var(--border)',
+          background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
+          border: '1px solid rgba(255,255,255,0.06)',
           borderRadius: '24px',
           padding: '36px',
-          boxShadow: 'var(--shadow)',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2), 0 16px 48px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.03) inset',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          position: 'relative' as const,
+          overflow: 'hidden',
         }}>
+          {/* Accent glow line no topo */}
+          <div style={{ position: 'absolute', top: 0, left: '20%', right: '20%', height: 1, background: 'linear-gradient(90deg, transparent, rgba(225,29,72,0.3), transparent)' }} />
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
             {/* ─── ETAPA 2FA ─── */}

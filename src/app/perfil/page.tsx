@@ -48,7 +48,7 @@ export default function PerfilPage() {
     }}>
       <div style={{
         width: 28, height: 28,
-        border: '2px solid var(--border)',
+        border: '2px solid rgba(255,255,255,0.06)',
         borderTop: '2px solid var(--accent)',
         borderRadius: '50%',
         animation: 'spin 0.8s linear infinite',

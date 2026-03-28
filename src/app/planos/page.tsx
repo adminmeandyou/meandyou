@@ -105,10 +105,10 @@ export default function PlanosPage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '48px' }}>
 
       {/* Header */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button
           onClick={() => router.back()}
-          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
         >
           <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
@@ -160,7 +160,7 @@ export default function PlanosPage() {
                 borderRadius: '24px', border: cardBorder,
                 backgroundColor: cardBg,
                 padding: '20px', display: 'flex', flexDirection: 'column',
-                transition: 'transform 0.2s',
+                transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)',
               }}
             >
               {/* Badge Melhor Custo-Beneficio */}
@@ -168,7 +168,7 @@ export default function PlanosPage() {
                 <div style={{
                   position: 'absolute', top: '-14px', left: '50%', transform: 'translateX(-50%)',
                   whiteSpace: 'nowrap', padding: '4px 16px', borderRadius: '100px',
-                  backgroundColor: 'var(--accent)', color: '#fff',
+                  background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff',
                   fontSize: '11px', fontWeight: 700,
                 }}>
                   {plan.badge}
@@ -223,11 +223,11 @@ export default function PlanosPage() {
                 style={{
                   width: '100%', padding: '14px', borderRadius: '16px',
                   fontWeight: 700, fontSize: '14px', cursor: isActive ? 'default' : 'pointer',
-                  fontFamily: 'var(--font-jakarta)', transition: 'all 0.2s',
+                  fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
                   ...(isActive
                     ? { backgroundColor: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.25)', border: 'none' }
                     : isHighlight
-                    ? { backgroundColor: 'var(--accent)', color: '#fff', border: 'none' }
+                    ? { background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none' }
                     : isBlack
                     ? { backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.30)', color: '#F59E0B' }
                     : { backgroundColor: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', color: 'var(--text)' }
@@ -250,7 +250,7 @@ export default function PlanosPage() {
           <div
             key={p.id}
             style={{
-              height: '4px', borderRadius: '100px', transition: 'all 0.2s',
+              height: '4px', borderRadius: '100px', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
               width: p.highlight ? '20px' : '8px',
               backgroundColor: p.highlight ? 'var(--accent)' : 'rgba(255,255,255,0.20)',
             }}
@@ -260,8 +260,8 @@ export default function PlanosPage() {
 
       {/* Comparativo rapido */}
       <div style={{ padding: '0 20px 24px' }}>
-        <div style={{ borderRadius: '16px', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.02)', overflow: 'hidden' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', textAlign: 'center', fontSize: '11px', borderBottom: '1px solid var(--border)' }}>
+        <div style={{ borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', textAlign: 'center', fontSize: '11px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
             <div style={{ padding: '12px 8px', color: 'var(--muted)', fontWeight: 600 }}>Feature</div>
             {PLANS.map((p) => (
               <div key={p.id} style={{ padding: '12px 4px', fontWeight: 700, color: p.color }}>{p.name}</div>

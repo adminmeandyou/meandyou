@@ -34,7 +34,7 @@ export function ToggleSwitch({
       ? 'rgba(225,29,72,0.35)'
       : 'var(--accent)'
     : hovered && isInteractive
-    ? 'rgba(255,255,255,0.12)'
+    ? 'rgba(255,255,255,0.14)'
     : 'rgba(255,255,255,0.08)'
 
   const thumbX = checked ? w - thumbSize - thumbOffset : thumbOffset
@@ -59,7 +59,8 @@ export function ToggleSwitch({
         backgroundColor: trackBg,
         border: 'none',
         cursor: disabled ? 'not-allowed' : loading ? 'default' : 'pointer',
-        transition: 'background-color 0.2s',
+        transition: 'background-color 0.25s cubic-bezier(0.4,0,0.2,1)',
+        boxShadow: checked && !disabled ? '0 0 12px rgba(225,29,72,0.25)' : 'inset 0 1px 3px rgba(0,0,0,0.2)',
         flexShrink: 0,
         outline: 'none',
         opacity: disabled ? 0.5 : 1,
@@ -89,8 +90,8 @@ export function ToggleSwitch({
             height: thumbSize,
             borderRadius: '50%',
             backgroundColor: '#fff',
-            transition: 'left 0.2s cubic-bezier(0.4,0,0.2,1)',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.35)',
+            transition: 'left 0.25s cubic-bezier(0.4,0,0.2,1)',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.3), 0 2px 8px rgba(0,0,0,0.15)',
           }}
         />
       )}

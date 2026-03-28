@@ -98,11 +98,11 @@ export default function DestaquesPage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
       {/* Header */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: canAccess ? '14px' : '0' }}>
           <button
             onClick={() => router.back()}
-            style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+            style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
           >
             <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
           </button>
@@ -126,7 +126,7 @@ export default function DestaquesPage() {
                 key={p}
                 onClick={() => setPeriod(p)}
                 style={{
-                  padding: '6px 16px', borderRadius: '100px', fontSize: '13px', cursor: 'pointer', transition: 'all 0.15s',
+                  padding: '6px 16px', borderRadius: '100px', fontSize: '13px', cursor: 'pointer', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
                   fontFamily: 'var(--font-jakarta)', fontWeight: period === p ? 700 : 400,
                   backgroundColor: period === p ? 'rgba(249,115,22,0.15)' : 'rgba(255,255,255,0.05)',
                   border: period === p ? '1px solid rgba(249,115,22,0.40)' : '1px solid rgba(255,255,255,0.10)',
@@ -154,7 +154,7 @@ export default function DestaquesPage() {
           </div>
           <a
             href="/planos"
-            style={{ padding: '14px 28px', borderRadius: '16px', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '14px', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', transition: 'opacity 0.2s' }}
+            style={{ padding: '14px 28px', borderRadius: '16px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontWeight: 700, fontSize: '14px', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
           >
             Ver planos
           </a>
@@ -241,7 +241,7 @@ function HighlightCard({ profile, revealed, hasLupas, revealing, onReveal, onLik
           <button
             onClick={onReveal}
             disabled={!hasLupas || revealing}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '12px', backgroundColor: 'rgba(59,130,246,0.80)', color: '#fff', fontSize: '12px', fontWeight: 700, border: 'none', cursor: !hasLupas || revealing ? 'not-allowed' : 'pointer', opacity: !hasLupas || revealing ? 0.4 : 1, fontFamily: 'var(--font-jakarta)', transition: 'opacity 0.15s' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', borderRadius: '12px', backgroundColor: 'rgba(59,130,246,0.80)', color: '#fff', fontSize: '12px', fontWeight: 700, border: 'none', cursor: !hasLupas || revealing ? 'not-allowed' : 'pointer', opacity: !hasLupas || revealing ? 0.4 : 1, fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
           >
             {revealing ? <Loader2 size={12} strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Search size={12} strokeWidth={1.5} />}
             Revelar com lupa
@@ -269,13 +269,13 @@ function HighlightCard({ profile, revealed, hasLupas, revealing, onReveal, onLik
           <div style={{ display: 'flex', gap: '6px', marginTop: '8px' }}>
             <button
               onClick={onView}
-              style={{ flex: 1, padding: '6px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.10)', color: '#fff', fontSize: '11px', fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'background-color 0.15s' }}
+              style={{ flex: 1, padding: '6px', borderRadius: '10px', backgroundColor: 'rgba(255,255,255,0.10)', color: '#fff', fontSize: '11px', fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
             >
               Ver perfil
             </button>
             <button
               onClick={onLike}
-              style={{ flex: 1, padding: '6px', borderRadius: '10px', backgroundColor: 'var(--accent-light)', color: 'var(--accent)', fontSize: '11px', fontWeight: 700, border: '1px solid var(--accent-border)', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'background-color 0.15s' }}
+              style={{ flex: 1, padding: '6px', borderRadius: '10px', backgroundColor: 'var(--accent-light)', color: 'var(--accent)', fontSize: '11px', fontWeight: 700, border: '1px solid var(--accent-border)', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
             >
               Curtir
             </button>

@@ -19,7 +19,7 @@ function ObrigadoContent() {
     <div
       style={{
         minHeight: '100vh',
-        backgroundColor: 'var(--bg)',
+        background: 'radial-gradient(ellipse at 50% 0%, rgba(225,29,72,0.06) 0%, #08090E 70%)',
         color: 'var(--text)',
         fontFamily: 'var(--font-jakarta)',
         display: 'flex',
@@ -105,8 +105,8 @@ function ObrigadoContent() {
         {/* Card informativo */}
         <div
           style={{
-            backgroundColor: 'var(--bg-card)',
-            border: '1px solid var(--border)',
+            background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
+            border: '1px solid rgba(255,255,255,0.06)',
             borderRadius: '16px',
             padding: '20px',
             marginBottom: '24px',
@@ -162,7 +162,7 @@ function ObrigadoContent() {
             style={{
               display: 'block',
               textAlign: 'center',
-              backgroundColor: 'var(--accent)',
+              background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
               color: '#fff',
               fontWeight: '600',
               fontSize: '0.9375rem',
@@ -186,7 +186,7 @@ function ObrigadoContent() {
               padding: '14px',
               borderRadius: '14px',
               textDecoration: 'none',
-              border: '1px solid var(--border)',
+              border: '1px solid rgba(255,255,255,0.06)',
               transition: 'background-color 0.15s',
             }}
           >

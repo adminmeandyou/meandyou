@@ -77,7 +77,7 @@ export default function SuportePage() {
 
   if (sent) {
     return (
-      <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', gap: '20px' }}>
+      <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse at 50% 0%, rgba(225,29,72,0.06) 0%, #08090E 70%)', fontFamily: 'var(--font-jakarta)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', gap: '20px' }}>
         <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <CheckCircle size={28} color="var(--accent)" strokeWidth={1.5} />
         </div>
@@ -100,7 +100,7 @@ export default function SuportePage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '40px' }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse at 50% 0%, rgba(225,29,72,0.06) 0%, #08090E 70%)', fontFamily: 'var(--font-jakarta)', paddingBottom: '40px' }}>
 
       {/* Header */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '12px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -196,7 +196,7 @@ export default function SuportePage() {
         <button
           onClick={handleSubmit}
           disabled={sending}
-          style={{ width: '100%', padding: '15px', borderRadius: '100px', backgroundColor: '#E11D48', color: '#fff', fontWeight: 700, fontSize: '15px', border: 'none', cursor: sending ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: sending ? 0.5 : 1 }}
+          style={{ width: '100%', padding: '15px', borderRadius: '100px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontWeight: 700, fontSize: '15px', border: 'none', cursor: sending ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', opacity: sending ? 0.5 : 1 }}
         >
           {sending ? <Loader2 size={16} strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Send size={16} strokeWidth={1.5} />}
           {sending ? 'Enviando...' : 'Enviar mensagem'}

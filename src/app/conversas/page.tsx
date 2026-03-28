@@ -256,13 +256,13 @@ export default function MatchesHubPage() {
   ]
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'var(--font-jakarta)' }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(225,29,72,0.06) 0%, transparent 60%), var(--bg)', fontFamily: 'var(--font-jakarta)' }}>
 
       {/* Header */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 30,
         background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid var(--border)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
         padding: '16px 20px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
@@ -291,7 +291,7 @@ export default function MatchesHubPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
               width: '100%', background: 'rgba(255,255,255,0.05)',
-              border: '1px solid var(--border)', borderRadius: 12,
+              border: '1px solid rgba(255,255,255,0.06)', borderRadius: 12,
               paddingLeft: 36, paddingRight: 16, paddingTop: 10, paddingBottom: 10,
               fontSize: 14, color: 'var(--text)', outline: 'none', boxSizing: 'border-box',
               fontFamily: 'var(--font-jakarta)',
@@ -308,11 +308,11 @@ export default function MatchesHubPage() {
               style={{
                 display: 'flex', alignItems: 'center', gap: 5,
                 padding: '6px 14px', borderRadius: 100,
-                border: aba === key ? '1px solid var(--accent)' : '1px solid var(--border)',
-                background: aba === key ? 'var(--accent)' : 'rgba(255,255,255,0.05)',
+                border: aba === key ? '1px solid var(--accent)' : '1px solid rgba(255,255,255,0.06)',
+                background: aba === key ? 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)' : 'rgba(255,255,255,0.05)',
                 color: aba === key ? '#fff' : 'rgba(248,249,250,0.50)',
                 fontFamily: 'var(--font-jakarta)', fontSize: 13, fontWeight: aba === key ? 700 : 400,
-                cursor: 'pointer', transition: 'all 0.15s',
+                cursor: 'pointer', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
               }}
             >
               {label}
@@ -421,7 +421,7 @@ function AbaConversas({
               }}
             >
               <div style={{ position: 'relative', flexShrink: 0 }}>
-                <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
+                <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)' }}>
                   {conv.otherPhoto ? (
                     <Image src={conv.otherPhoto} alt={conv.otherName} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
                   ) : (
@@ -505,7 +505,7 @@ function AbaTodos({ matches, onEmpty, onOpen, searchTerm }: {
                 background: 'var(--bg-card2)',
                 border: isOnline(m.last_active_at) && m.show_last_active !== false
                   ? '2px solid #2ec4a0'
-                  : '1.5px solid var(--border)',
+                  : '1.5px solid rgba(255,255,255,0.06)',
               }}>
                 {m.photo_best ? (
                   <Image src={m.photo_best} alt={m.name} width={120} height={120} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
@@ -544,9 +544,10 @@ function AbaTodos({ matches, onEmpty, onOpen, searchTerm }: {
             onClick={(e) => e.stopPropagation()}
             style={{
               width: '100%', maxWidth: 430, margin: '0 auto',
-              background: 'var(--bg-card)', borderRadius: '20px 20px 0 0',
-              border: '1px solid var(--border)', borderBottom: 'none',
+              background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '20px 20px 0 0',
+              border: '1px solid rgba(255,255,255,0.06)', borderBottom: 'none',
               padding: '20px 20px 32px',
+              boxShadow: '0 -4px 32px rgba(0,0,0,0.4)',
             }}
           >
             {/* Handle */}
@@ -574,7 +575,7 @@ function AbaTodos({ matches, onEmpty, onOpen, searchTerm }: {
               </div>
               <button
                 onClick={() => setSelected(null)}
-                style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+                style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
               >
                 <X size={14} color="var(--muted)" strokeWidth={2} />
               </button>
@@ -584,14 +585,14 @@ function AbaTodos({ matches, onEmpty, onOpen, searchTerm }: {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <button
                 onClick={() => { haptics.medium(); router.push(`/conversas/${selected.match_id}`) }}
-                style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'var(--accent)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)' }}
+                style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)', boxShadow: '0 4px 20px rgba(225,29,72,0.25)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
               >
                 <MessageCircle size={18} strokeWidth={1.5} />
                 Enviar mensagem
               </button>
               <button
                 onClick={() => { haptics.tap(); router.push(`/perfil/${selected.other_user_id}`) }}
-                style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 15, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)' }}
+                style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--text)', fontSize: 15, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
               >
                 <User size={18} strokeWidth={1.5} />
                 Ver perfil
@@ -675,7 +676,7 @@ function AbaOnline({ friends, myShowOnline, onEmpty, searchTerm }: {
                 Ativo agora
               </p>
             </div>
-            <div style={{ padding: '6px 14px', borderRadius: 100, background: 'var(--accent)', color: '#fff', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>
+            <div style={{ padding: '6px 14px', borderRadius: 100, background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: 13, fontWeight: 600, flexShrink: 0 }}>
               Mensagem
             </div>
           </button>
@@ -690,7 +691,7 @@ function AbaOnline({ friends, myShowOnline, onEmpty, searchTerm }: {
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            style={{ width: '100%', maxWidth: 430, margin: '0 auto', background: 'var(--bg-card)', borderRadius: '20px 20px 0 0', border: '1px solid var(--border)', borderBottom: 'none', padding: '20px 20px 32px' }}
+            style={{ width: '100%', maxWidth: 430, margin: '0 auto', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '20px 20px 0 0', border: '1px solid rgba(255,255,255,0.06)', borderBottom: 'none', padding: '20px 20px 32px', boxShadow: '0 -4px 32px rgba(0,0,0,0.4)' }}
           >
             <div style={{ width: 36, height: 4, borderRadius: 100, background: 'rgba(255,255,255,0.12)', margin: '0 auto 16px' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
@@ -707,7 +708,7 @@ function AbaOnline({ friends, myShowOnline, onEmpty, searchTerm }: {
                 <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, fontWeight: 700, color: 'var(--text)', margin: 0 }}>{selected.name}</p>
                 <p style={{ fontSize: 12, color: '#2ec4a0', margin: '2px 0 0', fontWeight: 500 }}>Online agora</p>
               </div>
-              <button onClick={() => setSelected(null)} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <button onClick={() => setSelected(null)} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <X size={14} color="var(--muted)" strokeWidth={2} />
               </button>
             </div>
@@ -715,7 +716,7 @@ function AbaOnline({ friends, myShowOnline, onEmpty, searchTerm }: {
               {selected.matchId ? (
                 <button
                   onClick={() => { haptics.medium(); router.push(`/conversas/${selected.matchId}`) }}
-                  style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'var(--accent)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)' }}
+                  style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', border: 'none', color: '#fff', fontSize: 15, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)', boxShadow: '0 4px 20px rgba(225,29,72,0.25)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
                 >
                   <MessageCircle size={18} strokeWidth={1.5} />
                   Enviar mensagem
@@ -723,7 +724,7 @@ function AbaOnline({ friends, myShowOnline, onEmpty, searchTerm }: {
               ) : null}
               <button
                 onClick={() => { haptics.tap(); router.push(`/perfil/${selected.userId}`) }}
-                style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', color: 'var(--text)', fontSize: 15, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)' }}
+                style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--text)', fontSize: 15, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
               >
                 <User size={18} strokeWidth={1.5} />
                 Ver perfil

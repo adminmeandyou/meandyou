@@ -115,8 +115,8 @@ export default function StreakPage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
       {/* Header */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <button onClick={() => router.back()} style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <button onClick={() => router.back()} style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
           <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
         <div style={{ flex: 1 }}>
@@ -201,7 +201,7 @@ export default function StreakPage() {
                         backgroundColor: entry.claimed ? 'rgba(255,255,255,0.03)' : claimable ? cfg.bg : reached ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
                         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
                         opacity: entry.claimed ? 0.5 : (!reached && !claimable) ? 0.4 : 1,
-                        cursor: claimable ? 'pointer' : 'default', transition: 'opacity 0.15s',
+                        cursor: claimable ? 'pointer' : 'default', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
                       }}
                     >
                       <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>Dia {entry.day_number - cycleStart + 1}</span>

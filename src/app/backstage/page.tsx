@@ -34,6 +34,7 @@ const G_SOFT = 'rgba(245,158,11,0.10)'
 const G_BORDER = 'rgba(245,158,11,0.25)'
 const G_BORDER2 = 'rgba(245,158,11,0.15)'
 const BG = '#08090E'
+const BG_CARD_GRADIENT = 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)'
 const BG_CARD = '#0F1117'
 const BG_DARK = '#050608'
 
@@ -173,7 +174,7 @@ function CamaroteTerms({ onAccept, onBack }: { onAccept: () => void; onBack: () 
         {/* Lista de termos */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 28 }}>
           {SAFETY_ITEMS.map(({ icon: Icon, text }, i) => (
-            <div key={i} style={{ display: 'flex', gap: 14, padding: '14px 16px', borderRadius: 14, background: BG_CARD, border: `1px solid rgba(255,255,255,0.05)` }}>
+            <div key={i} style={{ display: 'flex', gap: 14, padding: '14px 16px', borderRadius: 14, background: BG_CARD_GRADIENT, border: `1px solid rgba(255,255,255,0.06)`, boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
               <div style={{ width: 32, height: 32, borderRadius: 8, background: G_SOFT, border: `1px solid ${G_BORDER2}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Icon size={15} color={G} strokeWidth={1.5} />
               </div>
@@ -193,7 +194,7 @@ function CamaroteTerms({ onAccept, onBack }: { onAccept: () => void; onBack: () 
               background: accepted ? G : 'rgba(255,255,255,0.05)',
               border: `1.5px solid ${accepted ? G : 'rgba(255,255,255,0.15)'}`,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              transition: 'all 0.15s',
+              transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
             }}
           >
             {accepted && <Check size={13} color="#000" strokeWidth={2.5} />}
@@ -213,7 +214,7 @@ function CamaroteTerms({ onAccept, onBack }: { onAccept: () => void; onBack: () 
             cursor: accepted ? 'pointer' : 'not-allowed',
             background: accepted ? `linear-gradient(135deg, #c9a84c, ${G}, #fbbf24)` : 'rgba(255,255,255,0.05)',
             color: accepted ? '#000' : 'rgba(255,255,255,0.20)',
-            border: 'none', transition: 'all 0.2s',
+            border: 'none', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
           }}
         >
           Entrar no Camarote
@@ -296,7 +297,7 @@ function CamaroteCategories({
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: 8,
-                  transition: 'all 0.15s',
+                  transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
                 }}
               >
                 <span>{label}</span>
@@ -327,7 +328,7 @@ function CamaroteCategories({
             cursor: selected.length > 0 ? 'pointer' : 'not-allowed',
             background: selected.length > 0 ? `linear-gradient(135deg, #c9a84c, ${G}, #fbbf24)` : 'rgba(255,255,255,0.05)',
             color: selected.length > 0 ? '#000' : 'rgba(255,255,255,0.20)',
-            border: 'none', transition: 'all 0.2s',
+            border: 'none', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}
         >
@@ -531,7 +532,7 @@ function CamaroteVitrine({
               background: 'transparent', textTransform: 'capitalize',
               color: mainTab === tab ? G : 'rgba(255,255,255,0.30)',
               borderBottom: `2px solid ${mainTab === tab ? G : 'transparent'}`,
-              transition: 'all 0.15s',
+              transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
             }}
           >
             {tab === 'vitrine' ? 'Explorar' : 'Resgates'}
@@ -807,7 +808,7 @@ function VitrinCard({
             width: '100%', padding: '8px', borderRadius: 10, border: 'none', cursor: 'pointer',
             background: liked ? G_SOFT : `linear-gradient(135deg, #c9a84c, ${G})`,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-            transition: 'all 0.15s',
+            transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
           }}
         >
           <Heart size={13} color={liked ? G : '#000'} strokeWidth={liked ? 1.5 : 2} fill={liked ? 'none' : '#000'} />
@@ -1485,7 +1486,7 @@ function CamaroteAccessModal({
                         background: selectedCat === cat.key ? G_SOFT : 'rgba(255,255,255,0.03)',
                         color: selectedCat === cat.key ? G : 'rgba(255,255,255,0.40)',
                         fontFamily: 'var(--font-jakarta)', fontWeight: selectedCat === cat.key ? 700 : 400,
-                        fontSize: 13, transition: 'all 0.15s',
+                        fontSize: 13, transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
                       }}
                     >
                       {cat.label}
@@ -1502,7 +1503,7 @@ function CamaroteAccessModal({
                     width: 20, height: 20, borderRadius: 6, flexShrink: 0, marginTop: 1,
                     background: accepted ? G : 'rgba(255,255,255,0.05)',
                     border: `1.5px solid ${accepted ? G : 'rgba(255,255,255,0.15)'}`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
                   }}
                 >
                   {accepted && <Check size={12} color="#000" strokeWidth={2.5} />}
@@ -1520,7 +1521,7 @@ function CamaroteAccessModal({
                   background: selectedCat && accepted ? `linear-gradient(135deg, #c9a84c, ${G})` : 'rgba(255,255,255,0.05)',
                   color: selectedCat && accepted ? '#000' : 'rgba(255,255,255,0.20)',
                   fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 15,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.2s',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
                 }}
               >
                 {loading ? <Loader2 size={18} className="animate-spin" /> : 'Enviar pedido de acesso'}

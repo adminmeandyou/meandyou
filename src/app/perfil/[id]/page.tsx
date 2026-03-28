@@ -727,7 +727,7 @@ export default function VerPerfilPage() {
                             onClick={() => toggleBadge(emblema.id)}
                             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
                           >
-                            <div style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '12px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.06)', border: active ? '2px solid var(--accent)' : '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.15s' }}>
+                            <div style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '12px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.06)', border: active ? '2px solid var(--accent)' : '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}>
                               <EmblemaSvg id={emblema.id} desbloqueado={true} />
                               {active && (
                                 <div style={{ position: 'absolute', top: -5, right: -5, width: 16, height: 16, borderRadius: '50%', backgroundColor: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -749,7 +749,7 @@ export default function VerPerfilPage() {
                             onClick={() => toggleBadge(ub.badge_id)}
                             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
                           >
-                            <div style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '12px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.06)', border: active ? '2px solid var(--accent)' : '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', transition: 'all 0.15s' }}>
+                            <div style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '12px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.06)', border: active ? '2px solid var(--accent)' : '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}>
                               {ub.badges?.icon}
                               {active && (
                                 <div style={{ position: 'absolute', top: -5, right: -5, width: 16, height: 16, borderRadius: '50%', backgroundColor: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -894,7 +894,7 @@ export default function VerPerfilPage() {
             style={{
               display: 'flex', alignItems: 'center', gap: '10px',
               padding: '14px 32px', borderRadius: '100px',
-              backgroundColor: 'var(--accent)', color: '#fff',
+              background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff',
               border: 'none', cursor: 'pointer',
               fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '15px',
               boxShadow: '0 8px 28px rgba(225,29,72,0.35)',
@@ -1056,7 +1056,7 @@ export default function VerPerfilPage() {
                     <button
                       key={cat.id}
                       onClick={() => setDenunciaCategoria(cat.id)}
-                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${denunciaCategoria === cat.id ? 'rgba(225,29,72,0.40)' : 'rgba(255,255,255,0.07)'}`, backgroundColor: denunciaCategoria === cat.id ? 'rgba(225,29,72,0.08)' : 'rgba(255,255,255,0.04)', color: denunciaCategoria === cat.id ? 'var(--accent)' : 'rgba(248,249,250,0.65)', fontSize: '14px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.15s', fontFamily: 'var(--font-jakarta)' }}
+                      style={{ width: '100%', padding: '12px 16px', borderRadius: '12px', border: `1px solid ${denunciaCategoria === cat.id ? 'rgba(225,29,72,0.40)' : 'rgba(255,255,255,0.07)'}`, backgroundColor: denunciaCategoria === cat.id ? 'rgba(225,29,72,0.08)' : 'rgba(255,255,255,0.04)', color: denunciaCategoria === cat.id ? 'var(--accent)' : 'rgba(248,249,250,0.65)', fontSize: '14px', textAlign: 'left', cursor: 'pointer', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', fontFamily: 'var(--font-jakarta)' }}
                     >
                       {cat.label}
                     </button>
@@ -1089,7 +1089,7 @@ export default function VerPerfilPage() {
                       setDenunciaEnviando(false)
                     }
                   }}
-                  style={{ width: '100%', padding: '14px', borderRadius: '12px', backgroundColor: !denunciaCategoria ? 'rgba(255,255,255,0.05)' : 'var(--accent)', border: 'none', color: !denunciaCategoria ? 'rgba(248,249,250,0.25)' : '#fff', fontWeight: 700, fontSize: '15px', cursor: !denunciaCategoria ? 'not-allowed' : 'pointer', transition: 'all 0.15s', fontFamily: 'var(--font-jakarta)' }}
+                  style={{ width: '100%', padding: '14px', borderRadius: '12px', background: !denunciaCategoria ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', border: 'none', color: !denunciaCategoria ? 'rgba(248,249,250,0.25)' : '#fff', fontWeight: 700, fontSize: '15px', cursor: !denunciaCategoria ? 'not-allowed' : 'pointer', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', fontFamily: 'var(--font-jakarta)' }}
                 >
                   {denunciaEnviando ? 'Enviando...' : 'Enviar denuncia'}
                 </button>

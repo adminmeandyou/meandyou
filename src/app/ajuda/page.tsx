@@ -114,13 +114,13 @@ export default function AjudaPage() {
   })
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse at 50% 0%, rgba(225,29,72,0.06) 0%, #08090E 70%)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
       {/* Header */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button
           onClick={() => router.back()}
-          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
         >
           <ArrowLeft size={18} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
@@ -142,7 +142,7 @@ export default function AjudaPage() {
             placeholder="Buscar duvida..."
             style={{
               width: '100%', boxSizing: 'border-box',
-              backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+              backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)',
               borderRadius: '14px', paddingLeft: '40px', paddingRight: '16px', paddingTop: '12px', paddingBottom: '12px',
               color: 'var(--text)', fontSize: '14px', outline: 'none', fontFamily: 'var(--font-jakarta)',
             }}
@@ -182,7 +182,7 @@ export default function AjudaPage() {
               const index = FAQS.indexOf(faq)
               const isOpen = aberta === index
               return (
-                <div key={index} style={{ borderRadius: '16px', border: `1px solid ${isOpen ? 'rgba(225,29,72,0.20)' : 'var(--border)'}`, overflow: 'hidden', backgroundColor: isOpen ? 'rgba(225,29,72,0.04)' : 'rgba(255,255,255,0.02)', transition: 'all 0.15s' }}>
+                <div key={index} style={{ borderRadius: '16px', border: `1px solid ${isOpen ? 'rgba(225,29,72,0.20)' : 'rgba(255,255,255,0.06)'}`, overflow: 'hidden', backgroundColor: isOpen ? 'rgba(225,29,72,0.04)' : 'rgba(255,255,255,0.02)', transition: 'all 0.15s' }}>
                   <button
                     onClick={() => setAberta(isOpen ? null : index)}
                     style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', textAlign: 'left', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', gap: '12px' }}
@@ -207,7 +207,7 @@ export default function AjudaPage() {
         )}
 
         {/* CTA suporte */}
-        <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: '14px' }}>
+        <div style={{ borderRadius: '16px', padding: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', gap: '14px' }}>
           <div style={{ width: '40px', height: '40px', borderRadius: '12px', backgroundColor: 'var(--accent-soft)', border: '1px solid var(--accent-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <MessageCircle size={18} color="var(--accent)" strokeWidth={1.5} />
           </div>
@@ -217,7 +217,7 @@ export default function AjudaPage() {
           </div>
           <a
             href="/suporte"
-            style={{ padding: '8px 16px', borderRadius: '12px', backgroundColor: 'var(--accent)', color: '#fff', fontSize: '13px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', fontFamily: 'var(--font-jakarta)', flexShrink: 0 }}
+            style={{ padding: '8px 16px', borderRadius: '12px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: '13px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', fontFamily: 'var(--font-jakarta)', flexShrink: 0 }}
           >
             Abrir chamado
           </a>

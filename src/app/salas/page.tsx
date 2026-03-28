@@ -55,8 +55,8 @@ function JoinSheet({
       <div style={{
         position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 430, zIndex: 50,
-        backgroundColor: 'var(--bg-card)', borderRadius: '20px 20px 0 0',
-        borderTop: '1px solid var(--border)', padding: '20px 20px 40px',
+        background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '20px 20px 0 0',
+        borderTop: '1px solid rgba(255,255,255,0.06)', padding: '20px 20px 40px', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)',
         animation: 'ui-slide-up 0.25s ease-out',
       }}>
         <div style={{ width: 36, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 auto 20px' }} />
@@ -104,7 +104,7 @@ function JoinSheet({
           disabled={loading}
           style={{
             width: '100%', padding: '14px', borderRadius: 14,
-            backgroundColor: 'var(--accent)', color: '#fff',
+            background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff',
             fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer',
             border: 'none', fontFamily: 'var(--font-jakarta)',
             opacity: loading ? 0.7 : 1,
@@ -140,10 +140,11 @@ function RoomCard({
       style={{
         display: 'flex', alignItems: 'center', gap: 14,
         padding: '14px 16px', borderRadius: 16, width: '100%', textAlign: 'left',
-        backgroundColor: 'var(--bg-card)',
-        border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : planLocked ? 'rgba(255,255,255,0.06)' : 'var(--border)'}`,
+        background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
+        border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : planLocked ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.06)'}`,
         cursor: isFull && !planLocked ? 'default' : 'pointer',
-        transition: 'all 0.15s',
+        transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)',
         position: 'relative', overflow: 'hidden',
       }}
     >
@@ -223,8 +224,8 @@ function UpgradeSheet({
       <div style={{
         position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
         width: '100%', maxWidth: 430, zIndex: 50,
-        backgroundColor: 'var(--bg-card)', borderRadius: '24px 24px 0 0',
-        borderTop: '1px solid var(--border)', padding: '24px 24px 48px',
+        background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '24px 24px 0 0',
+        borderTop: '1px solid rgba(255,255,255,0.06)', padding: '24px 24px 48px', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)',
         animation: 'ui-slide-up 0.25s ease-out',
       }}>
         <div style={{ width: 36, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.12)', margin: '0 auto 24px' }} />
@@ -293,7 +294,7 @@ function UpgradeSheet({
           onClick={() => router.push('/planos')}
           style={{
             width: '100%', padding: '15px', borderRadius: 14,
-            backgroundColor: isBlackOnly ? '#F59E0B' : 'var(--accent)', color: '#fff',
+            background: isBlackOnly ? '#F59E0B' : 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff',
             fontSize: 15, fontWeight: 700, cursor: 'pointer', border: 'none',
             fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}
@@ -308,7 +309,7 @@ function UpgradeSheet({
             width: '100%', marginTop: 10, padding: '13px', borderRadius: 14,
             backgroundColor: 'transparent', color: 'var(--muted)',
             fontSize: 14, fontWeight: 500, cursor: 'pointer',
-            border: '1px solid var(--border)', fontFamily: 'var(--font-jakarta)',
+            border: '1px solid rgba(255,255,255,0.06)', fontFamily: 'var(--font-jakarta)',
           }}
         >
           Agora nao
@@ -445,7 +446,7 @@ export default function SalasPage() {
 
       {/* Busca */}
       <div style={{ padding: '14px 16px 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 12px', borderRadius: 12, backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '0 12px', borderRadius: 12, background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)' }}>
           <Search size={15} color="var(--muted)" strokeWidth={2} />
           <input
             value={search}
@@ -465,7 +466,7 @@ export default function SalasPage() {
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
               padding: '8px 14px', borderRadius: 100, flexShrink: 0,
-              border: `1px solid ${tab === t.key ? 'var(--accent)' : 'var(--border)'}`,
+              border: `1px solid ${tab === t.key ? 'var(--accent)' : 'rgba(255,255,255,0.06)'}`,
               backgroundColor: tab === t.key ? 'rgba(225,29,72,0.12)' : 'transparent',
               color: tab === t.key ? 'var(--accent)' : (t.accessible ? 'var(--muted)' : 'var(--muted-2)'),
               fontSize: 13, fontWeight: tab === t.key ? 600 : 400, cursor: 'pointer',
@@ -493,7 +494,7 @@ export default function SalasPage() {
       <div style={{ padding: '14px 16px 100px', display: 'flex', flexDirection: 'column', gap: 8 }}>
         {loading ? (
           [...Array(6)].map((_, i) => (
-            <div key={i} style={{ height: 76, borderRadius: 16, backgroundColor: 'var(--bg-card)', animation: 'ui-pulse 1.5s ease infinite' }} />
+            <div key={i} style={{ height: 76, borderRadius: 16, background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', animation: 'ui-pulse 1.5s ease infinite' }} />
           ))
         ) : filteredRooms.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '48px 16px' }}>

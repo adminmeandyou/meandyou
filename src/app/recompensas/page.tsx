@@ -102,14 +102,15 @@ export default function RecompensasPage() {
               display: 'flex',
               alignItems: 'center',
               gap: 14,
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
+              background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
+              border: '1px solid rgba(255,255,255,0.06)',
               borderRadius: 16,
               padding: '16px 14px',
               cursor: 'pointer',
               textAlign: 'left',
               width: '100%',
-              transition: 'border-color 0.15s',
+              transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)',
             }}
           >
             {/* Icone */}
@@ -175,8 +176,8 @@ export default function RecompensasPage() {
 
       {/* Dica */}
       <div style={{
-        background: 'var(--accent-light)',
-        border: '1px solid var(--accent-border)',
+        background: 'linear-gradient(180deg, rgba(225,29,72,0.08) 0%, rgba(225,29,72,0.04) 100%)',
+        border: '1px solid rgba(225,29,72,0.20)',
         borderRadius: 12,
         padding: '12px 14px',
         display: 'flex',

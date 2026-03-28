@@ -25,27 +25,30 @@ function base(content: string, previewText = '') {
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>MeAndYou</title>
 </head>
-<body style="margin:0;padding:0;background:#08090E;font-family:'Segoe UI',Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#08090E;font-family:'Segoe UI','Helvetica Neue',Arial,sans-serif;">
   ${previewText ? `<div style="display:none;max-height:0;overflow:hidden;font-size:1px;">${previewText}&nbsp;&zwnj;&nbsp;&zwnj;</div>` : ''}
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#08090E;padding:40px 16px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#08090E;padding:48px 16px;">
     <tr><td align="center">
       <table width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;">
-        <tr><td align="center" style="padding-bottom:28px;">
+        <tr><td align="center" style="padding-bottom:32px;">
           <a href="${APP_URL}" style="text-decoration:none;">
             <span style="font-size:28px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;">MeAnd</span><span style="font-size:28px;font-weight:800;color:#E11D48;letter-spacing:-0.5px;">You</span>
           </a>
         </td></tr>
-        <tr><td style="background:#0F1117;border-radius:16px;padding:36px 36px 28px;border:1px solid rgba(225,29,72,0.20);">
+        <tr><td style="background:#0F1117;border-radius:16px;padding:0;border:1px solid rgba(255,255,255,0.06);overflow:hidden;">
+          <div style="height:2px;background:linear-gradient(90deg,#E11D48 0%,#be123c 50%,#E11D48 100%);"></div>
+          <div style="padding:40px 40px 32px;">
           ${content}
+          </div>
         </td></tr>
-        <tr><td align="center" style="padding-top:24px;">
-          <p style="margin:0;font-size:12px;color:rgba(248,249,250,0.30);line-height:1.8;">
-            Você está recebendo este email porque tem uma conta no MeAndYou.<br/>
-            <a href="${APP_URL}/privacidade" style="color:#E11D48;text-decoration:none;">Privacidade</a>
-            &nbsp;·&nbsp;
-            <a href="${APP_URL}/termos" style="color:#E11D48;text-decoration:none;">Termos</a>
-            &nbsp;·&nbsp;
-            <a href="${APP_URL}/suporte" style="color:#E11D48;text-decoration:none;">Suporte</a>
+        <tr><td align="center" style="padding-top:28px;">
+          <p style="margin:0;font-size:12px;color:rgba(248,249,250,0.25);line-height:2;">
+            Voce esta recebendo este email porque tem uma conta no MeAndYou.<br/>
+            <a href="${APP_URL}/privacidade" style="color:rgba(225,29,72,0.7);text-decoration:none;">Privacidade</a>
+            &nbsp;&middot;&nbsp;
+            <a href="${APP_URL}/termos" style="color:rgba(225,29,72,0.7);text-decoration:none;">Termos</a>
+            &nbsp;&middot;&nbsp;
+            <a href="${APP_URL}/suporte" style="color:rgba(225,29,72,0.7);text-decoration:none;">Suporte</a>
           </p>
         </td></tr>
       </table>
@@ -56,16 +59,16 @@ function base(content: string, previewText = '') {
 }
 
 const btn = (href: string, label: string, cor = '#E11D48') =>
-  `<a href="${href}" style="display:inline-block;background:${cor};color:#ffffff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:15px;margin-top:20px;">${label}</a>`
+  `<a href="${href}" style="display:inline-block;background:linear-gradient(135deg, ${cor} 0%, #be123c 100%);color:#ffffff;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:15px;margin-top:20px;letter-spacing:0.2px;">${label}</a>`
 
 const heading = (text: string) =>
-  `<h2 style="margin:0 0 8px;font-size:22px;font-weight:700;color:#ffffff;">${text}</h2>`
+  `<h2 style="margin:0 0 10px;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">${text}</h2>`
 
 const sub = (text: string) =>
-  `<p style="margin:0 0 20px;font-size:15px;color:rgba(248,249,250,0.55);line-height:1.6;">${text}</p>`
+  `<p style="margin:0 0 22px;font-size:15px;color:rgba(248,249,250,0.50);line-height:1.7;">${text}</p>`
 
 const divider = () =>
-  `<hr style="border:none;border-top:1px solid rgba(225,29,72,0.20);margin:24px 0;"/>`
+  `<hr style="border:none;border-top:1px solid rgba(255,255,255,0.06);margin:28px 0;"/>`
 
 const badge = (text: string, cor = '#E11D48') =>
   `<span style="display:inline-block;background:${cor}22;color:${cor};font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid ${cor}44;margin-bottom:16px;">${text}</span>`
@@ -74,13 +77,13 @@ const note = (text: string) =>
   `<p style="margin:20px 0 0;font-size:12px;color:rgba(248,249,250,0.30);line-height:1.5;">${text}</p>`
 
 const infoBox = (titulo: string, itens: string[], cor = '#E11D48') =>
-  `<div style="background:#08090E;border-radius:10px;padding:16px;margin:12px 0;border:1px solid rgba(225,29,72,0.20);">
+  `<div style="background:#08090E;border-radius:12px;padding:18px;margin:14px 0;border:1px solid rgba(255,255,255,0.06);">
     ${titulo ? `<p style="margin:0 0 8px;font-size:13px;color:${cor};font-weight:600;">${titulo}</p>` : ''}
     <ul style="margin:0;padding:0 0 0 16px;color:rgba(248,249,250,0.55);font-size:13px;line-height:2;">${itens.map(i => `<li>${i}</li>`).join('')}</ul>
   </div>`
 
 const alertBox = (text: string, cor = '#f59e0b') =>
-  `<div style="background:#08090E;border-radius:10px;padding:14px 16px;margin:12px 0;border:1px solid ${cor}44;">
+  `<div style="background:#08090E;border-radius:12px;padding:16px 18px;margin:14px 0;border:1px solid ${cor}44;">
     <p style="margin:0;font-size:13px;color:rgba(248,249,250,0.55);">${text}</p>
   </div>`
 

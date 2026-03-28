@@ -555,10 +555,10 @@ export default function RoletaPage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
       {/* Header */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '14px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button
           onClick={() => router.back()}
-          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
         >
           <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
@@ -646,7 +646,7 @@ export default function RoletaPage() {
           <button
             onClick={handleSpin}
             disabled={!canSpin}
-            style={{ marginTop: 16, width: '100%', maxWidth: '320px', padding: '16px 24px', borderRadius: '16px', border: canSpin ? '1px solid rgba(225,29,72,0.40)' : '1px solid rgba(225,29,72,0.15)', backgroundColor: canSpin ? '#E11D48' : 'rgba(225,29,72,0.20)', color: '#fff', fontSize: '15px', fontWeight: 700, cursor: canSpin ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', transition: 'all 0.2s', boxShadow: canSpin ? '0 8px 32px rgba(225,29,72,0.35)' : 'none' }}
+            style={{ marginTop: 16, width: '100%', maxWidth: '320px', padding: '16px 24px', borderRadius: '16px', border: canSpin ? '1px solid rgba(225,29,72,0.40)' : '1px solid rgba(225,29,72,0.15)', backgroundColor: canSpin ? '#E11D48' : 'rgba(225,29,72,0.20)', color: '#fff', fontSize: '15px', fontWeight: 700, cursor: canSpin ? 'pointer' : 'not-allowed', fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', boxShadow: canSpin ? '0 8px 32px rgba(225,29,72,0.35)' : 'none' }}
           >
             {spinning ? (
               <><Loader2 size={18} strokeWidth={1.5} style={{ animation: 'spin-anim 0.8s linear infinite' }} />Girando...</>

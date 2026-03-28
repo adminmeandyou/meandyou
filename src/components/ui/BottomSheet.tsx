@@ -51,9 +51,10 @@ export function BottomSheet({ isOpen, onClose, children, title }: BottomSheetPro
         style={{
           position: 'absolute',
           inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.65)',
-          backdropFilter: 'blur(4px)',
-          transition: 'opacity 0.25s',
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          backdropFilter: 'blur(12px) saturate(1.2)',
+          WebkitBackdropFilter: 'blur(12px) saturate(1.2)',
+          transition: 'opacity 0.3s ease',
           opacity: isOpen ? 1 : 0,
         }}
       />
@@ -62,14 +63,15 @@ export function BottomSheet({ isOpen, onClose, children, title }: BottomSheetPro
       <div
         style={{
           position: 'relative',
-          backgroundColor: 'var(--bg-card)',
-          borderRadius: '20px 20px 0 0',
+          background: 'linear-gradient(180deg, rgba(19,22,31,0.98) 0%, rgba(15,17,23,0.99) 100%)',
+          borderRadius: '24px 24px 0 0',
           minHeight: '40%',
           maxHeight: '85vh',
           overflowY: 'auto',
           transform: isOpen ? 'translateY(0)' : 'translateY(100%)',
-          transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
-          borderTop: '1px solid var(--border)',
+          transition: 'transform 0.35s cubic-bezier(0.32,0.72,0,1)',
+          borderTop: '1px solid rgba(255,255,255,0.06)',
+          boxShadow: '0 -8px 40px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.03) inset',
         }}
       >
         {/* Handle */}
@@ -77,16 +79,16 @@ export function BottomSheet({ isOpen, onClose, children, title }: BottomSheetPro
           style={{
             display: 'flex',
             justifyContent: 'center',
-            paddingTop: 12,
-            paddingBottom: 4,
+            paddingTop: 14,
+            paddingBottom: 6,
           }}
         >
           <div
             style={{
-              width: 36,
+              width: 40,
               height: 4,
               borderRadius: 100,
-              backgroundColor: 'rgba(255,255,255,0.15)',
+              backgroundColor: 'rgba(255,255,255,0.12)',
             }}
           />
         </div>
@@ -117,15 +119,18 @@ export function BottomSheet({ isOpen, onClose, children, title }: BottomSheetPro
               style={{
                 width: 32,
                 height: 32,
-                borderRadius: 8,
-                border: '1px solid var(--border)',
-                backgroundColor: 'transparent',
+                borderRadius: 10,
+                border: '1px solid rgba(255,255,255,0.08)',
+                backgroundColor: 'rgba(255,255,255,0.04)',
                 color: 'var(--muted)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 cursor: 'pointer',
+                transition: 'all 0.2s ease',
               }}
+              onMouseEnter={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.14)' }}
+              onMouseLeave={e => { e.currentTarget.style.backgroundColor = 'rgba(255,255,255,0.04)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)' }}
             >
               <X size={16} strokeWidth={1.5} />
             </button>

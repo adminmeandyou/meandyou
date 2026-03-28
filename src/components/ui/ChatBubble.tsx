@@ -73,9 +73,14 @@ export function ChatBubble({
         style={{
           maxWidth: '72%',
           padding: '10px 14px',
-          borderRadius: isSent ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-          backgroundColor: isSent ? 'var(--accent)' : 'var(--bg-card2)',
-          border: isSent ? 'none' : '1px solid var(--border)',
+          borderRadius: isSent ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+          background: isSent
+            ? 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)'
+            : 'var(--bg-card2)',
+          border: isSent ? 'none' : '1px solid rgba(255,255,255,0.06)',
+          boxShadow: isSent
+            ? '0 2px 8px rgba(225,29,72,0.2)'
+            : '0 1px 4px rgba(0,0,0,0.15)',
         }}
       >
         <p

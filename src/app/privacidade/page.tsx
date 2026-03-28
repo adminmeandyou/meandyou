@@ -9,16 +9,16 @@ export const metadata: Metadata = {
 
 export default function Privacidade() {
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', color: 'var(--text)' }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse at 50% 0%, rgba(225,29,72,0.06) 0%, #08090E 70%)', color: 'var(--text)' }}>
 
       {/* Header */}
       <header style={{
-        borderBottom: '1px solid var(--border)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
         padding: '20px 24px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        backgroundColor: 'var(--bg)',
+        backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)',
       }}>
         <Link href="/" style={{
           fontFamily: 'var(--font-fraunces)',
@@ -145,7 +145,7 @@ export default function Privacidade() {
 
         {/* Acao de exclusao de dados */}
         <div style={{
-          backgroundColor: 'var(--bg-card)',
+          background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
           border: '1px solid rgba(239,68,68,0.25)',
           borderRadius: '12px',
           padding: '24px',
@@ -179,7 +179,7 @@ export default function Privacidade() {
 
       {/* Footer simples */}
       <footer style={{
-        borderTop: '1px solid var(--border)',
+        borderTop: '1px solid rgba(255,255,255,0.06)',
         padding: '24px',
         textAlign: 'center',
         color: 'var(--muted)',

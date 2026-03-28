@@ -100,7 +100,7 @@ export default function AmigosPage() {
   const sentPending = pending.filter(f => f.requester_id === myUserId)
 
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', color: 'var(--text)', fontFamily: 'var(--font-jakarta)', paddingBottom: 80 }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse at 50% 0%, rgba(225,29,72,0.06) 0%, #08090E 70%)', color: 'var(--text)', fontFamily: 'var(--font-jakarta)', paddingBottom: 80 }}>
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '16px 16px 0', position: 'sticky', top: 0, backgroundColor: 'var(--bg)', zIndex: 10 }}>
         <button onClick={() => router.back()} style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(255,255,255,0.07)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text)' }}>
@@ -125,7 +125,7 @@ export default function AmigosPage() {
             onClick={() => setTab(t.key)}
             style={{
               padding: '8px 16px', borderRadius: 100,
-              border: `1px solid ${tab === t.key ? 'var(--accent)' : 'var(--border)'}`,
+              border: `1px solid ${tab === t.key ? 'var(--accent)' : 'rgba(255,255,255,0.06)'}`,
               backgroundColor: tab === t.key ? 'rgba(225,29,72,0.12)' : 'transparent',
               color: tab === t.key ? 'var(--accent)' : 'var(--muted)',
               fontSize: 13, fontWeight: tab === t.key ? 600 : 400,
@@ -197,7 +197,7 @@ export default function AmigosPage() {
                   <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid var(--border-soft)' }}>
                     <Link href={`/perfil/${f.other?.id}`} style={{ flexShrink: 0, textDecoration: 'none' }}>
                       {f.other?.photo_best ? (
-                        <img src={f.other.photo_best} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
+                        <img src={f.other.photo_best} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.06)' }} />
                       ) : (
                         <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <UserCircle size={28} color="var(--muted)" />
@@ -237,7 +237,7 @@ export default function AmigosPage() {
                   <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid var(--border-soft)' }}>
                     <Link href={`/perfil/${f.other?.id}`} style={{ flexShrink: 0, textDecoration: 'none' }}>
                       {f.other?.photo_best ? (
-                        <img src={f.other.photo_best} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
+                        <img src={f.other.photo_best} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.06)' }} />
                       ) : (
                         <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <UserCircle size={28} color="var(--muted)" />
@@ -290,7 +290,7 @@ function FriendRow({
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid var(--border-soft)' }}>
       <Link href={`/perfil/${p.id}`} style={{ position: 'relative', flexShrink: 0, textDecoration: 'none' }}>
         {p.photo_best ? (
-          <img src={p.photo_best} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)' }} />
+          <img src={p.photo_best} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.06)' }} />
         ) : (
           <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <UserCircle size={28} color="var(--muted)" />
@@ -309,7 +309,7 @@ function FriendRow({
       <div style={{ display: 'flex', gap: 6 }}>
         <Link
           href={`/perfil/${p.id}`}
-          style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: 'var(--muted)' }}
+          style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: 'var(--muted)' }}
         >
           <UserCircle size={15} />
         </Link>

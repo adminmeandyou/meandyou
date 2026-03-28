@@ -148,7 +148,7 @@ export default function EditarPerfilPage() {
       </div>
 
       {/* ── Barra de conclusão ── */}
-      <div style={{ margin: '12px 16px', padding: '14px 16px', backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px' }}>
+      <div style={{ margin: '12px 16px', padding: '14px 16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
           <span style={{ color: '#F8F9FA', fontSize: '13px', fontWeight: 600 }}>Conclusão do perfil</span>
           <span style={{ color: '#E11D48', fontSize: '14px', fontWeight: 700 }}>{completude}%</span>
@@ -327,7 +327,7 @@ export default function EditarPerfilPage() {
             </div>
             <button
               onClick={() => { window.location.href = '/verificacao' }}
-              style={{ flexShrink: 0, padding: '10px 16px', borderRadius: '10px', backgroundColor: 'var(--accent)', color: '#fff', fontSize: '13px', fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
+              style={{ flexShrink: 0, padding: '10px 16px', borderRadius: '10px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: '13px', fontWeight: 700, border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
             >
               Continuar
             </button>
@@ -1256,7 +1256,7 @@ function TagChip({ label, ativo, onClick, desabilitado }: {
         color: ativo ? '#E11D48' : desabilitado ? 'rgba(248,249,250,0.20)' : 'rgba(248,249,250,0.55)',
         cursor: desabilitado ? 'not-allowed' : 'pointer',
         opacity: desabilitado ? 0.35 : 1,
-        display: 'inline-flex', alignItems: 'center', gap: '6px', transition: 'all 0.15s',
+        display: 'inline-flex', alignItems: 'center', gap: '6px', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
       }}
     >
       {ativo && <Check size={12} />}
@@ -1276,7 +1276,7 @@ function BotaoSalvar({ loading, sucesso, onClick }: { loading: boolean; sucesso:
         color: sucesso ? '#10b981' : '#fff', fontWeight: 700, fontSize: '14px',
         fontFamily: 'var(--font-jakarta)', cursor: loading ? 'not-allowed' : 'pointer',
         opacity: loading ? 0.7 : 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-        transition: 'all 0.2s',
+        transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
       }}
     >
       {loading ? (
@@ -1405,7 +1405,7 @@ function StatusTempSection({
               background: selecionado === opcao.id ? 'rgba(225,29,72,0.12)' : 'rgba(255,255,255,0.04)',
               color: selecionado === opcao.id ? '#F43F5E' : 'rgba(248,249,250,0.65)',
               fontSize: 13, fontWeight: selecionado === opcao.id ? 600 : 400,
-              cursor: 'pointer', transition: 'all 0.15s',
+              cursor: 'pointer', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
             }}
           >
             <span>{opcao.label}</span>

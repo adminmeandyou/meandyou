@@ -103,13 +103,13 @@ export default function NotificacoesPage() {
   const unreadCount = notifications.filter((n) => !n.read).length
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: 96 }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(225,29,72,0.06) 0%, transparent 60%), var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: 96 }}>
 
       {/* Header */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 30,
         background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid var(--border)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
         padding: '14px 20px',
         display: 'flex', alignItems: 'center', gap: 12,
       }}>
@@ -117,7 +117,7 @@ export default function NotificacoesPage() {
           onClick={() => router.back()}
           style={{
             width: 36, height: 36, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
+            background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: 'pointer', flexShrink: 0,
           }}
@@ -149,7 +149,7 @@ export default function NotificacoesPage() {
               display: 'flex', alignItems: 'center', gap: 6,
               fontSize: 12, color: markingRead ? 'var(--muted-2)' : 'var(--muted)',
               background: 'none', border: 'none', cursor: markingRead ? 'not-allowed' : 'pointer',
-              transition: 'color 0.15s',
+              transition: 'color 0.25s cubic-bezier(0.4,0,0.2,1)',
             }}
           >
             <CheckCheck size={14} />
@@ -181,7 +181,7 @@ export default function NotificacoesPage() {
                   width: '100%', display: 'flex', alignItems: 'center', gap: 14,
                   padding: '14px 20px',
                   textAlign: 'left', background: n.read ? 'transparent' : 'rgba(255,255,255,0.018)',
-                  cursor: 'pointer', transition: 'background 0.15s',
+                  cursor: 'pointer', transition: 'background 0.25s cubic-bezier(0.4,0,0.2,1)',
                   border: 'none', borderBottom: '1px solid var(--border-soft)',
                 }}
               >

@@ -343,8 +343,8 @@ function LocationAutocomplete({
           style={{
             width: '100%', paddingLeft: 36, paddingRight: query ? 32 : 12,
             paddingTop: 10, paddingBottom: 10,
-            borderRadius: 12, border: '1px solid var(--border)',
-            backgroundColor: 'var(--bg-card)', color: 'var(--text)',
+            borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)',
+            background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', color: 'var(--text)',
             fontSize: 14, fontFamily: 'var(--font-jakarta)', outline: 'none',
           }}
         />
@@ -363,9 +363,8 @@ function LocationAutocomplete({
       {open && suggestions.length > 0 && (
         <div style={{
           position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
-          backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)',
+          background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)',
           borderRadius: 12, marginTop: 4, overflow: 'hidden',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
         }}>
           {suggestions.map((s, i) => (
             <div
@@ -496,9 +495,8 @@ function ModeSelectorTabs({
             <div style={{
               position: 'absolute', top: 'calc(100% + 8px)', left: '50%',
               transform: 'translateX(-50%)', zIndex: 100,
-              backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)',
+              background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)',
               borderRadius: 14, padding: 6, minWidth: 160,
-              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
             }}>
               {(Object.keys(MODE_LABELS) as ViewMode[]).map((mode) => (
                 <button
@@ -713,7 +711,7 @@ function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | n
       </div>
 
       {allActed ? (
-        <div style={{ backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 16, padding: '24px 20px', textAlign: 'center' }}>
+        <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)', borderRadius: 16, padding: '24px 20px', textAlign: 'center' }}>
           <p style={{ fontSize: 15, color: 'var(--text)', fontWeight: 600, marginBottom: 8 }}>Volte amanha!</p>
           <p style={{ fontSize: 13, color: 'var(--muted)' }}>Novas sugestoes aparecem todo dia as 00:00.</p>
         </div>
@@ -758,7 +756,7 @@ function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | n
                   aspectRatio: '3/4', borderRadius: 16, overflow: 'hidden', position: 'relative',
                   border: isLiked ? '1px solid rgba(16,185,129,0.35)' : isPassed ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(225,29,72,0.25)',
                   opacity: isActed ? 0.65 : 1, transition: 'opacity 0.2s',
-                  backgroundColor: 'var(--bg-card)',
+                  background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
                 }}
               >
                 {photo ? (
@@ -931,7 +929,7 @@ function CamaroteModal({ onClose }: { onClose: () => void }) {
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        style={{ width: '100%', maxWidth: 430, background: 'var(--bg-card)', borderRadius: '24px 24px 0 0', padding: '28px 24px 40px', border: '1px solid var(--border)' }}
+        style={{ width: '100%', maxWidth: 430, background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '24px 24px 0 0', padding: '28px 24px 40px', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
           <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -953,7 +951,7 @@ function CamaroteModal({ onClose }: { onClose: () => void }) {
             { label: 'Fetiche', desc: 'Interesses e estilos de vida alternativos', color: '#a855f7' },
             { label: 'Chat VIP', desc: 'Salas exclusivas para assinantes Black', color: '#F59E0B' },
           ].map((item) => (
-            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'var(--bg-card2)', border: '1px solid var(--border)' }}>
+            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)' }}>
               <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
               <div>
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{item.label}</p>
@@ -1061,7 +1059,7 @@ function RoomsView({ userPlan }: { userPlan: string }) {
         <div style={{ position: 'relative', marginBottom: 24 }}>
           <div style={{ filter: 'blur(4px)', opacity: 0.5, pointerEvents: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
             {fakeRooms.map((room, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 16, backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)' }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 16, background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid var(--border)' }}>
                 <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>{room.emoji}</div>
                 <div style={{ flex: 1 }}>
                   <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: '0 0 2px' }}>{room.name}</p>
@@ -1138,7 +1136,7 @@ function RoomsView({ userPlan }: { userPlan: string }) {
         >
           ← Voltar
         </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px', borderRadius: 16, backgroundColor: 'var(--bg-card)', border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : 'var(--border)'}` }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px', borderRadius: 16, background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : 'var(--border)'}` }}>
           <div style={{ width: 52, height: 52, borderRadius: 14, flexShrink: 0, backgroundColor: isBlack ? 'rgba(245,158,11,0.10)' : 'rgba(225,29,72,0.10)', border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : 'rgba(225,29,72,0.20)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
             {joiningRoom.emoji}
           </div>
@@ -1156,14 +1154,14 @@ function RoomsView({ userPlan }: { userPlan: string }) {
             placeholder="Seu apelido na sala"
             maxLength={20}
             autoFocus
-            style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${joinError ? 'rgba(225,29,72,0.50)' : 'var(--border)'}`, backgroundColor: 'var(--bg-card)', color: 'var(--text)', fontSize: 14, fontFamily: 'var(--font-jakarta)', outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${joinError ? 'rgba(225,29,72,0.50)' : 'var(--border)'}`, background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', color: 'var(--text)', fontSize: 14, fontFamily: 'var(--font-jakarta)', outline: 'none', boxSizing: 'border-box' }}
           />
           {joinError && <p style={{ fontSize: 12, color: '#f87171', marginTop: 6 }}>{joinError}</p>}
         </div>
         <button
           onClick={handleJoin}
           disabled={joining}
-          style={{ width: '100%', padding: '14px', borderRadius: 14, backgroundColor: 'var(--accent)', color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', cursor: joining ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', opacity: joining ? 0.7 : 1 }}
+          style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', cursor: joining ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', opacity: joining ? 0.7 : 1 }}
         >
           {joining ? 'Entrando...' : 'Entrar na sala'}
         </button>
@@ -1200,7 +1198,7 @@ function RoomsView({ userPlan }: { userPlan: string }) {
                     key={room.id}
                     onClick={() => { if (!isFull) { setJoiningRoom(room); setNickname('') } }}
                     disabled={isFull}
-                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 16, width: '100%', textAlign: 'left', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', opacity: isFull ? 0.45 : 1, cursor: isFull ? 'default' : 'pointer' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 16, width: '100%', textAlign: 'left', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)', opacity: isFull ? 0.45 : 1, cursor: isFull ? 'default' : 'pointer' }}
                   >
                     <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{room.emoji}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -1228,7 +1226,7 @@ function RoomsView({ userPlan }: { userPlan: string }) {
                     key={room.id}
                     onClick={() => { if (!isLocked && !isFull) { setJoiningRoom(room); setNickname('') } }}
                     disabled={isLocked || isFull}
-                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 16, width: '100%', textAlign: 'left', backgroundColor: 'var(--bg-card)', border: '1px solid rgba(245,158,11,0.25)', opacity: isLocked || isFull ? 0.45 : 1, cursor: isLocked || isFull ? 'default' : 'pointer' }}
+                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 16, width: '100%', textAlign: 'left', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(245,158,11,0.25)', opacity: isLocked || isFull ? 0.45 : 1, cursor: isLocked || isFull ? 'default' : 'pointer' }}
                   >
                     <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{room.emoji}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -1292,8 +1290,8 @@ function SearchGrid({ deck }: { deck: Profile[] }) {
             style={{
               borderRadius: 16,
               overflow: 'hidden',
-              backgroundColor: 'var(--bg-card)',
-              border: '1px solid var(--border)',
+              background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
+              border: '1px solid rgba(255,255,255,0.06)',
               aspectRatio: '3/4',
               position: 'relative',
             }}
@@ -1440,7 +1438,7 @@ function BuscaInner() {
     setLeftAction(
       <button
         onClick={() => { setShowHub(true) }}
-        style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+        style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
         aria-label="Voltar para Modos"
       >
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="rgba(248,249,250,0.6)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 5l-7 7 7 7"/></svg>
@@ -1965,14 +1963,14 @@ function BuscaInner() {
         ) : !currentProfile ? (
           /* Sem perfis — empty state com opção de recarregar */
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
               <Compass size={28} strokeWidth={1.5} color="var(--muted)" />
             </div>
             <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>Ninguém novo por aqui</p>
             <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 24px', lineHeight: 1.5 }}>Tente aumentar o raio de busca ou mudar os filtros</p>
             <button
               onClick={() => userId && loadDeck(DEFAULT_FILTERS, userId, false)}
-              style={{ padding: '12px 24px', borderRadius: 12, border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-jakarta)', cursor: 'pointer' }}
+              style={{ padding: '12px 24px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: 14, fontWeight: 600, fontFamily: 'var(--font-jakarta)', cursor: 'pointer' }}
             >
               Recarregar
             </button>
@@ -2367,17 +2365,17 @@ function BuscaInner() {
             )}
             <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               {currentProfile.age && (
-                <span style={{ fontSize: 13, color: 'var(--text)', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, padding: '5px 10px' }}>
+                <span style={{ fontSize: 13, color: 'var(--text)', background: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: '5px 10px' }}>
                   {currentProfile.age} anos
                 </span>
               )}
               {currentProfile.city && (
-                <span style={{ fontSize: 13, color: 'var(--text)', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ fontSize: 13, color: 'var(--text)', background: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: '5px 10px', display: 'flex', alignItems: 'center', gap: 4 }}>
                   <MapPin size={12} strokeWidth={1.5} /> {currentProfile.city}
                 </span>
               )}
               {currentProfile.distance_km !== undefined && (
-                <span style={{ fontSize: 13, color: 'var(--text)', background: 'var(--bg-card2)', border: '1px solid var(--border)', borderRadius: 8, padding: '5px 10px' }}>
+                <span style={{ fontSize: 13, color: 'var(--text)', background: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 8, padding: '5px 10px' }}>
                   {Math.round(currentProfile.distance_km)} km
                 </span>
               )}
@@ -2442,7 +2440,7 @@ function BuscaInner() {
             padding: '14px 16px',
             borderRadius: 16,
             backgroundColor: 'var(--bg-card2)',
-            border: '1px solid var(--border)',
+            border: '1px solid rgba(255,255,255,0.06)',
             marginBottom: 10,
           }}
         >
@@ -2648,7 +2646,7 @@ function BuscaInner() {
             bottom: 0,
             margin: '0 -20px -32px',
             padding: '14px 20px 24px',
-            backgroundColor: 'var(--bg-card)',
+            background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
             borderTop: '1px solid var(--border)',
           }}
         >
@@ -2689,7 +2687,7 @@ function BuscaInner() {
           <div
             style={{
               position: 'relative',
-              backgroundColor: 'var(--bg-card)',
+              background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
               borderRadius: 28,
               padding: '32px 24px',
               border: '1px solid rgba(225,29,72,0.30)',
@@ -2789,10 +2787,10 @@ function BuscaInner() {
           <div
             style={{
               position: 'relative',
-              backgroundColor: 'var(--bg-card)',
+              background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
               borderRadius: 16,
               padding: '28px 22px',
-              border: '1px solid var(--border)',
+              border: '1px solid rgba(255,255,255,0.06)',
               maxWidth: 340,
               width: '100%',
               textAlign: 'center',
@@ -2804,7 +2802,7 @@ function BuscaInner() {
               style={{
                 position: 'absolute', top: 14, right: 14,
                 width: 28, height: 28, borderRadius: '50%',
-                border: '1px solid var(--border)',
+                border: '1px solid rgba(255,255,255,0.06)',
                 backgroundColor: 'rgba(255,255,255,0.05)',
                 color: 'var(--muted)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',

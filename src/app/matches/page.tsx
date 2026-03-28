@@ -131,13 +131,13 @@ export default function MatchesPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: 96 }}>
+    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(225,29,72,0.06) 0%, transparent 60%), var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: 96 }}>
 
       {/* Header */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 30,
         background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid var(--border)',
+        borderBottom: '1px solid rgba(255,255,255,0.06)',
         padding: '16px 20px',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
@@ -166,7 +166,7 @@ export default function MatchesPage() {
             display: 'flex', alignItems: 'center', gap: 6,
             padding: '7px 16px', borderRadius: 100,
             border: '1px solid var(--accent)',
-            background: 'var(--accent)',
+            background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
             color: '#fff',
             fontFamily: 'var(--font-jakarta)', fontSize: 13, fontWeight: 700,
           }}>
@@ -321,11 +321,11 @@ function NovoMatchCard({
           style={{
             position: 'absolute', bottom: 0, right: -2,
             width: 22, height: 22, borderRadius: '50%',
-            background: friendSent ? '#10b981' : 'var(--bg-card)',
+            background: friendSent ? '#10b981' : 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
             border: `2px solid var(--bg)`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: friendSent ? 'default' : 'pointer',
-            transition: 'background 0.2s',
+            transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
           }}
         >
           {friendSent
@@ -382,7 +382,7 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
         <div style={{
           width: 56, height: 56, borderRadius: '50%',
           overflow: 'hidden', position: 'relative',
-          background: 'var(--bg-card2)', border: '1px solid var(--border)',
+          background: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)',
         }}>
           {match.photo_best ? (
             <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="56px" />

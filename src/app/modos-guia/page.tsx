@@ -56,7 +56,7 @@ function ModosGuiaContent() {
   return (
     <div style={{
       minHeight: '100dvh',
-      backgroundColor: 'var(--bg, #08090E)',
+      background: 'radial-gradient(ellipse at 50% 0%, rgba(225,29,72,0.06) 0%, #08090E 70%)',
       display: 'flex',
       flexDirection: 'column',
       maxWidth: '430px',
@@ -152,7 +152,7 @@ function ModosGuiaContent() {
           onClick={handleContinuar}
           style={{
             width: '100%',
-            backgroundColor: '#E11D48',
+            background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
             color: '#fff',
             border: 'none',
             borderRadius: '100px',

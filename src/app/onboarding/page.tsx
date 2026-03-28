@@ -94,7 +94,7 @@ export default function OnboardingPage() {
   if (carregando) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <div style={{ width: '32px', height: '32px', border: '3px solid var(--border)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: '32px', height: '32px', border: '3px solid rgba(255,255,255,0.06)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
     )
@@ -107,7 +107,7 @@ export default function OnboardingPage() {
       <div style={{ padding: '20px 24px 0' }}>
         <div style={{ display: 'flex', gap: '6px' }}>
           {PASSOS.map((_, i) => (
-            <div key={i} style={{ flex: 1, height: '3px', borderRadius: '100px', backgroundColor: i <= passo ? 'var(--accent)' : 'var(--border)', transition: 'background-color 0.3s' }} />
+            <div key={i} style={{ flex: 1, height: '3px', borderRadius: '100px', backgroundColor: i <= passo ? 'var(--accent)' : 'rgba(255,255,255,0.06)', transition: 'background-color 0.25s cubic-bezier(0.4,0,0.2,1)' }} />
           ))}
         </div>
       </div>
@@ -155,7 +155,7 @@ export default function OnboardingPage() {
               { icon: <Heart size={22} color="var(--accent)" />, titulo: '3. E um match!', desc: 'Quando dois se curtem mutuamente, vira match. A partir dai voces podem conversar.' },
               { icon: <Zap size={22} color="var(--accent)" />, titulo: '4. Videochamada integrada', desc: 'Antes de marcar um encontro, converse por video dentro do app. Seguro e sem precisar trocar contato.' },
             ].map((item, i) => (
-              <div key={i} style={{ display: 'flex', gap: '16px', marginBottom: '16px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '16px' }}>
+              <div key={i} style={{ display: 'flex', gap: '16px', marginBottom: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
                 <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                   {item.icon}
                 </div>
@@ -181,10 +181,10 @@ export default function OnboardingPage() {
 
             {/* GPS Card */}
             <div onClick={!gpsAtivo ? pedirGps : undefined}
-              style={{ display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: gpsAtivo ? 'var(--accent-light)' : 'var(--bg-card)', border: `1.5px solid ${gpsAtivo ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '20px', padding: '20px', marginBottom: '14px', cursor: gpsAtivo ? 'default' : 'pointer', textAlign: 'left', transition: 'all 0.25s' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: '16px', background: gpsAtivo ? 'var(--accent-light)' : 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: `1.5px solid ${gpsAtivo ? 'var(--accent)' : 'rgba(255,255,255,0.06)'}`, borderRadius: '20px', padding: '20px', marginBottom: '14px', cursor: gpsAtivo ? 'default' : 'pointer', textAlign: 'left', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
               <div style={{ width: '48px', height: '48px', borderRadius: '14px', backgroundColor: gpsAtivo ? 'var(--accent)' : 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {gpsLoading ? (
-                  <div style={{ width: '20px', height: '20px', border: '2px solid var(--border)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                  <div style={{ width: '20px', height: '20px', border: '2px solid rgba(255,255,255,0.06)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
                 ) : (
                   <MapPin size={22} color={gpsAtivo ? '#fff' : 'var(--muted)'} />
                 )}
@@ -200,10 +200,10 @@ export default function OnboardingPage() {
 
             {/* Notificações Card */}
             <div onClick={!notifAtiva ? pedirNotificacoes : undefined}
-              style={{ display: 'flex', alignItems: 'center', gap: '16px', backgroundColor: notifAtiva ? 'var(--accent-light)' : 'var(--bg-card)', border: `1.5px solid ${notifAtiva ? 'var(--accent)' : 'var(--border)'}`, borderRadius: '20px', padding: '20px', marginBottom: '24px', cursor: notifAtiva ? 'default' : 'pointer', textAlign: 'left', transition: 'all 0.25s' }}>
+              style={{ display: 'flex', alignItems: 'center', gap: '16px', background: notifAtiva ? 'var(--accent-light)' : 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: `1.5px solid ${notifAtiva ? 'var(--accent)' : 'rgba(255,255,255,0.06)'}`, borderRadius: '20px', padding: '20px', marginBottom: '24px', cursor: notifAtiva ? 'default' : 'pointer', textAlign: 'left', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
               <div style={{ width: '48px', height: '48px', borderRadius: '14px', backgroundColor: notifAtiva ? 'var(--accent)' : 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 {notifLoading ? (
-                  <div style={{ width: '20px', height: '20px', border: '2px solid var(--border)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                  <div style={{ width: '20px', height: '20px', border: '2px solid rgba(255,255,255,0.06)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
                 ) : (
                   <Bell size={22} color={notifAtiva ? '#fff' : 'var(--muted)'} />
                 )}
@@ -255,7 +255,7 @@ export default function OnboardingPage() {
       <div style={{ padding: '16px 24px 44px', maxWidth: '480px', margin: '0 auto', width: '100%' }}>
         {passo < PASSOS.length - 1 ? (
           <button onClick={() => setPasso(passo + 1)}
-            style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(225,29,72,0.25)' }}>
+            style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(225,29,72,0.25)' }}>
             Continuar <ChevronRight size={20} />
           </button>
         ) : (
@@ -266,7 +266,7 @@ export default function OnboardingPage() {
             <button
               onClick={concluirOnboarding}
               disabled={concluindo}
-              style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: concluindo ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(225,29,72,0.25)', opacity: concluindo ? 0.7 : 1 }}>
+              style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: concluindo ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(225,29,72,0.25)', opacity: concluindo ? 0.7 : 1 }}>
               {concluindo ? 'Salvando...' : 'Montar meu perfil'} {!concluindo && <ChevronRight size={20} />}
             </button>
           </>

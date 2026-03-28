@@ -98,7 +98,7 @@ export default function EmblemasPage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
       {/* Header interno (desktop) */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border)', padding: '16px 20px' }} className="hidden md:block">
+      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 20px' }} className="hidden md:block">
         <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0 }}>Vitrine de Emblemas</h1>
         <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '4px 0 0' }}>Colecione emblemas cumprindo conquistas no app</p>
       </header>
@@ -106,7 +106,7 @@ export default function EmblemasPage() {
       <div style={{ padding: '20px' }}>
 
         {/* Intro */}
-        <div style={{ backgroundColor: 'var(--bg-card)', borderRadius: 16, padding: '16px', border: '1px solid var(--border)', marginBottom: 20, display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: 16, padding: '16px', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 20, boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
             <Trophy size={20} color="#F59E0B" strokeWidth={1.5} />
           </div>
@@ -168,7 +168,7 @@ export default function EmblemasPage() {
                     border: unlocked ? `1px solid ${cfg.border}` : '1px solid var(--border)',
                     backgroundColor: unlocked ? cfg.bg : 'var(--bg-card)',
                     opacity: unlocked ? 1 : 0.6,
-                    transition: 'all 0.2s',
+                    transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)',
                     position: 'relative',
                   }}
                 >
@@ -213,9 +213,9 @@ export default function EmblemasPage() {
           <div style={{
             position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)',
             width: '100%', maxWidth: 430, zIndex: 201,
-            backgroundColor: 'var(--bg-card)', borderRadius: '24px 24px 0 0',
+            background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '24px 24px 0 0',
             padding: '24px 24px 48px',
-            border: '1px solid var(--border)',
+            border: '1px solid rgba(255,255,255,0.06)',
             animation: 'ui-slide-up 0.3s ease',
           }}>
             <div style={{ width: 40, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 auto 24px' }} />
