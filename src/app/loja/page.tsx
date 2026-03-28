@@ -89,7 +89,7 @@ const STORE_ITEMS: StoreItem[] = [
     balanceKey: 'ghost',
   },
   {
-    key: 'reveals_5', label: 'Ver quem curtiu', description: 'Revela todos os perfis que curtiram voce por 24 horas',
+    key: 'reveals_5', label: 'Ver quem curtiu', description: 'Revela todos os perfis que curtiram você por 24 horas',
     unit: 'acesso (24h)',
     icon: <Eye size={20} strokeWidth={1.5} />, baseFichas: 50, maxQty: 5,
     accentColor: '#ec4899', accentBg: 'rgba(236,72,153,0.10)', accentBorder: 'rgba(236,72,153,0.25)',
@@ -110,7 +110,7 @@ const STORE_ITEMS: StoreItem[] = [
     new: true,
   },
   {
-    key: 'caixa_surpresa', label: 'Caixa Surpresa', description: 'Premio aleatorio — pode ser raro!',
+    key: 'caixa_surpresa', label: 'Caixa Surpresa', description: 'Prêmio aleatório — pode ser raro!',
     unit: 'caixa',
     icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 35, maxQty: 5,
     accentColor: '#8b5cf6', accentBg: 'rgba(139,92,246,0.10)', accentBorder: 'rgba(139,92,246,0.25)',

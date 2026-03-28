@@ -38,7 +38,7 @@ function JoinSheet({
       return
     }
     if (nickname.trim().length > 20) {
-      setError('Nome muito longo (max 20 caracteres)')
+      setError('Nome muito longo (máx. 20 caracteres)')
       return
     }
     setLoading(true)
@@ -76,7 +76,7 @@ function JoinSheet({
         </div>
 
         <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
-          Escolha um nome fantasia para entrar na sala. Os outros membros so verao este nome.
+          Escolha um nome fantasia para entrar na sala. Os outros membros só verão este nome.
         </p>
 
         <input
@@ -96,7 +96,7 @@ function JoinSheet({
         {error && <p style={{ fontSize: 12, color: 'var(--accent)', marginBottom: 12 }}>{error}</p>}
 
         <p style={{ fontSize: 11, color: 'var(--muted-2)', marginBottom: 16, lineHeight: 1.5 }}>
-          Deixe em branco para receber um nome aleatorio. Voce pode entrar anonimamente.
+          Deixe em branco para receber um nome aleatório. Você pode entrar anonimamente.
         </p>
 
         <button

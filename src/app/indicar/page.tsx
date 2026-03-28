@@ -65,7 +65,7 @@ export default function IndicarPage() {
     if (navigator.share) {
       await navigator.share({
         title: 'MeAndYou',
-        text: 'Te convidei para o MeAndYou! Se cadastra pelo meu link e a gente ganha 5 tickets + 1000 XP de bonus:',
+        text: 'Te convidei para o MeAndYou! Se cadastra pelo meu link e a gente ganha 5 tickets + 1000 XP de bônus:',
         url: getReferralLink(),
       })
     } else {
@@ -99,7 +99,7 @@ export default function IndicarPage() {
         </button>
         <div style={{ flex: 1 }}>
           <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>Indique e ganhe</h1>
-          <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Voce e seu amigo ganham bonus</p>
+          <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Você e seu amigo ganham bônus</p>
         </div>
       </header>
 
@@ -107,7 +107,7 @@ export default function IndicarPage() {
 
         {/* O que voces ganham */}
         <div style={{ borderRadius: '16px', padding: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
-          <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px' }}>O que voces ganham</p>
+          <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px' }}>O que vocês ganham</p>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
             <div style={{ backgroundColor: 'rgba(234,179,8,0.08)', borderRadius: '12px', padding: '14px 12px', textAlign: 'center', border: '1px solid rgba(234,179,8,0.25)' }}>
               <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px', color: '#eab308' }}>
@@ -141,7 +141,7 @@ export default function IndicarPage() {
           </div>
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: '14px', fontWeight: 700, color: bonusBoostUnlocked ? 'var(--accent)' : 'var(--muted)', margin: 0 }}>
-              {bonusBoostUnlocked ? '1 Boost bonus desbloqueado!' : '1 Boost bonus ao indicar 3 amigos'}
+              {bonusBoostUnlocked ? '1 Boost bônus desbloqueado!' : '1 Boost bônus ao indicar 3 amigos'}
             </p>
             <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '3px 0 0' }}>{rewarded}/3 amigos convertidos</p>
           </div>

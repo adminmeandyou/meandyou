@@ -116,7 +116,7 @@ export default function DeletarContaPage() {
             Excluir conta
           </h1>
           <p style={{ color: 'rgba(255,255,255,0.30)', fontSize: '11px', margin: '1px 0 0' }}>
-            Acao permanente e irreversivel
+            Ação permanente e irreversível
           </p>
         </div>
         {/* Indicador de etapa */}
@@ -152,7 +152,7 @@ export default function DeletarContaPage() {
                   Tem certeza?
                 </h2>
                 <p style={{ color: 'rgba(255,255,255,0.40)', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>
-                  Ao excluir sua conta, todos os seus dados serao removidos permanentemente, incluindo matches, conversas e fotos.
+                  Ao excluir sua conta, todos os seus dados serão removidos permanentemente, incluindo matches, conversas e fotos.
                 </p>
               </div>
             </div>
@@ -168,10 +168,10 @@ export default function DeletarContaPage() {
               {[
                 'Perfil e fotos',
                 'Todos os matches e conversas',
-                'Historico de curtidas',
+                'Histórico de curtidas',
                 'Saldo de SuperLikes, Boosts, Lupas e tickets',
                 'Assinatura ativa (sem reembolso)',
-                'Indicacoes e bonus pendentes',
+                'Indicações e bônus pendentes',
               ].map((item) => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <AlertTriangle size={12} color="#f87171" style={{ flexShrink: 0 }} />
@@ -181,7 +181,7 @@ export default function DeletarContaPage() {
             </div>
 
             <p style={{ color: 'rgba(255,255,255,0.20)', fontSize: '12px', textAlign: 'center', lineHeight: '1.6', margin: 0 }}>
-              Em conformidade com a LGPD, todos os seus dados pessoais serao removidos de nossos servidores apos a exclusao.
+              Em conformidade com a LGPD, todos os seus dados pessoais serão removidos de nossos servidores após a exclusão.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -194,7 +194,7 @@ export default function DeletarContaPage() {
                   fontFamily: 'var(--font-jakarta)',
                 }}
               >
-                Continuar com a exclusao
+                Continuar com a exclusão
               </button>
               <button
                 onClick={() => router.back()}
@@ -227,7 +227,7 @@ export default function DeletarContaPage() {
                   Antes de ir...
                 </h2>
                 <p style={{ color: 'rgba(255,255,255,0.40)', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>
-                  Voce pode pausar sua conta por 30 dias. Seu perfil fica oculto e ninguem te ve - mas seus dados continuam salvos quando voltar.
+                  Você pode pausar sua conta por 30 dias. Seu perfil fica oculto e ninguém te vê - mas seus dados continuam salvos quando voltar.
                 </p>
               </div>
             </div>
@@ -238,13 +238,13 @@ export default function DeletarContaPage() {
               display: 'flex', flexDirection: 'column', gap: '10px',
             }}>
               <p style={{ color: '#60a5fa', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.4px', margin: '0 0 2px' }}>
-                Se voce pausar, mantem:
+                Se você pausar, mantém:
               </p>
               {[
                 'Seus matches e conversas intactos',
                 'Saldo de SuperLikes, Lupas e Tickets',
                 'Seu perfil e todas as fotos',
-                'Historico de indicacoes e bonus',
+                'Histórico de indicações e bônus',
               ].map((item) => (
                 <div key={item} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{
@@ -283,7 +283,7 @@ export default function DeletarContaPage() {
                   fontFamily: 'var(--font-jakarta)',
                 }}
               >
-                Nao, quero excluir mesmo assim
+                Não, quero excluir mesmo assim
               </button>
             </div>
           </div>

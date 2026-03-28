@@ -414,9 +414,9 @@ export default function ConfiguracoesPage() {
             {bugEnviado ? (
               <div style={{ textAlign: 'center', padding: '24px 0' }}>
                 <p style={{ fontSize: '40px', marginBottom: '12px' }}>🙏</p>
-                <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', marginBottom: '8px' }}>Obrigado pela sua contribuicao!</h3>
+                <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', marginBottom: '8px' }}>Obrigado pela sua contribuição!</h3>
                 <p style={{ color: 'rgba(255,255,255,0.50)', fontSize: '14px', lineHeight: 1.6 }}>
-                  Nossa equipe ira analisar o problema. Se for constatado, voce recebera uma recompensa especial.
+                  Nossa equipe irá analisar o problema. Se for constatado, você receberá uma recompensa especial.
                 </p>
                 <button onClick={() => setBugModal(false)} style={{ marginTop: '20px', padding: '12px 24px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '12px', fontSize: '15px', fontWeight: '600', cursor: 'pointer', width: '100%' }}>
                   Fechar
@@ -431,7 +431,7 @@ export default function ConfiguracoesPage() {
                   </button>
                 </div>
                 <textarea
-                  placeholder="O que aconteceu? Descreva com detalhes (minimo 20 caracteres)..."
+                  placeholder="O que aconteceu? Descreva com detalhes (mínimo 20 caracteres)..."
                   value={bugDescricao}
                   onChange={e => setBugDescricao(e.target.value)}
                   rows={5}

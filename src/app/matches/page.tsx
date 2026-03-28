@@ -189,8 +189,8 @@ export default function MatchesPage() {
         ) : matches.length === 0 ? (
           <EmptyState
             icon={<Heart size={28} />}
-            title="Voce nao tem matches ainda"
-            description="Va para Modos, interaja com outros perfis e quando alguem curtir de volta o match aparece aqui."
+            title="Você não tem matches ainda"
+            description="Vá para Modos, interaja com outros perfis e quando alguém curtir de volta o match aparece aqui."
             action={{ label: 'Ir para Modos', onClick: () => router.push('/modos') }}
           />
 

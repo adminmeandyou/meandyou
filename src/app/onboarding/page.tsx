@@ -125,15 +125,15 @@ export default function OnboardingPage() {
               {nome ? `Ola, ${nome.split(' ')[0]}!` : 'Bem-vindo(a)!'}
             </h1>
             <p style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: '1.7', marginBottom: '32px' }}>
-              Voce acaba de entrar no <strong style={{ color: 'var(--text)' }}>MeAnd<span style={{ color: 'var(--accent)' }}>You</span></strong> — onde conexoes reais acontecem. Diferente dos outros apps, aqui a compatibilidade vai muito alem de uma foto.
+              Você acaba de entrar no <strong style={{ color: 'var(--text)' }}>MeAnd<span style={{ color: 'var(--accent)' }}>You</span></strong> — onde conexões reais acontecem. Diferente dos outros apps, aqui a compatibilidade vai muito além de uma foto.
             </p>
             <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '20px', padding: '20px', marginBottom: '32px', textAlign: 'left' }}>
               <p style={{ fontSize: '14px', color: 'var(--accent)', fontWeight: '700', marginBottom: '12px' }}>O que nos diferencia:</p>
               {[
                 'Perfis com mais de 80 atributos reais',
-                'Filtros avancados para encontrar sua compatibilidade',
-                'Videochamadas integradas — conhca antes de encontrar',
-                'Gamificacao que torna a busca mais divertida',
+                'Filtros avançados para encontrar sua compatibilidade',
+                'Videochamadas integradas — conheça antes de encontrar',
+                'Gamificação que torna a busca mais divertida',
               ].map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: i < 3 ? '10px' : 0 }}>
                   <Check size={16} color="var(--accent)" style={{ flexShrink: 0, marginTop: '2px' }} />
@@ -150,9 +150,9 @@ export default function OnboardingPage() {
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '26px', color: 'var(--text)', marginBottom: '8px', textAlign: 'center' }}>Como funciona?</h2>
             <p style={{ fontSize: '14px', color: 'var(--muted)', textAlign: 'center', marginBottom: '32px' }}>Em 4 passos simples</p>
             {[
-              { icon: <Shield size={22} color="var(--accent)" />, titulo: '1. Complete seu perfil', desc: 'Preencha suas informacoes reais — aparencia, personalidade, valores e o que busca. Isso define quem vai aparecer para voce.' },
-              { icon: <Search size={22} color="var(--accent)" />, titulo: '2. Explore e filtre', desc: 'Use filtros avancados para encontrar pessoas compativeis na sua regiao. Curta, passe ou de um Super Curtida.' },
-              { icon: <Heart size={22} color="var(--accent)" />, titulo: '3. E um match!', desc: 'Quando dois se curtem mutuamente, vira match. A partir dai voces podem conversar.' },
+              { icon: <Shield size={22} color="var(--accent)" />, titulo: '1. Complete seu perfil', desc: 'Preencha suas informações reais — aparência, personalidade, valores e o que busca. Isso define quem vai aparecer para você.' },
+              { icon: <Search size={22} color="var(--accent)" />, titulo: '2. Explore e filtre', desc: 'Use filtros avançados para encontrar pessoas compatíveis na sua região. Curta, passe ou dê um Super Curtida.' },
+              { icon: <Heart size={22} color="var(--accent)" />, titulo: '3. É um match!', desc: 'Quando dois se curtem mutuamente, vira match. A partir daí vocês podem conversar.' },
               { icon: <Zap size={22} color="var(--accent)" />, titulo: '4. Videochamada integrada', desc: 'Antes de marcar um encontro, converse por video dentro do app. Seguro e sem precisar trocar contato.' },
             ].map((item, i) => (
               <div key={i} style={{ display: 'flex', gap: '16px', marginBottom: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
@@ -174,9 +174,9 @@ export default function OnboardingPage() {
             <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
               <Shield size={36} color="var(--accent)" />
             </div>
-            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '26px', color: 'var(--text)', marginBottom: '10px' }}>Uma coisa rapida</h2>
+            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '26px', color: 'var(--text)', marginBottom: '10px' }}>Uma coisa rápida</h2>
             <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: '1.7', marginBottom: '32px' }}>
-              Para funcionar melhor, o MeAndYou precisa de duas permissoes. Voce pode ativar agora ou depois nas configuracoes.
+              Para funcionar melhor, o MeAndYou precisa de duas permissões. Você pode ativar agora ou depois nas configurações.
             </p>
 
             {/* GPS Card */}
@@ -192,7 +192,7 @@ export default function OnboardingPage() {
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)', marginBottom: '3px' }}>Localização</p>
                 <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0, lineHeight: '1.4' }}>
-                  {gpsAtivo ? 'Ativada — voce vai aparecer na busca da sua regiao' : 'Para mostrar pessoas perto de voce'}
+                  {gpsAtivo ? 'Ativada — você vai aparecer na busca da sua região' : 'Para mostrar pessoas perto de você'}
                 </p>
               </div>
               {gpsAtivo && <Check size={20} color="var(--accent)" style={{ flexShrink: 0 }} />}
@@ -209,9 +209,9 @@ export default function OnboardingPage() {
                 )}
               </div>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)', marginBottom: '3px' }}>Notificacoes</p>
+                <p style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)', marginBottom: '3px' }}>Notificações</p>
                 <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0, lineHeight: '1.4' }}>
-                  {notifAtiva ? 'Ativadas — voce vai saber quando tiver matches e mensagens' : 'Para saber quando tiver um match ou mensagem nova'}
+                  {notifAtiva ? 'Ativadas — você vai saber quando tiver matches e mensagens' : 'Para saber quando tiver um match ou mensagem nova'}
                 </p>
               </div>
               {notifAtiva && <Check size={20} color="var(--accent)" style={{ flexShrink: 0 }} />}
@@ -227,19 +227,19 @@ export default function OnboardingPage() {
             </div>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', color: 'var(--text)', marginBottom: '12px' }}>Tudo pronto!</h2>
             <p style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: '1.7', marginBottom: '32px' }}>
-              Agora vamos montar o seu perfil. Quanto mais completo, mais chances voce tem de aparecer para as pessoas certas.
+              Agora vamos montar o seu perfil. Quanto mais completo, mais chances você tem de aparecer para as pessoas certas.
             </p>
 
             <div style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '16px', padding: '16px', marginBottom: '24px', textAlign: 'left' }}>
               <p style={{ fontSize: '13px', color: 'var(--gold)', fontWeight: '700', marginBottom: '6px' }}>Dica importante</p>
               <p style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: '1.6' }}>
-                Voce vai cadastrar <strong style={{ color: 'var(--text)' }}>suas proprias caracteristicas</strong> — nao o que procura em outra pessoa. Isso e o que define quem vai aparecer para voce.
+                Você vai cadastrar <strong style={{ color: 'var(--text)' }}>suas próprias características</strong> — não o que procura em outra pessoa. Isso é o que define quem vai aparecer para você.
               </p>
             </div>
 
             <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '16px', padding: '16px', marginBottom: '32px', textAlign: 'left' }}>
               <p style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: '700', marginBottom: '8px' }}>Vai preencher:</p>
-              {['3 fotos (rosto, corpo inteiro e lateral)', 'Aparencia e personalidade', 'Valores e estilo de vida', 'O que voce busca'].map((item, i) => (
+              {['3 fotos (rosto, corpo inteiro e lateral)', 'Aparência e personalidade', 'Valores e estilo de vida', 'O que você busca'].map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: i < 3 ? '6px' : 0 }}>
                   <Check size={14} color="var(--accent)" />
                   <span style={{ fontSize: '13px', color: 'var(--text)' }}>{item}</span>

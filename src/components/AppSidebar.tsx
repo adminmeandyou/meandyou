@@ -18,14 +18,14 @@ interface SidebarItem {
 const NAV_ITEMS: SidebarItem[] = [
   { href: '/conversas', label: 'Chat',      icon: MessageCircle },
   { href: '/modos',     label: 'Descobrir', icon: Compass },
-  { href: '/recompensas', label: 'Premios',   icon: Gift },
+  { href: '/recompensas', label: 'Prêmios',   icon: Gift },
   { href: '/loja',        label: 'Loja',     icon: ShoppingBag },
   { href: '/perfil',    label: 'Perfil',    icon: User },
 ]
 
 const BOTTOM_ITEMS: SidebarItem[] = [
-  { href: '/notificacoes',  label: 'Notificacoes', icon: Bell },
-  { href: '/configuracoes', label: 'Configuracoes', icon: Shield },
+  { href: '/notificacoes',  label: 'Notificações', icon: Bell },
+  { href: '/configuracoes', label: 'Configurações', icon: Shield },
 ]
 
 function isActive(pathname: string, href: string): boolean {

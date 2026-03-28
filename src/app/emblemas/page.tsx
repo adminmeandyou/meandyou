@@ -25,12 +25,12 @@ const RARITY_CONFIG = {
   comum:    { label: 'Comum',    color: '#9ca3af', bg: 'rgba(156,163,175,0.10)', border: 'rgba(156,163,175,0.25)' },
   incomum:  { label: 'Incomum',  color: '#3b82f6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.25)'  },
   raro:     { label: 'Raro',     color: '#a855f7', bg: 'rgba(168,85,247,0.10)',   border: 'rgba(168,85,247,0.25)'  },
-  lendario: { label: 'Lendario', color: '#F59E0B', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.25)'  },
+  lendario: { label: 'Lendário', color: '#F59E0B', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.25)'  },
 }
 
 const CONDITION_LABELS: Record<string, (val: number) => string> = {
   manual:               () => 'Concedido pela equipe',
-  on_verify:            () => 'Verificar identidade biometrica',
+  on_verify:            () => 'Verificar identidade biométrica',
   on_join:              () => 'Criar conta no app',
   invited_gte:          (v) => `Convidar ${v} amigo${v > 1 ? 's' : ''}`,
   matches_gte:          (v) => `Conseguir ${v} match${v > 1 ? 'es' : ''}`,

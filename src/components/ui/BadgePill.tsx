@@ -31,7 +31,7 @@ const RARITY_CONFIG: Record<Rarity, { label: string; color: string; bg: string; 
     border: 'rgba(167,139,250,0.22)',
   },
   lendario: {
-    label: 'Lendario',
+    label: 'Lendário',
     color: '#F59E0B',
     bg: 'rgba(245,158,11,0.10)',
     border: 'rgba(245,158,11,0.25)',

@@ -22,9 +22,9 @@ const PLAN_LABELS: Record<string, string> = {
 }
 
 const PLAN_PRICES: Record<string, string> = {
-  essencial: 'R$ 9,97/mes',
-  plus: 'R$ 39,97/mes',
-  black: 'R$ 99,97/mes',
+  essencial: 'R$ 9,97/mês',
+  plus: 'R$ 39,97/mês',
+  black: 'R$ 99,97/mês',
 }
 
 const PLAN_COLORS: Record<string, { color: string; bg: string; border: string }> = {
@@ -34,9 +34,9 @@ const PLAN_COLORS: Record<string, { color: string; bg: string; border: string }>
 }
 
 const PLAN_FEATURES: Record<string, string[]> = {
-  essencial: ['20 curtidas/dia', '1 SuperCurtida/dia', '1 ticket de roleta/dia', 'Verificacao de identidade', '1 filtro ativo'],
-  plus:      ['50 curtidas/dia', '5 SuperCurtidas/dia', '2 tickets/dia', '1 Lupa/dia', 'Desfazer curtida', 'Filtros avancados', 'Ver quem curtiu'],
-  black:     ['Curtidas ilimitadas', '10 SuperCurtidas/dia', '3 tickets/dia', '2 Lupas/dia', 'Backstage (Sugar e Fetiche)', 'Suporte prioritario 24h'],
+  essencial: ['20 curtidas/dia', '1 SuperCurtida/dia', '1 ticket de roleta/dia', 'Verificação de identidade', '1 filtro ativo'],
+  plus:      ['50 curtidas/dia', '5 SuperCurtidas/dia', '2 tickets/dia', '1 Lupa/dia', 'Desfazer curtida', 'Filtros avançados', 'Ver quem curtiu'],
+  black:     ['Curtidas ilimitadas', '10 SuperCurtidas/dia', '3 tickets/dia', '2 Lupas/dia', 'Backstage (Sugar e Fetiche)', 'Suporte prioritário 24h'],
 }
 
 function formatDate(iso: string) {
@@ -96,7 +96,7 @@ export default function MinhaAssinaturaPage() {
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error || 'Erro ao cancelar')
-      setMsg({ text: 'Assinatura cancelada. Voce mantem acesso ate o fim do periodo pago.', type: 'success' })
+      setMsg({ text: 'Assinatura cancelada. Você mantém acesso até o fim do período pago.', type: 'success' })
       setSubs(prev => prev.map(s => s.id === active.id ? { ...s, status: 'cancelled' } : s))
     } catch (err: unknown) {
       const error = err instanceof Error ? err.message : 'Erro ao cancelar'
@@ -181,7 +181,7 @@ export default function MinhaAssinaturaPage() {
             {/* Detalhes */}
             <div style={{ backgroundColor: 'var(--bg)', padding: '12px 20px', borderTop: '1px solid rgba(255,255,255,0.06)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
               <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Ativo desde: <span style={{ color: 'var(--text)' }}>{formatDate(active.starts_at)}</span></p>
-              <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Valido ate: <span style={{ color: 'var(--text)', fontWeight: 600 }}>{formatDate(active.ends_at)}</span></p>
+              <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Válido até: <span style={{ color: 'var(--text)', fontWeight: 600 }}>{formatDate(active.ends_at)}</span></p>
               {active.gateway_order_id && <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>N. pedido: <span style={{ color: 'var(--text)', fontFamily: 'monospace', fontSize: '11px' }}>{active.gateway_order_id}</span></p>}
             </div>
 
@@ -213,7 +213,7 @@ export default function MinhaAssinaturaPage() {
               onClick={() => router.push('/planos')}
               style={{ padding: '12px 28px', borderRadius: '12px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontWeight: 700, fontSize: '14px', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
             >
-              Ver planos disponiveis
+              Ver planos disponíveis
             </button>
           </div>
         )}

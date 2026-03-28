@@ -8,15 +8,15 @@ const MODOS = [
   {
     icon: <Compass size={32} strokeWidth={1.5} color="#E11D48" />,
     label: 'Descobrir',
-    desc: 'Veja perfis perto de voce e curta ou passe. Se os dois se curtirem, vira um match.',
+    desc: 'Veja perfis perto de você e curta ou passe. Se os dois se curtirem, vira um match.',
     cor: '#E11D48',
     bg: 'linear-gradient(135deg, rgba(225,29,72,0.12) 0%, rgba(225,29,72,0.04) 100%)',
     border: 'rgba(225,29,72,0.25)',
   },
   {
     icon: <SlidersHorizontal size={32} strokeWidth={1.5} color="#60a5fa" />,
-    label: 'Busca Avancada',
-    desc: 'Filtre por idade, distancia e genero. Navegue por uma grade de perfis no seu ritmo.',
+    label: 'Busca Avançada',
+    desc: 'Filtre por idade, distância e gênero. Navegue por uma grade de perfis no seu ritmo.',
     cor: '#60a5fa',
     bg: 'linear-gradient(135deg, rgba(96,165,250,0.12) 0%, rgba(96,165,250,0.04) 100%)',
     border: 'rgba(96,165,250,0.25)',
@@ -24,7 +24,7 @@ const MODOS = [
   {
     icon: <Star size={32} strokeWidth={1.5} color="#F59E0B" />,
     label: 'Match do Dia',
-    desc: 'Todo dia o app seleciona 5 perfis com alta compatibilidade com voce. Qualidade acima de quantidade.',
+    desc: 'Todo dia o app seleciona 5 perfis com alta compatibilidade com você. Qualidade acima de quantidade.',
     cor: '#F59E0B',
     bg: 'linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(245,158,11,0.04) 100%)',
     border: 'rgba(245,158,11,0.25)',
@@ -32,7 +32,7 @@ const MODOS = [
   {
     icon: <Users size={32} strokeWidth={1.5} color="#2ec4a0" />,
     label: 'Salas',
-    desc: 'Entre em grupos de bate-papo tematicos e converse com varias pessoas ao mesmo tempo. Disponivel no Plus e Black.',
+    desc: 'Entre em grupos de bate-papo temáticos e converse com várias pessoas ao mesmo tempo. Disponível no Plus e Black.',
     cor: '#2ec4a0',
     bg: 'linear-gradient(135deg, rgba(46,196,160,0.12) 0%, rgba(46,196,160,0.04) 100%)',
     border: 'rgba(46,196,160,0.25)',

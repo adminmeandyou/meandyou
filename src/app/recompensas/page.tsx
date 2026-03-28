@@ -22,9 +22,9 @@ const CARDS: HubCard[] = [
     icon: Dices,
     iconColor: 'var(--accent)',
     iconBg: 'var(--accent-light)',
-    title: 'Roleta diaria',
+    title: 'Roleta diária',
     description: 'Gire e ganhe SuperCurtidas, Lupas, Boosts e mais.',
-    badge: 'Gratis',
+    badge: 'Grátis',
     badgeColor: 'var(--green)',
   },
   {
@@ -32,7 +32,7 @@ const CARDS: HubCard[] = [
     icon: Flame,
     iconColor: '#F59E0B',
     iconBg: 'rgba(245,158,11,0.12)',
-    title: 'Premios diarios',
+    title: 'Prêmios diários',
     description: 'Acesse todo dia e acumule recompensas cada vez maiores.',
     badge: 'Streak',
     badgeColor: '#F59E0B',
@@ -43,7 +43,7 @@ const CARDS: HubCard[] = [
     iconColor: 'var(--accent)',
     iconBg: 'var(--accent-light)',
     title: 'Perfis em destaque',
-    description: 'Veja quem esta no topo e use suas Lupas para revelar.',
+    description: 'Veja quem está no topo e use suas Lupas para revelar.',
   },
   {
     href: '/loja',
@@ -88,7 +88,7 @@ export default function RecompensasPage() {
           Recompensas
         </h1>
         <p style={{ fontSize: 13, color: 'var(--muted)', margin: '4px 0 0', lineHeight: 1.5 }}>
-          Gire, acumule e resgate premios todos os dias.
+          Gire, acumule e resgate prêmios todos os dias.
         </p>
       </div>
 

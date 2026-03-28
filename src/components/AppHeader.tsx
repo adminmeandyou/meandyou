@@ -98,7 +98,7 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
             transition: 'all 0.15s',
             textDecoration: 'none', position: 'relative',
           }}
-          aria-label="Notificacoes"
+          aria-label="Notificações"
         >
           <Bell size={20} strokeWidth={1.5} />
         </Link>
@@ -115,7 +115,7 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
             transition: 'all 0.15s',
             textDecoration: 'none',
           }}
-          aria-label="Configuracoes e Seguranca"
+          aria-label="Configurações e Segurança"
         >
           <Settings size={20} strokeWidth={1.5} />
         </Link>

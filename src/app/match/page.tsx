@@ -265,10 +265,10 @@ function MatchModal({ profile, matchId, onDismiss }: {
         </div>
 
         <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '32px', color: 'var(--text)', margin: '0 0 6px' }}>
-          E um <em style={{ color: 'var(--accent)' }}>match!</em>
+          É um <em style={{ color: 'var(--accent)' }}>match!</em>
         </h2>
         <p style={{ color: 'var(--muted)', fontSize: '14px', margin: '0 0 28px' }}>
-          Voce e {profile.name} curtiram um ao outro
+          Você e {profile.name} curtiram um ao outro
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -308,9 +308,9 @@ function EmptyState({ onRefresh }: { onRefresh: () => void }) {
       <div style={{ width: '64px', height: '64px', borderRadius: '50%', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <RefreshCw size={28} color="var(--accent)" strokeWidth={1.5} />
       </div>
-      <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', margin: 0 }}>Por enquanto e so</h3>
+      <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', margin: 0 }}>Por enquanto é só</h3>
       <p style={{ color: 'var(--muted)', fontSize: '14px', margin: 0, lineHeight: 1.5 }}>
-        Nao ha mais perfis na sua regiao. Tente aumentar o raio de busca ou volte mais tarde.
+        Não há mais perfis na sua região. Tente aumentar o raio de busca ou volte mais tarde.
       </p>
       <button
         onClick={onRefresh}

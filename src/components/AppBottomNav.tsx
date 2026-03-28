@@ -16,7 +16,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/matches',   label: 'Matches',    icon: Users },
   { href: '/modos',     label: 'Modos',      icon: Compass },
   { href: '/roleta',    label: 'Roleta',     icon: Zap, center: true },
-  { href: '/recompensas', label: 'Premios',   icon: Gift },
+  { href: '/recompensas', label: 'Prêmios',   icon: Gift },
   { href: '/perfil',    label: 'Perfil',     icon: User },
 ]
 

@@ -27,7 +27,7 @@ const DISPLAY_PRICES: Record<string, number> = {
 }
 
 const CYCLE_OPTIONS = [
-  { value: 'monthly',    label: 'Mensal',     discount: 0,   suffix: '/mes' },
+  { value: 'monthly',    label: 'Mensal',     discount: 0,   suffix: '/mês' },
   { value: 'quarterly',  label: 'Trimestral', discount: 10,  suffix: ' total' },
   { value: 'semiannual', label: 'Semestral',  discount: 20,  suffix: ' total' },
   { value: 'annual',     label: 'Anual',      discount: 30,  suffix: ' total', badge: 'Melhor desconto' },
@@ -49,8 +49,8 @@ function formatBRL(value: number) {
 
 function StepperBar({ step, isSubscription }: { step: number; isSubscription: boolean }) {
   const steps = isSubscription
-    ? ['Ciclo', 'Pagamento', 'Dados', 'Confirmacao']
-    : ['Pagamento', 'Dados', 'Confirmacao']
+    ? ['Ciclo', 'Pagamento', 'Dados', 'Confirmação']
+    : ['Pagamento', 'Dados', 'Confirmação']
   const normalizedStep = isSubscription ? step : step - 1
   return (
     <div style={{ display: 'flex', gap: 4, padding: '12px 20px' }}>
@@ -83,7 +83,7 @@ function StepCycle({ plan, cycle, setCycle, onNext }: {
   return (
     <div>
       <h3 style={{ margin: '0 0 16px', fontSize: 18, color: '#F8F9FA', fontFamily: 'var(--font-fraunces)' }}>
-        Escolha o periodo
+        Escolha o período
       </h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
         {CYCLE_OPTIONS.map(opt => {
