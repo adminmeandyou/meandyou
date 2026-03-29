@@ -4,8 +4,18 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { useRouter } from 'next/navigation'
 
+/* ── FAQ Component ── */
 function FaqItem({ pergunta, resposta }: { pergunta: string; resposta: string }) {
   const [aberto, setAberto] = useState(false)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [height, setHeight] = useState(0)
+
+  useEffect(() => {
+    if (contentRef.current) {
+      setHeight(aberto ? contentRef.current.scrollHeight : 0)
+    }
+  }, [aberto])
+
   return (
     <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '22px 0' }}>
       <button
@@ -14,7 +24,7 @@ function FaqItem({ pergunta, resposta }: { pergunta: string; resposta: string })
           width: '100%', background: 'none', border: 'none', cursor: 'pointer',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           gap: '16px', fontWeight: 600, fontSize: '15px', color: '#F8F9FA',
-          fontFamily: "var(--font-jakarta), sans-serif", textAlign: 'left', padding: 0,
+          fontFamily: 'var(--font-jakarta), sans-serif', textAlign: 'left', padding: 0,
         }}
       >
         {pergunta}
@@ -29,14 +39,34 @@ function FaqItem({ pergunta, resposta }: { pergunta: string; resposta: string })
           transition: 'transform 0.3s, background 0.2s, color 0.2s',
         }}>+</span>
       </button>
-      {aberto && (
+      <div
+        ref={contentRef}
+        style={{
+          overflow: 'hidden',
+          maxHeight: `${height}px`,
+          transition: 'max-height 0.35s cubic-bezier(0.4,0,0.2,1)',
+        }}
+      >
         <p style={{
           fontSize: '14px', color: 'rgba(248,249,250,0.55)',
           lineHeight: 1.75, marginTop: '14px', paddingRight: '44px',
         }}>{resposta}</p>
-      )}
+      </div>
     </div>
   )
+}
+
+/* ── Counter Animation ── */
+function animateCounter(el: HTMLElement, target: number, duration: number = 1800) {
+  const start = performance.now()
+  const suffix = el.dataset.suffix || ''
+  const update = (now: number) => {
+    const progress = Math.min((now - start) / duration, 1)
+    const eased = 1 - Math.pow(1 - progress, 3)
+    el.textContent = Math.floor(eased * target).toLocaleString('pt-BR') + (progress >= 1 ? suffix : '')
+    if (progress < 1) requestAnimationFrame(update)
+  }
+  requestAnimationFrame(update)
 }
 
 export default function Home() {
@@ -46,11 +76,6 @@ export default function Home() {
   const [navVisible, setNavVisible] = useState(true)
   const [menuAberto, setMenuAberto] = useState(false)
   const lastScrollY = useRef(0)
-
-  // Card deck
-  const [currentCard, setCurrentCard] = useState(0)
-  const [swipeDir, setSwipeDir] = useState<null | 'left' | 'right' | 'up'>(null)
-  const swipeLock = useRef(false)
 
   // PWA Install
   const [installPrompt, setInstallPrompt] = useState<any>(null)
@@ -64,7 +89,7 @@ export default function Home() {
   // Location
   const [userCity, setUserCity] = useState('')
 
-  // Formulário de contato
+  // Formulario de contato
   const [contatoNome, setContatoNome] = useState('')
   const [contatoEmail, setContatoEmail] = useState('')
   const [contatoAssunto, setContatoAssunto] = useState('')
@@ -103,12 +128,14 @@ export default function Home() {
     }
   }
 
+  // Auth check
   useEffect(() => {
     supabase.auth.getUser()
       .then(({ data: { user } }) => { if (user) { router.push('/dashboard') } else { setChecking(false) } })
       .catch(() => setChecking(false))
   }, [router])
 
+  // Scroll reveal + counters
   useEffect(() => {
     if (checking || animRef.current) return
     animRef.current = true
@@ -129,29 +156,32 @@ export default function Home() {
       observer.observe(el)
     })
 
-    const howObserver = new IntersectionObserver((entries) => {
+    // Counter observer
+    const counterObserver = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
-          e.target.querySelectorAll('.lp-how-step').forEach((s: any, i: number) => {
-            setTimeout(() => s.classList.add('visible'), i * 110)
-          })
+          const el = e.target as HTMLElement
+          const target = parseInt(el.dataset.target || '0', 10)
+          if (target > 0) animateCounter(el, target)
+          counterObserver.unobserve(el)
         }
       })
-    }, { threshold: 0.12 })
-    const stepsRow = document.querySelector('.lp-steps-row')
-    if (stepsRow) howObserver.observe(stepsRow)
+    }, { threshold: 0.3 })
 
-    document.querySelectorAll('.lp-ftag').forEach(tag => {
-      tag.addEventListener('click', () => {
-        if (tag.classList.contains('neu')) { tag.classList.remove('neu'); tag.classList.add('inc') }
-        else if (tag.classList.contains('inc')) { tag.classList.remove('inc'); tag.classList.add('exc') }
-        else { tag.classList.remove('exc'); tag.classList.add('neu') }
-      })
+    document.querySelectorAll('.lp-counter').forEach(el => {
+      if (prefersReduced) {
+        const target = (el as HTMLElement).dataset.target || '0'
+        const suffix = (el as HTMLElement).dataset.suffix || ''
+        ;(el as HTMLElement).textContent = parseInt(target, 10).toLocaleString('pt-BR') + suffix
+        return
+      }
+      counterObserver.observe(el)
     })
 
-    return () => observer.disconnect()
+    return () => { observer.disconnect(); counterObserver.disconnect() }
   }, [checking])
 
+  // Navbar hide/show on scroll
   useEffect(() => {
     const handleScroll = () => {
       const currentY = window.scrollY
@@ -164,7 +194,7 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // PWA install prompt (Android/Chrome)
+  // PWA install prompt
   useEffect(() => {
     const handler = (e: any) => { e.preventDefault(); setInstallPrompt(e) }
     window.addEventListener('beforeinstallprompt', handler)
@@ -179,9 +209,9 @@ export default function Home() {
     setInstallPrompt(null)
   }
 
-  // IP geolocation para notificações personalizadas (fallback: cidade aleatória se API falhar ou atingir limite)
+  // IP geolocation
   useEffect(() => {
-    const cidades = ['São Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Curitiba', 'Porto Alegre', 'Salvador', 'Fortaleza', 'Recife', 'Manaus', 'Goiânia', 'Campinas', 'Florianópolis']
+    const cidades = ['Sao Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Curitiba', 'Porto Alegre', 'Salvador', 'Fortaleza', 'Recife', 'Manaus', 'Goiania', 'Campinas', 'Florianopolis']
     const cidadeAleatoria = cidades[Math.floor(Math.random() * cidades.length)]
     fetch('https://ipapi.co/json/')
       .then(r => r.json())
@@ -189,44 +219,44 @@ export default function Home() {
       .catch(() => { setUserCity(cidadeAleatoria) })
   }, [])
 
-  // Notificações animadas — geração dinâmica e totalmente aleatória
+  // Animated notifications
   useEffect(() => {
     if (checking) return
 
     const nm = ['Ana','Carlos','Juliana','Marcos','Beatriz','Rafael','Leticia','Diego','Priscila','Bruno','Fernanda','Gustavo','Isabela','Thiago','Camila','Leonardo','Vanessa','Eduardo','Patricia','Rodrigo','Mariana','Felipe','Natalia','Vinicius','Larissa','Amanda','Ricardo','Bianca','Fabricio','Simone','Caio','Rebeca','Henrique','Luciana','Andre','Sabrina','Alex','Carolina','Marcelo','Giovana','Renata','Daniel','Pedro','Tatiana','Luiz','Monica','Gabriel','Aline','Sergio','Claudia','Paulo','Silvia','Eliane','Tiago','Bruna','Joao','Adriana','Flavia','Matheus']
     const ct = userCity
-      ? [userCity,'São Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiânia','Campinas','Florianópolis','Belém','São Luís','Maceió','Natal','Teresina','Campo Grande','João Pessoa','Aracaju','Porto Velho','Macapá','Boa Vista','Palmas','Vitória','Macaé','Ribeirão Preto','Uberlândia','Contagem']
-      : ['São Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiânia','Campinas','Florianópolis','Belém','São Luís','Maceió','Natal','Teresina','Campo Grande','João Pessoa','Aracaju','Porto Velho','Macapá','Boa Vista','Palmas','Vitória','Macaé','Ribeirão Preto','Uberlândia','Contagem','Feira de Santana']
-    const filtros = ['que não queira ter filhos','que tenha pets','que seja evangélico(a)','que seja espiritualista','que seja vegano(a)','que seja vegetariano(a)','que não fume','que não beba','que faça academia','que goste de viajar','que seja introvertido(a)','que seja extrovertido(a)','que goste de leitura','que seja gamer','que goste de anime','que goste de sertanejo','que goste de funk','que goste de rock','que goste de MPB','que tenha cabelo crespo','que tenha olhos verdes','que seja loiro(a)','que goste de churrasco','que goste de trilha e natureza','que seja ateu(a)','que seja agnóstico(a)','que seja católico(a)','que curta K-pop','que seja divorciado(a)','que tenha tatuagem','que use óculos','que goste de dança','que goste de fotografia','que goste de séries','que goste de meditação','que seja empreendedor(a)','que trabalhe remoto','que tenha barba','que seja bissexual','que curta pagode','que seja solteiro(a) sem filhos','que goste de teatro','que pratique yoga','que goste de jazz','que goste de filmes']
-    const premios = ['3 SuperCurtidas','1 Boost','5 Lupas','2 Desfazer Curtidas','3 tickets de roleta','1 dia de Modo Invisível','5 SuperCurtidas','10 Lupas']
+      ? [userCity,'Sao Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiania','Campinas','Florianopolis','Belem','Sao Luis','Maceio','Natal','Teresina','Campo Grande','Joao Pessoa','Aracaju','Porto Velho','Macapa','Boa Vista','Palmas','Vitoria','Macae','Ribeirao Preto','Uberlandia','Contagem']
+      : ['Sao Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiania','Campinas','Florianopolis','Belem','Sao Luis','Maceio','Natal','Teresina','Campo Grande','Joao Pessoa','Aracaju','Porto Velho','Macapa','Boa Vista','Palmas','Vitoria','Macae','Ribeirao Preto','Uberlandia','Contagem','Feira de Santana']
+    const filtros = ['que nao queira ter filhos','que tenha pets','que seja evangelico(a)','que seja espiritualista','que seja vegano(a)','que seja vegetariano(a)','que nao fume','que nao beba','que faca academia','que goste de viajar','que seja introvertido(a)','que seja extrovertido(a)','que goste de leitura','que seja gamer','que goste de anime','que goste de sertanejo','que goste de funk','que goste de rock','que goste de MPB','que tenha cabelo crespo','que tenha olhos verdes','que seja loiro(a)','que goste de churrasco','que goste de trilha e natureza','que seja ateu(a)','que seja agnostico(a)','que seja catolico(a)','que curta K-pop','que seja divorciado(a)','que tenha tatuagem','que use oculos','que goste de danca','que goste de fotografia','que goste de series','que goste de meditacao','que seja empreendedor(a)','que trabalhe remoto','que tenha barba','que seja bissexual','que curta pagode','que seja solteiro(a) sem filhos','que goste de teatro','que pratique yoga','que goste de jazz','que goste de filmes']
+    const premios = ['3 SuperCurtidas','1 Boost','5 Lupas','2 Desfazer Curtidas','3 tickets de roleta','1 dia de Modo Invisivel','5 SuperCurtidas','10 Lupas']
 
     const rnd = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)]
     const idade = () => Math.floor(Math.random() * 37) + 18
 
     const gens = [
-      () => `${rnd(nm)}, ${idade()} · acabou de se cadastrar em ${rnd(ct)}`,
-      () => `${rnd(nm)}, ${idade()} · verificou identidade agora`,
-      () => `${rnd(nm)} de ${rnd(ct)} · assinou o Plus`,
-      () => `${rnd(nm)} de ${rnd(ct)} · assinou o Camarote Black`,
-      () => `${rnd(nm)} de ${rnd(ct)} · assinou o Essencial`,
-      () => `${rnd(nm)}, ${idade()} · fez upgrade para Plus`,
-      () => `${rnd(nm)}, ${idade()} · fez upgrade para Black`,
-      () => `${rnd(nm)} de ${rnd(ct)} · deu match agora`,
-      () => `${rnd(nm)}, ${idade()} · enviou uma SuperCurtida`,
-      () => `${rnd(nm)}, ${idade()} · ganhou ${rnd(premios)} na roleta`,
-      () => `${rnd(nm)} de ${rnd(ct)} · ganhou ${rnd(premios)} na roleta`,
-      () => `${rnd(nm)}, ${idade()} · atingiu streak de 7 dias`,
-      () => `${rnd(nm)}, ${idade()} · atingiu streak de 14 dias`,
-      () => `${rnd(nm)}, ${idade()} · atingiu streak de 30 dias`,
-      () => `${rnd(nm)} de ${rnd(ct)} · configurou ${Math.floor(Math.random()*30)+20} filtros`,
-      () => `${rnd(nm)}, ${idade()} · curtiu ${Math.floor(Math.random()*8)+3} perfis hoje`,
-      () => `${rnd(nm)} de ${rnd(ct)} · está procurando alguém ${rnd(filtros)}`,
-      () => `${rnd(nm)}, ${idade()} · está procurando alguém ${rnd(filtros)}`,
-      () => `${rnd(nm)} de ${rnd(ct)} · perdeu um match hoje`,
-      () => `${rnd(nm)}, ${idade()} · encontrou uma conexão em ${rnd(ct)}`,
-      () => `Novo perfil em ${rnd(ct)} · ${rnd(nm)}, ${idade()} verificado`,
-      () => `${rnd(nm)} de ${rnd(ct)} · usou uma Lupa no Destaque`,
-      () => `${rnd(nm)}, ${idade()} · resgatou prêmio do calendário`,
+      () => `${rnd(nm)}, ${idade()} -- acabou de se cadastrar em ${rnd(ct)}`,
+      () => `${rnd(nm)}, ${idade()} -- verificou identidade agora`,
+      () => `${rnd(nm)} de ${rnd(ct)} -- assinou o Plus`,
+      () => `${rnd(nm)} de ${rnd(ct)} -- assinou o Camarote Black`,
+      () => `${rnd(nm)} de ${rnd(ct)} -- assinou o Essencial`,
+      () => `${rnd(nm)}, ${idade()} -- fez upgrade para Plus`,
+      () => `${rnd(nm)}, ${idade()} -- fez upgrade para Black`,
+      () => `${rnd(nm)} de ${rnd(ct)} -- deu match agora`,
+      () => `${rnd(nm)}, ${idade()} -- enviou uma SuperCurtida`,
+      () => `${rnd(nm)}, ${idade()} -- ganhou ${rnd(premios)} na roleta`,
+      () => `${rnd(nm)} de ${rnd(ct)} -- ganhou ${rnd(premios)} na roleta`,
+      () => `${rnd(nm)}, ${idade()} -- atingiu streak de 7 dias`,
+      () => `${rnd(nm)}, ${idade()} -- atingiu streak de 14 dias`,
+      () => `${rnd(nm)}, ${idade()} -- atingiu streak de 30 dias`,
+      () => `${rnd(nm)} de ${rnd(ct)} -- configurou ${Math.floor(Math.random()*30)+20} filtros`,
+      () => `${rnd(nm)}, ${idade()} -- curtiu ${Math.floor(Math.random()*8)+3} perfis hoje`,
+      () => `${rnd(nm)} de ${rnd(ct)} -- esta procurando alguem ${rnd(filtros)}`,
+      () => `${rnd(nm)}, ${idade()} -- esta procurando alguem ${rnd(filtros)}`,
+      () => `${rnd(nm)} de ${rnd(ct)} -- perdeu um match hoje`,
+      () => `${rnd(nm)}, ${idade()} -- encontrou uma conexao em ${rnd(ct)}`,
+      () => `Novo perfil em ${rnd(ct)} -- ${rnd(nm)}, ${idade()} verificado`,
+      () => `${rnd(nm)} de ${rnd(ct)} -- usou uma Lupa no Destaque`,
+      () => `${rnd(nm)}, ${idade()} -- resgatou premio do calendario`,
     ]
 
     let timer: ReturnType<typeof setTimeout>
@@ -243,85 +273,16 @@ export default function Home() {
     return () => clearTimeout(timer)
   }, [checking, userCity]) // eslint-disable-line
 
-  const handleSwipe = (dir: 'left' | 'right' | 'up') => {
-    if (swipeLock.current) return
-    swipeLock.current = true
-    setSwipeDir(dir)
-    setTimeout(() => {
-      setCurrentCard(c => (c + 1) % swipeCards.length)
-      setSwipeDir(null)
-      swipeLock.current = false
-    }, 420)
-  }
-
-  if (checking) {
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#08090E' }}>
-        <h1 style={{ fontFamily: "var(--font-fraunces), serif", fontSize: '36px', color: '#f0ece4' }}>
-          MeAnd<span style={{ color: '#E11D48' }}>You</span>
-        </h1>
-      </div>
-    )
-  }
-
-  const swipeCards = [
-    {
-      name: 'Julia, 26', photo: '/julia.jpg',
-      tags: ['Gamer', 'Vegana', 'SP'],
-      bio: 'Gamer nas horas vagas, vegana há 3 anos. Procuro conexão genuína, alguém pra conversar de verdade antes de qualquer encontro.',
-      placeholder: 'linear-gradient(160deg,#1a0a14 0%,#3d1530 50%,#2a0e24 100%)',
-    },
-    {
-      name: 'Roberto, 55', photo: '/Roberto.jpg',
-      tags: ['Eletricista', 'RJ', 'Fuma'],
-      bio: 'Eletricista de mão cheia, churrasco todo fim de semana e uma cerveja gelada. Direto ao ponto e sem enrolação — vida é curta demais.',
-      placeholder: 'linear-gradient(160deg,#0a1020 0%,#1a2a4a 50%,#0d1830 100%)',
-    },
-    {
-      name: 'Ana Paula, 38', photo: '/ana-paula.jpg',
-      tags: ['Mãe', 'Pet', 'Secretária'],
-      bio: 'Mãe de 2, tutora de um golden louco e secretária. Procuro um companheiro pra dividir a rotina e os momentos bons da vida.',
-      placeholder: 'linear-gradient(160deg,#120a1a 0%,#2d1545 50%,#1a0e30 100%)',
-    },
-  ]
-
-
+  /* ── FAQ Items ── */
   const faqItems = [
-    { q: 'Por que não existe um plano gratuito?', a: 'Porque o gratuito atrai quem não sabe o que quer. Aplicativos abertos viram bagunça: perfis falsos, pessoas inativas e perda de tempo. Cobrar um valor acessível (a partir de R$10) cria um filtro imediato. Quem investe para estar aqui, por menor que seja o valor, tem outro nível de intenção. Você percebe a diferença de nível já na primeira mensagem.' },
-    { q: 'O que exatamente é a área Backstage do Camarote Black?', a: 'É o seu espaço privado para desejos específicos. Uma área com filtros exclusivos que não existem nos planos comuns: Sugar, BDSM, Swing, fetiches e poliamor. A regra de ouro aqui é a discrição: você só vê e é visto por quem marcou as exatas mesmas intenções. Zero exposição desnecessária, zero julgamento e 100% de alinhamento direto ao ponto.' },
-    { q: 'Como funcionam os filtros de "incluir" e "excluir"?', a: 'É o sistema mais rápido e cirúrgico do Brasil, feito direto na tela principal. Clicou na tag, ficou verde: você quer ver aquele perfil. Clicou de novo, ficou vermelho: perfil bloqueado da sua frente. Clicou a terceira vez: volta ao neutro. Você molda a sua busca em segundos, sem precisar preencher formulários chatos.' },
-    { q: 'O que acontece com a foto do meu documento depois da verificação?', a: 'Ela é descartada imediatamente. Nós não armazenamos fotos de RG, CNH ou rosto de ninguém. Nossa tecnologia apenas valida a autenticidade na hora e guarda um código criptografado atrelado ao seu CPF. Sua privacidade é absoluta e seus dados originais nunca ficam soltos no nosso sistema.' },
-    { q: 'Posso cancelar a assinatura quando eu quiser?', a: 'Com dois cliques, direto no aplicativo. Sem burocracia, sem precisar mandar e-mail ou falar com atendente. Você cancela na hora e continua usando normalmente até o final do período que já pagou. Zero fidelidade, zero multa, zero dor de cabeça.' },
-    { q: 'O aplicativo funciona para todas as orientações e gêneros?', a: 'Completamente. Nosso sistema de filtros foi desenhado para abraçar todas as orientações sexuais, identidades de gênero e formatos de relacionamento. É você quem dita quem entra e quem sai da sua tela. O espaço é livre e se adapta perfeitamente ao que você procura.' },
-    { q: 'Como vocês garantem que os perfis são 100% reais?', a: 'Nossa barreira de entrada é implacável contra fakes e perfis falsos. Exigimos selfie ao vivo com sequência de movimentos, leitura de documento físico e validação de CPF na criação da conta. E o mais importante: se alguém quebra as regras e é banido, o bloqueio é feito direto no CPF. Não adianta criar outro e-mail, a pessoa simplesmente não volta.' },
-    { q: 'Como funciona a segurança e moderação do app?', a: 'Nossa equipe trabalha 24 horas por dia. Viu um comportamento fora do padrão? É só clicar nos três pontos do perfil e em "Denunciar". Além disso, fomos além: para situações de risco em encontros presenciais, o app possui um Botão de Emergência oculto que aciona o 190 imediatamente, garantindo a sua integridade física.' },
-  ]
-
-  const filterCats = [
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>, title: 'Cor dos olhos', desc: 'Todas as variações existentes, incluindo casos raros.', tags: ['Olhos pretos', 'Olhos castanhos', 'Olhos verdes', 'Olhos azuis', 'Olhos mel', 'Olhos acinzentados', 'Heterocromia'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.12" y2="15.88"/><line x1="14.47" y1="14.48" x2="20" y2="20"/></svg>, title: 'Cor do cabelo', desc: 'Cor natural ou tingida dos cabelos.', tags: ['Cabelo preto', 'Cabelo castanho', 'Cabelo loiro', 'Cabelo ruivo', 'Cabelo colorido', 'Cabelo grisalho', 'Não possuo cabelo (careca)'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2"/></svg>, title: 'Tipo e comprimento do cabelo', desc: 'Textura e tamanho dos fios.', tags: ['Cabelo curto', 'Cabelo médio', 'Cabelo longo', 'Cabelo liso', 'Cabelo ondulado', 'Cabelo cacheado', 'Cabelo crespo'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, title: 'Cor de pele e etnia', desc: 'Inclusão total. Todas as tonalidades e origens étnicas.', tags: ['Branca', 'Parda', 'Negra', 'Asiática', 'Indígena', 'Latina', 'Mediterrânea', 'Possuo vitiligo'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, title: 'Tipo corporal', desc: 'Biotipo com base em peso e altura.', tags: ['Abaixo do peso', 'Peso saudável', 'Acima do peso', 'Obesidade leve', 'Obesidade severa'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>, title: 'Características físicas', desc: 'Detalhes que fazem diferença na atração.', tags: ['Possuo sardas', 'Possuo tatuagem', 'Possuo piercing', 'Possuo cicatriz', 'Uso óculos', 'Uso aparelho dentário', 'Possuo barba'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="4" r="2"/><path d="m10 22-1-6-3-2"/><path d="m14 22 1-6 3-2"/><path d="M8 10h8"/></svg>, title: 'Pessoa com deficiência (PCD)', desc: 'Inclusão total. Selecione para encontrar ou ser encontrado.', tags: ['Deficiência visual', 'Deficiência auditiva', 'Deficiência motora', 'Deficiência intelectual', 'Autismo (TEA)', 'TDAH', 'Sou cadeirante', 'Nanismo', 'Outra'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, title: 'Orientação sexual', desc: 'Todo mundo tem seu espaço aqui, sem julgamento.', tags: ['Heterossexual', 'Homossexual', 'Bissexual', 'Pansexual', 'Assexual', 'Demissexual', 'Queer'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9h4m-4 4h6m-6 4h2"/><circle cx="17" cy="10" r="2"/></svg>, title: 'Identidade de gênero', desc: 'Como a pessoa se identifica e como prefere ser chamada.', tags: ['Homem', 'Mulher', 'Homem trans', 'Mulher trans', 'Não-binário(a)', 'Gênero fluido'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>, title: 'Status civil', desc: 'Situação atual no campo amoroso.', tags: ['Solteiro(a)', 'Enrolado(a)', 'Casado(a)', 'Divorciando', 'Divorciado(a)', 'Viúvo(a)', 'Relacionamento aberto'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>, title: 'Religião e espiritualidade', desc: 'Fé e espiritualidade como parte da compatibilidade.', tags: ['Evangélico(a)', 'Católico(a)', 'Espírita', 'Umbandista', 'Candomblé', 'Budista', 'Judaico(a)', 'Islâmico(a)', 'Hindu', 'Agnóstico(a)', 'Ateu / Ateia', 'Espiritualizado(a) sem religião'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="4.93" y1="9.93" x2="19.07" y2="14.07"/></svg>, title: 'Vícios e substâncias', desc: 'Hábitos que impactam diretamente a convivência.', tags: ['Fumo', 'Fumo ocasionalmente', 'Não fumo', 'Consumo bebida alcoólica', 'Bebo socialmente', 'Não consumo bebida alcoólica', 'Consumo cannabis', 'Não possuo vícios'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>, title: 'Estilo de vida e rotina', desc: 'Como a pessoa organiza o dia a dia e o tempo livre.', tags: ['Pratico academia', 'Pratico esporte regularmente', 'Sou sedentário(a)', 'Sou caseiro(a)', 'Gosto de sair', 'Gosto de balada', 'Sou noturno(a)', 'Sou matutino(a)', 'Sou workaholic', 'Tenho vida equilibrada'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>, title: 'Personalidade', desc: 'Introvertido(a), extrovertido(a) e tudo entre os dois extremos.', tags: ['Sou extrovertido(a)', 'Sou introvertido(a)', 'Sou ambiverte', 'Sou tímido(a)', 'Sou comunicativo(a)', 'Sou antissocial', 'Sou reservado(a)', 'Sou agitado(a)', 'Sou calmo(a)', 'Sou intenso(a)'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="6" y1="11" x2="10" y2="11"/><line x1="8" y1="9" x2="8" y2="13"/><line x1="15" y1="12" x2="15.01" y2="12"/><line x1="18" y1="10" x2="18.01" y2="10"/><rect x="2" y="6" width="20" height="12" rx="4"/></svg>, title: 'Hobbies e entretenimento', desc: 'O que a pessoa faz no tempo livre.', tags: ['Sou gamer', 'Adoro ler', 'Viciado(a) em filmes', 'Viciado(a) em séries', 'Curto anime / mangá', 'Curto música ao vivo', 'Faço fotografia', 'Arte e desenho', 'Danço', 'Faço teatro', 'Meditação / Yoga', 'Adoro viajar', 'Curto trilha e natureza'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>, title: 'Alimentação', desc: 'Compatibilidade alimentar importa mais do que parece.', tags: ['Sou vegano(a)', 'Sou vegetariano(a)', 'Sou carnívoro(a)', 'Como de tudo', 'Prefiro alimentação saudável', 'Cozinho bem', 'Não cozinho', 'Curto comida japonesa', 'Curto fast food'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.57a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.57a2 2 0 0 0-1.34-2.23z"/></svg>, title: 'Estilo de se vestir', desc: 'A forma de se vestir diz muito sobre quem a pessoa é.', tags: ['Social', 'Casual', 'Esportivo', 'Alternativo', 'Eclético', 'Gótico', 'Punk', 'E-girl / E-boy', 'K-pop'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>, title: 'Gosto musical', desc: 'Afinidade musical no dia a dia.', tags: ['Funk', 'Sertanejo', 'Pagode', 'Rock', 'Metal', 'Pop', 'Eletrônica', 'Hip-hop / Rap', 'MPB / Bossa Nova', 'Gospel', 'K-pop', 'Clássica', 'Eclético, curto de tudo'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/><path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/></svg>, title: 'Filhos e família', desc: 'Um dos pontos mais decisivos em qualquer relacionamento sério.', tags: ['Tenho filhos', 'Não tenho filhos', 'Quero ter filhos', 'Não quero ter filhos', 'Aberto(a) à adoção', 'Ainda não decidi'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/><path d="M12 21.23s-3-2.5-3-5"/></svg>, title: 'Animais de estimação', desc: 'Pet lover ou prefere não ter bicho em casa.', tags: ['Tenho cachorro', 'Tenho gato', 'Tenho outros pets', 'Adoro animais', 'Não tenho pets', 'Tenho alergia a animais', 'Não gosto de animais'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>, title: 'Escolaridade', desc: 'Nível de estudo e formação acadêmica.', tags: ['Ensino fundamental', 'Ensino médio completo', 'Ensino superior incompleto', 'Ensino superior completo', 'Pós-graduado(a)', 'Mestrado', 'Doutorado'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>, title: 'Situação profissional', desc: 'Carreira, autonomia financeira e estilo de trabalho.', tags: ['CLT', 'Empreendedor(a)', 'Freelancer', 'Profissional liberal', 'Servidor(a) público(a)', 'Autônomo(a)', 'Trabalho remoto', 'Estou desempregado(a)'] },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>, title: 'O que busca na plataforma', desc: 'Seja claro sobre suas intenções. Isso evita perda de tempo dos dois lados.', tags: ['Relacionamento sério', 'Relacionamento casual', 'Amizade', 'Companhia para eventos', 'Relação conjugal', 'Aberto(a) a experiências', 'Sugar Baby', 'Sugar Daddy / Mommy', 'Ainda estou definindo'], tip: 'Perfis de categorias sensíveis ficam visíveis apenas para quem também selecionou a mesma intenção.' },
-    { icon: <svg style={{ width: 22, height: 22, flexShrink: 0, color: 'var(--accent)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, title: 'Perfil discreto (exclusivo Black)', desc: 'Visível apenas para outros membros que também marcaram a mesma categoria.', tags: ['Busco trisal', 'Swing / relacionamento aberto', 'Poliamor', 'BDSM / fetiches'], tip: 'Estas opções ficam ocultas para quem não marcou a mesma categoria. Disponível apenas no plano Black.' },
+    { q: 'Por que nao existe um plano gratuito?', a: 'Porque o gratuito atrai quem nao sabe o que quer. Aplicativos abertos viram baguncca: perfis falsos, pessoas inativas e perda de tempo. Cobrar um valor acessivel (a partir de R$10) cria um filtro imediato. Quem investe para estar aqui, por menor que seja o valor, tem outro nivel de intencao. Voce percebe a diferenca de nivel ja na primeira mensagem.' },
+    { q: 'O que exatamente e a area Backstage do Camarote Black?', a: 'E o seu espaco privado para desejos especificos. Uma area com filtros exclusivos que nao existem nos planos comuns: Sugar, BDSM, Swing, fetiches e poliamor. A regra de ouro aqui e a discricao: voce so ve e e visto por quem marcou as exatas mesmas intencoes. Zero exposicao desnecessaria, zero julgamento e 100% de alinhamento direto ao ponto.' },
+    { q: 'Como funcionam os filtros de "incluir" e "excluir"?', a: 'E o sistema mais rapido e cirurgico do Brasil, feito direto na tela principal. Clicou na tag, ficou verde: voce quer ver aquele perfil. Clicou de novo, ficou vermelho: perfil bloqueado da sua frente. Clicou a terceira vez: volta ao neutro. Voce molda a sua busca em segundos, sem precisar preencher formularios chatos.' },
+    { q: 'O que acontece com a foto do meu documento depois da verificacao?', a: 'Ela e descartada imediatamente. Nos nao armazenamos fotos de RG, CNH ou rosto de ninguem. Nossa tecnologia apenas valida a autenticidade na hora e guarda um codigo criptografado atrelado ao seu CPF. Sua privacidade e absoluta e seus dados originais nunca ficam soltos no nosso sistema.' },
+    { q: 'Posso cancelar a assinatura quando eu quiser?', a: 'Com dois cliques, direto no aplicativo. Sem burocracia, sem precisar mandar e-mail ou falar com atendente. Voce cancela na hora e continua usando normalmente ate o final do periodo que ja pagou. Zero fidelidade, zero multa, zero dor de cabeca.' },
+    { q: 'O aplicativo funciona para todas as orientacoes e generos?', a: 'Completamente. Nosso sistema de filtros foi desenhado para abracar todas as orientacoes sexuais, identidades de genero e formatos de relacionamento. E voce quem dita quem entra e quem sai da sua tela. O espaco e livre e se adapta perfeitamente ao que voce procura.' },
+    { q: 'Como voces garantem que os perfis sao 100% reais?', a: 'Nossa barreira de entrada e implacavel contra fakes e perfis falsos. Exigimos selfie ao vivo com sequencia de movimentos, leitura de documento fisico e validacao de CPF na criacao da conta. E o mais importante: se alguem quebra as regras e e banido, o bloqueio e feito direto no CPF. Nao adianta criar outro e-mail, a pessoa simplesmente nao volta.' },
+    { q: 'Como funciona a seguranca e moderacao do app?', a: 'Nossa equipe trabalha 24 horas por dia. Viu um comportamento fora do padrao? E so clicar nos tres pontos do perfil e em "Denunciar". Alem disso, fomos alem: para situacoes de risco em encontros presenciais, o app possui um Botao de Emergencia oculto que aciona o 190 imediatamente, garantindo a sua integridade fisica.' },
   ]
 
   const jsonLd = {
@@ -333,7 +294,7 @@ export default function Home() {
         name: 'MeAndYou',
         url: 'https://www.meandyou.com.br',
         logo: 'https://www.meandyou.com.br/logo.png',
-        description: 'App de relacionamentos brasileiro com verificação real de identidade e os filtros mais completos do Brasil.',
+        description: 'App de relacionamentos brasileiro com verificacao real de identidade e os filtros mais completos do Brasil.',
         contactPoint: {
           '@type': 'ContactPoint',
           email: 'adminmeandyou@proton.me',
@@ -353,6 +314,16 @@ export default function Home() {
         })),
       },
     ],
+  }
+
+  if (checking) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#08090E' }}>
+        <h1 style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '36px', color: '#f0ece4' }}>
+          MeAnd<span style={{ color: '#E11D48' }}>You</span>
+        </h1>
+      </div>
+    )
   }
 
   return (
@@ -377,11 +348,11 @@ export default function Home() {
           --text-dim: rgba(248,249,250,0.30);
           --border: rgba(255,255,255,0.07);
           --border-soft: rgba(255,255,255,0.04);
+          --border-premium: rgba(255,255,255,0.06);
           --red: #F43F5E;
           --shadow-accent: 0 20px 60px rgba(225,29,72,0.18);
           --shadow-card: 0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25);
           --bg-card-grad: linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%);
-          --border-premium: rgba(255,255,255,0.06);
           --transition-smooth: all 0.25s cubic-bezier(0.4,0,0.2,1);
           --accent-grad: linear-gradient(135deg, #E11D48 0%, #be123c 100%);
         }
@@ -395,239 +366,203 @@ export default function Home() {
           position: fixed; top: 16px; left: 50%;
           z-index: 200; display: flex; align-items: center; justify-content: space-between;
           padding: 14px 28px; width: calc(100% - 48px); max-width: 1140px;
-          background: rgba(8,9,14,0.85); backdrop-filter: blur(20px);
+          background: rgba(8,9,14,0.85); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
           border: 1px solid var(--border-premium); border-radius: 16px;
           transition: transform 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.35s;
         }
         .lp-logo { font-family: var(--font-fraunces), serif; font-weight: 700; font-size: 22px; color: var(--text); letter-spacing: -0.5px; text-decoration: none; }
         .lp-logo span { color: var(--accent); }
-        .lp-nav-links { display: flex; gap: 4px; list-style: none; }
+        .lp-nav-links { display: flex; gap: 4px; list-style: none; align-items: center; }
         .lp-nav-links a { color: var(--text-muted); text-decoration: none; font-size: 14px; font-weight: 500; padding: 8px 14px; border-radius: 8px; transition: color 0.2s, background 0.2s; }
         .lp-nav-links a:hover { color: var(--text); background: var(--border-soft); }
-        .lp-nav-cta { background: var(--accent-grad) !important; color: #fff !important; padding: 10px 22px !important; border-radius: 10px !important; font-weight: 600 !important; box-shadow: 0 4px 16px rgba(225,29,72,.20) !important; }
+        .lp-nav-ghost { background: transparent; color: var(--text-muted); padding: 9px 20px; border-radius: 10px; font-weight: 500; font-size: 14px; text-decoration: none; border: 1px solid var(--border-premium); transition: color 0.2s, border-color 0.2s, background 0.2s; }
+        .lp-nav-ghost:hover { color: var(--text); border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); }
+        .lp-nav-cta { background: var(--accent-grad) !important; color: #fff !important; padding: 9px 20px !important; border-radius: 10px !important; font-weight: 600 !important; font-size: 14px !important; text-decoration: none !important; box-shadow: 0 4px 16px rgba(225,29,72,.20) !important; transition: background 0.2s !important; }
         .lp-nav-cta:hover { background: linear-gradient(135deg, #be123c 0%, #9f1239 100%) !important; }
 
-        /* ── SCROLL REVEAL SYSTEM ── */
-        @keyframes lpFadeUp   { from { opacity:0; transform:translateY(52px); }  to { opacity:1; transform:translateY(0); } }
-        @keyframes lpFadeLeft { from { opacity:0; transform:translateX(-52px); } to { opacity:1; transform:translateX(0); } }
-        @keyframes lpFadeRight{ from { opacity:0; transform:translateX(52px); }  to { opacity:1; transform:translateX(0); } }
-        @keyframes lpScaleIn  { from { opacity:0; transform:scale(0.84) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
-        @keyframes lpBlurUp   { from { opacity:0; filter:blur(18px); transform:translateY(28px); } to { opacity:1; filter:blur(0); transform:translateY(0); } }
-        @keyframes lpFlipUp   { from { opacity:0; transform:perspective(700px) rotateX(18deg) translateY(32px); } to { opacity:1; transform:perspective(700px) rotateX(0deg) translateY(0); } }
+        /* ── SCROLL REVEAL ── */
+        @keyframes lpFadeUp { from { opacity:0; transform:translateY(40px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes lpScaleIn { from { opacity:0; transform:scale(0.88) translateY(20px); } to { opacity:1; transform:scale(1) translateY(0); } }
+        @keyframes lpFlipUp { from { opacity:0; transform:perspective(700px) rotateX(18deg) translateY(32px); } to { opacity:1; transform:perspective(700px) rotateX(0deg) translateY(0); } }
 
         .lp-anim { opacity: 0; }
-        .lp-anim.lp-visible { animation: lpFadeUp 0.75s cubic-bezier(0.16,1,0.3,1) both; }
-
-        /* Section-specific animation types */
-        .lp-problem-header.lp-anim.lp-visible   { animation: lpFadeLeft 0.75s cubic-bezier(0.16,1,0.3,1) both; }
-        .lp-about-logo.lp-anim.lp-visible        { animation: lpFadeLeft 0.8s cubic-bezier(0.16,1,0.3,1) both; }
-        .lp-about-text.lp-anim.lp-visible        { animation: lpFadeRight 0.8s cubic-bezier(0.16,1,0.3,1) both; }
-        .lp-about-intro-left.lp-anim.lp-visible  { animation: lpFadeLeft 0.8s cubic-bezier(0.16,1,0.3,1) both; }
-        .lp-about-intro-right.lp-anim.lp-visible { animation: lpFadeRight 0.8s cubic-bezier(0.16,1,0.3,1) both; }
-        .lp-install-left.lp-anim.lp-visible      { animation: lpFadeLeft 0.8s cubic-bezier(0.16,1,0.3,1) both; }
-        .lp-install-right.lp-anim.lp-visible     { animation: lpFadeRight 0.8s cubic-bezier(0.16,1,0.3,1) both; }
-        .lp-card.lp-anim.lp-visible              { animation: lpScaleIn 0.7s cubic-bezier(0.16,1,0.3,1) both; }
-        .lp-filter-cat.lp-anim.lp-visible        { animation: lpBlurUp 0.75s cubic-bezier(0.16,1,0.3,1) both; }
-        .lp-testi-card.lp-anim.lp-visible        { animation: lpFlipUp 0.7s cubic-bezier(0.16,1,0.3,1) both; }
-        .lp-about-pillar.lp-anim.lp-visible      { animation: lpScaleIn 0.7s cubic-bezier(0.16,1,0.3,1) both; }
-        .lp-diff-card:nth-child(1).lp-anim.lp-visible { animation: lpFadeLeft 0.75s cubic-bezier(0.16,1,0.3,1) both; }
-        .lp-diff-card:nth-child(3).lp-anim.lp-visible { animation: lpFadeRight 0.75s cubic-bezier(0.16,1,0.3,1) both; }
-
-        /* Stagger delays */
-        .lp-anim.lp-visible:nth-child(2) { animation-delay: 80ms; }
-        .lp-anim.lp-visible:nth-child(3) { animation-delay: 160ms; }
-        .lp-anim.lp-visible:nth-child(4) { animation-delay: 240ms; }
-        .lp-card.lp-anim.lp-visible:nth-child(2) { animation-delay: 120ms; }
-        .lp-card.lp-anim.lp-visible:nth-child(3) { animation-delay: 240ms; }
-        .lp-gamif-card.lp-anim.lp-visible:nth-child(2) { animation-delay: 100ms; }
-        .lp-gamif-card.lp-anim.lp-visible:nth-child(3) { animation-delay: 200ms; }
-        .lp-diff-card.lp-anim.lp-visible:nth-child(2) { animation-delay: 120ms; }
-        .lp-diff-card.lp-anim.lp-visible:nth-child(3) { animation-delay: 240ms; }
-        .lp-testi-card.lp-anim.lp-visible:nth-child(2) { animation-delay: 130ms; }
-        .lp-testi-card.lp-anim.lp-visible:nth-child(3) { animation-delay: 260ms; }
-        .lp-verify-step.lp-anim.lp-visible:nth-child(2) { animation-delay: 80ms; }
-        .lp-verify-step.lp-anim.lp-visible:nth-child(3) { animation-delay: 160ms; }
-        .lp-verify-step.lp-anim.lp-visible:nth-child(4) { animation-delay: 240ms; }
-        .lp-verify-step.lp-anim.lp-visible:nth-child(5) { animation-delay: 320ms; }
-        .lp-verify-step.lp-anim.lp-visible:nth-child(6) { animation-delay: 400ms; }
-        .lp-about-pillar.lp-anim.lp-visible:nth-child(2) { animation-delay: 120ms; }
-        .lp-about-pillar.lp-anim.lp-visible:nth-child(3) { animation-delay: 240ms; }
-        .lp-safety-item.lp-anim.lp-visible:nth-child(2) { animation-delay: 60ms; }
-        .lp-safety-item.lp-anim.lp-visible:nth-child(3) { animation-delay: 120ms; }
-        .lp-safety-item.lp-anim.lp-visible:nth-child(4) { animation-delay: 180ms; }
-        .lp-safety-item.lp-anim.lp-visible:nth-child(5) { animation-delay: 240ms; }
-        .lp-safety-item.lp-anim.lp-visible:nth-child(6) { animation-delay: 300ms; }
-        .lp-safety-item.lp-anim.lp-visible:nth-child(7) { animation-delay: 360ms; }
-        .lp-safety-item.lp-anim.lp-visible:nth-child(8) { animation-delay: 420ms; }
+        .lp-anim.lp-visible { animation: lpFadeUp 0.7s cubic-bezier(0.16,1,0.3,1) both; }
+        .lp-anim.lp-visible:nth-child(2) { animation-delay: 100ms; }
+        .lp-anim.lp-visible:nth-child(3) { animation-delay: 200ms; }
+        .lp-anim.lp-visible:nth-child(4) { animation-delay: 300ms; }
 
         /* ── HERO ── */
-        @keyframes lp-fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes lp-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes lp-fadeUp { from { opacity:0; transform:translateY(28px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes lp-pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
 
-        .lp-hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 60px; padding: 140px 56px 100px; max-width: 1200px; margin: 0 auto; }
-        .lp-badge {
-          display: inline-flex; align-items: center; gap: 8px;
-          background: var(--accent-soft); border: 1px solid var(--accent-border);
-          color: #F43F5E; padding: 7px 18px; border-radius: 100px;
-          font-size: 13px; font-weight: 600; margin-bottom: 28px;
-          animation: lp-fadeUp .5s ease both;
-        }
+        @keyframes orbFloat1 { 0%,100%{transform:translate(0,0) scale(1)} 33%{transform:translate(30px,-20px) scale(1.1)} 66%{transform:translate(-20px,15px) scale(0.95)} }
+        @keyframes orbFloat2 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-40px,25px) scale(1.08)} }
+        @keyframes orbFloat3 { 0%,100%{transform:translate(0,0)} 40%{transform:translate(25px,-30px)} 80%{transform:translate(-15px,20px)} }
+
+        .lp-hero { position: relative; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 140px 24px 80px; overflow: hidden; }
+        .lp-hero-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(8,9,14,0.55), rgba(8,9,14,0.85)), url('/backgrounds/hero.png'); background-size: cover; background-position: center; z-index: 0; }
+        .lp-orb { position: absolute; border-radius: 50%; filter: blur(120px); pointer-events: none; z-index: 1; }
+        .lp-orb-1 { width: 500px; height: 500px; background: rgba(225,29,72,0.12); top: -10%; left: -5%; animation: orbFloat1 18s ease-in-out infinite; }
+        .lp-orb-2 { width: 400px; height: 400px; background: rgba(244,63,94,0.08); bottom: 10%; right: -8%; animation: orbFloat2 22s ease-in-out infinite; }
+        .lp-orb-3 { width: 350px; height: 350px; background: rgba(159,18,57,0.10); top: 40%; left: 50%; animation: orbFloat3 15s ease-in-out infinite; }
+        .lp-hero-content { position: relative; z-index: 2; max-width: 720px; }
+        .lp-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--accent-soft); border: 1px solid var(--accent-border); color: #F43F5E; padding: 7px 18px; border-radius: 100px; font-size: 13px; font-weight: 600; margin-bottom: 28px; animation: lp-fadeUp .5s ease both; }
         .lp-badge-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: lp-pulse 2s ease-in-out infinite; }
-        .lp-hero h1 { font-family: var(--font-fraunces), serif; font-size: clamp(44px, 5vw, 74px); font-weight: 700; line-height: 1.06; letter-spacing: -2px; margin-bottom: 24px; animation: lp-fadeUp .5s .1s ease both; }
+        .lp-hero h1 { font-family: var(--font-fraunces), serif; font-size: clamp(40px, 6vw, 72px); font-weight: 700; line-height: 1.06; letter-spacing: -2px; margin-bottom: 24px; animation: lp-fadeUp .5s .1s ease both; }
         .lp-hero h1 em { font-style: italic; color: var(--accent); }
-        .lp-hero-sub { font-size: 17px; font-weight: 400; color: rgba(248,249,250,0.72); max-width: 460px; margin-bottom: 40px; line-height: 1.75; animation: lp-fadeUp .5s .2s ease both; }
+        .lp-hero-sub { font-size: 17px; font-weight: 400; color: rgba(248,249,250,0.72); max-width: 520px; margin: 0 auto 40px; line-height: 1.75; animation: lp-fadeUp .5s .2s ease both; }
         .lp-hero-sub strong { color: var(--text); font-weight: 600; }
-        .lp-actions { display: flex; gap: 12px; flex-wrap: wrap; animation: lp-fadeUp .5s .3s ease both; }
-        .lp-btn-main {
-          background: var(--accent-grad); color: #fff; padding: 15px 34px; border-radius: 12px;
-          font-weight: 700; font-size: 15px; text-decoration: none; display: inline-flex;
-          align-items: center; gap: 10px; box-shadow: 0 4px 16px rgba(225,29,72,.25), 0 12px 40px rgba(225,29,72,.20);
-          transition: var(--transition-smooth); cursor: pointer;
-        }
+        .lp-actions { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; animation: lp-fadeUp .5s .3s ease both; }
+        .lp-btn-main { background: var(--accent-grad); color: #fff; padding: 15px 34px; border-radius: 12px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 16px rgba(225,29,72,.25), 0 12px 40px rgba(225,29,72,.20); transition: var(--transition-smooth); cursor: pointer; border: none; font-family: var(--font-jakarta), sans-serif; }
         .lp-btn-main:hover { background: #be123c; transform: translateY(-2px); box-shadow: 0 12px 40px rgba(225,29,72,.45); }
-        .lp-btn-outline {
-          background: transparent; color: var(--text); padding: 15px 30px; border-radius: 12px;
-          font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid var(--border-premium);
-          display: inline-flex; align-items: center; gap: 8px; transition: border-color 0.2s, background 0.2s; cursor: pointer;
-        }
+        .lp-btn-outline { background: transparent; color: var(--text); padding: 15px 30px; border-radius: 12px; font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid var(--border-premium); display: inline-flex; align-items: center; gap: 8px; transition: border-color 0.2s, background 0.2s; cursor: pointer; font-family: var(--font-jakarta), sans-serif; }
         .lp-btn-outline:hover { border-color: rgba(255,255,255,0.12); background: rgba(255,255,255,0.04); }
-        .lp-stats { display: flex; gap: 32px; margin-top: 48px; animation: lp-fadeUp .5s .4s ease both; }
-        .lp-stat-val { font-family: var(--font-fraunces), serif; font-size: 28px; font-weight: 700; line-height: 1; color: var(--text); }
-        .lp-stat-label { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
-        .lp-stat-div { width: 1px; background: var(--border-premium); }
 
-        /* Phone mockup */
-        .lp-hero-right { position: relative; height: 660px; display: flex; align-items: center; justify-content: center; }
-        .lp-phone {
-          width: 265px; height: 560px; background: var(--bg-card-grad);
-          border-radius: 38px; border: 1px solid rgba(255,255,255,0.1);
-          box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.06), 0 0 60px rgba(225,29,72,0.08);
-          overflow: hidden; animation: card-enter 0.38s cubic-bezier(.34,1.4,.64,1) both;
-        }
-        .lp-phone-header { background: var(--bg); padding: 36px 20px 10px; text-align: center; display: flex; flex-direction: column; align-items: center; border-bottom: 1px solid var(--border-premium); }
-        .lp-phone-logo { display: flex; align-items: center; justify-content: center; }
-        .lp-phone-card { margin: 10px; background: var(--bg-card2); border-radius: 18px; overflow: hidden; border: 1px solid var(--border-premium); }
-        .lp-phone-img { height: 210px; background: linear-gradient(160deg, #1a0a14 0%, #3d1530 50%, #2a0e24 100%); display: flex; align-items: center; justify-content: center; font-size: 64px; position: relative; overflow: hidden; }
-        .lp-phone-img img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
-        .lp-phone-bio { font-size: 10.5px; color: var(--text-muted); line-height: 1.55; padding: 0 14px 10px; }
-        .lp-v-badge { position: absolute; top: 10px; right: 10px; background: var(--accent); color: #fff; border-radius: 100px; padding: 4px 10px; font-size: 10px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
-        .lp-phone-info { padding: 12px 14px 10px; }
-        .lp-phone-name { font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 700; color: var(--text); }
-        .lp-phone-tags { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 6px; }
-        .lp-phone-tag { background: rgba(16,185,129,0.12); color: #10b981; border-radius: 100px; padding: 3px 9px; font-size: 10px; font-weight: 600; }
-        .lp-phone-actions { display: flex; justify-content: center; gap: 14px; padding: 10px 16px 14px; }
-        .lp-ph-btn { width: 46px; height: 46px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; transition: transform 0.15s; }
-        .lp-ph-btn:hover { transform: scale(1.1); }
-        .lp-ph-btn.no { background: rgba(244,63,94,0.12); color: #F43F5E; border: 1px solid rgba(244,63,94,0.25); }
-        .lp-ph-btn.super { background: rgba(245,158,11,0.12); color: var(--gold); border: 1px solid rgba(245,158,11,0.25); }
-        .lp-ph-btn.yes { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border); }
-        .lp-fc {
-          position: absolute; background: rgba(15,17,23,0.75);
-          backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-          border: 1px solid rgba(255,255,255,0.12); border-radius: 100px;
-          padding: 8px 16px; font-size: 12px; font-weight: 600;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08);
-          white-space: nowrap; color: var(--text); z-index: 10;
-        }
-        .lp-fc1 { top: 48px; left: -10px; }
-        .lp-fc2 { top: 270px; right: -20px; }
-        .lp-fc3 { bottom: 90px; left: 0px; }
-        .lp-fc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; margin-right: 4px; }
+        /* Social proof badge */
+        .lp-social-badge { display: inline-flex; align-items: center; gap: 10px; margin-top: 36px; animation: lp-fadeUp .5s .45s ease both; font-size: 13px; color: var(--text-muted); }
+        .lp-social-badge-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; animation: lp-pulse 2s ease-in-out infinite; }
 
-        /* ── Sections ── */
+        /* ── NOTIFICATIONS ── */
+        @keyframes lp-notif-in { from { opacity:0; transform:translateY(10px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
+        @keyframes lp-notif-out { from { opacity:1; transform:translateY(0) scale(1); } to { opacity:0; transform:translateY(-10px) scale(0.95); } }
+        .lp-notif-area { position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 8px; pointer-events: none; margin-top: 24px; min-height: 40px; }
+        .lp-notif-item { background: rgba(8,9,14,0.90); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.13); border-radius: 100px; padding: 8px 16px; font-size: 12px; font-weight: 600; color: var(--text); white-space: nowrap; display: flex; align-items: center; gap: 6px; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
+        .lp-notif-enter { animation: lp-notif-in 0.4s ease forwards; }
+        .lp-notif-exit { animation: lp-notif-out 0.4s ease forwards; }
+        .lp-fc-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); display: inline-block; }
+
+        /* ── STATS ── */
+        .lp-stats-section { padding: 60px 24px; background: linear-gradient(180deg, rgba(13,15,22,1) 0%, var(--bg) 100%); }
+        .lp-stats-inner { max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; text-align: center; }
+        .lp-stat-number { font-family: var(--font-fraunces), serif; font-size: clamp(32px, 4vw, 48px); font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 6px; }
+        .lp-stat-desc { font-size: 13px; color: var(--text-muted); }
+
+        /* ── SECTION HELPERS ── */
         .lp-section-label { font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
         .lp-section-title { font-family: var(--font-fraunces), serif; font-size: clamp(30px, 4vw, 52px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
 
-        /* ── COMPARATIVO ── */
-        .lp-problem { padding: 100px 56px; background: var(--bg-card-grad); border-top: 1px solid var(--border-premium); border-bottom: 1px solid var(--border-premium); }
-        .lp-problem-inner { max-width: 1000px; margin: 0 auto; }
-        .lp-problem-header { text-align: center; margin-bottom: 56px; }
-        .lp-problem h2 { font-family: var(--font-fraunces), serif; font-size: clamp(28px, 4vw, 48px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 14px; }
-        .lp-problem h2 em { color: var(--accent); font-style: italic; }
-        .lp-cmp-header { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; margin-bottom: 4px; }
-        .lp-cmp-col-label { text-align: center; font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 14px 20px; border-radius: 12px 12px 0 0; }
-        .lp-cmp-col-label.them { color: var(--text-dim); background: rgba(255,255,255,0.03); }
-        .lp-cmp-col-label.us { color: #10b981; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.20); border-bottom: none; }
-        .lp-cmp-col-label.feature { color: transparent; }
-        .lp-cmp-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0; border-bottom: 1px solid var(--border-soft); }
-        .lp-cmp-row:last-child { border-bottom: none; }
-        .lp-cmp-feature { padding: 16px 20px; font-size: 13px; font-weight: 500; color: var(--text); display: flex; align-items: center; }
-        .lp-cmp-cell { padding: 16px 20px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
-        .lp-cmp-cell.them { color: var(--text-muted); background: rgba(255,255,255,0.015); }
-        .lp-cmp-cell.us { color: rgba(248,249,250,0.92); background: rgba(16,185,129,0.05); border-left: 1px solid rgba(16,185,129,0.15); border-right: 1px solid rgba(16,185,129,0.15); }
-        .lp-cmp-row:last-child .lp-cmp-cell.us { border-bottom: 1px solid rgba(16,185,129,0.15); border-radius: 0 0 12px 12px; }
-        .lp-cmp-x { width: 18px; height: 18px; border-radius: 50%; background: rgba(244,63,94,0.12); color: #F43F5E; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .lp-cmp-check { width: 18px; height: 18px; border-radius: 50%; background: rgba(16,185,129,0.15); color: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        @media (max-width: 700px) {
-          .lp-cmp-header, .lp-cmp-row { grid-template-columns: 1fr 1fr; }
-          .lp-cmp-feature { display: none; }
+        /* ── BG FADE ── */
+        .lp-bg-fade { position: relative; }
+        .lp-bg-fade::before, .lp-bg-fade::after { content: ''; position: absolute; left: 0; right: 0; height: 180px; z-index: 2; pointer-events: none; }
+        .lp-bg-fade::before { top: 0; background: linear-gradient(to bottom, #08090E 0%, transparent 100%); }
+        .lp-bg-fade::after { bottom: 0; background: linear-gradient(to top, #08090E 0%, transparent 100%); }
+        .lp-bg-fade > * { position: relative; z-index: 3; }
+
+        /* ── MODES (4 cards) ── */
+        .lp-modes { padding: 100px 24px; position: relative; overflow: hidden; }
+        .lp-modes-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(8,9,14,0.78), rgba(8,9,14,0.92)), url('/backgrounds/diferenciais.png'); background-size: cover; background-position: center; z-index: 0; }
+        .lp-modes-inner { max-width: 1100px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
+        .lp-modes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 60px; }
+        .lp-mode-card {
+          background: var(--bg-card-grad); border-radius: 20px; padding: 32px 24px;
+          text-align: left; position: relative; overflow: hidden;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        .lp-mode-card:hover { transform: perspective(800px) rotateX(-3deg) rotateY(3deg) scale(1.02); }
+        .lp-mode-num { font-family: var(--font-fraunces), serif; font-size: 48px; font-weight: 700; line-height: 1; margin-bottom: 16px; opacity: 0.15; }
+        .lp-mode-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+        .lp-mode-card h3 { font-family: var(--font-fraunces), serif; font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+        .lp-mode-card p { font-size: 13px; color: rgba(248,249,250,0.65); line-height: 1.65; margin-bottom: 16px; }
+        .lp-mode-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+
+        /* Mode card variants */
+        .lp-mode-discover { background: linear-gradient(135deg, #1a0810, #3d0821); border: 1px solid rgba(244,63,94,0.2); }
+        .lp-mode-discover:hover { box-shadow: 0 16px 48px rgba(244,63,94,0.15); }
+        .lp-mode-discover .lp-mode-icon { background: rgba(244,63,94,0.12); color: #F43F5E; border: 1px solid rgba(244,63,94,0.25); }
+        .lp-mode-discover .lp-mode-tag { background: rgba(244,63,94,0.1); color: #F43F5E; border: 1px solid rgba(244,63,94,0.2); }
+
+        .lp-mode-search { background: linear-gradient(135deg, #0a1020, #1a2a4a); border: 1px solid rgba(96,165,250,0.2); }
+        .lp-mode-search:hover { box-shadow: 0 16px 48px rgba(96,165,250,0.15); }
+        .lp-mode-search .lp-mode-icon { background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid rgba(96,165,250,0.25); }
+        .lp-mode-search .lp-mode-tag { background: rgba(96,165,250,0.1); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
+
+        .lp-mode-daily { background: linear-gradient(135deg, #1a1200, #3d2f0a); border: 1px solid rgba(245,158,11,0.2); }
+        .lp-mode-daily:hover { box-shadow: 0 16px 48px rgba(245,158,11,0.15); }
+        .lp-mode-daily .lp-mode-icon { background: rgba(245,158,11,0.12); color: #F59E0B; border: 1px solid rgba(245,158,11,0.25); }
+        .lp-mode-daily .lp-mode-tag { background: rgba(245,158,11,0.1); color: #F59E0B; border: 1px solid rgba(245,158,11,0.2); }
+
+        .lp-mode-rooms { background: linear-gradient(135deg, #071a12, #0a3d22); border: 1px solid rgba(16,185,129,0.2); }
+        .lp-mode-rooms:hover { box-shadow: 0 16px 48px rgba(16,185,129,0.15); }
+        .lp-mode-rooms .lp-mode-icon { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.25); }
+        .lp-mode-rooms .lp-mode-tag { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+
+        /* ── CAMAROTE BLACK ── */
+        .lp-camarote { padding: 100px 24px; position: relative; overflow: hidden; }
+        .lp-camarote-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(8,9,14,0.82), rgba(8,9,14,0.92)), url('/backgrounds/MUITO%20MAIS%20DO%20QUE%20CURTIDAS.png'); background-size: cover; background-position: center; z-index: 0; }
+        .lp-camarote-inner { max-width: 900px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
+        .lp-gold-badge { display: inline-flex; align-items: center; gap: 8px; background: var(--gold-soft); border: 1px solid var(--gold-border); color: var(--gold); padding: 7px 18px; border-radius: 100px; font-size: 12px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 24px; }
+        .lp-camarote h2 { font-family: var(--font-fraunces), serif; font-size: clamp(32px, 4.5vw, 56px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.08; margin-bottom: 16px; }
+        .lp-camarote h2 em { color: var(--gold); font-style: italic; }
+        .lp-camarote-desc { font-size: 16px; color: rgba(248,249,250,0.65); line-height: 1.75; max-width: 560px; margin: 0 auto 48px; }
+        .lp-camarote-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 48px; }
+        .lp-camarote-feat { background: rgba(245,158,11,0.04); border: 1px solid var(--gold-border); border-radius: 16px; padding: 24px 20px; text-align: left; transition: var(--transition-smooth); }
+        .lp-camarote-feat:hover { background: rgba(245,158,11,0.08); transform: translateY(-3px); }
+        .lp-camarote-feat-icon { color: var(--gold); margin-bottom: 12px; }
+        .lp-camarote-feat h4 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .lp-camarote-feat p { font-size: 12px; color: rgba(248,249,250,0.50); line-height: 1.6; margin: 0; }
+        .lp-btn-gold { background: var(--gold); color: #fff; padding: 15px 34px; border-radius: 12px; font-weight: 700; font-size: 15px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 16px rgba(245,158,11,.25); transition: var(--transition-smooth); cursor: pointer; border: none; font-family: var(--font-jakarta), sans-serif; }
+        .lp-btn-gold:hover { background: #d97706; transform: translateY(-2px); box-shadow: 0 12px 40px rgba(245,158,11,.35); }
+        .lp-camarote-note { font-size: 12px; color: var(--text-dim); margin-top: 20px; font-style: italic; }
+
+        /* ── GAMIFICATION ── */
+        .lp-gamif { padding: 100px 24px; background: var(--bg); position: relative; overflow: hidden; }
+        .lp-gamif-orb { position: absolute; width: 400px; height: 400px; border-radius: 50%; background: rgba(225,29,72,0.06); filter: blur(120px); top: -100px; right: -100px; pointer-events: none; }
+        .lp-gamif-inner { max-width: 1000px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
+        .lp-gamif-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 60px; text-align: left; }
+        .lp-gamif-card { background: var(--bg-card-grad); border: 1px solid rgba(225,29,72,0.15); border-radius: 20px; padding: 32px 28px; box-shadow: var(--shadow-card); transition: var(--transition-smooth); }
+        .lp-gamif-card:hover { border-color: rgba(225,29,72,0.35); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(225,29,72,0.10); }
+        .lp-gamif-icon { width: 48px; height: 48px; border-radius: 14px; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin-bottom: 18px; color: var(--accent); }
+        .lp-gamif-card h3 { font-family: var(--font-fraunces), serif; font-size: 19px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+        .lp-gamif-card p { font-size: 13px; color: rgba(248,249,250,0.65); line-height: 1.7; margin: 0; }
+
+        /* Roleta spin on hover */
+        .lp-roleta-icon { transition: transform 0.3s ease; }
+        .lp-gamif-card:hover .lp-roleta-icon { animation: spin360 0.6s ease; }
+        @keyframes spin360 { to { transform: rotate(360deg); } }
+
+        /* Streak progress bar */
+        .lp-streak-bar { width: 100%; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.06); margin-top: 12px; overflow: hidden; }
+        .lp-streak-fill { height: 100%; border-radius: 3px; background: var(--accent-grad); width: 0%; animation: streakGrow 2s 0.5s ease forwards; }
+        @keyframes streakGrow { to { width: 73%; } }
+
+        /* Mini badges */
+        .lp-mini-badges { display: flex; gap: 8px; margin-top: 12px; }
+        .lp-mini-badge { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
 
         /* ── VERIFICATION ── */
-        .lp-verification { padding: 100px 56px; background: var(--bg); }
-        .lp-verification-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
-        .lp-verify-steps { display: flex; flex-direction: column; gap: 14px; }
-        .lp-verify-step { display: flex; align-items: flex-start; gap: 18px; background: rgba(15,17,23,0.5); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.07); border-radius: 18px; padding: 22px 24px; transition: border-color 0.3s, box-shadow 0.3s, transform 0.3s; }
-        .lp-verify-step:hover { border-color: var(--accent-border); box-shadow: 0 8px 32px rgba(225,29,72,0.10); transform: translateX(4px); }
-        .lp-vstep-num { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 700; flex-shrink: 0; }
-        .lp-verify-step h4 { font-size: 14px; font-weight: 600; margin-bottom: 4px; color: var(--text); }
-        .lp-verify-step p { font-size: 13px; font-weight: 400; color: rgba(248,249,250,0.68); line-height: 1.6; margin: 0; }
+        .lp-verify { padding: 80px 24px; background: #0d0f16; }
+        .lp-verify-inner { max-width: 900px; margin: 0 auto; text-align: center; }
+        .lp-verify-shield { width: 64px; height: 64px; margin: 0 auto 20px; color: var(--accent); }
+        .lp-verify-cols { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+        .lp-verify-col { text-align: center; }
+        .lp-verify-col-icon { width: 48px; height: 48px; margin: 0 auto 14px; border-radius: 50%; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; color: var(--accent); }
+        .lp-verify-col h4 { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+        .lp-verify-col p { font-size: 13px; color: var(--text-muted); line-height: 1.6; margin: 0; }
 
-        /* ── FILTERS ── */
-        .lp-filters-section { padding: 100px 56px; background: var(--bg-card-grad); border-top: 1px solid var(--border-premium); }
-        .lp-filters-inner { max-width: 1200px; margin: 0 auto; }
-        .lp-filter-note { display: inline-flex; align-items: center; gap: 12px; font-size: 13px; color: var(--text-muted); background: var(--bg); border: 1px solid var(--border-premium); border-radius: 12px; padding: 12px 22px; }
-        .lp-filter-categories { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .lp-filter-cat { background: var(--bg); border: 1px solid var(--border-premium); border-radius: 20px; padding: 26px; box-shadow: var(--shadow-card); transition: var(--transition-smooth); position: relative; overflow: hidden; }
-        .lp-filter-cat::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); transform: scaleX(0); transition: transform 0.3s; transform-origin: left; }
-        .lp-filter-cat:hover { border-color: var(--accent-border); transform: translateY(-3px); box-shadow: 0 8px 32px rgba(225,29,72,0.08); }
-        .lp-filter-cat:hover::after { transform: scaleX(1); }
-        .lp-cat-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .lp-cat-emoji { font-size: 22px; }
-        .lp-filter-cat h3 { font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 700; color: var(--text); }
-        .lp-filter-cat > p { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; line-height: 1.55; }
-        .lp-tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
-        .lp-ftag { border-radius: 100px; padding: 4px 12px; font-size: 12px; font-weight: 500; cursor: pointer; transition: var(--transition-smooth); border: 1px solid transparent; user-select: none; }
-        .lp-ftag.inc { background: rgba(46,196,160,0.12); color: #2ec4a0; border-color: rgba(46,196,160,0.30); }
-        .lp-ftag.exc { background: rgba(244,63,94,0.08); color: #F43F5E; border-color: rgba(244,63,94,0.25); }
-        .lp-ftag.neu { background: rgba(255,255,255,0.04); color: var(--text-muted); border-color: var(--border-premium); }
-        .lp-ftag:hover { transform: scale(1.05); }
-        .lp-filter-tip { font-size: 11px; color: var(--text-dim); margin-top: 12px; font-style: italic; }
-
-        /* ── INTENTIONS ── */
-        .lp-intentions { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border-premium); }
-        .lp-intentions-inner { max-width: 1100px; margin: 0 auto; }
-        .lp-intentions-header { text-align: center; margin-bottom: 56px; }
-        .lp-intentions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 14px; }
-        .lp-intent-card { border: 1px solid var(--border-premium); border-radius: 20px; padding: 28px 18px; text-align: center; background: var(--bg-card-grad); box-shadow: var(--shadow-card); transition: all 0.25s cubic-bezier(.34,1.56,.64,1); cursor: default; }
-        .lp-intent-card:hover { border-color: var(--accent-border); background: rgba(225,29,72,0.06); transform: translateY(-6px) scale(1.02); box-shadow: 0 16px 40px rgba(225,29,72,0.12); }
-        .lp-intent-icon { width: 46px; height: 46px; margin: 0 auto 14px; color: var(--accent); transition: transform 0.3s; }
-        .lp-intent-card:hover .lp-intent-icon { transform: scale(1.15) rotate(-5deg); }
-        .lp-intent-card h3 { font-family: var(--font-fraunces), serif; font-size: 15px; font-weight: 700; margin-bottom: 5px; color: var(--text); }
-        .lp-intent-card p { font-size: 11px; font-weight: 400; color: rgba(248,249,250,0.65); line-height: 1.55; }
-
-        /* ── HOW IT WORKS ── */
-        .lp-how { padding: 100px 56px; background: var(--bg-card-grad); border-top: 1px solid var(--border-premium); }
-        .lp-how-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
-        .lp-steps-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 28px; margin-top: 60px; position: relative; }
-        .lp-steps-row::before { content: ''; position: absolute; top: 34px; left: 12%; right: 12%; height: 1px; background: linear-gradient(90deg, var(--accent), rgba(225,29,72,0.2)); }
-        .lp-how-step { position: relative; z-index: 1; opacity: 0; transform: translateY(24px); transition: opacity 0.5s ease, transform 0.5s ease; text-align: center; }
-        .lp-how-step.visible { opacity: 1; transform: translateY(0); }
-        .lp-how-step:nth-child(1) { transition-delay: 0s; } .lp-how-step:nth-child(2) { transition-delay: .15s; } .lp-how-step:nth-child(3) { transition-delay: .3s; } .lp-how-step:nth-child(4) { transition-delay: .45s; }
-        .lp-step-icon { width: 68px; height: 68px; border-radius: 50%; background: var(--bg); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin: 0 auto 18px; box-shadow: 0 4px 20px rgba(225,29,72,0.12); transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s; }
-        .lp-how-step:hover .lp-step-icon { transform: translateY(-6px) scale(1.08); box-shadow: 0 14px 32px rgba(225,29,72,0.25); }
-        .lp-step-icon svg { width: 26px; height: 26px; color: var(--accent); }
-        .lp-how-step h3 { font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 600; margin-bottom: 6px; color: var(--text); }
-        .lp-how-step p { font-size: 13px; font-weight: 400; color: rgba(248,249,250,0.65); line-height: 1.6; }
+        /* ── TESTIMONIALS ── */
+        .lp-testi { padding: 100px 24px; position: relative; overflow: hidden; }
+        .lp-testi-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(8,9,14,0.75), rgba(8,9,14,0.90)), url('/backgrounds/depoimentos.png'); background-size: cover; background-position: center; z-index: 0; }
+        .lp-testi-inner { max-width: 1100px; margin: 0 auto; text-align: center; position: relative; z-index: 1; }
+        .lp-testi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 60px; text-align: left; }
+        .lp-testi-card { background: rgba(15,17,23,0.6); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 30px; transition: border-color 0.3s, transform 0.3s; }
+        .lp-testi-card:hover { border-color: rgba(225,29,72,0.25); transform: translateY(-4px); }
+        .lp-testi-stars { color: var(--gold); font-size: 13px; margin-bottom: 14px; letter-spacing: 2px; }
+        .lp-testi-text { font-size: 14px; color: rgba(248,249,250,0.78); line-height: 1.75; margin-bottom: 20px; font-style: italic; }
+        .lp-testi-author { display: flex; align-items: center; gap: 12px; }
+        .lp-testi-av { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .lp-testi-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+        .lp-testi-role { font-size: 11px; color: var(--text-dim); }
 
         /* ── PRICING ── */
-        .lp-pricing { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border-premium); }
+        .lp-pricing { padding: 100px 24px; background: var(--bg); }
         .lp-pricing-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
         .lp-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 60px; }
         .lp-card { background: rgba(15,17,23,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.07); border-radius: 24px; padding: 36px 28px; text-align: left; position: relative; transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.35s; }
         .lp-card:hover { transform: translateY(-6px); box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
         .lp-card.mid { border-color: var(--accent-border); background: linear-gradient(160deg, var(--bg-card) 60%, rgba(225,29,72,0.06)); }
-        .lp-card.vip { border-color: var(--gold-border); background: linear-gradient(160deg, var(--bg-card) 60%, rgba(245,158,11,0.06)); }
+        .lp-card.vip { border-color: var(--gold-border); background: linear-gradient(160deg, var(--bg-card) 60%, rgba(245,158,11,0.06)); position: relative; overflow: hidden; }
+        .lp-card.vip::before { content: ''; position: absolute; inset: -1px; border-radius: 24px; padding: 1px; background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%); background-size: 200% 100%; animation: shimmerGold 3s linear infinite; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
+        @keyframes shimmerGold { 0%{background-position:200% center} 100%{background-position:-200% center} }
         .lp-feat-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; padding: 5px 18px; border-radius: 100px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
         .lp-feat-badge.rose { background: var(--accent-grad); color: #fff; }
         .lp-feat-badge.gold { background: var(--gold); color: #fff; }
@@ -649,163 +584,55 @@ export default function Home() {
         .lp-btn-outline-p { border: 1px solid var(--border-premium); color: var(--text); }
         .lp-btn-outline-p:hover { border-color: rgba(255,255,255,0.2); }
         .lp-btn-rose { background: var(--accent-grad); color: #fff; box-shadow: 0 4px 16px rgba(225,29,72,.20); }
-        .lp-btn-gold { background: var(--gold); color: #fff; }
+        .lp-btn-gold-p { background: var(--gold); color: #fff; }
 
-        /* ── DIFERENCIAIS ── */
-        .lp-diff { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border-premium); }
-        .lp-diff-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
-        .lp-diff-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 60px; }
-        .lp-diff-card {
-          background: var(--bg-card-grad); border: 1px solid var(--border-premium); border-radius: 28px; box-shadow: var(--shadow-card);
-          padding: 44px 32px; text-align: left; position: relative; overflow: hidden;
-          transition: border-color 0.35s, transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.35s;
-        }
-        .lp-diff-card::before {
-          content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-          background: linear-gradient(90deg, var(--accent), rgba(129,140,248,0.8));
-          transform: scaleX(0); transition: transform 0.4s ease; transform-origin: left;
-        }
-        .lp-diff-card:hover { border-color: var(--accent-border); transform: translateY(-8px); box-shadow: 0 24px 60px rgba(225,29,72,0.1); }
-        .lp-diff-card:hover::before { transform: scaleX(1); }
-        .lp-diff-num { font-family: var(--font-fraunces), serif; font-size: 64px; font-weight: 700; color: rgba(225,29,72,0.08); line-height: 1; margin-bottom: 16px; }
-        .lp-diff-icon { width: 56px; height: 56px; border-radius: 16px; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin-bottom: 24px; color: var(--accent); }
-        .lp-diff-card h3 { font-family: var(--font-fraunces), serif; font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--text); }
-        .lp-diff-card p { font-size: 14px; font-weight: 400; color: rgba(248,249,250,0.68); line-height: 1.75; margin: 0; }
-        .lp-diff-tag { display: inline-flex; align-items: center; gap: 6px; margin-top: 20px; background: var(--accent-soft); border: 1px solid var(--accent-border); color: #F43F5E; padding: 5px 14px; border-radius: 100px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+        /* ── INSTALL PWA (compact) ── */
+        .lp-install { padding: 60px 24px; background: var(--bg-card-grad); border-top: 1px solid var(--border-premium); }
+        .lp-install-inner { max-width: 800px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: center; }
+        .lp-install-left h3 { font-family: var(--font-fraunces), serif; font-size: clamp(22px, 3vw, 32px); font-weight: 700; margin-bottom: 12px; }
+        .lp-install-left h3 em { color: var(--accent); font-style: italic; }
+        .lp-install-left > p { font-size: 14px; color: var(--text-muted); line-height: 1.7; margin-bottom: 20px; }
+        .lp-install-os-tabs { display: flex; gap: 0; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-premium); margin-bottom: 12px; }
+        .lp-os-tab { flex: 1; padding: 9px 14px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--text-muted); font-family: var(--font-jakarta), sans-serif; display: flex; align-items: center; justify-content: center; gap: 6px; transition: background 0.2s, color 0.2s; }
+        .lp-os-tab:hover { background: rgba(255,255,255,0.05); color: var(--text); }
+        .lp-os-tab.active { background: var(--accent-grad); color: #fff; }
+        .lp-install-actions { display: flex; flex-direction: column; gap: 10px; }
+        .lp-install-btn { display: flex; align-items: center; gap: 10px; padding: 12px 20px; border-radius: 12px; font-size: 14px; font-weight: 700; text-decoration: none; cursor: pointer; border: none; transition: transform 0.15s, box-shadow 0.2s; font-family: var(--font-jakarta), sans-serif; width: 100%; }
+        .lp-install-btn:hover { transform: translateY(-2px); }
+        .lp-install-btn.android { background: var(--accent-grad); color: #fff; box-shadow: 0 4px 16px rgba(225,29,72,.25); }
+        .lp-install-btn.ios { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border-premium); cursor: default; }
+        .lp-install-btn-icon { width: 20px; height: 20px; flex-shrink: 0; }
+        .lp-install-btn-text { display: flex; flex-direction: column; text-align: left; }
+        .lp-install-btn-text small { font-size: 10px; font-weight: 400; opacity: 0.7; }
+        .lp-install-done { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #4ade80; font-weight: 600; }
+        .lp-install-right { display: flex; flex-direction: column; gap: 12px; }
+        .lp-install-step { display: flex; align-items: flex-start; gap: 12px; background: var(--bg); border: 1px solid var(--border-premium); border-radius: 12px; padding: 16px 18px; }
+        .lp-install-step-num { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-fraunces), serif; font-size: 13px; font-weight: 700; flex-shrink: 0; }
+        .lp-install-step-num.android { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border); }
+        .lp-install-step-num.ios { background: rgba(255,255,255,0.06); color: rgba(248,249,250,0.6); border: 1px solid var(--border-premium); }
+        .lp-install-step h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+        .lp-install-step p { font-size: 11px; color: var(--text-muted); line-height: 1.5; margin: 0; }
 
-        /* ── FOOTER CONTACT ── */
-        .lp-footer-contact { max-width: 1100px; margin: 0 auto; padding: 40px 56px; border-top: 1px solid var(--border-premium); }
+        /* ── FAQ ── */
+        .lp-faq { padding: 100px 24px; background: var(--bg-card-grad); border-top: 1px solid var(--border-premium); }
+        .lp-faq-inner { max-width: 760px; margin: 0 auto; text-align: center; }
+        .lp-faq-list { margin-top: 56px; text-align: left; }
+
+        /* ── FOOTER ── */
+        .lp-footer { background: #020306; color: var(--text-dim); border-top: 1px solid var(--border-premium); }
+        .lp-footer-contact { max-width: 1100px; margin: 0 auto; padding: 40px 56px; border-bottom: 1px solid var(--border-premium); }
         .lp-footer-contact h4 { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(248,249,250,0.5); margin-bottom: 20px; }
         .lp-contact-form { display: grid; grid-template-columns: 1fr 1fr 2fr auto; gap: 12px; align-items: end; }
         .lp-contact-form select, .lp-contact-form input, .lp-contact-form textarea {
           background: rgba(255,255,255,0.04); border: 1px solid var(--border-premium); border-radius: 10px;
           color: var(--text); font-family: var(--font-jakarta), sans-serif; font-size: 13px; padding: 10px 14px;
-          outline: none; transition: border-color 0.2s;
-          appearance: none; -webkit-appearance: none;
+          outline: none; transition: border-color 0.2s; appearance: none; -webkit-appearance: none;
         }
         .lp-contact-form select:focus, .lp-contact-form input:focus, .lp-contact-form textarea:focus { border-color: rgba(225,29,72,0.4); }
         .lp-contact-form textarea { resize: none; height: 42px; }
         .lp-contact-form option { background: #13161F; }
         .lp-contact-btn { background: var(--accent-grad); color: #fff; border: none; border-radius: 10px; padding: 10px 22px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: var(--transition-smooth); font-family: var(--font-jakarta), sans-serif; box-shadow: 0 4px 16px rgba(225,29,72,.20); }
         .lp-contact-btn:hover { background: #be123c; }
-        @media (max-width: 960px) { .lp-contact-form { grid-template-columns: 1fr 1fr; } .lp-diff-grid { grid-template-columns: 1fr; } }
-        @media (max-width: 600px) { .lp-contact-form { grid-template-columns: 1fr; } .lp-footer-contact { padding: 32px 24px; } }
-
-        /* ── GAMIFICATION ── */
-        .lp-gamif { padding: 100px 56px; background: var(--bg-card-grad); border-top: 1px solid var(--border-premium); }
-        .lp-gamif-inner { max-width: 1100px; margin: 0 auto; text-align: center; }
-        .lp-gamif-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 60px; }
-        .lp-gamif-card { background: var(--bg); border: 1px solid var(--border-premium); border-radius: 24px; padding: 36px 28px; text-align: left; box-shadow: var(--shadow-card); transition: var(--transition-smooth); }
-        .lp-gamif-card:hover { border-color: var(--accent-border); transform: translateY(-4px); }
-        .lp-gamif-icon { width: 52px; height: 52px; border-radius: 14px; background: var(--accent-soft); border: 1px solid var(--accent-border); display: flex; align-items: center; justify-content: center; margin-bottom: 20px; color: var(--accent); }
-        .lp-gamif-card h3 { font-family: var(--font-fraunces), serif; font-size: 20px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
-        .lp-gamif-card p { font-size: 14px; font-weight: 400; color: rgba(248,249,250,0.68); line-height: 1.7; margin: 0; }
-
-        /* ── INSTALL PWA ── */
-        .lp-install { padding: 100px 56px; background: var(--bg-card-grad); border-top: 1px solid var(--border-premium); }
-        .lp-install-inner { max-width: 1100px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
-        .lp-install-left h2 { font-family: var(--font-fraunces), serif; font-size: clamp(30px, 4vw, 52px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.1; margin-bottom: 16px; }
-        .lp-install-left h2 em { color: var(--accent); font-style: italic; }
-        .lp-install-left p { font-size: 16px; color: var(--text-muted); line-height: 1.75; margin-bottom: 32px; max-width: 440px; }
-        .lp-install-os-tabs { display: flex; gap: 0; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-premium); margin-bottom: 16px; max-width: 360px; }
-        .lp-os-tab { flex: 1; padding: 11px 16px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; background: transparent; color: var(--text-muted); font-family: var(--font-jakarta), sans-serif; display: flex; align-items: center; justify-content: center; gap: 7px; transition: background 0.2s, color 0.2s; }
-        .lp-os-tab:hover { background: rgba(255,255,255,0.05); color: var(--text); }
-        .lp-os-tab.active { background: var(--accent-grad); color: #fff; }
-        .lp-install-actions { display: flex; flex-direction: column; gap: 12px; max-width: 360px; }
-        .lp-install-btn { display: flex; align-items: center; gap: 12px; padding: 15px 24px; border-radius: 14px; font-size: 15px; font-weight: 700; text-decoration: none; cursor: pointer; border: none; transition: transform 0.15s, box-shadow 0.2s, background 0.2s; font-family: var(--font-jakarta), sans-serif; width: 100%; }
-        .lp-install-btn:hover { transform: translateY(-2px); }
-        .lp-install-btn.android { background: var(--accent-grad); color: #fff; box-shadow: 0 4px 16px rgba(225,29,72,.25), 0 12px 40px rgba(225,29,72,.20); }
-        .lp-install-btn.android:hover { background: #be123c; box-shadow: 0 12px 40px rgba(225,29,72,.45); }
-        .lp-install-btn.ios { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border-premium); cursor: default; }
-        .lp-install-btn-icon { width: 22px; height: 22px; flex-shrink: 0; }
-        .lp-install-btn-text { display: flex; flex-direction: column; text-align: left; }
-        .lp-install-btn-text small { font-size: 11px; font-weight: 400; opacity: 0.7; margin-bottom: 1px; }
-        .lp-install-done { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #4ade80; font-weight: 600; padding: 15px 0; }
-        .lp-install-right { display: flex; flex-direction: column; gap: 16px; }
-        .lp-install-step { display: flex; align-items: flex-start; gap: 16px; background: var(--bg); border: 1px solid var(--border-premium); border-radius: 16px; padding: 20px 22px; }
-        .lp-install-step-num { width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: var(--font-fraunces), serif; font-size: 15px; font-weight: 700; flex-shrink: 0; }
-        .lp-install-step-num.android { background: var(--accent-soft); color: var(--accent); border: 1px solid var(--accent-border); }
-        .lp-install-step-num.ios { background: rgba(255,255,255,0.06); color: rgba(248,249,250,0.6); border: 1px solid var(--border-premium); }
-        .lp-install-step h4 { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-        .lp-install-step p { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin: 0; }
-        .lp-install-os-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--text-dim); margin: 8px 0 4px; }
-        @media (max-width: 960px) { .lp-install-inner { grid-template-columns: 1fr; gap: 48px; } .lp-install { padding: 72px 24px; } .lp-install-actions { max-width: 100%; } .lp-install-os-tabs { max-width: 100%; } }
-
-        /* ── TESTIMONIALS ── */
-        .lp-testi { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border-premium); }
-        .lp-testi-inner { max-width: 1100px; margin: 0 auto; }
-        .lp-testi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 60px; }
-        .lp-testi-card { background: rgba(15,17,23,0.6); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.08); border-radius: 20px; padding: 30px; transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s; }
-        .lp-testi-card:hover { border-color: rgba(225,29,72,0.25); transform: translateY(-4px); box-shadow: 0 16px 48px rgba(225,29,72,0.08); }
-        .lp-testi-stars { color: var(--gold); font-size: 13px; margin-bottom: 14px; letter-spacing: 2px; }
-        .lp-testi-text { font-size: 14px; font-weight: 400; color: rgba(248,249,250,0.78); line-height: 1.75; margin-bottom: 20px; font-style: italic; }
-        .lp-testi-author { display: flex; align-items: center; gap: 12px; }
-        .lp-testi-av { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .lp-testi-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
-        .lp-testi-role { font-size: 11px; color: var(--text-dim); }
-
-        /* ── FAQ ── */
-        /* ── QUEM SOMOS ── */
-        .lp-about { padding: 100px 56px; background: var(--bg); border-top: 1px solid var(--border-premium); }
-        .lp-about-inner { max-width: 1060px; margin: 0 auto; }
-        .lp-about-intro { display: grid; grid-template-columns: 1fr 1.25fr; gap: 80px; align-items: start; margin-bottom: 64px; }
-        .lp-about-intro-left h2 { font-family: var(--font-fraunces), serif; font-size: clamp(30px, 3.6vw, 52px); font-weight: 700; letter-spacing: -1.5px; line-height: 1.08; margin-bottom: 0; }
-        .lp-about-intro-left h2 em { font-style: italic; color: var(--accent); }
-        .lp-about-intro-right > p { font-size: 16px; font-weight: 400; color: rgba(248,249,250,0.68); line-height: 1.85; margin-bottom: 18px; }
-        .lp-about-intro-right > p:last-child { margin-bottom: 0; }
-        .lp-about-intro-right > p.lp-about-highlight { font-size: 18px; font-weight: 600; color: rgba(248,249,250,0.90); font-style: italic; border-left: 3px solid var(--accent); padding-left: 16px; margin: 24px 0; }
-        .lp-about-pillars { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-bottom: 40px; }
-        .lp-about-pillar { background: var(--bg-card-grad); border: 1px solid var(--border-premium); border-radius: 20px; padding: 28px 24px; box-shadow: var(--shadow-card); }
-        .lp-about-pillar-label { font-size: 10px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: var(--accent); margin-bottom: 14px; }
-        .lp-about-pillar h4 { font-family: var(--font-fraunces), serif; font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 10px; line-height: 1.3; }
-        .lp-about-pillar p { font-size: 13.5px; font-weight: 400; color: rgba(248,249,250,0.60); line-height: 1.72; margin: 0; }
-        .lp-about-brand { display: flex; gap: 0; align-items: stretch; background: var(--bg-card-grad); border: 1px solid var(--border-premium); border-radius: 20px; overflow: hidden; box-shadow: var(--shadow-card); }
-        .lp-about-brand-logo { display: flex; align-items: center; justify-content: center; padding: 32px 40px; border-right: 1px solid var(--border-premium); flex-shrink: 0; }
-        .lp-about-brand-logo img { width: 130px; height: auto; }
-        .lp-about-brand-cards { display: flex; flex: 1; }
-        .lp-about-brand-card { flex: 1; padding: 28px 28px; border-right: 1px solid var(--border-premium); }
-        .lp-about-brand-card:last-child { border-right: none; }
-        .lp-about-brand-card .label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent); margin-bottom: 8px; }
-        .lp-about-brand-card .val { font-family: var(--font-fraunces), serif; font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
-        .lp-about-brand-card .note { font-size: 12.5px; color: rgba(248,249,250,0.52); font-weight: 400; line-height: 1.6; }
-        @media (max-width: 900px) {
-          .lp-about-intro { grid-template-columns: 1fr; gap: 36px; }
-          .lp-about-pillars { grid-template-columns: 1fr; }
-          .lp-about-brand { flex-direction: column; }
-          .lp-about-brand-logo { border-right: none; border-bottom: 1px solid var(--border-premium); }
-          .lp-about-brand-cards { flex-direction: column; }
-          .lp-about-brand-card { border-right: none; border-bottom: 1px solid var(--border-premium); }
-          .lp-about-brand-card:last-child { border-bottom: none; }
-          .lp-about { padding: 72px 24px; }
-        }
-
-        .lp-faq { padding: 100px 56px; background: var(--bg-card-grad); border-top: 1px solid var(--border-premium); }
-        .lp-faq-inner { max-width: 760px; margin: 0 auto; text-align: center; }
-        .lp-faq-list { margin-top: 56px; text-align: left; }
-
-        /* ── SAFETY ── */
-        .lp-safety { padding: 90px 56px; background: var(--bg); border-top: 1px solid var(--border-premium); }
-        .lp-safety-inner { max-width: 1100px; margin: 0 auto; }
-        .lp-safety h2 { font-family: var(--font-fraunces), serif; font-size: clamp(24px, 3vw, 40px); font-weight: 700; letter-spacing: -1px; margin-bottom: 40px; color: var(--text); }
-        .lp-safety h2 em { color: var(--accent); font-style: italic; }
-        .lp-safety-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-        .lp-safety-item { display: flex; align-items: flex-start; gap: 14px; background: var(--bg-card-grad); border: 1px solid var(--border-premium); border-radius: 16px; padding: 20px; box-shadow: var(--shadow-card); transition: var(--transition-smooth); }
-        .lp-safety-item:hover { border-color: var(--accent-border); }
-        .lp-safety-icon { width: 20px; height: 20px; flex-shrink: 0; color: var(--accent); margin-top: 2px; }
-        .lp-safety-item strong { color: var(--text); display: block; margin-bottom: 4px; font-size: 13px; font-weight: 600; }
-        .lp-safety-item p { font-size: 12px; color: var(--text-muted); line-height: 1.55; margin: 0; }
-
-        /* ── CTA ── */
-        .lp-cta { padding: 110px 56px; background: var(--bg); text-align: center; position: relative; overflow: hidden; }
-        .lp-cta::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(225,29,72,0.10) 0%, transparent 60%); }
-        .lp-cta h2 { font-family: var(--font-fraunces), serif; font-size: clamp(36px, 5vw, 66px); font-weight: 700; letter-spacing: -2px; color: var(--text); margin-bottom: 18px; line-height: 1.08; position: relative; }
-        .lp-cta p { color: var(--text-muted); font-size: 17px; margin-bottom: 44px; position: relative; }
-        .lp-btn-cta-white { background: #f0ece4; color: #08090E; padding: 17px 46px; border-radius: 12px; font-weight: 700; font-size: 16px; text-decoration: none; display: inline-flex; align-items: center; gap: 10px; transition: transform 0.15s, box-shadow 0.2s; cursor: pointer; position: relative; }
-        .lp-btn-cta-white:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
-        .lp-cta-note { color: rgba(255,255,255,.45); font-size: 13px; margin-top: 20px; position: relative; }
-
-        /* ── FOOTER ── */
-        .lp-footer { background: #020306; color: var(--text-dim); border-top: 1px solid var(--border-premium); }
         .lp-footer-top { max-width: 1100px; margin: 0 auto; padding: 60px 56px 40px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px; }
         .lp-footer-logo { font-family: var(--font-fraunces), serif; font-size: 22px; font-weight: 700; color: var(--text); margin-bottom: 12px; display: block; text-decoration: none; }
         .lp-footer-logo span { color: var(--accent); }
@@ -818,61 +645,7 @@ export default function Home() {
         .lp-footer-btm-links a { font-size: 12px; color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
         .lp-footer-btm-links a:hover { color: rgba(248,249,250,0.6); }
 
-        /* ── RESPONSIVE ── */
-        /* ── BG FADE ── */
-        .lp-bg-fade { position: relative; }
-        .lp-bg-fade::before, .lp-bg-fade::after {
-          content: ''; position: absolute; left: 0; right: 0; height: 180px; z-index: 2; pointer-events: none;
-        }
-        .lp-bg-fade::before { top: 0; background: linear-gradient(to bottom, #08090E 0%, transparent 100%); }
-        .lp-bg-fade::after { bottom: 0; background: linear-gradient(to top, #08090E 0%, transparent 100%); }
-        .lp-bg-fade > * { position: relative; z-index: 3; }
-
-        /* ── NOTIFICATIONS ── */
-        @keyframes lp-notif-in { from { opacity:0; transform:translateY(10px) scale(0.95); } to { opacity:1; transform:translateY(0) scale(1); } }
-        @keyframes lp-notif-out { from { opacity:1; transform:translateY(0) scale(1); } to { opacity:0; transform:translateY(-10px) scale(0.95); } }
-        .lp-notif-area { position:absolute; bottom:0; left:50%; transform:translateX(-50%); z-index:20; display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none; }
-        .lp-notif-item { background:rgba(8,9,14,0.90); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.13); border-radius:100px; padding:8px 16px; font-size:12px; font-weight:600; color:var(--text); white-space:nowrap; display:flex; align-items:center; gap:6px; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
-        .lp-notif-enter { animation: lp-notif-in 0.4s ease forwards; }
-        .lp-notif-exit { animation: lp-notif-out 0.4s ease forwards; }
-
-        /* ── CARD DECK ── */
-        @keyframes swipe-left-anim { from { transform:translateX(0) rotate(0deg); opacity:1; } to { transform:translateX(-160%) rotate(-28deg); opacity:0; } }
-        @keyframes swipe-right-anim { from { transform:translateX(0) rotate(0deg); opacity:1; } to { transform:translateX(160%) rotate(28deg); opacity:0; } }
-        @keyframes swipe-up-anim { from { transform:translateY(0) scale(1); opacity:1; } to { transform:translateY(-140%) scale(0.85); opacity:0; } }
-        @keyframes card-enter { from { opacity:0; transform:scale(0.90) translateY(16px); } to { opacity:1; transform:scale(1) translateY(0); } }
-        @keyframes match-glow { 0%{box-shadow:0 0 0 0 rgba(46,196,160,0.6)} 50%{box-shadow:0 0 0 20px rgba(46,196,160,0)} 100%{box-shadow:0 0 0 0 rgba(46,196,160,0)} }
-        @keyframes nope-glow { 0%{box-shadow:0 0 0 0 rgba(244,63,94,0.6)} 50%{box-shadow:0 0 0 20px rgba(244,63,94,0)} 100%{box-shadow:0 0 0 0 rgba(244,63,94,0)} }
-        .card-swipe-left { animation: swipe-left-anim 0.42s cubic-bezier(0.55,0,1,0.45) forwards; }
-        .card-swipe-right { animation: swipe-right-anim 0.42s cubic-bezier(0.55,0,1,0.45) forwards; pointer-events:none; }
-        .card-swipe-up { animation: swipe-up-anim 0.42s cubic-bezier(0.55,0,1,0.45) forwards; }
-        .card-entering { animation: card-enter 0.38s cubic-bezier(.34,1.4,.64,1) forwards; }
-        .lp-swipe-label { position:absolute; top:20px; border-radius:8px; padding:6px 16px; font-size:14px; font-weight:800; letter-spacing:1.5px; text-transform:uppercase; border:2px solid; opacity:0; pointer-events:none; z-index:10; transition:opacity 0.15s; }
-        .lp-swipe-label.nope { left:16px; color:#F43F5E; border-color:#F43F5E; transform:rotate(-15deg); }
-        .lp-swipe-label.like { right:16px; color:#4ade80; border-color:#4ade80; transform:rotate(15deg); }
-        .lp-swipe-label.super { top:auto; bottom:80px; left:50%; transform:translateX(-50%); color:#F59E0B; border-color:#F59E0B; }
-        .card-swipe-left .lp-swipe-label.nope, .card-swipe-right .lp-swipe-label.like, .card-swipe-up .lp-swipe-label.super { opacity:1; }
-        .lp-deck-wrap { position:relative; width:340px; height:580px; display:flex; align-items:center; justify-content:center; }
-        .lp-deck-side { position:absolute; width:220px; height:460px; border-radius:30px; overflow:hidden; filter:blur(5px); opacity:0.30; border:1px solid rgba(255,255,255,0.05); background:var(--bg-card); top:50%; transform:translateY(-50%); transition:opacity 0.3s; }
-        .lp-deck-left { left:0; }
-        .lp-deck-right { right:0; }
-        .lp-deck-side-img { width:100%; height:100%; object-fit:cover; object-position:top; }
-        .lp-ph-btn { width:46px; height:46px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:none; cursor:pointer; transition:transform 0.15s, box-shadow 0.2s; }
-        .lp-ph-btn:hover { transform:scale(1.12); }
-        .lp-ph-btn:active { transform:scale(0.95); }
-        .lp-ph-btn.no:active { animation:nope-glow 0.5s ease; }
-        .lp-ph-btn.yes:active { animation:match-glow 0.5s ease; }
-
-        /* ── CTA melhorado ── */
-        .lp-cta-title em { color:var(--accent); font-style:italic; }
-        @keyframes cta-title-glow { 0%,100%{text-shadow:0 0 30px rgba(225,29,72,0.2)} 50%{text-shadow:0 0 60px rgba(225,29,72,0.45)} }
-        .lp-cta-title { animation:cta-title-glow 4s ease-in-out infinite; }
-        @keyframes cta-fade-up { from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)} }
-        .lp-cta-sub { animation: cta-fade-up 0.8s 0.3s ease both; }
-        .lp-cta-sub strong { color:var(--text); font-weight:700; }
-        .lp-cta-sub em { color:var(--accent); font-style:italic; font-weight:600; }
-
-        /* ── HAMBÚRGUER ── */
+        /* ── HAMBURGER ── */
         .lp-hamburger { display: none; flex-direction: column; justify-content: center; align-items: center; gap: 5px; width: 40px; height: 40px; background: none; border: none; cursor: pointer; padding: 4px; }
         .lp-hamburger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; transition: transform 0.3s, opacity 0.3s; }
         .lp-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
@@ -888,41 +661,34 @@ export default function Home() {
         .lp-mobile-drawer a:hover { color: #F8F9FA; }
         .lp-mobile-drawer .lp-nav-cta { background: var(--accent-grad) !important; color: #fff !important; border-radius: 12px !important; padding: 14px 20px !important; border-bottom: none !important; text-align: center; margin-top: 12px; font-weight: 600 !important; box-shadow: 0 4px 16px rgba(225,29,72,.20) !important; }
 
+        /* ── RESPONSIVE ── */
         @media (max-width: 960px) {
           .lp-nav { width: calc(100% - 32px); top: 12px; padding: 12px 20px; }
           .lp-nav-links { display: none; }
           .lp-hamburger { display: flex; }
-          .lp-hero { grid-template-columns: 1fr; padding: 110px 24px 60px; }
-          .lp-hero-right { display: flex; justify-content: center; margin-top: 40px; }
-          .lp-deck-wrap { width: 300px; height: 520px; }
-          .lp-deck-side { width: 180px; height: 400px; }
-          .lp-notif-area { left: 50%; transform: translateX(-50%); bottom: 0; }
-          .lp-notif-item { font-size: 11px; padding: 7px 12px; }
-          .lp-problem-inner, .lp-verification-inner { grid-template-columns: 1fr; gap: 40px; }
-          .lp-steps-row { grid-template-columns: repeat(2, 1fr); }
-          .lp-steps-row::before { display: none; }
+          .lp-modes-grid { grid-template-columns: repeat(2, 1fr); }
+          .lp-camarote-grid { grid-template-columns: repeat(2, 1fr); }
           .lp-cards { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
-          .lp-safety-grid { grid-template-columns: repeat(2, 1fr); }
           .lp-testi-grid { grid-template-columns: 1fr; }
-          .lp-gamif-grid { grid-template-columns: 1fr; }
+          .lp-install-inner { grid-template-columns: 1fr; gap: 32px; }
           .lp-footer-top { grid-template-columns: 1fr 1fr; padding: 48px 24px; gap: 32px; }
           .lp-footer-bottom { padding: 20px 24px; flex-direction: column; text-align: center; }
-          .lp-filter-categories { grid-template-columns: 1fr 1fr; }
-          .lp-problem, .lp-verification, .lp-filters-section, .lp-intentions,
-          .lp-how, .lp-pricing, .lp-gamif, .lp-faq, .lp-safety, .lp-cta, .lp-testi { padding: 72px 24px; }
+          .lp-contact-form { grid-template-columns: 1fr 1fr; }
+          .lp-footer-contact { padding: 32px 24px; }
         }
         @media (max-width: 600px) {
-          .lp-hero { padding: 100px 20px 48px; }
-          .lp-hero h1 { font-size: 40px; }
+          .lp-hero h1 { font-size: clamp(32px, 8vw, 44px); }
           .lp-actions { flex-direction: column; }
           .lp-btn-main, .lp-btn-outline { width: 100%; justify-content: center; }
-          .lp-steps-row { grid-template-columns: 1fr; }
-          .lp-safety-grid { grid-template-columns: 1fr; }
-          .lp-cards { grid-template-columns: 1fr; max-width: 100%; }
-          .lp-footer-top { grid-template-columns: 1fr; }
-          .lp-filter-categories { grid-template-columns: 1fr; }
-          .lp-intentions-grid { grid-template-columns: repeat(2, 1fr); }
+          .lp-stats-inner { grid-template-columns: 1fr; gap: 24px; }
+          .lp-modes-grid { grid-template-columns: 1fr 1fr; }
+          .lp-camarote-grid { grid-template-columns: 1fr; }
           .lp-gamif-grid { grid-template-columns: 1fr; }
+          .lp-verify-cols { grid-template-columns: 1fr; }
+          .lp-cards { max-width: 100%; }
+          .lp-footer-top { grid-template-columns: 1fr; }
+          .lp-contact-form { grid-template-columns: 1fr; }
+          .lp-notif-item { font-size: 11px; padding: 7px 12px; }
         }
       `}</style>
 
@@ -932,11 +698,11 @@ export default function Home() {
         <nav className="lp-nav" style={{ transform: navVisible ? 'translateX(-50%)' : 'translateX(-50%) translateY(-120%)', opacity: navVisible ? 1 : 0 }}>
           <a href="/" className="lp-logo">MeAnd<span>You</span></a>
           <ul className="lp-nav-links">
-            <li><a href="#verificacao">Verificação</a></li>
-            <li><a href="#filtros">Filtros</a></li>
-            <li><a href="#precos">Planos</a></li>
-            <li><a href="#seguranca">Segurança</a></li>
-            <li><a href="/planos" className="lp-nav-cta">Começar agora</a></li>
+            <li><a href="#modos">Modos</a></li>
+            <li><a href="#camarote">Camarote</a></li>
+            <li><a href="#planos">Planos</a></li>
+            <li><a href="/login" className="lp-nav-ghost">Entrar</a></li>
+            <li><a href="/cadastro" className="lp-nav-cta">Criar conta</a></li>
           </ul>
           <button
             className={`lp-hamburger${menuAberto ? ' open' : ''}`}
@@ -951,535 +717,289 @@ export default function Home() {
         <div className={`lp-mobile-menu${menuAberto ? ' open' : ''}`}>
           <div className="lp-mobile-overlay" onClick={() => setMenuAberto(false)} />
           <div className="lp-mobile-drawer">
-            <a href="#verificacao" onClick={() => setMenuAberto(false)}>Verificação</a>
-            <a href="#filtros" onClick={() => setMenuAberto(false)}>Filtros</a>
-            <a href="#precos" onClick={() => setMenuAberto(false)}>Planos</a>
-            <a href="#seguranca" onClick={() => setMenuAberto(false)}>Segurança</a>
-            <a href="/planos" className="lp-nav-cta" onClick={() => setMenuAberto(false)}>Começar agora</a>
+            <a href="#modos" onClick={() => setMenuAberto(false)}>Modos</a>
+            <a href="#camarote" onClick={() => setMenuAberto(false)}>Camarote</a>
+            <a href="#planos" onClick={() => setMenuAberto(false)}>Planos</a>
+            <a href="/login" onClick={() => setMenuAberto(false)}>Entrar</a>
+            <a href="/cadastro" className="lp-nav-cta" onClick={() => setMenuAberto(false)}>Criar conta</a>
           </div>
         </div>
 
-        {/* ── Hero ── */}
-        <section className="lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.55), rgba(8,9,14,0.80)), url('/backgrounds/hero.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
-          <div className="lp-hero">
-            <div>
-              <div className="lp-badge">
-                <span className="lp-badge-dot" />
-                Verificação real · Filtros que funcionam
-              </div>
-              <h1>Encontre alguém<br /><em>de verdade.</em></h1>
-              <p className="lp-hero-sub">
-                O app de relacionamentos com <strong>verificação rigorosa de identidade</strong> e os filtros mais completos do Brasil.
-              </p>
-              <div className="lp-actions">
-                <a href="/planos" className="lp-btn-main">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                  Começar agora
-                </a>
-                <a href="#como-funciona" className="lp-btn-outline">
-                  Como funciona
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-                </a>
-              </div>
-              <div className="lp-stats">
-                <div><div className="lp-stat-val">100%</div><div className="lp-stat-label">Perfis verificados</div></div>
-                <div className="lp-stat-div" />
-                <div><div className="lp-stat-val">100+</div><div className="lp-stat-label">Filtros disponíveis</div></div>
-                <div className="lp-stat-div" />
-                <div><div className="lp-stat-val">Anti-golpe</div><div className="lp-stat-label">Sistema ativo 24h</div></div>
-              </div>
+        {/* ══════════════════════════════════════════════════════════════
+            SECTION 1: HERO
+        ══════════════════════════════════════════════════════════════ */}
+        <section className="lp-hero">
+          <div className="lp-hero-bg" />
+          <div className="lp-orb lp-orb-1" />
+          <div className="lp-orb lp-orb-2" />
+          <div className="lp-orb lp-orb-3" />
+          <div className="lp-hero-content">
+            <div className="lp-badge">
+              <span className="lp-badge-dot" />
+              Verificacao real de identidade
             </div>
-
-            <div className="lp-hero-right">
-              <div className="lp-deck-wrap">
-
-                {/* Card borrado da esquerda */}
-                {(() => {
-                  const prev = swipeCards[(currentCard + swipeCards.length - 1) % swipeCards.length]
-                  return (
-                    <div className="lp-deck-side lp-deck-left">
-                      <div style={{ width:'100%', height:'100%', background: prev.placeholder }}>
-                        <img src={prev.photo} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'top', display:'block' }}
-                          onError={(e) => { (e.target as HTMLImageElement).style.display='none' }} />
-                      </div>
-                    </div>
-                  )
-                })()}
-
-                {/* Phone principal */}
-                <div
-                  key={currentCard}
-                  className={`lp-phone${swipeDir === 'left' ? ' card-swipe-left' : swipeDir === 'right' ? ' card-swipe-right' : swipeDir === 'up' ? ' card-swipe-up' : ''}`}
-                  style={{ position:'relative', zIndex:2 }}>
-                  <span className="lp-swipe-label nope">PASSAR</span>
-                  <span className="lp-swipe-label like">CURTIR</span>
-                  <span className="lp-swipe-label super">SUPER</span>
-                  <div className="lp-phone-header">
-                    <div className="lp-phone-logo">
-                      <img src="/logo.png" alt="MeAndYou" style={{ height: '28px', maxWidth: '140px', objectFit: 'contain' }} />
-                    </div>
-                    <div style={{ fontSize:'10px', opacity:0.6, marginTop:'3px', color: 'var(--muted)' }}>Conexões reais</div>
-                  </div>
-                  <div className="lp-phone-card">
-                    <div className="lp-phone-img" style={{ background: swipeCards[currentCard].placeholder }}>
-                      <img src={swipeCards[currentCard].photo} alt={swipeCards[currentCard].name}
-                        style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'top', display:'block' }}
-                        onError={(e) => { (e.target as HTMLImageElement).style.display='none' }} />
-                      <div className="lp-v-badge">
-                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                        Verificado
-                      </div>
-                    </div>
-                    <div className="lp-phone-info">
-                      <div className="lp-phone-name">{swipeCards[currentCard].name}</div>
-                      <div className="lp-phone-tags">
-                        {swipeCards[currentCard].tags.map((t,i) => <span key={i} className="lp-phone-tag">{t}</span>)}
-                      </div>
-                    </div>
-                    <p className="lp-phone-bio">{swipeCards[currentCard].bio}</p>
-                  </div>
-                  <div className="lp-phone-actions">
-                    <button className="lp-ph-btn no" onClick={() => handleSwipe('left')}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
-                    <button className="lp-ph-btn super" onClick={() => handleSwipe('up')}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                    </button>
-                    <button className="lp-ph-btn yes" onClick={() => handleSwipe('right')}>
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                    </button>
-                  </div>
-                </div>
-
-                {/* Card borrado da direita */}
-                {(() => {
-                  const next = swipeCards[(currentCard + 1) % swipeCards.length]
-                  return (
-                    <div className="lp-deck-side lp-deck-right">
-                      <div style={{ width:'100%', height:'100%', background: next.placeholder }}>
-                        <img src={next.photo} alt="" style={{ width:'100%', height:'100%', objectFit:'cover', objectPosition:'top', display:'block' }}
-                          onError={(e) => { (e.target as HTMLImageElement).style.display='none' }} />
-                      </div>
-                    </div>
-                  )
-                })()}
-              </div>
-
-              {/* Notificações animadas — abaixo do celular */}
-              <div className="lp-notif-area">
-                {notifList.map(n => (
-                  <div key={n.id} className={`lp-notif-item ${n.exiting ? 'lp-notif-exit' : 'lp-notif-enter'}`}>
-                    <span className="lp-fc-dot" />{n.text}
-                  </div>
-                ))}
-              </div>
+            <h1>Conexoes que<br /><em>valem a pena.</em></h1>
+            <p className="lp-hero-sub">
+              O app de relacionamentos com <strong>verificacao rigorosa</strong>,
+              mais de 100 filtros e um ecossistema pensado para quem busca algo real.
+            </p>
+            <div className="lp-actions">
+              <a href="/cadastro" className="lp-btn-main">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
+                Criar minha conta
+              </a>
+              <a href="#modos" className="lp-btn-outline">
+                Conhecer os modos
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" /></svg>
+              </a>
             </div>
+            <div className="lp-social-badge">
+              <span className="lp-social-badge-dot" />
+              47 mil membros verificados -- online agora
+            </div>
+          </div>
+
+          {/* Notifications */}
+          <div className="lp-notif-area">
+            {notifList.map(n => (
+              <div key={n.id} className={`lp-notif-item ${n.exiting ? 'lp-notif-exit' : 'lp-notif-enter'}`}>
+                <span className="lp-fc-dot" />{n.text}
+              </div>
+            ))}
           </div>
         </section>
 
-        {/* ── Comparativo ── */}
-        <section className="lp-problem">
-          <div className="lp-problem-inner">
-            <div className="lp-problem-header lp-anim">
-              <p className="lp-section-label">Comparativo</p>
-              <h2>MeAndYou vs.<br /><em>os outros apps.</em></h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '480px', margin: '0 auto', lineHeight: 1.7 }}>
-                Não é opinião. É uma lista do que existe aqui e não existe em nenhum outro lugar.
-              </p>
-            </div>
-
+        {/* ══════════════════════════════════════════════════════════════
+            SECTION 2: STATS ANIMADOS
+        ══════════════════════════════════════════════════════════════ */}
+        <section className="lp-stats-section">
+          <div className="lp-stats-inner">
             <div className="lp-anim">
-              <div className="lp-cmp-header">
-                <div className="lp-cmp-col-label feature" />
-                <div className="lp-cmp-col-label them">Outros apps</div>
-                <div className="lp-cmp-col-label us">MeAnd<span style={{color:"#E11D48"}}>You</span></div>
-              </div>
-
-              {[
-                {
-                  feature: 'Verificação de identidade',
-                  them: 'Opcional ou inexistente',
-                  us: 'Selfie ao vivo + documento + CPF',
-                },
-                {
-                  feature: 'Filtros de busca',
-                  them: 'Apenas idade e distância',
-                  us: '100+ filtros: corpo, estilo, personalidade e mais',
-                },
-                {
-                  feature: 'Diversidade e inclusão',
-                  them: 'Campos genéricos e limitados',
-                  us: 'Todas as orientações, gêneros e identidades',
-                },
-                {
-                  feature: 'Espaço para fetiches',
-                  them: 'Não existe',
-                  us: 'Área Backstage exclusiva e privada',
-                },
-                {
-                  feature: 'Privacidade',
-                  them: 'Perfil visível para qualquer um',
-                  us: 'Você controla quem te vê e o que aparece',
-                },
-                {
-                  feature: 'Qualidade dos perfis',
-                  them: 'Gratuito, entra quem quiser',
-                  us: 'Acesso pago = pessoas com intenção real',
-                },
-                {
-                  feature: 'Videochamada',
-                  them: 'Precisa sair do app',
-                  us: 'Direto no chat, em tempo real',
-                },
-                {
-                  feature: 'Proteção contra contas falsas',
-                  them: 'Reativa com outro e-mail',
-                  us: '1 conta por CPF. Banimento permanente.',
-                },
-              ].map((row, i) => (
-                <div key={i} className="lp-cmp-row">
-                  <div className="lp-cmp-feature">{row.feature}</div>
-                  <div className="lp-cmp-cell them">
-                    <span className="lp-cmp-x">
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </span>
-                    {row.them}
-                  </div>
-                  <div className="lp-cmp-cell us">
-                    <span className="lp-cmp-check">
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                    </span>
-                    {row.us}
-                  </div>
-                </div>
-              ))}
+              <div className="lp-stat-number lp-counter" data-target="47000" data-suffix="+">0</div>
+              <div className="lp-stat-desc">membros verificados</div>
+            </div>
+            <div className="lp-anim">
+              <div className="lp-stat-number lp-counter" data-target="3" data-suffix="/s">0</div>
+              <div className="lp-stat-desc">matches por segundo</div>
+            </div>
+            <div className="lp-anim">
+              <div className="lp-stat-number lp-counter" data-target="127" data-suffix="">0</div>
+              <div className="lp-stat-desc">cidades ativas</div>
             </div>
           </div>
         </section>
 
-        {/* ── Verificação ── */}
-        <section className="lp-verification" id="verificacao">
-          <div className="lp-verification-inner">
-            <div>
-              <p className="lp-section-label">Verificação rigorosa</p>
-              <h2 className="lp-section-title">Só entra<br />quem é <span style={{ color: 'var(--accent)' }}>real.</span></h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '16px', marginTop: '14px', lineHeight: 1.7 }}>
-                Desenvolvemos o processo de verificação mais rigoroso do mercado.
-              </p>
-            </div>
-            <div className="lp-verify-steps">
-              {[
-                { n: '1', t: 'Selfie ao vivo', d: 'Sequência de movimentos detectada em tempo real. Impossível usar foto ou vídeo.' },
-                { n: '2', t: 'Documento de identidade', d: 'RG ou CNH validados. Confirma nome, idade e nacionalidade reais.' },
-                { n: '3', t: 'Validação de CPF', d: 'Checagem automática. Apenas 1 conta por CPF, sem duplicatas.' },
-                { n: '4', t: 'Monitoramento contínuo', d: 'Algoritmo anti-fraude ativo. Denúncias respondidas em até 24h.' },
-              ].map(item => (
-                <div key={item.n} className="lp-verify-step lp-anim">
-                  <div className="lp-vstep-num">{item.n}</div>
-                  <div><h4>{item.t}</h4><p>{item.d}</p></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Filtros ── */}
-        <section id="filtros" className="lp-filters-section">
-          <div className="lp-filters-inner">
-            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-              <p className="lp-section-label">Filtros</p>
-              <h2 className="lp-section-title">Você decide exatamente quem quer,<br />e quem <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>não</em> quer.</h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto 20px', lineHeight: 1.7 }}>
-                Mais de 100 filtros. Clique uma vez para <strong style={{ color: '#2ec4a0' }}>incluir</strong>, clique de novo para <strong style={{ color: 'var(--red)' }}>excluir</strong>.
-              </p>
-            </div>
-            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-              <div className="lp-filter-note">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--accent)', flexShrink: 0 }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                Clique nas tags abaixo para alternar entre incluir e excluir.
-              </div>
-            </div>
-            <div className="lp-filter-categories">
-              {filterCats.map((cat, i) => (
-                <div key={i} className="lp-filter-cat lp-anim">
-                  <div className="lp-cat-header">
-                    {cat.icon}
-                    <h3>{cat.title}</h3>
-                  </div>
-                  <p>{cat.desc}</p>
-                  <div className="lp-tag-cloud">
-                    {cat.tags.map((tag, j) => (
-                      <span key={j} className="lp-ftag inc">{tag}</span>
-                    ))}
-                  </div>
-                  {cat.tip && <p className="lp-filter-tip">{cat.tip}</p>}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Intenções ── */}
-        <section className="lp-intentions">
-          <div className="lp-intentions-inner">
-            <div className="lp-intentions-header">
-              <p className="lp-section-label">Intenções</p>
-              <h2 className="lp-section-title">Todo mundo sabe o que quer.<br />Agora você também <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>filtra</em> isso.</h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '14px auto 0', lineHeight: 1.7 }}>
-                Chega de descobrir depois de semanas que vocês querem coisas completamente diferentes.
-              </p>
-            </div>
-            <div className="lp-intentions-grid">
-              {[
-                { icon: <svg className="lp-intent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>, t: 'Relacionamento sério', d: 'Busca comprometimento e futuro juntos' },
-                { icon: <svg className="lp-intent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32" /></svg>, t: 'Encontros casuais', d: 'Sem compromisso, com respeito e clareza' },
-                { icon: <svg className="lp-intent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>, t: 'Amizade', d: 'Expandir o círculo social de verdade' },
-                { icon: <svg className="lp-intent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" /></svg>, t: 'Companhia para evento', d: 'Casamento, festa, jantar social' },
-                { icon: <svg className="lp-intent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>, t: 'Sugar', d: 'Relacionamentos com benefícios mútuos' },
-                { icon: <svg className="lp-intent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>, t: 'Romance', d: 'Conexão emocional profunda e gradual' },
-              ].map((item, i) => (
-                <div key={i} className="lp-intent-card lp-anim">
-                  {item.icon}
-                  <h3>{item.t}</h3>
-                  <p>{item.d}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Como funciona ── */}
-        <section className="lp-how" id="como-funciona">
-          <div className="lp-how-inner">
-            <p className="lp-section-label">Como funciona</p>
-            <h2 className="lp-section-title">Em <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>minutos</em> você já tem matches reais.</h2>
+        {/* ══════════════════════════════════════════════════════════════
+            SECTION 3: OS 4 MODOS
+        ══════════════════════════════════════════════════════════════ */}
+        <section className="lp-modes" id="modos">
+          <div className="lp-modes-bg" />
+          <div className="lp-modes-inner">
+            <p className="lp-section-label">Quatro formas de conexao</p>
+            <h2 className="lp-section-title">Quatro formas de encontrar<br />sua <span style={{ color: 'var(--accent)' }}>conexao.</span></h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
-              Simples e direto, com a segurança que outros apps nunca tiveram.
+              Cada modo foi pensado para um tipo diferente de busca.
             </p>
-            <div className="lp-steps-row">
+            <div className="lp-modes-grid">
+              {/* Descobrir */}
+              <div className="lp-mode-card lp-mode-discover lp-anim">
+                <div className="lp-mode-num">01</div>
+                <div className="lp-mode-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
+                </div>
+                <h3>Descobrir</h3>
+                <p>Explore perfis com swipe. Curta, passe ou envie uma SuperCurtida. O modo classico, agora com verificacao real.</p>
+                <span className="lp-mode-tag">Swipe verificado</span>
+              </div>
+
+              {/* Busca Avancada */}
+              <div className="lp-mode-card lp-mode-search lp-anim">
+                <div className="lp-mode-num">02</div>
+                <div className="lp-mode-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg>
+                </div>
+                <h3>Busca Avancada</h3>
+                <p>Mais de 100 filtros: corpo, estilo, personalidade, vicios, orientacao, intencoes. Inclua e exclua com um toque.</p>
+                <span className="lp-mode-tag">100+ filtros</span>
+              </div>
+
+              {/* Match do Dia */}
+              <div className="lp-mode-card lp-mode-daily lp-anim">
+                <div className="lp-mode-num">03</div>
+                <div className="lp-mode-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <h3>Match do Dia</h3>
+                <p>Todo dia, uma curadoria personalizada baseada no seu perfil, filtros e comportamento dentro do app.</p>
+                <span className="lp-mode-tag">Curadoria para voce</span>
+              </div>
+
+              {/* Salas */}
+              <div className="lp-mode-card lp-mode-rooms lp-anim">
+                <div className="lp-mode-num">04</div>
+                <div className="lp-mode-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <h3>Salas</h3>
+                <p>Entre em salas por interesse ou clima e descubra quem esta no mesmo astral que voce neste momento.</p>
+                <span className="lp-mode-tag">Plus+</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════════════════════════
+            SECTION 4: CAMAROTE BLACK
+        ══════════════════════════════════════════════════════════════ */}
+        <section className="lp-camarote" id="camarote">
+          <div className="lp-camarote-bg" />
+          <div className="lp-camarote-inner">
+            <div className="lp-gold-badge lp-anim">
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--gold)', display: 'inline-block' }} />
+              ACESSO EXCLUSIVO
+            </div>
+            <h2 className="lp-anim">Onde os limites<br />sao <em>seus.</em></h2>
+            <p className="lp-camarote-desc lp-anim">
+              Um espaco blindado para quem quer explorar desejos especificos com total privacidade.
+              Sem julgamento, sem exposicao. So quem sinalizou as mesmas intencoes pode ver voce.
+            </p>
+            <div className="lp-camarote-grid">
               {[
-                { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg>, t: 'Escolha seu plano', d: 'A partir de R$10/mês. Sem conta gratuita. Isso afasta golpistas.' },
-                { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>, t: 'Verifique sua identidade', d: 'Selfie ao vivo + documento. Menos de 3 minutos pelo celular.' },
-                { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg>, t: 'Configure seus filtros', d: 'Inclua e exclua como quiser. 100+ opções para ser preciso.' },
-                { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>, t: 'Dê match e conecte', d: 'Só pessoas reais, com intenções compatíveis com as suas.' },
-              ].map((step, i) => (
-                <div key={i} className="lp-how-step">
-                  <div className="lp-step-icon">{step.svg}</div>
-                  <h3>{step.t}</h3>
-                  <p>{step.d}</p>
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, t: 'Backstage', d: 'Area privada com filtros de nicho exclusivos.' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, t: 'Swing', d: 'Encontre casais e parceiros alinhados.' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, t: 'Menage', d: 'Conexoes para tres com discricao total.' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, t: 'BDSM', d: 'Fetiches e praticas com consentimento claro.' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg>, t: 'Poliamor', d: 'Relacionamentos nao-monogamicos com transparencia.' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, t: 'Identidades Livres', d: 'Todas as orientacoes e generos sao bem-vindos.' },
+              ].map((feat, i) => (
+                <div key={i} className="lp-camarote-feat lp-anim">
+                  <div className="lp-camarote-feat-icon">{feat.icon}</div>
+                  <h4>{feat.t}</h4>
+                  <p>{feat.d}</p>
                 </div>
               ))}
             </div>
+            <a href="/cadastro" className="lp-btn-gold lp-anim">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+              Acessar Camarote Black
+            </a>
+            <p className="lp-camarote-note lp-anim">Visivel apenas para quem sinalizou as mesmas intencoes.</p>
           </div>
         </section>
 
-        {/* ── Diferenciais ── */}
-        <section className="lp-diff">
-          <div className="lp-diff-inner">
-            <p className="lp-section-label">Diferenciais</p>
-            <h2 className="lp-section-title">Tudo que outros apps<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>nunca</em> tiveram.</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
-              Três recursos que mudam completamente a forma de se conectar.
-            </p>
-            <div className="lp-diff-grid">
-              <div className="lp-diff-card lp-anim">
-                <div className="lp-diff-num">01</div>
-                <div className="lp-diff-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2.5"/><circle cx="15" cy="12" r="2.5"/><circle cx="9" cy="18" r="2.5"/></svg>
-                </div>
-                <h3>Filtros com mais de 100 opções</h3>
-                <p>Cor dos olhos, tipo de corpo, personalidade, estilo de vida, intenções, religião, fetiches. Inclua o que quer ver. Exclua o que não combina. Você define exatamente quem aparece pra você, e quem não aparece.</p>
-                <span className="lp-diff-tag">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                  100+ filtros disponíveis
-                </span>
-              </div>
-
-              <div className="lp-diff-card lp-anim">
-                <div className="lp-diff-num">02</div>
-                <div className="lp-diff-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-                </div>
-                <h3>Backstage: o lugar onde você pode ser você</h3>
-                <p>Área exclusiva para o plano Black. Filtros e perfis que não aparecem em nenhum outro lugar: Sugar, BDSM, Swing, fetiches, poliamor. Só quem assinalou a mesma intenção pode ver. Sem exposição, sem julgamento.</p>
-                <span className="lp-diff-tag">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                  Exclusivo Camarote Black
-                </span>
-              </div>
-
-              <div className="lp-diff-card lp-anim">
-                <div className="lp-diff-num">03</div>
-                <div className="lp-diff-icon">
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/></svg>
-                </div>
-                <h3>Videochamada direto pelo chat</h3>
-                <p>Sem sair do app. Sem trocar número. Você inicia uma chamada de vídeo em tempo real direto na conversa. Veja quem é a pessoa de verdade antes de qualquer encontro. Chegue ao café sem surpresa nenhuma.</p>
-                <span className="lp-diff-tag">
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                  Tempo real · Sem apps externos
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Planos ── */}
-        <section className="lp-pricing" id="precos">
-          <div className="lp-pricing-inner">
-            <p className="lp-section-label">Planos</p>
-            <h2 className="lp-section-title">Sem conta gratuita.<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Mais seriedade.</em></h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '560px', margin: '0 auto', lineHeight: 1.7 }}>
-              Um ambiente controlado para pessoas que sabem o que buscam.
-            </p>
-            <div className="lp-cards">
-              <div className="lp-card lp-anim">
-                <p className="lp-plan-name">Essencial</p>
-                <p className="lp-plan-area">Pista</p>
-                <div className="lp-plan-price"><sup>R$</sup>10</div>
-                <p className="lp-plan-period">por mês</p>
-                <p className="lp-plan-desc">O ponto de entrada. Para quem quer explorar a plataforma com pessoas verificadas e já ter acesso aos filtros essenciais.</p>
-                <ul className="lp-feats">
-                  <li>Verificação de identidade</li>
-                  <li>30 curtidas por dia</li>
-                  <li>1 filtro ativo por vez</li>
-                  <li>Ver matches recebidos</li>
-                  <li className="off">Filtros acumulados</li>
-                  <li className="off">Filtro de exclusão</li>
-                  <li className="off">Ver quem curtiu você</li>
-                  <li className="off">Desfazer curtida</li>
-                </ul>
-                <a href="/planos" className="lp-btn-price lp-btn-outline-p">Assinar Essencial</a>
-              </div>
-
-              <div className="lp-card mid lp-anim">
-                <span className="lp-feat-badge rose">Mais popular</span>
-                <p className="lp-plan-name">Plus</p>
-                <p className="lp-plan-area">Área VIP</p>
-                <div className="lp-plan-price"><sup>R$</sup>39</div>
-                <p className="lp-plan-period">por mês</p>
-                <p className="lp-plan-desc">A experiência completa de filtragem. Para quem está realmente em busca de uma conexão e quer usar todos os recursos da plataforma.</p>
-                <ul className="lp-feats">
-                  <li>Verificação de identidade</li>
-                  <li>100 curtidas por dia</li>
-                  <li>Todos os filtros acumulados</li>
-                  <li>Filtro de exclusão</li>
-                  <li>Ver quem curtiu você</li>
-                  <li>Desfazer curtida (1/dia)</li>
-                  <li>Boost semanal de perfil</li>
-                  <li>1 Lupa/dia no Destaque</li>
-                  <li>2 tickets de roleta/dia</li>
-                </ul>
-                <a href="/planos" className="lp-btn-price lp-btn-rose">Assinar Plus</a>
-              </div>
-
-              <div className="lp-card vip lp-anim">
-                <span className="lp-feat-badge gold">Camarote</span>
-                <p className="lp-plan-name">Black</p>
-                <p className="lp-plan-area">Backstage</p>
-                <div className="lp-plan-price"><sup>R$</sup>100</div>
-                <p className="lp-plan-period">por mês</p>
-                <p className="lp-plan-desc">Você acessa todos os perfis, tem área exclusiva Backstage com filtros de nicho (Sugar, BDSM, Swing, Fetiche) e visibilidade máxima.</p>
-                <ul className="lp-feats">
-                  <li className="gold-check">Tudo do Plus</li>
-                  <li className="gold-check">Curtidas ilimitadas</li>
-                  <li className="gold-check">10 SuperCurtidas/dia</li>
-                  <li className="gold-check">Área exclusiva Backstage</li>
-                  <li className="gold-check">Filtros de nicho (Sugar, Fetiche…)</li>
-                  <li className="gold-check">2 Lupas/dia no Destaque</li>
-                  <li className="gold-check">3 tickets de roleta/dia</li>
-                  <li className="gold-check">Destaque máximo no algoritmo</li>
-                  <li className="gold-check">Suporte prioritário 24h</li>
-                  <li className="gold-check">Chat exclusivo do Backstage (tema preto e dourado)</li>
-                  <li className="gold-check">Seja resgatado: outros assinantes pagam para te alcançar</li>
-                  <li className="gold-check" style={{ color: 'rgba(245,158,11,0.7)', fontStyle: 'italic' }}>Mais recursos exclusivos revelados ao entrar...</li>
-                </ul>
-                <a href="/planos" className="lp-btn-price lp-btn-gold">Assinar Camarote Black</a>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Gamificação ── */}
-        <section className="lp-gamif lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.75), rgba(8,9,14,0.88)), url('/backgrounds/MUITO%20MAIS%20DO%20QUE%20CURTIDAS.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        {/* ══════════════════════════════════════════════════════════════
+            SECTION 5: GAMIFICACAO
+        ══════════════════════════════════════════════════════════════ */}
+        <section className="lp-gamif">
+          <div className="lp-gamif-orb" />
           <div className="lp-gamif-inner">
-            <p className="lp-section-label">Muito mais do que curtidas</p>
-            <h2 className="lp-section-title"><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Recompensas</em> por<br />estar aqui</h2>
+            <p className="lp-section-label">MUITO MAIS DO QUE CURTIDAS</p>
+            <h2 className="lp-section-title"><span style={{ color: 'var(--accent)' }}>Recompensas</span> por<br />estar aqui.</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '500px', margin: '0 auto', lineHeight: 1.7 }}>
-              Todo dia tem prêmio. Quanto mais você usa, mais você ganha.
+              Todo dia tem premio. Quanto mais voce usa, mais voce ganha.
             </p>
             <div className="lp-gamif-grid">
-              {[
-                {
-                  icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>,
-                  t: 'Roleta diária',
-                  d: 'Gire todo dia e ganhe SuperCurtidas, Lupas, Boosts e até 1 dia de plano superior. Cada plano dá mais tickets por dia.',
-                },
-                {
-                  icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>,
-                  t: 'Streak de acesso',
-                  d: 'Entre todos os dias e desbloqueie recompensas crescentes no calendário mensal. Sequência de 30 dias = prêmios raros.',
-                },
-                {
-                  icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>,
-                  t: 'Indique e ganhe',
-                  d: 'Cada amigo que entrar pelo seu link te rende 1 SuperCurtida. Indicou 3? Ganhe 1 Boost. Quem entrou ganha 3 tickets de boas-vindas.',
-                },
-                {
-                  icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>,
-                  t: 'Emblemas Colecionáveis',
-                  d: 'Conquistas que aparecem no seu perfil. Raridades Comum, Incomum, Raro e Lendário. Quanto mais você usa e interage, mais emblemas raros você desbloqueia.',
-                },
-              ].map((item, i) => (
-                <div key={i} className="lp-gamif-card lp-anim">
-                  <div className="lp-gamif-icon">{item.icon}</div>
-                  <h3>{item.t}</h3>
-                  <p>{item.d}</p>
+              {/* Roleta */}
+              <div className="lp-gamif-card lp-anim">
+                <div className="lp-gamif-icon">
+                  <svg className="lp-roleta-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>
                 </div>
-              ))}
+                <h3>Roleta Diaria</h3>
+                <p>Gire todo dia e ganhe SuperCurtidas, Lupas, Boosts e ate 1 dia de plano superior. Cada plano da mais tickets por dia.</p>
+              </div>
+
+              {/* Streak */}
+              <div className="lp-gamif-card lp-anim">
+                <div className="lp-gamif-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
+                </div>
+                <h3>Streak de Acesso</h3>
+                <p>Entre todos os dias e desbloqueie recompensas crescentes. Sequencia de 30 dias = premios raros.</p>
+                <div className="lp-streak-bar"><div className="lp-streak-fill" /></div>
+              </div>
+
+              {/* Emblemas */}
+              <div className="lp-gamif-card lp-anim">
+                <div className="lp-gamif-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                </div>
+                <h3>Emblemas Colecionaveis</h3>
+                <p>Conquistas que aparecem no seu perfil. Raridades de Comum a Lendario.</p>
+                <div className="lp-mini-badges">
+                  <div className="lp-mini-badge" style={{ background: 'rgba(107,114,128,0.15)', border: '1px solid rgba(107,114,128,0.3)', color: '#9ca3af' }}>C</div>
+                  <div className="lp-mini-badge" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', color: '#10b981' }}>I</div>
+                  <div className="lp-mini-badge" style={{ background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa' }}>R</div>
+                  <div className="lp-mini-badge" style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B' }}>L</div>
+                </div>
+              </div>
+
+              {/* Indicar */}
+              <div className="lp-gamif-card lp-anim">
+                <div className="lp-gamif-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+                </div>
+                <h3>Indique e Ganhe</h3>
+                <p>Cada amigo que entrar pelo seu link te rende 1 SuperCurtida. Indicou 3? Ganhe 1 Boost. Quem entrou ganha 3 tickets de boas-vindas.</p>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ── Salas Temáticas ── */}
-        <section style={{ padding: '80px 24px', textAlign: 'center', background: 'linear-gradient(180deg, #0d0f16 0%, #08090E 100%)' }}>
-          <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-            <p className="lp-section-label">Em breve</p>
-            <h2 className="lp-section-title" style={{ marginBottom: '16px' }}>
-              <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Salas Temáticas</em>
-            </h2>
-            <p style={{ color: 'rgba(248,249,250,0.55)', fontSize: '16px', maxWidth: '520px', margin: '0 auto 40px', lineHeight: 1.75, fontFamily: 'var(--font-jakarta)' }}>
-              Uma nova forma de se conectar. Entre em uma sala por interesse ou clima e descubra quem mais está no mesmo astral que você neste momento.
+        {/* ══════════════════════════════════════════════════════════════
+            SECTION 6: VERIFICACAO
+        ══════════════════════════════════════════════════════════════ */}
+        <section className="lp-verify">
+          <div className="lp-verify-inner">
+            <svg className="lp-verify-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+            <h2 className="lp-section-title lp-anim">So entra quem e <span style={{ color: 'var(--accent)' }}>real.</span></h2>
+            <p className="lp-anim" style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '480px', margin: '0 auto', lineHeight: 1.7 }}>
+              O processo de verificacao mais rigoroso do mercado.
+              Nenhum fake passa. Nenhuma conta duplicada sobrevive.
             </p>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
-              {['Bares e baladas', 'Games', 'Viagens', 'Música ao vivo', 'Relacionamento sério', 'Apenas diversão', 'K-pop', 'Fitness', 'LGBTQIA+'].map((sala, i) => (
-                <span key={i} style={{
-                  padding: '8px 18px', borderRadius: '100px',
-                  background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.2)',
-                  color: 'rgba(248,249,250,0.65)', fontSize: '13px', fontFamily: 'var(--font-jakarta)',
-                }}>
-                  {sala}
-                </span>
-              ))}
+            <div className="lp-verify-cols">
+              <div className="lp-verify-col lp-anim">
+                <div className="lp-verify-col-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="14" r="3"/><path d="M12 6h.01"/></svg>
+                </div>
+                <h4>Documento + selfie</h4>
+                <p>RG ou CNH + selfie ao vivo com sequencia de movimentos. Impossivel usar foto ou video.</p>
+              </div>
+              <div className="lp-verify-col lp-anim">
+                <div className="lp-verify-col-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                </div>
+                <h4>Foto moderada por IA</h4>
+                <p>Todas as fotos passam por analise automatica antes de serem publicadas no perfil.</p>
+              </div>
+              <div className="lp-verify-col lp-anim">
+                <div className="lp-verify-col-icon">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                </div>
+                <h4>Selo verificado no perfil</h4>
+                <p>Quem passou por tudo recebe o selo. 1 conta por CPF, banimento permanente.</p>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* ── Depoimentos ── */}
-        <section className="lp-testi lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.72), rgba(8,9,14,0.88)), url('/backgrounds/depoimentos.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
+        {/* ══════════════════════════════════════════════════════════════
+            SECTION 7: DEPOIMENTOS
+        ══════════════════════════════════════════════════════════════ */}
+        <section className="lp-testi">
+          <div className="lp-testi-bg" />
           <div className="lp-testi-inner">
             <p className="lp-section-label">Depoimentos</p>
-            <h2 className="lp-section-title">Chega de encontros frustrantes.<br />Veja quem já está <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>vivendo</em> o mundo real.</h2>
+            <h2 className="lp-section-title">Quem ja esta aqui<br /><span style={{ color: 'var(--accent)' }}>nao volta.</span></h2>
             <div className="lp-testi-grid">
               {[
-                { name: 'Camila S.', role: 'Belo Horizonte · 27 anos · Plano Plus', text: 'Passei muito tempo em apps conversando com pessoas que estavam em momentos diferentes do meu. Aqui eu fui direto ao ponto: ativei os filtros e deixei claro que procuro algo sério. O app cortou o ruído e me conectou só com quem estava na mesma página. Encontrei uma pessoa incrível, sem perder o meu tempo nem o tempo de ninguém.' },
-                { name: 'Lucas M.', role: 'Rio de Janeiro · 34 anos · Camarote Black', text: 'A pior parte de conhecer gente nova é quando um quer uma coisa e o outro quer outra. No Backstage, eu joguei limpo sobre o que eu curto e deixei claro que meu foco agora é apenas diversão casual. Deu match com uma mulher que queria exatamente a mesma coisa para aquela noite. Fomos direto ao assunto, com muita química e zero cobrança.' },
-                { name: 'Thiago R.', role: 'Curitiba · 36 anos · Camarote Black', text: 'Eu valorizo muito o meu tempo e gosto de proporcionar experiências exclusivas. O Camarote Black é perfeito porque atrai pessoas que buscam esse mesmo nível. A verificação rigorosa por documento e selfie garante que os perfis são reais. Você conversa com a tranquilidade de que a pessoa existe de verdade e que os interesses estão 100% alinhados desde o primeiro oi.' },
-                { name: 'Fernanda O.', role: 'São Paulo · 29 anos · Plano Plus', text: 'Eu queria sair e me divertir, mas dava uma preguiça enorme de chegar no bar e descobrir na hora que a química não rolava. A videochamada aqui mudou o jogo. Bati 40 minutos de papo, vi que a energia batia pela tela mesmo, e fomos pro encontro presencial já com aquele clima bom. Corta toda a tensão de conhecer alguém novo.' },
+                { name: 'Camila S.', role: 'Belo Horizonte -- 27 anos -- Plano Plus', text: 'Passei muito tempo em apps conversando com pessoas que estavam em momentos diferentes do meu. Aqui eu fui direto ao ponto: ativei os filtros e deixei claro que procuro algo serio. O app cortou o ruido e me conectou so com quem estava na mesma pagina.' },
+                { name: 'Lucas M.', role: 'Rio de Janeiro -- 34 anos -- Camarote Black', text: 'A pior parte de conhecer gente nova e quando um quer uma coisa e o outro quer outra. No Backstage, eu joguei limpo sobre o que eu curto. Deu match com uma mulher que queria exatamente a mesma coisa. Fomos direto ao assunto, com muita quimica e zero cobranca.' },
+                { name: 'Thiago R.', role: 'Curitiba -- 36 anos -- Camarote Black', text: 'Eu valorizo muito o meu tempo e gosto de proporcionar experiencias exclusivas. O Camarote Black e perfeito porque atrai pessoas que buscam esse mesmo nivel. A verificacao rigorosa garante que os perfis sao reais.' },
+                { name: 'Fernanda O.', role: 'Sao Paulo -- 29 anos -- Plano Plus', text: 'Eu queria sair e me divertir, mas dava uma preguica enorme de chegar no bar e descobrir que a quimica nao rolava. A videochamada aqui mudou o jogo. Bati 40 minutos de papo, vi que a energia batia pela tela, e fomos pro encontro ja com aquele clima bom.' },
               ].map((t, i) => (
                 <div key={i} className="lp-testi-card lp-anim">
-                  <div className="lp-testi-stars">★★★★★</div>
-                  <p className="lp-testi-text">"{t.text}"</p>
+                  <div className="lp-testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                  <p className="lp-testi-text">&quot;{t.text}&quot;</p>
                   <div className="lp-testi-author">
                     <div className="lp-testi-av">
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
@@ -1495,28 +1015,97 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── Instalar PWA ── */}
+        {/* ══════════════════════════════════════════════════════════════
+            SECTION 8: PLANOS
+        ══════════════════════════════════════════════════════════════ */}
+        <section className="lp-pricing" id="planos">
+          <div className="lp-pricing-inner">
+            <p className="lp-section-label">Planos</p>
+            <h2 className="lp-section-title">Sem conta gratuita.<br /><span style={{ color: 'var(--accent)' }}>Mais seriedade.</span></h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '560px', margin: '0 auto', lineHeight: 1.7 }}>
+              Um ambiente controlado para pessoas que sabem o que buscam.
+            </p>
+            <div className="lp-cards" style={{ scrollSnapType: 'x mandatory', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <div className="lp-card lp-anim" style={{ scrollSnapAlign: 'center', minWidth: '280px' }}>
+                <p className="lp-plan-name">Essencial</p>
+                <p className="lp-plan-area">Pista</p>
+                <div className="lp-plan-price"><sup>R$</sup>10</div>
+                <p className="lp-plan-period">por mes</p>
+                <p className="lp-plan-desc">O ponto de entrada. Para quem quer explorar a plataforma com pessoas verificadas.</p>
+                <ul className="lp-feats">
+                  <li>Verificacao de identidade</li>
+                  <li>30 curtidas por dia</li>
+                  <li>1 filtro ativo por vez</li>
+                  <li>Ver matches recebidos</li>
+                  <li className="off">Filtros acumulados</li>
+                  <li className="off">Filtro de exclusao</li>
+                  <li className="off">Ver quem curtiu voce</li>
+                  <li className="off">Desfazer curtida</li>
+                </ul>
+                <a href="/planos" className="lp-btn-price lp-btn-outline-p">Assinar Essencial</a>
+              </div>
+
+              <div className="lp-card mid lp-anim" style={{ scrollSnapAlign: 'center', minWidth: '280px' }}>
+                <span className="lp-feat-badge rose">Mais popular</span>
+                <p className="lp-plan-name">Plus</p>
+                <p className="lp-plan-area">Area VIP</p>
+                <div className="lp-plan-price"><sup>R$</sup>39</div>
+                <p className="lp-plan-period">por mes</p>
+                <p className="lp-plan-desc">A experiencia completa de filtragem. Para quem esta realmente em busca de uma conexao.</p>
+                <ul className="lp-feats">
+                  <li>Verificacao de identidade</li>
+                  <li>100 curtidas por dia</li>
+                  <li>Todos os filtros acumulados</li>
+                  <li>Filtro de exclusao</li>
+                  <li>Ver quem curtiu voce</li>
+                  <li>Desfazer curtida (1/dia)</li>
+                  <li>Boost semanal de perfil</li>
+                  <li>1 Lupa/dia no Destaque</li>
+                  <li>2 tickets de roleta/dia</li>
+                </ul>
+                <a href="/planos" className="lp-btn-price lp-btn-rose">Assinar Plus</a>
+              </div>
+
+              <div className="lp-card vip lp-anim" style={{ scrollSnapAlign: 'center', minWidth: '280px' }}>
+                <span className="lp-feat-badge gold">Camarote</span>
+                <p className="lp-plan-name">Black</p>
+                <p className="lp-plan-area">Backstage</p>
+                <div className="lp-plan-price"><sup>R$</sup>100</div>
+                <p className="lp-plan-period">por mes</p>
+                <p className="lp-plan-desc">Acesso total, area exclusiva Backstage e visibilidade maxima.</p>
+                <ul className="lp-feats">
+                  <li className="gold-check">Tudo do Plus</li>
+                  <li className="gold-check">Curtidas ilimitadas</li>
+                  <li className="gold-check">10 SuperCurtidas/dia</li>
+                  <li className="gold-check">Area exclusiva Backstage</li>
+                  <li className="gold-check">Filtros de nicho (Sugar, Fetiche...)</li>
+                  <li className="gold-check">2 Lupas/dia no Destaque</li>
+                  <li className="gold-check">3 tickets de roleta/dia</li>
+                  <li className="gold-check">Destaque maximo no algoritmo</li>
+                  <li className="gold-check">Suporte prioritario 24h</li>
+                </ul>
+                <a href="/planos" className="lp-btn-price lp-btn-gold-p">Assinar Camarote Black</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════════════════════════
+            SECTION 9: INSTALAR PWA (compacto)
+        ══════════════════════════════════════════════════════════════ */}
         <section className="lp-install">
           <div className="lp-install-inner">
             <div className="lp-install-left lp-anim">
-              <p className="lp-section-label">App</p>
-              <h2><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Baixe Agora.</em><br />Direto no seu celular.</h2>
-              <p>Ícone na tela inicial, notificações em tempo real. Sem precisar de loja de apps, sem burocracia de download.</p>
+              <h3><em>Baixe agora.</em> Direto no celular.</h3>
+              <p>Icone na tela inicial, notificacoes em tempo real. Sem loja de apps.</p>
 
-              {/* Tabs Android / iPhone */}
               <div className="lp-install-os-tabs">
-                <button
-                  className={`lp-os-tab${selectedOS === 'android' ? ' active' : ''}`}
-                  onClick={() => setSelectedOS('android')}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341 14.6 10.5l2.184-3.78a.75.75 0 0 0-1.3-.75L13.3 9.75H10.7L9.516 5.97a.75.75 0 0 0-1.3.75L10.4 10.5l-2.923 4.841A.75.75 0 1 0 8.777 16L12 10.933 15.223 16a.75.75 0 1 0 1.3-.659zM6.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm11 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+                <button className={`lp-os-tab${selectedOS === 'android' ? ' active' : ''}`} onClick={() => setSelectedOS('android')}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341 14.6 10.5l2.184-3.78a.75.75 0 0 0-1.3-.75L13.3 9.75H10.7L9.516 5.97a.75.75 0 0 0-1.3.75L10.4 10.5l-2.923 4.841A.75.75 0 1 0 8.777 16L12 10.933 15.223 16a.75.75 0 1 0 1.3-.659zM6.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm11 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
                   Android
                 </button>
-                <button
-                  className={`lp-os-tab${selectedOS === 'ios' ? ' active' : ''}`}
-                  onClick={() => setSelectedOS('ios')}
-                >
-                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                <button className={`lp-os-tab${selectedOS === 'ios' ? ' active' : ''}`} onClick={() => setSelectedOS('ios')}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
                   iPhone
                 </button>
               </div>
@@ -1524,7 +1113,7 @@ export default function Home() {
               <div className="lp-install-actions">
                 {installDone ? (
                   <div className="lp-install-done">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
                     App instalado com sucesso!
                   </div>
                 ) : selectedOS === 'android' ? (
@@ -1539,7 +1128,7 @@ export default function Home() {
                   <div className="lp-install-btn ios">
                     <svg className="lp-install-btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
                     <span className="lp-install-btn-text">
-                      <small>Siga os passos ao lado →</small>
+                      <small>Siga os passos ao lado</small>
                       Instalar no iPhone
                     </span>
                   </div>
@@ -1550,52 +1139,32 @@ export default function Home() {
             <div className="lp-install-right lp-anim">
               {selectedOS === 'android' ? (
                 <>
-                  <p className="lp-install-os-label">Android · Chrome</p>
                   <div className="lp-install-step">
                     <div className="lp-install-step-num android">1</div>
-                    <div>
-                      <h4>Abra no Chrome</h4>
-                      <p>Acesse meandyou.com.br pelo navegador Chrome no seu Android.</p>
-                    </div>
+                    <div><h4>Abra no Chrome</h4><p>Acesse meandyou.com.br pelo Chrome.</p></div>
                   </div>
                   <div className="lp-install-step">
                     <div className="lp-install-step-num android">2</div>
-                    <div>
-                      <h4>Toque nos 3 pontos ⋮</h4>
-                      <p>No canto superior direito do Chrome, abra o menu de opções.</p>
-                    </div>
+                    <div><h4>Menu de opcoes</h4><p>Toque nos 3 pontos no canto superior direito.</p></div>
                   </div>
                   <div className="lp-install-step">
                     <div className="lp-install-step-num android">3</div>
-                    <div>
-                      <h4>Adicionar à tela inicial</h4>
-                      <p>Selecione a opção e confirme. O ícone aparece na sua tela.</p>
-                    </div>
+                    <div><h4>Adicionar a tela inicial</h4><p>Confirme e o icone aparece na sua tela.</p></div>
                   </div>
                 </>
               ) : (
                 <>
-                  <p className="lp-install-os-label">iPhone · Safari</p>
                   <div className="lp-install-step">
                     <div className="lp-install-step-num ios">1</div>
-                    <div>
-                      <h4>Abra no Safari</h4>
-                      <p>No iPhone, use o Safari — é o único navegador que permite instalar apps pela web.</p>
-                    </div>
+                    <div><h4>Abra no Safari</h4><p>Use o Safari no iPhone.</p></div>
                   </div>
                   <div className="lp-install-step">
                     <div className="lp-install-step-num ios">2</div>
-                    <div>
-                      <h4>Toque em Compartilhar</h4>
-                      <p>Ícone de seta para cima na barra inferior do Safari.</p>
-                    </div>
+                    <div><h4>Compartilhar</h4><p>Toque na seta para cima na barra inferior.</p></div>
                   </div>
                   <div className="lp-install-step">
                     <div className="lp-install-step-num ios">3</div>
-                    <div>
-                      <h4>Adicionar à Tela de Início</h4>
-                      <p>Role o menu para baixo, toque na opção e confirme. O ícone aparece na tela.</p>
-                    </div>
+                    <div><h4>Adicionar a Tela de Inicio</h4><p>Role o menu e confirme.</p></div>
                   </div>
                 </>
               )}
@@ -1603,149 +1172,70 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── Quem somos ── */}
-        <section className="lp-about">
-          <div className="lp-about-inner">
-            <div className="lp-about-intro">
-              <div className="lp-about-intro-left lp-anim">
-                <p className="lp-section-label">Quem somos</p>
-                <h2>
-                  <span style={{
-                    display: 'block',
-                    fontSize: '0.52em',
-                    fontWeight: 400,
-                    color: 'rgba(248,249,250,0.42)',
-                    fontStyle: 'italic',
-                    letterSpacing: '0',
-                    lineHeight: 1.5,
-                    marginBottom: '14px',
-                    borderLeft: '2px solid var(--accent-border)',
-                    paddingLeft: '14px',
-                  }}>
-                    O mercado parou no tempo.
-                  </span>
-                  <em>Nós adiantamos<br />o relógio.</em>
-                </h2>
-              </div>
-              <div className="lp-about-intro-right lp-anim">
-                <p>Olhe para os aplicativos que você usa hoje. Eles são obsoletos na segurança, ultrapassados nas funções e desenhados para prender você na tela. O mercado transformou a busca por alguém em um videogame sem graça: as pessoas dão like, like, like, dão match, e a conversa simplesmente nunca acontece. Virou vício em validação, não em conexão.</p>
-                <p className="lp-about-highlight">O MeAndYou nasceu para quebrar esse ciclo.</p>
-                <p>Nosso foco é a modernidade e a precisão absoluta. Acreditamos que conexões reais nascem de estilos de vida alinhados, e não de acasos. Se você não suporta quem fuma, você tem o direito de limpar essas pessoas da sua tela com um clique. Se você fuma e quer alguém que acompanhe seu ritmo sem encher o seu saco, você vai encontrar exatamente essa pessoa aqui.</p>
-                <p>Sem máscaras. Sem precisar fingir ou se adaptar para caber na expectativa do outro. Quanto mais filtros você usa, menos julgamento você sofre, e mais rápido o encontro real acontece.</p>
-              </div>
-            </div>
-            <div className="lp-about-pillars">
-              <div className="lp-about-pillar lp-anim">
-                <div className="lp-about-pillar-label">Ecossistema</div>
-                <h4>O mais inclusivo do Brasil — e talvez do mundo.</h4>
-                <p>Não importa sua raça, identidade de gênero, religião, se você é PCD, assexual ou qual é a sua orientação. Com mais de 100 filtros, você molda o app em volta de você. Nós nos recusamos a criar "só mais um app". Construímos a primeira plataforma com arquitetura de inclusão total.</p>
-              </div>
-              <div className="lp-about-pillar lp-anim">
-                <div className="lp-about-pillar-label">Muito mais por trás</div>
-                <h4>Há camadas que você só descobre entrando.</h4>
-                <p>Repensamos a experiência de uso. Entrar no app deixou de ser um hábito chato e virou algo recompensador. Para quem busca algo além do convencional: espaços blindados e totalmente discretos onde fetiches, desejos específicos e acordos vivem longe de olhares curiosos.</p>
-              </div>
-              <div className="lp-about-pillar lp-anim">
-                <div className="lp-about-pillar-label">Nossa marca</div>
-                <h4>Simplicidade no acesso, elegância na conexão.</h4>
-                <p>MeAndYou: pensado para ser simples, direto e rápido de digitar no navegador — o caminho mais curto para o seu próximo encontro. Me&amp;You: no logotipo, o &amp; representa o elo perfeito. É a tecnologia unindo, de forma segura e sem julgamentos, o "Eu" e o "Você".</p>
-              </div>
-            </div>
-            <div className="lp-about-brand lp-anim">
-              <div className="lp-about-brand-logo">
-                <img src="/logo.png" alt="MeAndYou" />
-              </div>
-              <div className="lp-about-brand-cards">
-                <div className="lp-about-brand-card">
-                  <div className="label">Nome no app</div>
-                  <div className="val">MeAndYou</div>
-                  <div className="note">meandyou.com.br · nome técnico e de domínio · simples de digitar e lembrar</div>
-                </div>
-                <div className="lp-about-brand-card">
-                  <div className="label">Identidade visual</div>
-                  <div className="val">Me&amp;You</div>
-                  <div className="note">logotipo oficial · o &amp; é intencional — representa o elo entre duas pessoas, não é um erro de grafia</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* ── FAQ ── */}
+        {/* ══════════════════════════════════════════════════════════════
+            SECTION 10: FAQ
+        ══════════════════════════════════════════════════════════════ */}
         <section className="lp-faq">
           <div className="lp-faq-inner">
             <p className="lp-section-label">FAQ</p>
-            <h2 className="lp-section-title">Dúvidas Frequentes</h2>
+            <h2 className="lp-section-title">Duvidas Frequentes</h2>
             <div className="lp-faq-list">
               {faqItems.map((item, i) => <FaqItem key={i} pergunta={item.q} resposta={item.a} />)}
             </div>
           </div>
         </section>
 
-        {/* ── Segurança ── */}
-        <section className="lp-safety" id="seguranca">
-          <div className="lp-safety-inner">
-            <p className="lp-section-label" style={{ color: 'var(--accent)' }}>Segurança</p>
-            <h2>Dicas para se <em>proteger</em> em encontros.</h2>
-            <div className="lp-safety-grid">
-              {[
-                { icon: <svg className="lp-safety-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>, t: 'Marque em local público', d: 'Primeiro encontro sempre em café, restaurante ou shopping. Nunca na casa de ninguém.' },
-                { icon: <svg className="lp-safety-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>, t: 'Avise alguém de confiança', d: 'Conte para um amigo ou familiar onde vai, com quem e a que horas.' },
-                { icon: <svg className="lp-safety-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg>, t: 'Mantenha o celular carregado', d: 'Vá com bateria cheia e tenha um plano caso precise sair rapidamente.' },
-                { icon: <svg className="lp-safety-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>, t: 'Nunca transfira dinheiro', d: 'Se alguém pedir PIX, cartão ou qualquer valor antes do encontro: denuncie imediatamente.' },
-                { icon: <svg className="lp-safety-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>, t: 'Não compartilhe dados pessoais', d: 'Endereço, local de trabalho e dados bancários nunca antes de estabelecer confiança.' },
-                { icon: <svg className="lp-safety-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>, t: 'Denúncia com 1 toque', d: 'Qualquer perfil pode ser denunciado diretamente pelo app. Moderação em até 24h.' },
-                { icon: <svg className="lp-safety-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="4.93" y1="4.93" x2="19.07" y2="19.07" /></svg>, t: 'Banimento permanente por CPF', d: 'Quem é banido não volta. Bloqueio vinculado ao CPF, não ao email.' },
-                { icon: <svg className="lp-safety-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>, t: 'Em caso de perigo', d: 'Use o botão de emergência no app ou ligue imediatamente para o 190.' },
-              ].map((item, i) => (
-                <div key={i} className="lp-safety-item lp-anim">
-                  {item.icon}
-                  <div><strong>{item.t}</strong><p>{item.d}</p></div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── CTA final ── */}
-        <section className="lp-cta lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.60), rgba(8,9,14,0.82)), url('/backgrounds/diferenciais.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
-          <h2 className="lp-cta-title">
-            Sua pessoa real<br />está <em style={{ fontStyle:'italic', color:'var(--accent)' }}>esperando.</em>
-          </h2>
-          <p className="lp-cta-sub" style={{ color:'rgba(248,249,250,0.88)', fontSize:'17px', marginBottom:'44px', position:'relative' }}>
-            <strong>Verificação real.</strong> <strong>Filtros completos.</strong> Conexões de <em>verdade.</em>
-          </p>
-          <a href="/planos" className="lp-btn-cta-white" style={{ position:'relative' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-            Escolher meu plano
-          </a>
-          <p className="lp-cta-note">Cancele quando quiser · Sem fidelidade</p>
-        </section>
-
-        {/* ── Footer ── */}
+        {/* ══════════════════════════════════════════════════════════════
+            SECTION 11: FOOTER
+        ══════════════════════════════════════════════════════════════ */}
         <footer className="lp-footer">
+          {/* Contact form */}
+          <div className="lp-footer-contact">
+            <h4>Fale conosco</h4>
+            {contatoEnviado ? (
+              <p style={{ color: '#4ade80', fontSize: '14px', fontWeight: 600 }}>Mensagem enviada com sucesso! Retornaremos em breve.</p>
+            ) : (
+              <form className="lp-contact-form" onSubmit={handleContatoSubmit}>
+                <input type="text" placeholder="Seu nome" value={contatoNome} onChange={e => setContatoNome(e.target.value)} />
+                <input type="email" placeholder="Seu e-mail" value={contatoEmail} onChange={e => setContatoEmail(e.target.value)} />
+                <select value={contatoAssunto} onChange={e => setContatoAssunto(e.target.value)}>
+                  <option value="">Assunto</option>
+                  <option value="duvida">Duvida</option>
+                  <option value="sugestao">Sugestao</option>
+                  <option value="problema">Problema tecnico</option>
+                  <option value="parceria">Parceria</option>
+                  <option value="outro">Outro</option>
+                </select>
+                <textarea placeholder="Sua mensagem" value={contatoMensagem} onChange={e => setContatoMensagem(e.target.value)} />
+                <button type="submit" className="lp-contact-btn" disabled={contatoEnviando}>
+                  {contatoEnviando ? 'Enviando...' : 'Enviar'}
+                </button>
+              </form>
+            )}
+            {contatoErro && <p style={{ color: '#F43F5E', fontSize: '13px', marginTop: '8px' }}>{contatoErro}</p>}
+          </div>
+
           <div className="lp-footer-top">
             <div>
               <a href="/" className="lp-footer-logo">MeAnd<span>You</span></a>
               <p style={{ fontSize: '13px', lineHeight: 1.75, maxWidth: '260px' }}>
-                O app de relacionamentos com verificação real de identidade e os filtros mais completos do Brasil.
+                O app de relacionamentos com verificacao real de identidade e os filtros mais completos do Brasil.
               </p>
             </div>
             <div className="lp-footer-col">
               <h4>Produto</h4>
-              <a href="#verificacao">Verificação</a>
-              <a href="#filtros">Filtros</a>
-              <a href="#precos">Planos e preços</a>
-              <a href="#seguranca">Segurança</a>
+              <a href="#modos">Modos</a>
+              <a href="#camarote">Camarote</a>
+              <a href="#planos">Planos e precos</a>
             </div>
             <div className="lp-footer-col">
               <h4>Legal</h4>
               <a href="/termos">Termos de uso</a>
-              <a href="/privacidade">Política de privacidade</a>
+              <a href="/privacidade">Politica de privacidade</a>
             </div>
             <div className="lp-footer-col">
               <h4>Conta</h4>
-              <a href="/planos">Criar conta</a>
+              <a href="/cadastro">Criar conta</a>
               <a href="/login">Entrar</a>
               <a href="/fale-conosco">Fale Conosco</a>
               <a href="/suporte">Suporte</a>
@@ -1753,10 +1243,7 @@ export default function Home() {
           </div>
           <div className="lp-footer-bottom">
             <div>
-              <p>© {new Date().getFullYear()} MeAndYou · Todos os direitos reservados</p>
-              <p style={{ fontSize: '11px', marginTop: '4px', color: 'rgba(248,249,250,0.35)' }}>
-                Feito com carinho por brasileiros 🇧🇷
-              </p>
+              <p>&copy; {new Date().getFullYear()} MeAndYou -- Todos os direitos reservados</p>
             </div>
             <div className="lp-footer-btm-links">
               <a href="/privacidade">Privacidade</a>
