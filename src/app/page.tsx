@@ -451,6 +451,28 @@ export default function Home() {
         .lp-bg-fade::after { bottom: 0; background: linear-gradient(to top, #08090E 0%, transparent 100%); }
         .lp-bg-fade > * { position: relative; z-index: 3; }
 
+        /* ── WHY PAY ── */
+        .lp-why { padding: 80px 24px; background: linear-gradient(180deg, #08090E 0%, #0d0f18 50%, #08090E 100%); }
+        .lp-why-inner { max-width: 900px; margin: 0 auto; text-align: center; }
+        .lp-why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 48px; text-align: left; }
+        .lp-why-card { background: linear-gradient(160deg, rgba(19,22,31,0.98) 0%, rgba(15,17,23,0.98) 100%); border: 1px solid rgba(255,255,255,0.06); border-radius: 20px; padding: 32px 28px; position: relative; overflow: hidden; transition: border-color 0.3s, transform 0.3s; }
+        .lp-why-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent-grad); opacity: 0; transition: opacity 0.3s; border-radius: 20px 20px 0 0; }
+        .lp-why-card:hover { border-color: rgba(225,29,72,0.25); transform: translateY(-4px); }
+        .lp-why-card:hover::before { opacity: 1; }
+        .lp-why-num { font-family: var(--font-fraunces), serif; font-size: 56px; font-weight: 700; line-height: 1; color: var(--accent); opacity: 0.12; margin-bottom: -8px; }
+        .lp-why-title { font-size: 17px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+        .lp-why-desc { font-size: 13px; color: rgba(248,249,250,0.6); line-height: 1.75; margin: 0; }
+
+        /* ── SECURITY PILLARS ── */
+        .lp-security { padding: 80px 24px; background: #0a0c13; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .lp-security-inner { max-width: 960px; margin: 0 auto; text-align: center; }
+        .lp-security-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; margin-top: 48px; }
+        .lp-security-card { background: linear-gradient(160deg, rgba(19,22,31,0.98) 0%, rgba(15,17,23,0.98) 100%); border: 1px solid rgba(225,29,72,0.12); border-radius: 18px; padding: 28px 22px; text-align: center; transition: border-color 0.3s, transform 0.3s; }
+        .lp-security-card:hover { border-color: rgba(225,29,72,0.3); transform: translateY(-3px); }
+        .lp-security-icon { width: 52px; height: 52px; border-radius: 50%; background: rgba(225,29,72,0.10); border: 1px solid rgba(225,29,72,0.25); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; color: var(--accent); }
+        .lp-security-card h4 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 8px; }
+        .lp-security-card p { font-size: 12px; color: rgba(248,249,250,0.55); line-height: 1.65; margin: 0; }
+
         /* ── MODES (4 cards) ── */
         .lp-modes { padding: 100px 24px; position: relative; overflow: hidden; }
         .lp-modes-bg { position: absolute; inset: 0; background-image: linear-gradient(rgba(8,9,14,0.78), rgba(8,9,14,0.92)), url('/backgrounds/diferenciais.png'); background-size: cover; background-position: center; z-index: 0; }
@@ -654,6 +676,8 @@ export default function Home() {
           .lp-nav { width: calc(100% - 32px); top: 12px; padding: 12px 20px; }
           .lp-nav-links { display: none; }
           .lp-hamburger { display: flex; }
+          .lp-why-grid { grid-template-columns: 1fr; }
+          .lp-security-grid { grid-template-columns: repeat(2, 1fr); }
           .lp-modes-grid { grid-template-columns: repeat(2, 1fr); }
           .lp-camarote-grid { grid-template-columns: repeat(2, 1fr); }
           .lp-cards { grid-template-columns: 1fr; max-width: 420px; margin-left: auto; margin-right: auto; }
@@ -669,10 +693,11 @@ export default function Home() {
           .lp-actions { flex-direction: column; }
           .lp-btn-main, .lp-btn-outline { width: 100%; justify-content: center; }
           .lp-stats-inner { grid-template-columns: 1fr; gap: 24px; }
+          .lp-why-grid { grid-template-columns: 1fr; }
+          .lp-security-grid { grid-template-columns: 1fr; }
           .lp-modes-grid { grid-template-columns: 1fr 1fr; }
           .lp-camarote-grid { grid-template-columns: 1fr; }
           .lp-gamif-grid { grid-template-columns: 1fr; }
-          .lp-verify-cols { grid-template-columns: 1fr; }
           .lp-cards { max-width: 100%; }
           .lp-footer-top { grid-template-columns: 1fr; }
           .lp-contact-form { grid-template-columns: 1fr; }
@@ -773,6 +798,36 @@ export default function Home() {
             <div className="lp-anim">
               <div className="lp-stat-number lp-counter" data-target="127" data-suffix="">0</div>
               <div className="lp-stat-desc">cidades ativas</div>
+            </div>
+          </div>
+        </section>
+
+        {/* ══════════════════════════════════════════════════════════════
+            SECTION 2.5: POR QUE PAGAR?
+        ══════════════════════════════════════════════════════════════ */}
+        <section className="lp-why">
+          <div className="lp-why-inner">
+            <p className="lp-section-label">Por que não é gratuito</p>
+            <h2 className="lp-section-title lp-anim">Gratuito atrai <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>quem não sabe</em><br />o que quer.</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
+              A partir de R$9,97 por mês, criamos um filtro natural de intenção. O resultado: outra qualidade de conversa, de perfil, de experiência.
+            </p>
+            <div className="lp-why-grid">
+              <div className="lp-why-card lp-anim">
+                <div className="lp-why-num">01</div>
+                <div className="lp-why-title">Filtro de intenção real</div>
+                <p className="lp-why-desc">Quem paga para estar aqui, por menor que seja o valor, tem outro nível de comprometimento. Você sente isso na primeira mensagem.</p>
+              </div>
+              <div className="lp-why-card lp-anim">
+                <div className="lp-why-num">02</div>
+                <div className="lp-why-title">Zero perfis falsos</div>
+                <p className="lp-why-desc">A barreira de entrada — verificação de identidade + pagamento — elimina bots, fakes e perfis abandonados de vez.</p>
+              </div>
+              <div className="lp-why-card lp-anim">
+                <div className="lp-why-num">03</div>
+                <div className="lp-why-title">Infraestrutura de verdade</div>
+                <p className="lp-why-desc">Moderação 24h, IA para fotos, botão de emergência, verificação facial ao vivo. Tudo isso custa, e é isso que garante sua segurança.</p>
+              </div>
             </div>
           </div>
         </section>
@@ -902,16 +957,27 @@ export default function Home() {
               {/* Roleta */}
               <div className="lp-gamif-card lp-anim">
                 <div className="lp-gamif-icon">
-                  <svg className="lp-roleta-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>
+                  <svg className="lp-roleta-icon" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                    <circle cx="12" cy="12" r="10"/>
+                    <circle cx="12" cy="12" r="3"/>
+                    <line x1="12" y1="2" x2="12" y2="5"/>
+                    <line x1="12" y1="19" x2="12" y2="22"/>
+                    <line x1="2" y1="12" x2="5" y2="12"/>
+                    <line x1="19" y1="12" x2="22" y2="12"/>
+                    <line x1="4.93" y1="4.93" x2="7.05" y2="7.05"/>
+                    <line x1="16.95" y1="16.95" x2="19.07" y2="19.07"/>
+                  </svg>
                 </div>
                 <h3>Roleta Diária</h3>
-                <p>Gire todo dia e ganhe SuperCurtidas, Lupas, Boosts e até fichas para gastar na loja. Cada plano dá mais giros por dia.</p>
+                <p>Gire todo dia e ganhe SuperCurtidas, Lupas, Boosts e fichas para gastar na loja. Cada plano dá mais giros por dia.</p>
               </div>
 
               {/* Streak */}
               <div className="lp-gamif-card lp-anim">
                 <div className="lp-gamif-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                  </svg>
                 </div>
                 <h3>Streak de Acesso</h3>
                 <p>Entre todos os dias e desbloqueie recompensas crescentes. Sequência de 30 dias garante prêmios raros.</p>
@@ -921,62 +987,75 @@ export default function Home() {
               {/* Emblemas */}
               <div className="lp-gamif-card lp-anim">
                 <div className="lp-gamif-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                    <circle cx="12" cy="8" r="6"/>
+                    <path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/>
+                  </svg>
                 </div>
                 <h3>Emblemas Colecionáveis</h3>
                 <p>Conquistas que aparecem no seu perfil. Raridades de Comum a Lendário — quanto mais raro, mais destaque você ganha.</p>
                 <div className="lp-mini-badges">
-                  <div className="lp-mini-badge" style={{ background: 'rgba(107,114,128,0.15)', border: '1px solid rgba(107,114,128,0.3)', color: '#9ca3af' }}>C</div>
-                  <div className="lp-mini-badge" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', color: '#10b981' }}>I</div>
-                  <div className="lp-mini-badge" style={{ background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa' }}>R</div>
-                  <div className="lp-mini-badge" style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B' }}>L</div>
+                  <div className="lp-mini-badge" style={{ background: 'rgba(107,114,128,0.15)', border: '1px solid rgba(107,114,128,0.3)', color: '#9ca3af', fontSize: '11px', fontWeight: 700 }}>C</div>
+                  <div className="lp-mini-badge" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', color: '#10b981', fontSize: '11px', fontWeight: 700 }}>I</div>
+                  <div className="lp-mini-badge" style={{ background: 'rgba(96,165,250,0.12)', border: '1px solid rgba(96,165,250,0.3)', color: '#60a5fa', fontSize: '11px', fontWeight: 700 }}>R</div>
+                  <div className="lp-mini-badge" style={{ background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.3)', color: '#F59E0B', fontSize: '11px', fontWeight: 700 }}>L</div>
                 </div>
               </div>
 
-              {/* Indicar */}
+              {/* Loja */}
               <div className="lp-gamif-card lp-anim">
                 <div className="lp-gamif-icon">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+                    <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                    <line x1="3" y1="6" x2="21" y2="6"/>
+                    <path d="M16 10a4 4 0 0 1-8 0"/>
+                  </svg>
                 </div>
-                <h3>Indique e Ganhe</h3>
-                <p>Cada amigo que entrar pelo seu link rende recompensas para os dois. Quanto mais você indica, mais prêmios acumula.</p>
+                <h3>Loja com Fichas</h3>
+                <p>Use fichas para comprar SuperCurtidas, Boosts, Lupas e itens exclusivos. Ganhe fichas na roleta ou comprando pacotes.</p>
               </div>
             </div>
           </div>
         </section>
 
         {/* ══════════════════════════════════════════════════════════════
-            SECTION 6: VERIFICACAO
+            SECTION 6: SEGURANÇA
         ══════════════════════════════════════════════════════════════ */}
-        <section className="lp-verify">
-          <div className="lp-verify-inner">
-            <svg className="lp-verify-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+        <section className="lp-security">
+          <div className="lp-security-inner">
+            <p className="lp-section-label">Segurança</p>
             <h2 className="lp-section-title lp-anim">Só entra quem é <span style={{ color: 'var(--accent)' }}>real.</span></h2>
-            <p className="lp-anim" style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '480px', margin: '0 auto', lineHeight: 1.7 }}>
-              O processo de verificação mais rigoroso do mercado.
-              Nenhum fake passa. Nenhuma conta duplicada sobrevive.
+            <p className="lp-anim" style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
+              O processo de verificação mais rigoroso do mercado. Nenhum fake passa, nenhuma conta duplicada sobrevive.
             </p>
-            <div className="lp-verify-cols">
-              <div className="lp-verify-col lp-anim">
-                <div className="lp-verify-col-icon">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="14" r="3"/><path d="M12 6h.01"/></svg>
+            <div className="lp-security-grid">
+              <div className="lp-security-card lp-anim">
+                <div className="lp-security-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="14" r="3"/><path d="M12 6h.01"/></svg>
                 </div>
                 <h4>Documento + selfie ao vivo</h4>
-                <p>RG ou CNH + selfie com sequência de movimentos em tempo real. Impossível usar foto ou vídeo gravado.</p>
+                <p>RG ou CNH com selfie em tempo real. Impossível usar foto ou vídeo gravado.</p>
               </div>
-              <div className="lp-verify-col lp-anim">
-                <div className="lp-verify-col-icon">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <div className="lp-security-card lp-anim">
+                <div className="lp-security-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M1 6s1-1 4-1 5 2 8 2 4-1 4-1V18s-1 1-4 1-5-2-8-2-4 1-4 1V6z"/><line x1="1" y1="12" x2="23" y2="12"/></svg>
                 </div>
-                <h4>Foto moderada por IA</h4>
-                <p>Todas as fotos passam por análise automática antes de aparecerem no perfil. Zero nudez, zero conteúdo impróprio.</p>
+                <h4>1 CPF, 1 conta</h4>
+                <p>Banimento permanente por CPF. Quem sai pela porta não volta por outra.</p>
               </div>
-              <div className="lp-verify-col lp-anim">
-                <div className="lp-verify-col-icon">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <div className="lp-security-card lp-anim">
+                <div className="lp-security-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.38 2 2 0 0 1 3.6 1.22h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.96a16 16 0 0 0 6.13 6.13l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
                 </div>
-                <h4>Selo verificado + botão de emergência</h4>
-                <p>1 conta por CPF, banimento permanente. E o app tem botão de emergência que aciona o 190 direto, para encontros presenciais seguros.</p>
+                <h4>Botão de emergência</h4>
+                <p>Aciona o 190 diretamente pelo app, em encontros presenciais. Pensado especialmente para a segurança feminina.</p>
+              </div>
+              <div className="lp-security-card lp-anim">
+                <div className="lp-security-icon">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
+                </div>
+                <h4>Registro de saída</h4>
+                <p>Registre o encontro no app. Se não der check-in depois, o app pergunta se está tudo bem.</p>
               </div>
             </div>
           </div>
