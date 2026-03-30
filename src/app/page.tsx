@@ -89,6 +89,9 @@ export default function Home() {
   // Location
   const [userCity, setUserCity] = useState('')
 
+  // Modal Backstage
+  const [backstageModal, setBackstageModal] = useState(false)
+
   // Formulario de contato
   const [contatoNome, setContatoNome] = useState('')
   const [contatoEmail, setContatoEmail] = useState('')
@@ -465,26 +468,11 @@ export default function Home() {
         .lp-mode-card p { font-size: 13px; color: rgba(248,249,250,0.65); line-height: 1.65; margin-bottom: 16px; }
         .lp-mode-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 600; }
 
-        /* Mode card variants */
-        .lp-mode-discover { background: linear-gradient(135deg, #1a0810, #3d0821); border: 1px solid rgba(244,63,94,0.2); }
-        .lp-mode-discover:hover { box-shadow: 0 16px 48px rgba(244,63,94,0.15); }
-        .lp-mode-discover .lp-mode-icon { background: rgba(244,63,94,0.12); color: #F43F5E; border: 1px solid rgba(244,63,94,0.25); }
-        .lp-mode-discover .lp-mode-tag { background: rgba(244,63,94,0.1); color: #F43F5E; border: 1px solid rgba(244,63,94,0.2); }
-
-        .lp-mode-search { background: linear-gradient(135deg, #0a1020, #1a2a4a); border: 1px solid rgba(96,165,250,0.2); }
-        .lp-mode-search:hover { box-shadow: 0 16px 48px rgba(96,165,250,0.15); }
-        .lp-mode-search .lp-mode-icon { background: rgba(96,165,250,0.12); color: #60a5fa; border: 1px solid rgba(96,165,250,0.25); }
-        .lp-mode-search .lp-mode-tag { background: rgba(96,165,250,0.1); color: #60a5fa; border: 1px solid rgba(96,165,250,0.2); }
-
-        .lp-mode-daily { background: linear-gradient(135deg, #1a1200, #3d2f0a); border: 1px solid rgba(245,158,11,0.2); }
-        .lp-mode-daily:hover { box-shadow: 0 16px 48px rgba(245,158,11,0.15); }
-        .lp-mode-daily .lp-mode-icon { background: rgba(245,158,11,0.12); color: #F59E0B; border: 1px solid rgba(245,158,11,0.25); }
-        .lp-mode-daily .lp-mode-tag { background: rgba(245,158,11,0.1); color: #F59E0B; border: 1px solid rgba(245,158,11,0.2); }
-
-        .lp-mode-rooms { background: linear-gradient(135deg, #071a12, #0a3d22); border: 1px solid rgba(16,185,129,0.2); }
-        .lp-mode-rooms:hover { box-shadow: 0 16px 48px rgba(16,185,129,0.15); }
-        .lp-mode-rooms .lp-mode-icon { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.25); }
-        .lp-mode-rooms .lp-mode-tag { background: rgba(16,185,129,0.1); color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+        /* Mode card variants — identidade unificada da marca */
+        .lp-mode-card { background: linear-gradient(160deg, rgba(19,22,31,0.98) 0%, rgba(15,17,23,0.98) 100%); border: 1px solid rgba(225,29,72,0.18); }
+        .lp-mode-card:hover { box-shadow: 0 16px 48px rgba(225,29,72,0.12); border-color: rgba(225,29,72,0.35); }
+        .lp-mode-card .lp-mode-icon { background: rgba(225,29,72,0.10); color: var(--accent); border: 1px solid rgba(225,29,72,0.25); }
+        .lp-mode-card .lp-mode-tag { background: rgba(225,29,72,0.08); color: #F43F5E; border: 1px solid rgba(225,29,72,0.18); }
 
         /* ── CAMAROTE BLACK ── */
         .lp-camarote { padding: 100px 24px; position: relative; overflow: hidden; }
@@ -563,7 +551,7 @@ export default function Home() {
         .lp-card.vip { border-color: var(--gold-border); background: linear-gradient(160deg, var(--bg-card) 60%, rgba(245,158,11,0.06)); position: relative; overflow: hidden; }
         .lp-card.vip::before { content: ''; position: absolute; inset: -1px; border-radius: 24px; padding: 1px; background: linear-gradient(90deg, transparent 0%, var(--gold) 50%, transparent 100%); background-size: 200% 100%; animation: shimmerGold 3s linear infinite; -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0); -webkit-mask-composite: xor; mask-composite: exclude; pointer-events: none; }
         @keyframes shimmerGold { 0%{background-position:200% center} 100%{background-position:-200% center} }
-        .lp-feat-badge { position: absolute; top: -13px; left: 50%; transform: translateX(-50%); font-size: 10px; font-weight: 700; padding: 5px 18px; border-radius: 100px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+        .lp-feat-badge { display: block; width: fit-content; margin: 0 auto 20px; font-size: 10px; font-weight: 700; padding: 5px 18px; border-radius: 100px; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
         .lp-feat-badge.rose { background: var(--accent-grad); color: #fff; }
         .lp-feat-badge.gold { background: var(--gold); color: #fff; }
         .lp-plan-name { font-family: var(--font-fraunces), serif; font-size: 26px; font-weight: 700; margin-bottom: 4px; color: var(--text); }
@@ -802,47 +790,47 @@ export default function Home() {
             </p>
             <div className="lp-modes-grid">
               {/* Descobrir */}
-              <div className="lp-mode-card lp-mode-discover lp-anim">
+              <div className="lp-mode-card lp-anim">
                 <div className="lp-mode-num">01</div>
                 <div className="lp-mode-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
                 </div>
                 <h3>Descobrir</h3>
-                <p>Explore perfis com swipe. Curta, passe ou envie uma SuperCurtida. O modo classico, agora com verificacao real.</p>
+                <p>Explore perfis com swipe. Curta, passe ou envie uma SuperCurtida. O modo mais rapido, com perfis verificados.</p>
                 <span className="lp-mode-tag">Swipe verificado</span>
               </div>
 
               {/* Busca Avancada */}
-              <div className="lp-mode-card lp-mode-search lp-anim">
+              <div className="lp-mode-card lp-anim">
                 <div className="lp-mode-num">02</div>
                 <div className="lp-mode-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg>
                 </div>
                 <h3>Busca Avancada</h3>
-                <p>Mais de 100 filtros: corpo, estilo, personalidade, vicios, orientacao, intencoes. Inclua e exclua com um toque.</p>
+                <p>Mais de 100 filtros: corpo, estilo, personalidade, habitos, orientacao, intencoes. Inclua e exclua com um toque.</p>
                 <span className="lp-mode-tag">100+ filtros</span>
               </div>
 
               {/* Match do Dia */}
-              <div className="lp-mode-card lp-mode-daily lp-anim">
+              <div className="lp-mode-card lp-anim">
                 <div className="lp-mode-num">03</div>
                 <div className="lp-mode-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                 </div>
                 <h3>Match do Dia</h3>
-                <p>Todo dia, uma curadoria personalizada baseada no seu perfil, filtros e comportamento dentro do app.</p>
+                <p>Todo dia, uma curadoria personalizada baseada no seu perfil, seus filtros e seu comportamento dentro do app.</p>
                 <span className="lp-mode-tag">Curadoria para voce</span>
               </div>
 
               {/* Salas */}
-              <div className="lp-mode-card lp-mode-rooms lp-anim">
+              <div className="lp-mode-card lp-anim">
                 <div className="lp-mode-num">04</div>
                 <div className="lp-mode-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
                 <h3>Salas</h3>
-                <p>Entre em salas por interesse ou clima e descubra quem esta no mesmo astral que voce neste momento.</p>
-                <span className="lp-mode-tag">Plus+</span>
+                <p>Entre em salas tematicas por interesse ou humor e descubra quem esta no mesmo astral que voce neste momento.</p>
+                <span className="lp-mode-tag">Plus e Black</span>
               </div>
             </div>
           </div>
@@ -865,12 +853,9 @@ export default function Home() {
             </p>
             <div className="lp-camarote-grid">
               {[
-                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, t: 'Backstage', d: 'Area privada com filtros de nicho exclusivos.' },
-                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, t: 'Swing', d: 'Encontre casais e parceiros alinhados.' },
-                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>, t: 'Menage', d: 'Conexoes para tres com discricao total.' },
-                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>, t: 'BDSM', d: 'Fetiches e praticas com consentimento claro.' },
-                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"/></svg>, t: 'Poliamor', d: 'Relacionamentos nao-monogamicos com transparencia.' },
-                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>, t: 'Identidades Livres', d: 'Todas as orientacoes e generos sao bem-vindos.' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>, t: 'Area privada exclusiva', d: 'O Backstage e uma area separada, visivel apenas para quem sinalizou as mesmas intencoes.' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, t: 'Chat privado e discreto', d: 'Conversas no Backstage ficam separadas do resto do app. Nenhuma exposicao desnecessaria.' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>, t: 'Filtros de nicho exclusivos', d: 'Categorias e preferencias que nao existem em nenhum outro plano. Voce encontra exatamente quem procura.' },
               ].map((feat, i) => (
                 <div key={i} className="lp-camarote-feat lp-anim">
                   <div className="lp-camarote-feat-icon">{feat.icon}</div>
@@ -879,10 +864,25 @@ export default function Home() {
                 </div>
               ))}
             </div>
-            <a href="/cadastro" className="lp-btn-gold lp-anim">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-              Acessar Camarote Black
-            </a>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '16px' }}>
+              <a href="/planos" className="lp-btn-gold lp-anim">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Assinar Camarote Black
+              </a>
+              <button
+                onClick={() => setBackstageModal(true)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer', display: 'inline-flex', alignItems: 'center',
+                  gap: '6px', fontSize: '13px', color: 'rgba(245,158,11,0.6)', fontFamily: 'var(--font-jakarta), sans-serif',
+                  fontWeight: 500, padding: '4px 8px', borderRadius: '6px', transition: 'color 0.2s',
+                }}
+                onMouseOver={e => (e.currentTarget.style.color = 'rgba(245,158,11,0.9)')}
+                onMouseOut={e => (e.currentTarget.style.color = 'rgba(245,158,11,0.6)')}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Explorar o Backstage
+              </button>
+            </div>
             <p className="lp-camarote-note lp-anim">Visivel apenas para quem sinalizou as mesmas intencoes.</p>
           </div>
         </section>
@@ -1025,8 +1025,8 @@ export default function Home() {
             <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '560px', margin: '0 auto', lineHeight: 1.7 }}>
               Um ambiente controlado para pessoas que sabem o que buscam.
             </p>
-            <div className="lp-cards" style={{ scrollSnapType: 'x mandatory', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              <div className="lp-card lp-anim" style={{ scrollSnapAlign: 'center', minWidth: '280px' }}>
+            <div className="lp-cards">
+              <div className="lp-card lp-anim">
                 <p className="lp-plan-name">Essencial</p>
                 <p className="lp-plan-area">Pista</p>
                 <div className="lp-plan-price"><sup>R$</sup>10</div>
@@ -1045,9 +1045,9 @@ export default function Home() {
                 <a href="/planos" className="lp-btn-price lp-btn-outline-p">Assinar Essencial</a>
               </div>
 
-              <div className="lp-card mid lp-anim" style={{ scrollSnapAlign: 'center', minWidth: '280px' }}>
+              <div className="lp-card mid lp-anim">
                 <span className="lp-feat-badge rose">Mais popular</span>
-                <p className="lp-plan-name">Plus</p>
+                <p className="lp-plan-name" style={{ marginTop: '4px' }}>Plus</p>
                 <p className="lp-plan-area">Area VIP</p>
                 <div className="lp-plan-price"><sup>R$</sup>39</div>
                 <p className="lp-plan-period">por mes</p>
@@ -1066,9 +1066,9 @@ export default function Home() {
                 <a href="/planos" className="lp-btn-price lp-btn-rose">Assinar Plus</a>
               </div>
 
-              <div className="lp-card vip lp-anim" style={{ scrollSnapAlign: 'center', minWidth: '280px' }}>
+              <div className="lp-card vip lp-anim">
                 <span className="lp-feat-badge gold">Camarote</span>
-                <p className="lp-plan-name">Black</p>
+                <p className="lp-plan-name" style={{ marginTop: '4px' }}>Black</p>
                 <p className="lp-plan-area">Backstage</p>
                 <div className="lp-plan-price"><sup>R$</sup>100</div>
                 <p className="lp-plan-period">por mes</p>
@@ -1253,6 +1253,75 @@ export default function Home() {
         </footer>
 
       </div>
+
+      {/* ── Modal Backstage ── */}
+      {backstageModal && (
+        <div
+          style={{
+            position: 'fixed', inset: 0, zIndex: 500, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+            padding: '24px',
+          }}
+          onClick={() => setBackstageModal(false)}
+        >
+          <div
+            style={{
+              background: 'linear-gradient(160deg, #0f1117 0%, #13161f 100%)',
+              border: '1px solid rgba(245,158,11,0.25)', borderRadius: '24px', padding: '40px 36px',
+              maxWidth: '500px', width: '100%', position: 'relative',
+              boxShadow: '0 32px 80px rgba(0,0,0,0.7)',
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setBackstageModal(false)}
+              style={{
+                position: 'absolute', top: '16px', right: '16px', background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.08)', borderRadius: '50%', width: '32px', height: '32px',
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'rgba(248,249,250,0.5)',
+              }}
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '100px', padding: '6px 16px', marginBottom: '20px' }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              <span style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#F59E0B' }}>Backstage Exclusivo</span>
+            </div>
+            <h3 style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: '26px', fontWeight: 700, color: '#F8F9FA', marginBottom: '10px', letterSpacing: '-0.5px' }}>
+              O que voce pode explorar no Backstage
+            </h3>
+            <p style={{ fontSize: '13px', color: 'rgba(248,249,250,0.55)', lineHeight: 1.7, marginBottom: '28px' }}>
+              Uma area separada, visivel apenas para quem marcou as mesmas intencoes. Sem exposicao, sem julgamento.
+            </p>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '28px' }}>
+              {[
+                { t: 'Swing', d: 'Casais e parceiros alinhados' },
+                { t: 'Menage', d: 'Conexoes para tres' },
+                { t: 'BDSM', d: 'Praticas com consentimento claro' },
+                { t: 'Poliamor', d: 'Nao monogamia com transparencia' },
+                { t: 'Fetiches', d: 'Preferencias especificas compartilhadas' },
+                { t: 'Identidades livres', d: 'Todas as orientacoes bem-vindas' },
+              ].map((c, i) => (
+                <div key={i} style={{ background: 'rgba(245,158,11,0.04)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: '12px', padding: '14px 16px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 700, color: '#F8F9FA', marginBottom: '3px' }}>{c.t}</div>
+                  <div style={{ fontSize: '11px', color: 'rgba(248,249,250,0.45)', lineHeight: 1.5 }}>{c.d}</div>
+                </div>
+              ))}
+            </div>
+            <a
+              href="/planos"
+              style={{
+                display: 'block', textAlign: 'center', background: '#F59E0B', color: '#fff', fontWeight: 700,
+                fontSize: '14px', padding: '13px', borderRadius: '12px', textDecoration: 'none',
+                fontFamily: 'var(--font-jakarta), sans-serif', boxShadow: '0 4px 16px rgba(245,158,11,0.25)',
+              }}
+            >
+              Acessar o Backstage no Camarote Black
+            </a>
+          </div>
+        </div>
+      )}
     </>
   )
 }
