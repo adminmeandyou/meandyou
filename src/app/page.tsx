@@ -278,14 +278,14 @@ export default function Home() {
 
   /* ── FAQ Items ── */
   const faqItems = [
-    { q: 'Por que nao existe um plano gratuito?', a: 'Porque o gratuito atrai quem nao sabe o que quer. Aplicativos abertos viram baguncca: perfis falsos, pessoas inativas e perda de tempo. Cobrar um valor acessivel (a partir de R$10) cria um filtro imediato. Quem investe para estar aqui, por menor que seja o valor, tem outro nivel de intencao. Voce percebe a diferenca de nivel ja na primeira mensagem.' },
-    { q: 'O que exatamente e a area Backstage do Camarote Black?', a: 'E o seu espaco privado para desejos especificos. Uma area com filtros exclusivos que nao existem nos planos comuns: Sugar, BDSM, Swing, fetiches e poliamor. A regra de ouro aqui e a discricao: voce so ve e e visto por quem marcou as exatas mesmas intencoes. Zero exposicao desnecessaria, zero julgamento e 100% de alinhamento direto ao ponto.' },
-    { q: 'Como funcionam os filtros de "incluir" e "excluir"?', a: 'E o sistema mais rapido e cirurgico do Brasil, feito direto na tela principal. Clicou na tag, ficou verde: voce quer ver aquele perfil. Clicou de novo, ficou vermelho: perfil bloqueado da sua frente. Clicou a terceira vez: volta ao neutro. Voce molda a sua busca em segundos, sem precisar preencher formularios chatos.' },
-    { q: 'O que acontece com a foto do meu documento depois da verificacao?', a: 'Ela e descartada imediatamente. Nos nao armazenamos fotos de RG, CNH ou rosto de ninguem. Nossa tecnologia apenas valida a autenticidade na hora e guarda um codigo criptografado atrelado ao seu CPF. Sua privacidade e absoluta e seus dados originais nunca ficam soltos no nosso sistema.' },
-    { q: 'Posso cancelar a assinatura quando eu quiser?', a: 'Com dois cliques, direto no aplicativo. Sem burocracia, sem precisar mandar e-mail ou falar com atendente. Voce cancela na hora e continua usando normalmente ate o final do periodo que ja pagou. Zero fidelidade, zero multa, zero dor de cabeca.' },
-    { q: 'O aplicativo funciona para todas as orientacoes e generos?', a: 'Completamente. Nosso sistema de filtros foi desenhado para abracar todas as orientacoes sexuais, identidades de genero e formatos de relacionamento. E voce quem dita quem entra e quem sai da sua tela. O espaco e livre e se adapta perfeitamente ao que voce procura.' },
-    { q: 'Como voces garantem que os perfis sao 100% reais?', a: 'Nossa barreira de entrada e implacavel contra fakes e perfis falsos. Exigimos selfie ao vivo com sequencia de movimentos, leitura de documento fisico e validacao de CPF na criacao da conta. E o mais importante: se alguem quebra as regras e e banido, o bloqueio e feito direto no CPF. Nao adianta criar outro e-mail, a pessoa simplesmente nao volta.' },
-    { q: 'Como funciona a seguranca e moderacao do app?', a: 'Nossa equipe trabalha 24 horas por dia. Viu um comportamento fora do padrao? E so clicar nos tres pontos do perfil e em "Denunciar". Alem disso, fomos alem: para situacoes de risco em encontros presenciais, o app possui um Botao de Emergencia oculto que aciona o 190 imediatamente, garantindo a sua integridade fisica.' },
+    { q: 'Por que não existe um plano gratuito?', a: 'Porque o gratuito atrai quem não sabe o que quer. Aplicativos abertos viram bagunça: perfis falsos, pessoas inativas e perda de tempo. Cobrar um valor acessível (a partir de R$9,97) cria um filtro imediato. Quem investe para estar aqui, por menor que seja o valor, tem outro nível de intenção. Você percebe a diferença já na primeira mensagem.' },
+    { q: 'O que é a área Backstage do Camarote Black?', a: 'É o seu espaço privado para desejos específicos. Uma área com filtros exclusivos que não existem nos planos comuns. A regra de ouro é a discrição: você só vê e é visto por quem marcou as exatas mesmas intenções. Zero exposição desnecessária, zero julgamento e 100% de alinhamento direto ao ponto.' },
+    { q: 'Como funcionam os filtros de "incluir" e "excluir"?', a: 'É o sistema mais rápido e cirúrgico do Brasil, feito direto na tela principal. Clicou na tag, ficou verde: você quer ver aquele perfil. Clicou de novo, ficou vermelho: perfil bloqueado da sua frente. Clicou a terceira vez: volta ao neutro. Você molda a sua busca em segundos, sem precisar preencher formulários chatos.' },
+    { q: 'O que acontece com a foto do meu documento após a verificação?', a: 'Ela é descartada imediatamente. Não armazenamos fotos de RG, CNH ou rosto de ninguém. Nossa tecnologia apenas valida a autenticidade na hora e guarda um código criptografado atrelado ao seu CPF. Sua privacidade é absoluta e seus dados originais nunca ficam expostos no nosso sistema.' },
+    { q: 'Posso cancelar a assinatura quando quiser?', a: 'Com dois cliques, direto no aplicativo. Sem burocracia, sem precisar mandar e-mail ou falar com atendente. Você cancela na hora e continua usando normalmente até o final do período já pago. Zero fidelidade, zero multa, zero dor de cabeça.' },
+    { q: 'O aplicativo funciona para todas as orientações e gêneros?', a: 'Completamente. Nosso sistema de filtros foi desenhado para abraçar todas as orientações sexuais, identidades de gênero e formatos de relacionamento. É você quem dita quem entra e quem sai da sua tela. O espaço é livre e se adapta perfeitamente ao que você procura.' },
+    { q: 'Como vocês garantem que os perfis são 100% reais?', a: 'Nossa barreira de entrada é implacável contra fakes. Exigimos selfie ao vivo com sequência de movimentos, leitura de documento físico e validação de CPF na criação da conta. E o mais importante: se alguém é banido, o bloqueio é feito direto no CPF. Não adianta criar outro e-mail — a pessoa simplesmente não volta.' },
+    { q: 'Como funciona a segurança e moderação do app?', a: 'Nossa equipe trabalha 24 horas por dia. Viu um comportamento fora do padrão? É só clicar nos três pontos do perfil e em "Denunciar". Além disso, para situações de risco em encontros presenciais, o app possui um botão de emergência oculto que aciona o 190 imediatamente, garantindo a sua integridade física.' },
   ]
 
   const jsonLd = {
@@ -724,12 +724,12 @@ export default function Home() {
           <div className="lp-hero-content">
             <div className="lp-badge">
               <span className="lp-badge-dot" />
-              Verificacao real de identidade
+              Verificação real de identidade
             </div>
-            <h1>Conexoes que<br /><em>valem a pena.</em></h1>
+            <h1>Conexões que<br /><em>valem a pena.</em></h1>
             <p className="lp-hero-sub">
-              O app de relacionamentos com <strong>verificacao rigorosa</strong>,
-              mais de 100 filtros e um ecossistema pensado para quem busca algo real.
+              O app de relacionamentos com <strong>verificação rigorosa</strong>,
+              mais de 100 filtros e um ecossistema completo para quem busca algo de verdade.
             </p>
             <div className="lp-actions">
               <a href="/cadastro" className="lp-btn-main">
@@ -737,13 +737,13 @@ export default function Home() {
                 Criar minha conta
               </a>
               <a href="#modos" className="lp-btn-outline">
-                Conhecer os modos
+                Ver como funciona
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" /></svg>
               </a>
             </div>
             <div className="lp-social-badge">
               <span className="lp-social-badge-dot" />
-              47 mil membros verificados -- online agora
+              47 mil membros verificados · ativos agora
             </div>
           </div>
 
@@ -783,10 +783,10 @@ export default function Home() {
         <section className="lp-modes" id="modos">
           <div className="lp-modes-bg" />
           <div className="lp-modes-inner">
-            <p className="lp-section-label">Quatro formas de conexao</p>
-            <h2 className="lp-section-title">Quatro formas de encontrar<br />sua <span style={{ color: 'var(--accent)' }}>conexao.</span></h2>
+            <p className="lp-section-label">Quatro formas de conexão</p>
+            <h2 className="lp-section-title">Quatro formas de encontrar<br />sua <span style={{ color: 'var(--accent)' }}>conexão.</span></h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
-              Cada modo foi pensado para um tipo diferente de busca.
+              Cada modo foi criado para um tipo diferente de busca. Você escolhe como quer explorar.
             </p>
             <div className="lp-modes-grid">
               {/* Descobrir */}
@@ -796,7 +796,7 @@ export default function Home() {
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"/></svg>
                 </div>
                 <h3>Descobrir</h3>
-                <p>Explore perfis com swipe. Curta, passe ou envie uma SuperCurtida. O modo mais rapido, com perfis verificados.</p>
+                <p>Explore perfis com swipe. Curta, passe ou envie uma SuperCurtida. O modo mais rápido, com perfis 100% verificados.</p>
                 <span className="lp-mode-tag">Swipe verificado</span>
               </div>
 
@@ -806,8 +806,8 @@ export default function Home() {
                 <div className="lp-mode-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg>
                 </div>
-                <h3>Busca Avancada</h3>
-                <p>Mais de 100 filtros: corpo, estilo, personalidade, habitos, orientacao, intencoes. Inclua e exclua com um toque.</p>
+                <h3>Busca Avançada</h3>
+                <p>Mais de 100 filtros: corpo, estilo, personalidade, hábitos, orientação, intenções. Inclua e exclua com um toque.</p>
                 <span className="lp-mode-tag">100+ filtros</span>
               </div>
 
@@ -819,7 +819,7 @@ export default function Home() {
                 </div>
                 <h3>Match do Dia</h3>
                 <p>Todo dia, uma curadoria personalizada baseada no seu perfil, seus filtros e seu comportamento dentro do app.</p>
-                <span className="lp-mode-tag">Curadoria para voce</span>
+                <span className="lp-mode-tag">Curadoria para você</span>
               </div>
 
               {/* Salas */}
@@ -829,7 +829,7 @@ export default function Home() {
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
                 <h3>Salas</h3>
-                <p>Entre em salas tematicas por interesse ou humor e descubra quem esta no mesmo astral que voce neste momento.</p>
+                <p>Entre em salas temáticas por interesse ou humor e descubra quem está no mesmo astral que você neste momento.</p>
                 <span className="lp-mode-tag">Plus e Black</span>
               </div>
             </div>
@@ -846,16 +846,16 @@ export default function Home() {
               <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--gold)', display: 'inline-block' }} />
               ACESSO EXCLUSIVO
             </div>
-            <h2 className="lp-anim">Onde os limites<br />sao <em>seus.</em></h2>
+            <h2 className="lp-anim">Onde os limites<br />são <em>seus.</em></h2>
             <p className="lp-camarote-desc lp-anim">
-              Um espaco blindado para quem quer explorar desejos especificos com total privacidade.
-              Sem julgamento, sem exposicao. So quem sinalizou as mesmas intencoes pode ver voce.
+              Um espaço blindado para quem quer explorar desejos específicos com total privacidade.
+              Sem julgamento, sem exposição. Só quem sinalizou as mesmas intenções pode ver você.
             </p>
             <div className="lp-camarote-grid">
               {[
-                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>, t: 'Area privada exclusiva', d: 'O Backstage e uma area separada, visivel apenas para quem sinalizou as mesmas intencoes.' },
-                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, t: 'Chat privado e discreto', d: 'Conversas no Backstage ficam separadas do resto do app. Nenhuma exposicao desnecessaria.' },
-                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>, t: 'Filtros de nicho exclusivos', d: 'Categorias e preferencias que nao existem em nenhum outro plano. Voce encontra exatamente quem procura.' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>, t: 'Área privada exclusiva', d: 'O Backstage é uma área separada, visível apenas para quem sinalizou as mesmas intenções.' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>, t: 'Chat privado e discreto', d: 'Conversas no Backstage ficam separadas do restante do app. Nenhuma exposição desnecessária.' },
+                { icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>, t: 'Filtros de nicho exclusivos', d: 'Categorias e preferências que não existem em nenhum outro plano. Você encontra exatamente quem procura.' },
               ].map((feat, i) => (
                 <div key={i} className="lp-camarote-feat lp-anim">
                   <div className="lp-camarote-feat-icon">{feat.icon}</div>
@@ -893,10 +893,10 @@ export default function Home() {
         <section className="lp-gamif">
           <div className="lp-gamif-orb" />
           <div className="lp-gamif-inner">
-            <p className="lp-section-label">MUITO MAIS DO QUE CURTIDAS</p>
+            <p className="lp-section-label">Muito mais do que curtidas</p>
             <h2 className="lp-section-title"><span style={{ color: 'var(--accent)' }}>Recompensas</span> por<br />estar aqui.</h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '500px', margin: '0 auto', lineHeight: 1.7 }}>
-              Todo dia tem premio. Quanto mais voce usa, mais voce ganha.
+              Todo dia tem prêmio. Quanto mais você usa, mais você ganha.
             </p>
             <div className="lp-gamif-grid">
               {/* Roleta */}
@@ -904,8 +904,8 @@ export default function Home() {
                 <div className="lp-gamif-icon">
                   <svg className="lp-roleta-icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>
                 </div>
-                <h3>Roleta Diaria</h3>
-                <p>Gire todo dia e ganhe SuperCurtidas, Lupas, Boosts e ate 1 dia de plano superior. Cada plano da mais tickets por dia.</p>
+                <h3>Roleta Diária</h3>
+                <p>Gire todo dia e ganhe SuperCurtidas, Lupas, Boosts e até fichas para gastar na loja. Cada plano dá mais giros por dia.</p>
               </div>
 
               {/* Streak */}
@@ -914,7 +914,7 @@ export default function Home() {
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
                 </div>
                 <h3>Streak de Acesso</h3>
-                <p>Entre todos os dias e desbloqueie recompensas crescentes. Sequencia de 30 dias = premios raros.</p>
+                <p>Entre todos os dias e desbloqueie recompensas crescentes. Sequência de 30 dias garante prêmios raros.</p>
                 <div className="lp-streak-bar"><div className="lp-streak-fill" /></div>
               </div>
 
@@ -923,8 +923,8 @@ export default function Home() {
                 <div className="lp-gamif-icon">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>
                 </div>
-                <h3>Emblemas Colecionaveis</h3>
-                <p>Conquistas que aparecem no seu perfil. Raridades de Comum a Lendario.</p>
+                <h3>Emblemas Colecionáveis</h3>
+                <p>Conquistas que aparecem no seu perfil. Raridades de Comum a Lendário — quanto mais raro, mais destaque você ganha.</p>
                 <div className="lp-mini-badges">
                   <div className="lp-mini-badge" style={{ background: 'rgba(107,114,128,0.15)', border: '1px solid rgba(107,114,128,0.3)', color: '#9ca3af' }}>C</div>
                   <div className="lp-mini-badge" style={{ background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.3)', color: '#10b981' }}>I</div>
@@ -939,7 +939,7 @@ export default function Home() {
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
                 </div>
                 <h3>Indique e Ganhe</h3>
-                <p>Cada amigo que entrar pelo seu link te rende 1 SuperCurtida. Indicou 3? Ganhe 1 Boost. Quem entrou ganha 3 tickets de boas-vindas.</p>
+                <p>Cada amigo que entrar pelo seu link rende recompensas para os dois. Quanto mais você indica, mais prêmios acumula.</p>
               </div>
             </div>
           </div>
@@ -951,9 +951,9 @@ export default function Home() {
         <section className="lp-verify">
           <div className="lp-verify-inner">
             <svg className="lp-verify-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/></svg>
-            <h2 className="lp-section-title lp-anim">So entra quem e <span style={{ color: 'var(--accent)' }}>real.</span></h2>
+            <h2 className="lp-section-title lp-anim">Só entra quem é <span style={{ color: 'var(--accent)' }}>real.</span></h2>
             <p className="lp-anim" style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '480px', margin: '0 auto', lineHeight: 1.7 }}>
-              O processo de verificacao mais rigoroso do mercado.
+              O processo de verificação mais rigoroso do mercado.
               Nenhum fake passa. Nenhuma conta duplicada sobrevive.
             </p>
             <div className="lp-verify-cols">
@@ -961,22 +961,22 @@ export default function Home() {
                 <div className="lp-verify-col-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="14" r="3"/><path d="M12 6h.01"/></svg>
                 </div>
-                <h4>Documento + selfie</h4>
-                <p>RG ou CNH + selfie ao vivo com sequencia de movimentos. Impossivel usar foto ou video.</p>
+                <h4>Documento + selfie ao vivo</h4>
+                <p>RG ou CNH + selfie com sequência de movimentos em tempo real. Impossível usar foto ou vídeo gravado.</p>
               </div>
               <div className="lp-verify-col lp-anim">
                 <div className="lp-verify-col-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 </div>
                 <h4>Foto moderada por IA</h4>
-                <p>Todas as fotos passam por analise automatica antes de serem publicadas no perfil.</p>
+                <p>Todas as fotos passam por análise automática antes de aparecerem no perfil. Zero nudez, zero conteúdo impróprio.</p>
               </div>
               <div className="lp-verify-col lp-anim">
                 <div className="lp-verify-col-icon">
                   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
                 </div>
-                <h4>Selo verificado no perfil</h4>
-                <p>Quem passou por tudo recebe o selo. 1 conta por CPF, banimento permanente.</p>
+                <h4>Selo verificado + botão de emergência</h4>
+                <p>1 conta por CPF, banimento permanente. E o app tem botão de emergência que aciona o 190 direto, para encontros presenciais seguros.</p>
               </div>
             </div>
           </div>
@@ -989,13 +989,13 @@ export default function Home() {
           <div className="lp-testi-bg" />
           <div className="lp-testi-inner">
             <p className="lp-section-label">Depoimentos</p>
-            <h2 className="lp-section-title">Quem ja esta aqui<br /><span style={{ color: 'var(--accent)' }}>nao volta.</span></h2>
+            <h2 className="lp-section-title">Quem já está aqui<br /><span style={{ color: 'var(--accent)' }}>não volta.</span></h2>
             <div className="lp-testi-grid">
               {[
-                { name: 'Camila S.', role: 'Belo Horizonte -- 27 anos -- Plano Plus', text: 'Passei muito tempo em apps conversando com pessoas que estavam em momentos diferentes do meu. Aqui eu fui direto ao ponto: ativei os filtros e deixei claro que procuro algo serio. O app cortou o ruido e me conectou so com quem estava na mesma pagina.' },
-                { name: 'Lucas M.', role: 'Rio de Janeiro -- 34 anos -- Camarote Black', text: 'A pior parte de conhecer gente nova e quando um quer uma coisa e o outro quer outra. No Backstage, eu joguei limpo sobre o que eu curto. Deu match com uma mulher que queria exatamente a mesma coisa. Fomos direto ao assunto, com muita quimica e zero cobranca.' },
-                { name: 'Thiago R.', role: 'Curitiba -- 36 anos -- Camarote Black', text: 'Eu valorizo muito o meu tempo e gosto de proporcionar experiencias exclusivas. O Camarote Black e perfeito porque atrai pessoas que buscam esse mesmo nivel. A verificacao rigorosa garante que os perfis sao reais.' },
-                { name: 'Fernanda O.', role: 'Sao Paulo -- 29 anos -- Plano Plus', text: 'Eu queria sair e me divertir, mas dava uma preguica enorme de chegar no bar e descobrir que a quimica nao rolava. A videochamada aqui mudou o jogo. Bati 40 minutos de papo, vi que a energia batia pela tela, e fomos pro encontro ja com aquele clima bom.' },
+                { name: 'Camila S.', role: 'Belo Horizonte · 27 anos · Plano Plus', text: 'Passei muito tempo em apps conversando com pessoas em momentos diferentes do meu. Aqui fui direto ao ponto: ativei os filtros e deixei claro que procuro algo sério. O app cortou o ruído e me conectou só com quem estava na mesma página.' },
+                { name: 'Lucas M.', role: 'Rio de Janeiro · 34 anos · Camarote Black', text: 'A pior parte de conhecer gente nova é quando um quer uma coisa e o outro quer outra. No Backstage, joguei limpo sobre o que curto. Deu match com uma mulher que queria exatamente a mesma coisa. Fomos direto ao assunto, com muita química e zero cobrança.' },
+                { name: 'Thiago R.', role: 'Curitiba · 36 anos · Camarote Black', text: 'Valorizo muito o meu tempo. O Camarote Black é perfeito porque atrai pessoas que buscam o mesmo nível. A verificação rigorosa garante que os perfis são reais — isso faz toda a diferença.' },
+                { name: 'Fernanda O.', role: 'São Paulo · 29 anos · Plano Plus', text: 'Queria sair e me divertir, mas dava preguiça chegar no encontro e descobrir que a química não rolava. A videochamada aqui mudou o jogo. Bati 40 minutos de papo, vi que a energia batia pela tela, e fomos pro encontro já com aquele clima bom.' },
               ].map((t, i) => (
                 <div key={i} className="lp-testi-card lp-anim">
                   <div className="lp-testi-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
@@ -1021,9 +1021,9 @@ export default function Home() {
         <section className="lp-pricing" id="planos">
           <div className="lp-pricing-inner">
             <p className="lp-section-label">Planos</p>
-            <h2 className="lp-section-title">Sem conta gratuita.<br /><span style={{ color: 'var(--accent)' }}>Mais seriedade.</span></h2>
+            <h2 className="lp-section-title">Sem plano gratuito.<br /><span style={{ color: 'var(--accent)' }}>Mais seriedade.</span></h2>
             <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '560px', margin: '0 auto', lineHeight: 1.7 }}>
-              Um ambiente controlado para pessoas que sabem o que buscam.
+              Quem investe para estar aqui tem outro nível de intenção. Você sente a diferença na primeira mensagem.
             </p>
             <div className="lp-cards">
               <div className="lp-card lp-anim">
