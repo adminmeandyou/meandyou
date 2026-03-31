@@ -1262,32 +1262,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── POR QUE NÃO GRATUITO ── */}
-        <section className="lp-section-v2 lp-section-v2--dark">
-          <div className="lp-section-inner-v2">
-            <div className="lp-anim" style={{ maxWidth: 640, marginBottom: 56 }}>
-              <span className="lp-section-label-v2">A diferença começa aqui</span>
-              <h2 className="lp-section-title-v2">Gratuito atrai quem não sabe o que quer.</h2>
-              <p className="lp-section-sub-v2" style={{ marginBottom: 0 }}>
-                A partir de R$9,97 por mês, criamos um filtro natural de intenção. O resultado: outra qualidade de conversa, de perfil, de experiência.
-              </p>
-            </div>
-            <div className="lp-pillars">
-              {[
-                { icon: <IcUsers />, title: 'Filtro de intenção real', text: 'Quem paga para estar aqui, por menor que seja o valor, tem outro nível de comprometimento. Você sente isso na primeira mensagem.' },
-                { icon: <IcShield />, title: 'Zero perfis falsos', text: 'A barreira de entrada — verificação de identidade mais pagamento — elimina bots, fakes e perfis abandonados de vez.' },
-                { icon: <IcLock />, title: 'Infraestrutura de verdade', text: 'Moderação 24h, botão de emergência, verificação facial ao vivo, registro de encontro. Tudo isso custa, e é isso que garante sua segurança.' },
-              ].map((p, i) => (
-                <div key={i} className={`lp-pillar lp-anim`} style={{ transitionDelay: `${(i + 1) * 0.08}s` }}>
-                  <div style={{ width: 48, height: 48, borderRadius: 14, background: 'var(--accent-soft)', border: '1px solid var(--accent-border)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>{p.icon}</div>
-                  <div className="lp-pillar-title">{p.title}</div>
-                  <div className="lp-pillar-text">{p.text}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* ── PROBLEMA ── */}
         <section className="lp-section-v2">
           <div className="lp-section-inner-v2">
