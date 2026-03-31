@@ -1262,27 +1262,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── STATS ── */}
-        <section className="lp-stats-bar">
-          <div className="lp-stats-inner">
-            {[
-              { target: 100, suffix: '+', label: 'filtros de busca' },
-              { target: 0, suffix: '', label: 'perfis falsos (biometria)' },
-              { target: 4, suffix: '', label: 'modos de conexão' },
-            ].map((s, i) => (
-              <div key={i} className="lp-anim" style={{ transitionDelay: `${i * 0.08}s` }}>
-                <div className="lp-stat-num lp-counter" data-target={s.target} data-suffix={s.suffix}>0{s.suffix}</div>
-                <div className="lp-stat-label-v2">{s.label}</div>
-              </div>
-            ))}
-            <div className="lp-anim" style={{ transitionDelay: '0.24s' }}>
-              <div className="lp-stat-num">R$<span style={{ fontSize: '0.65em', fontWeight: 400, color: 'var(--text-muted)', letterSpacing: 0 }}>9,97</span></div>
-              <div className="lp-stat-label-v2">por mes para comecar</div>
-            </div>
-          </div>
-        </section>
-
-
         {/* ── POR QUE NÃO GRATUITO ── */}
         <section className="lp-section-v2 lp-section-v2--dark">
           <div className="lp-section-inner-v2">
