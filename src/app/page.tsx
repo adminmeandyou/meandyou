@@ -1570,69 +1570,6 @@ export default function Home() {
             </div>
             <div className="lp-features-grid">
 
-              {/* Feature 1 — Verificação */}
-              <div className="lp-feature">
-                <div className="lp-anim">
-                  <span className="lp-feature-label">Verificação biométrica</span>
-                  <h3 className="lp-feature-title">Cada perfil é uma pessoa real</h3>
-                  <p className="lp-feature-text">Todos os usuários passam por verificação biométrica com liveness check. Sem bots. Sem fotos roubadas. Sem perfis fantasma. Você sabe com quem está falando antes de dizer oi.</p>
-                  <ul className="lp-feature-list">
-                    <li><IcCheck size={15} />Selfie ao vivo com movimentos</li>
-                    <li><IcCheck size={15} />Documento descartado após validação</li>
-                    <li><IcCheck size={15} />Badge "Verificado" no perfil</li>
-                  </ul>
-                </div>
-                <div className="lp-feature-visual lp-anim" style={{ transitionDelay: '0.1s' }}>
-                  <div className="lp-fv-inner">
-                    <div className="lp-phone-v2" style={{ animation: 'float-y 5s ease-in-out infinite' }}>
-                      <div className="lp-phone-screen-v2">
-                        <div className="lp-phone-card-v2">
-                          <div className="lp-phone-scanline-v2" />
-                          <div className="lp-phone-verified-v2">✓ Verificado</div>
-                          <div className="lp-phone-name-v2">Juliana, 28</div>
-                          <div className="lp-phone-tags-v2">
-                            <span className="lp-phone-tag-v2">São Paulo</span>
-                            <span className="lp-phone-tag-v2">Verificada</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Feature 2 — Filtros */}
-              <div className="lp-feature lp-feature--rev">
-                <div className="lp-anim">
-                  <span className="lp-feature-label">Filtros avançados</span>
-                  <h3 className="lp-feature-title">Busque exatamente quem você quer</h3>
-                  <p className="lp-feature-text">Filtre por corpo, cor dos olhos, tatuagens, religião, se fuma, se bebe, personalidade, orientação, status civil, filhos, pets, escolaridade e muito mais. Toque uma vez para incluir, toque de novo para excluir.</p>
-                  <ul className="lp-feature-list">
-                    <li><IcCheck size={15} />Mais de 100 categorias de filtro</li>
-                    <li><IcCheck size={15} />Sistema incluir/excluir por toque</li>
-                    <li><IcCheck size={15} />Filtros de fetiche e sugar (Black)</li>
-                  </ul>
-                </div>
-                <div className="lp-feature-visual lp-anim" style={{ transitionDelay: '0.1s' }}>
-                  <div className="lp-fv-inner">
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', maxWidth: 260, margin: '0 auto' }}>
-                      {[
-                        { label: 'Vegano', state: 'inc' }, { label: 'Gamer', state: 'inc' }, { label: 'Tatuagem', state: 'neu' },
-                        { label: 'Evangélico', state: 'exc' }, { label: 'Pets', state: 'inc' }, { label: 'Fitness', state: 'neu' },
-                        { label: 'Viajante', state: 'inc' }, { label: 'Fumante', state: 'exc' }, { label: 'Introvertido', state: 'neu' },
-                      ].map((tag, i) => (
-                        <span key={i} style={{
-                          padding: '6px 14px', borderRadius: '100px', fontSize: 13, fontWeight: 600, border: '1px solid',
-                          background: tag.state === 'inc' ? 'rgba(16,185,129,0.15)' : tag.state === 'exc' ? 'rgba(225,29,72,0.15)' : 'rgba(255,255,255,0.04)',
-                          borderColor: tag.state === 'inc' ? 'rgba(16,185,129,0.4)' : tag.state === 'exc' ? 'rgba(225,29,72,0.4)' : 'rgba(255,255,255,0.08)',
-                          color: tag.state === 'inc' ? '#10b981' : tag.state === 'exc' ? '#E11D48' : 'rgba(248,249,250,0.4)',
-                        }}>{tag.label}</span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
               {/* Feature 3 — Segurança de encontro */}
               <div className="lp-feature">
                 <div className="lp-anim">
