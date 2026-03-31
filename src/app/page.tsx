@@ -44,6 +44,18 @@ const IcVideo = () => (
 const IcGift = () => (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
 )
+const IcMedal = ({ size = 28 }: { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+)
+const IcMicOff = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+)
+const IcPhoneOff = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07C9.44 18.25 8.76 17.59 8.1 16.9m-5.07-5A19.79 19.79 0 0 1 0 3.18A2 2 0 0 1 2 1h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L6.18 8.91"/><line x1="23" y1="1" x2="1" y2="23"/></svg>
+)
+const IcCameraSwitch = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 19H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h1l2-2h6l2 2h1a2 2 0 0 1 2 2v1.5"/><circle cx="9" cy="13" r="3"/><path d="M20.5 14.5v-3l3 3-3 3v-3z"/><path d="M20.5 14.5H17a2 2 0 0 0-2 2v1"/></svg>
+)
 
 /* ── FAQ Component ────────────────────────────────────────────────────────── */
 function FaqItem({ pergunta, resposta }: { pergunta: string; resposta: string }) {
@@ -125,7 +137,7 @@ const CSS = `
 .lp-anim.lp-anim--left{transform:translateX(-28px)}
 .lp-anim.lp-anim--right{transform:translateX(28px)}
 .lp-anim.lp-anim--scale{transform:scale(0.92)}
-.lp-anim.lp-visible{opacity:1!important;transform:none!important}
+.lp-anim.lp-visible{opacity:1!important;transform:none!important;transition-delay:0s!important}
 .lp-anim.lp-delay-1{transition-delay:0.08s}
 .lp-anim.lp-delay-2{transition-delay:0.16s}
 .lp-anim.lp-delay-3{transition-delay:0.24s}
@@ -334,8 +346,9 @@ const CSS = `
 .lp-plan--featured{border-color:var(--accent-border);background:linear-gradient(180deg,rgba(225,29,72,0.05) 0%,var(--bg-card) 40%);position:relative}
 .lp-plan-popular{position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:var(--grad-accent);color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:100px;white-space:nowrap}
 .lp-plan-name{font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px}
-.lp-plan-price{font-family:var(--font-display);font-size:40px;font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1;margin-bottom:4px}
-.lp-plan-price span{font-size:18px;font-weight:400;color:var(--muted);vertical-align:top;margin-top:8px;display:inline-block}
+.lp-plan-price{display:flex;align-items:baseline;gap:3px;margin-bottom:4px}
+.lp-plan-price-cur{font-size:18px;font-weight:500;color:var(--muted);line-height:1;margin-bottom:4px}
+.lp-plan-price-val{font-family:var(--font-display);font-size:40px;font-weight:700;color:var(--text);letter-spacing:-1px;line-height:1}
 .lp-plan-period{font-size:13px;color:var(--dim);margin-bottom:6px}
 .lp-plan-desc{font-size:13px;color:var(--muted);margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border)}
 .lp-plan-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
@@ -383,9 +396,58 @@ const CSS = `
 
 /* ── Notif ── */
 .lp-notif-wrap{position:fixed;bottom:28px;right:24px;z-index:999;display:flex;flex-direction:column;gap:10px;max-width:300px;pointer-events:none}
-.lp-notif{background:rgba(19,22,31,0.96);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:11px 14px;font-size:12.5px;color:var(--text);line-height:1.4;animation:notif-in 0.4s var(--ease) both;box-shadow:0 8px 24px rgba(0,0,0,0.4)}
+.lp-notif{background:rgba(19,22,31,0.96);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:11px 14px;font-size:12.5px;color:var(--text);line-height:1.4;animation:notif-in 0.4s var(--ease) both;box-shadow:0 8px 24px rgba(0,0,0,0.4);display:flex;align-items:center;gap:8px}
 .lp-notif--out{animation:notif-out 0.4s var(--ease) forwards}
-.lp-notif::before{content:'✅ ';font-size:11px}
+.lp-notif-dot{width:7px;height:7px;border-radius:50%;background:var(--accent);flex-shrink:0;box-shadow:0 0 6px rgba(225,29,72,0.6)}
+
+/* ── Camarote Reveal ── */
+@keyframes camarote-in{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.lp-camarote-reveal{animation:camarote-in 0.5s var(--ease) both}
+
+/* ── Install v1 ── */
+.lp-install{padding:100px 24px;border-top:1px solid var(--border)}
+.lp-install-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.lp-install-left h2{font-family:var(--font-display);font-size:clamp(30px,4vw,52px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin-bottom:16px}
+.lp-install-left h2 em{color:var(--accent);font-style:italic}
+.lp-install-left p{font-size:16px;color:var(--muted);line-height:1.75;margin-bottom:32px;max-width:440px}
+.lp-install-os-tabs{display:flex;gap:0;border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-bottom:16px;max-width:360px}
+.lp-os-tab{flex:1;padding:11px 16px;background:transparent;border:none;cursor:pointer;color:var(--muted);font-size:13px;font-weight:600;font-family:var(--font-body);display:flex;align-items:center;justify-content:center;gap:7px;transition:background 0.2s,color 0.2s}
+.lp-os-tab.active{background:var(--accent-soft);color:var(--accent)}
+.lp-install-actions{display:flex;flex-direction:column;gap:12px;max-width:360px}
+.lp-install-btn{display:flex;align-items:center;gap:12px;padding:15px 24px;border-radius:14px;font-size:15px;font-weight:700;text-decoration:none;cursor:pointer;border:none;transition:transform 0.15s,box-shadow 0.2s;font-family:var(--font-body);width:100%}
+.lp-install-btn:hover{transform:translateY(-2px)}
+.lp-install-btn.android{background:var(--grad-accent);color:#fff;box-shadow:0 4px 16px rgba(225,29,72,.25)}
+.lp-install-btn.android:hover{box-shadow:0 12px 40px rgba(225,29,72,.45)}
+.lp-install-btn.ios{background:rgba(255,255,255,0.06);color:var(--text);border:1px solid var(--border);cursor:default}
+.lp-install-btn-icon{width:22px;height:22px;flex-shrink:0}
+.lp-install-btn-text{display:flex;flex-direction:column;text-align:left}
+.lp-install-btn-text small{font-size:11px;font-weight:400;opacity:0.7;margin-bottom:1px}
+.lp-install-done{display:flex;align-items:center;gap:10px;font-size:14px;color:#4ade80;font-weight:600;padding:15px 0}
+.lp-install-right{display:flex;flex-direction:column;gap:16px}
+.lp-install-step{display:flex;align-items:flex-start;gap:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:20px 22px}
+.lp-install-step-num{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:15px;font-weight:700;flex-shrink:0}
+.lp-install-step-num.android{background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent-border)}
+.lp-install-step-num.ios{background:rgba(255,255,255,0.06);color:rgba(248,249,250,0.6);border:1px solid var(--border)}
+.lp-install-step h4{font-size:13px;font-weight:600;color:var(--text);margin-bottom:2px}
+.lp-install-step p{font-size:12px;color:var(--muted);line-height:1.5;margin:0}
+.lp-install-os-label{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin:8px 0 4px}
+@media (max-width:960px){.lp-install-inner{grid-template-columns:1fr;gap:48px}.lp-install-actions{max-width:100%}.lp-install-os-tabs{max-width:100%}}
+
+/* ── Footer v1 ── */
+.lp-footer{background:#020306;color:var(--dim);border-top:1px solid var(--border)}
+.lp-footer-top{max-width:1100px;margin:0 auto;padding:60px 56px 40px;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px}
+.lp-footer-logo2{font-family:var(--font-display);font-size:22px;font-weight:700;color:var(--text);margin-bottom:12px;display:block;text-decoration:none}
+.lp-footer-logo2 span{color:var(--accent)}
+.lp-footer-col h4{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(248,249,250,0.5);margin-bottom:16px}
+.lp-footer-col a{display:block;font-size:13px;color:var(--dim);text-decoration:none;margin-bottom:10px;transition:color 0.2s}
+.lp-footer-col a:hover{color:rgba(248,249,250,0.7)}
+.lp-footer-bottom{border-top:1px solid var(--border);padding:24px 56px;max-width:1100px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.lp-footer-bottom p{font-size:12px}
+.lp-footer-btm-links{display:flex;gap:20px}
+.lp-footer-btm-links a{font-size:12px;color:var(--dim);text-decoration:none;transition:color 0.2s}
+.lp-footer-btm-links a:hover{color:rgba(248,249,250,0.6)}
+@media (max-width:900px){.lp-footer-top{grid-template-columns:1fr 1fr;padding:48px 24px;gap:32px}.lp-footer-bottom{padding:20px 24px;flex-direction:column;text-align:center}}
+@media (max-width:600px){.lp-footer-top{grid-template-columns:1fr}}
 
 /* ── Responsive ── */
 @media (max-width:900px){
@@ -441,6 +503,10 @@ export default function Home() {
   // PWA
   const [installPrompt, setInstallPrompt] = useState<any>(null)
   const [installDone, setInstallDone] = useState(false)
+  const [selectedOS, setSelectedOS] = useState<'android' | 'ios'>('android')
+
+  // Camarote
+  const [camaroteRevealed, setCamaroteRevealed] = useState(false)
 
   // Notifications
   const [notifList, setNotifList] = useState<Array<{ id: number; text: string; exiting: boolean }>>([])
@@ -653,7 +719,7 @@ export default function Home() {
               <span>Feito no Brasil</span>
             </div>
             <div className="lp-founder-callout lp-anim" style={{ margin: '28px auto 0', animation: 'reveal-up 0.7s 0.6s both' }}>
-              <div className="lp-founder-callout-icon">🏅</div>
+              <div className="lp-founder-callout-icon" style={{ color: 'var(--gold)', display: 'flex' }}><IcMedal size={22} /></div>
               <div className="lp-founder-callout-text">
                 <strong>Emblema de Fundador — exclusivo para quem entrar agora.</strong> Concedido apenas durante o lançamento. Nunca mais será emitido.
               </div>
@@ -668,48 +734,19 @@ export default function Home() {
               { target: 100, suffix: '+', label: 'filtros de busca' },
               { target: 0, suffix: '', label: 'perfis falsos (biometria)' },
               { target: 4, suffix: '', label: 'modos de conexão' },
-              { target: 9, suffix: '97', label: 'R$ por mês para começar' },
             ].map((s, i) => (
               <div key={i} className="lp-anim" style={{ transitionDelay: `${i * 0.08}s` }}>
                 <div className="lp-stat-num lp-counter" data-target={s.target} data-suffix={s.suffix}>0{s.suffix}</div>
                 <div className="lp-stat-label">{s.label}</div>
               </div>
             ))}
+            <div className="lp-anim" style={{ transitionDelay: '0.24s' }}>
+              <div className="lp-stat-num">R$<span style={{ fontSize: '0.65em', fontWeight: 400, color: 'var(--muted)', letterSpacing: 0 }}>9,97</span></div>
+              <div className="lp-stat-label">por mes para comecar</div>
+            </div>
           </div>
         </section>
 
-        {/* ── DIVERSIDADE ── */}
-        <section className="lp-section">
-          <div className="lp-section-inner">
-            <div className="lp-anim" style={{ textAlign: 'center', marginBottom: 56 }}>
-              <span className="lp-section-label">Para todo mundo</span>
-              <h2 className="lp-section-title">Todo tipo de pessoa.<br />Um só lugar.</h2>
-              <p className="lp-section-sub" style={{ margin: '0 auto' }}>
-                Jovens, maduros, solteiros, casados em relacionamento aberto, curiosos, determinados. Feito para quem é real.
-              </p>
-            </div>
-            <div className="lp-profiles-grid">
-              {[
-                { init: 'J', name: 'Julia, 26 — São Paulo', bio: 'Gamer nas horas vagas, vegana há 3 anos. Procuro conexão genuína, alguém pra conversar de verdade antes de qualquer encontro.', tags: ['Gamer', 'Vegana', 'Conexão genuína'], img: '' },
-                { init: 'R', name: 'Roberto, 55 — Rio de Janeiro', bio: 'Eletricista de mão cheia, churrasco todo fim de semana. Direto ao ponto e sem enrolação — vida é curta demais.', tags: ['Direto ao ponto', 'Sem enrolação'], img: 'b' },
-                { init: 'A', name: 'Ana Paula, 38 — Belo Horizonte', bio: 'Mãe de 2, tutora de um golden louco. Procuro um companheiro pra dividir a rotina e os momentos bons da vida.', tags: ['Mãe', 'Pet lover', 'Companheiro'], img: 'c' },
-              ].map((p, i) => (
-                <div key={i} className={`lp-profile-card lp-anim lp-delay-${i + 1}`}>
-                  <div className={`lp-profile-card-img lp-profile-card-img-${p.img}`}>
-                    <div className="lp-profile-avatar">{p.init}</div>
-                    <div className="lp-profile-verified">Verificado</div>
-                    <div className="lp-phone-scanline" />
-                  </div>
-                  <div className="lp-profile-body">
-                    <div className="lp-profile-name">{p.name}</div>
-                    <div className="lp-profile-bio">{p.bio}</div>
-                    <div className="lp-profile-tags">{p.tags.map(t => <span key={t} className="lp-profile-tag">{t}</span>)}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* ── POR QUE NÃO GRATUITO ── */}
         <section className="lp-section lp-section--dark">
@@ -723,12 +760,12 @@ export default function Home() {
             </div>
             <div className="lp-pillars">
               {[
-                { num: '01', title: 'Filtro de intenção real', text: 'Quem paga para estar aqui, por menor que seja o valor, tem outro nível de comprometimento. Você sente isso na primeira mensagem.' },
-                { num: '02', title: 'Zero perfis falsos', text: 'A barreira de entrada — verificação de identidade mais pagamento — elimina bots, fakes e perfis abandonados de vez.' },
-                { num: '03', title: 'Infraestrutura de verdade', text: 'Moderação 24h, botão de emergência, verificação facial ao vivo, registro de encontro. Tudo isso custa, e é isso que garante sua segurança.' },
+                { icon: <IcUsers />, title: 'Filtro de intenção real', text: 'Quem paga para estar aqui, por menor que seja o valor, tem outro nível de comprometimento. Você sente isso na primeira mensagem.' },
+                { icon: <IcShield />, title: 'Zero perfis falsos', text: 'A barreira de entrada — verificação de identidade mais pagamento — elimina bots, fakes e perfis abandonados de vez.' },
+                { icon: <IcLock />, title: 'Infraestrutura de verdade', text: 'Moderação 24h, botão de emergência, verificação facial ao vivo, registro de encontro. Tudo isso custa, e é isso que garante sua segurança.' },
               ].map((p, i) => (
                 <div key={i} className={`lp-pillar lp-anim lp-delay-${i + 1}`}>
-                  <span className="lp-pillar-num">{p.num}</span>
+                  <div style={{ width: 48, height: 48, borderRadius: 14, background: 'var(--accent-soft)', border: '1px solid var(--accent-border)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20 }}>{p.icon}</div>
                   <div className="lp-pillar-title">{p.title}</div>
                   <div className="lp-pillar-text">{p.text}</div>
                 </div>
@@ -945,9 +982,9 @@ export default function Home() {
                   <div className="lp-fv-inner">
                     <div style={{ width: 220, height: 160, borderRadius: 16, background: 'linear-gradient(135deg,#0a1020,#1a2a4a)', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px', position: 'relative', overflow: 'hidden' }}>
                       <div style={{ position: 'absolute', bottom: 12, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 10 }}>
-                        {['#E11D48', '#10b981', '#3b82f6'].map((c, i) => (
-                          <div key={i} style={{ width: 36, height: 36, borderRadius: '50%', background: c, opacity: 0.9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IcVideo /></div>
-                        ))}
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: '#E11D48', opacity: 0.9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IcPhoneOff /></div>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.12)', opacity: 0.9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IcMicOff /></div>
+                        <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.12)', opacity: 0.9, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IcCameraSwitch /></div>
                       </div>
                       <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>Videochamada em andamento</div>
                     </div>
@@ -990,23 +1027,43 @@ export default function Home() {
               <div>
                 <span className="lp-section-label">Exclusivo Black</span>
                 <h2 className="lp-camarote-title">Alguns desejos merecem um <span>espaço próprio.</span></h2>
-                <p className="lp-camarote-text">Um ambiente discreto, sem julgamentos, com perfis curados e filtros que você não encontra em nenhum outro app brasileiro. Só quem sinalizou as mesmas intenções pode te ver. Nenhuma exposição desnecessária.</p>
-                <div className="lp-camarote-tags">
-                  {['Sugar', 'Fetiche', 'Swing', 'Poliamor', 'BDSM'].map(t => <span key={t} className="lp-camarote-tag">{t}</span>)}
-                </div>
-                <a href="/planos" className="lp-btn-gold">Acessar o Camarote <IcArrow /></a>
+                {!camaroteRevealed ? (
+                  <>
+                    <p className="lp-camarote-text">Um ambiente separado do app principal. Discreto, sem julgamentos, com filtros que você não encontra em nenhum outro lugar. Para entrar, você precisa sinalizar suas intenções — e apenas quem compartilha das mesmas pode te ver.</p>
+                    <button className="lp-btn-gold" onClick={() => setCamaroteRevealed(true)} style={{ marginTop: 8 }}>
+                      <IcLock /> Ver o que tem dentro
+                    </button>
+                  </>
+                ) : (
+                  <div className="lp-camarote-reveal">
+                    <p className="lp-camarote-text">Um ambiente discreto, sem julgamentos, com perfis curados e filtros que você não encontra em nenhum outro app brasileiro. Só quem sinalizou as mesmas intenções pode te ver. Nenhuma exposição desnecessaria.</p>
+                    <div className="lp-camarote-tags">
+                      {['Sugar', 'Fetiche', 'Swing', 'Poliamor', 'BDSM'].map(t => <span key={t} className="lp-camarote-tag">{t}</span>)}
+                    </div>
+                    <a href="/planos" className="lp-btn-gold">Acessar o Camarote <IcArrow /></a>
+                  </div>
+                )}
               </div>
               <div className="lp-camarote-visual">
-                {[
-                  { icon: <IcLock />, title: 'Acesso privado', text: 'Só quem sinalizou as mesmas intenções pode ver seu perfil no Camarote.' },
-                  { icon: <IcEye />, title: 'Zero exposição', text: 'Seu perfil no Camarote é separado do perfil principal. Você controla tudo.' },
-                  { icon: <IcShield />, title: 'Comunidade curada', text: 'Perfis verificados, filtros exclusivos e uma comunidade que compartilha interesses.' },
-                ].map((c, i) => (
-                  <div key={i} className={`lp-camarote-card lp-anim lp-delay-${i + 1}`}>
-                    <div className="lp-camarote-card-icon">{c.icon}</div>
-                    <div className="lp-camarote-card-text"><strong>{c.title}</strong>{c.text}</div>
+                {camaroteRevealed ? (
+                  [
+                    { icon: <IcLock />, title: 'Acesso privado', text: 'So quem sinalizou as mesmas intencoes pode ver seu perfil no Camarote.' },
+                    { icon: <IcEye />, title: 'Zero exposicao', text: 'Seu perfil no Camarote e separado do perfil principal. Voce controla tudo.' },
+                    { icon: <IcShield />, title: 'Comunidade curada', text: 'Perfis verificados, filtros exclusivos e uma comunidade que compartilha interesses.' },
+                  ].map((c, i) => (
+                    <div key={i} className="lp-camarote-card lp-camarote-reveal" style={{ animationDelay: `${i * 0.1}s` }}>
+                      <div className="lp-camarote-card-icon">{c.icon}</div>
+                      <div className="lp-camarote-card-text"><strong>{c.title}</strong>{c.text}</div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, padding: '40px 0' }}>
+                    <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--gold-soft)', border: '1px solid var(--gold-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)' }}>
+                      <IcLock />
+                    </div>
+                    <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center', maxWidth: 200 }}>Conteudo restrito. Clique para revelar.</p>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </div>
@@ -1067,7 +1124,7 @@ export default function Home() {
         <section className="lp-section lp-section--dark">
           <div className="lp-section-inner">
             <div className="lp-early lp-anim lp-anim--scale">
-              <div className="lp-early-badge">🏅</div>
+              <div className="lp-early-badge" style={{ color: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><IcMedal size={36} /></div>
               <h2 className="lp-early-title">Você está chegando no<br /><span>momento certo.</span></h2>
               <p className="lp-early-text">O MeAndYou acabou de chegar. Todo usuário que entrar agora durante o lançamento recebe um <strong style={{ color: 'var(--gold)' }}>Emblema de Fundador exclusivo e vitalício</strong>. Ele nunca mais será concedido. Você carrega no perfil para sempre como prova de que esteve aqui desde o começo.</p>
               <a href="/planos" className="lp-btn-gold lp-magnetic" style={{ marginTop: 8 }}>
@@ -1086,16 +1143,20 @@ export default function Home() {
             </div>
             <div className="lp-testimonials">
               {[
-                { init: 'C', name: 'Camila S.', sub: 'Belo Horizonte · Plano Plus', text: '"Passei muito tempo em apps conversando com pessoas que estavam em momentos diferentes do meu. Aqui eu fui direto ao ponto: ativei os filtros e deixei claro que procuro algo sério. O app cortou o ruído e me conectou só com quem estava na mesma página."' },
-                { init: 'L', name: 'Lucas M.', sub: 'Rio de Janeiro · Camarote Black', text: '"A pior parte de conhecer gente nova é quando um quer uma coisa e o outro quer outra. No Camarote, eu joguei limpo sobre o que eu curto. Deu match com uma mulher que queria exatamente a mesma coisa."' },
-                { init: 'F', name: 'Fernanda O.', sub: 'São Paulo · Plano Plus', text: '"Queria sair e me divertir, mas dava preguiça de chegar no encontro e descobrir que a química não rolava. A videochamada aqui mudou o jogo. Bati 40 minutos de papo, vi que a energia batia pela tela."' },
-                { init: 'T', name: 'Thiago R.', sub: 'Curitiba · Camarote Black', text: '"Valorizo muito o meu tempo e gosto de proporcionar experiências exclusivas. O Camarote Black é perfeito porque atrai pessoas que buscam esse mesmo nível. A verificação rigorosa garante que os perfis são reais."' },
+                { photo: '/julia.jpg', init: 'J', name: 'Julia S.', sub: 'Sao Paulo · Plano Plus', text: '"Passei muito tempo em apps conversando com pessoas que estavam em momentos diferentes do meu. Aqui eu fui direto ao ponto: ativei os filtros e deixei claro que procuro algo serio. O app cortou o ruido e me conectou so com quem estava na mesma pagina."' },
+                { photo: '/Roberto.jpg', init: 'R', name: 'Roberto M.', sub: 'Rio de Janeiro · Camarote Black', text: '"A pior parte de conhecer gente nova e quando um quer uma coisa e o outro quer outra. No Camarote, eu joguei limpo sobre o que eu curto. Deu match com uma mulher que queria exatamente a mesma coisa."' },
+                { photo: '/ana-paula.jpg', init: 'A', name: 'Ana Paula O.', sub: 'Sao Paulo · Plano Plus', text: '"Queria sair e me divertir, mas dava preguica de chegar no encontro e descobrir que a quimica nao rolava. A videochamada aqui mudou o jogo. Bati 40 minutos de papo, vi que a energia batia pela tela."' },
+                { photo: '', init: 'T', name: 'Thiago R.', sub: 'Curitiba · Camarote Black', text: '"Valorizo muito o meu tempo e gosto de proporcionar experiencias exclusivas. O Camarote Black e perfeito porque atrai pessoas que buscam esse mesmo nivel. A verificacao rigorosa garante que os perfis sao reais."' },
               ].map((t, i) => (
                 <div key={i} className={`lp-testimonial lp-anim lp-delay-${(i % 2) + 1}`}>
                   <div className="lp-testimonial-stars">{Array(5).fill(0).map((_, j) => <IcStar key={j} />)}</div>
                   <div className="lp-testimonial-text">{t.text}</div>
                   <div className="lp-testimonial-author">
-                    <div className="lp-testimonial-avatar">{t.init}</div>
+                    {t.photo ? (
+                      <img src={t.photo} alt={t.name} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', border: '2px solid var(--border)', flexShrink: 0 }} />
+                    ) : (
+                      <div className="lp-testimonial-avatar">{t.init}</div>
+                    )}
                     <div className="lp-testimonial-info">
                       {t.name}
                       <span className="lp-testimonial-plan">{t.sub}</span>
@@ -1119,7 +1180,7 @@ export default function Home() {
               {/* Essencial */}
               <div className="lp-plan lp-anim lp-delay-1">
                 <div className="lp-plan-name">Essencial</div>
-                <div className="lp-plan-price"><span>R$</span>9,97</div>
+                <div className="lp-plan-price"><span className="lp-plan-price-cur">R$</span><span className="lp-plan-price-val">9,97</span></div>
                 <div className="lp-plan-period">por mês</div>
                 <div className="lp-plan-desc">Para começar a explorar</div>
                 <ul className="lp-plan-features">
@@ -1133,7 +1194,7 @@ export default function Home() {
               <div className="lp-plan lp-plan--featured lp-anim lp-delay-2">
                 <div className="lp-plan-popular">Mais popular</div>
                 <div className="lp-plan-name">Plus</div>
-                <div className="lp-plan-price"><span>R$</span>39,97</div>
+                <div className="lp-plan-price"><span className="lp-plan-price-cur">R$</span><span className="lp-plan-price-val">39,97</span></div>
                 <div className="lp-plan-period">por mês</div>
                 <div className="lp-plan-desc">Para quem quer mais matches</div>
                 <ul className="lp-plan-features">
@@ -1146,7 +1207,7 @@ export default function Home() {
               {/* Black */}
               <div className="lp-plan lp-anim lp-delay-3" style={{ border: '1px solid var(--gold-border)' }}>
                 <div className="lp-plan-name" style={{ color: 'var(--gold)' }}>Black</div>
-                <div className="lp-plan-price"><span>R$</span>99,97</div>
+                <div className="lp-plan-price"><span className="lp-plan-price-cur">R$</span><span className="lp-plan-price-val">99,97</span></div>
                 <div className="lp-plan-period">por mês</div>
                 <div className="lp-plan-desc">Para quem não quer limites</div>
                 <ul className="lp-plan-features">
@@ -1176,37 +1237,72 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── PWA ── */}
-        <section className="lp-section lp-section--dark">
-          <div className="lp-section-inner">
-            <div className="lp-pwa lp-anim">
-              {(installPrompt && !installDone) && (
-                <button className="lp-btn-primary lp-magnetic" style={{ marginBottom: 24 }} onClick={handleInstall}>
-                  Instalar no celular
+        {/* ── INSTALL ── */}
+        <section className="lp-install">
+          <div className="lp-install-inner">
+            <div className="lp-install-left lp-anim">
+              <span className="lp-section-label">App</span>
+              <h2><em>Baixe Agora.</em><br />Direto no seu celular.</h2>
+              <p>Icone na tela inicial, notificacoes em tempo real. Sem precisar de loja de apps, sem burocracia de download.</p>
+              <div className="lp-install-os-tabs">
+                <button className={`lp-os-tab${selectedOS === 'android' ? ' active' : ''}`} onClick={() => setSelectedOS('android')}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341 14.6 10.5l2.184-3.78a.75.75 0 0 0-1.3-.75L13.3 9.75H10.7L9.516 5.97a.75.75 0 0 0-1.3.75L10.4 10.5l-2.923 4.841A.75.75 0 1 0 8.777 16L12 10.933 15.223 16a.75.75 0 1 0 1.3-.659zM6.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm11 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+                  Android
                 </button>
-              )}
-              {installDone && <p style={{ color: 'var(--accent)', fontWeight: 600, marginBottom: 16 }}>Instalado com sucesso!</p>}
-              <span className="lp-section-label">Baixe agora</span>
-              <h2 className="lp-section-title" style={{ marginBottom: 8 }}>Direto no seu celular.</h2>
-              <p style={{ color: 'var(--muted)', fontSize: 15, marginBottom: 32 }}>Ícone na tela inicial, notificações em tempo real. Sem precisar de loja de apps.</p>
-              <div className="lp-pwa-steps">
-                <div className="lp-pwa-step">
-                  <div className="lp-pwa-step-os">Android (Chrome)</div>
-                  <ol>
-                    <li>Acesse meandyou.com.br pelo Chrome</li>
-                    <li>Toque nos 3 pontos no canto superior</li>
-                    <li>Selecione &quot;Adicionar à tela inicial&quot;</li>
-                  </ol>
-                </div>
-                <div className="lp-pwa-step">
-                  <div className="lp-pwa-step-os">iOS (Safari)</div>
-                  <ol>
-                    <li>Acesse meandyou.com.br pelo Safari</li>
-                    <li>Toque no ícone de compartilhar</li>
-                    <li>Selecione &quot;Adicionar à tela de início&quot;</li>
-                  </ol>
-                </div>
+                <button className={`lp-os-tab${selectedOS === 'ios' ? ' active' : ''}`} onClick={() => setSelectedOS('ios')}>
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                  iPhone
+                </button>
               </div>
+              <div className="lp-install-actions">
+                {installDone ? (
+                  <div className="lp-install-done">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                    App instalado com sucesso!
+                  </div>
+                ) : selectedOS === 'android' ? (
+                  <button onClick={handleInstall} className="lp-install-btn android" style={{ opacity: installPrompt ? 1 : 0.55, cursor: installPrompt ? 'pointer' : 'default' }}>
+                    <svg className="lp-install-btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M17.523 15.341 14.6 10.5l2.184-3.78a.75.75 0 0 0-1.3-.75L13.3 9.75H10.7L9.516 5.97a.75.75 0 0 0-1.3.75L10.4 10.5l-2.923 4.841A.75.75 0 1 0 8.777 16L12 10.933 15.223 16a.75.75 0 1 0 1.3-.659zM6.5 19a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm11 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>
+                    <span className="lp-install-btn-text"><small>{installPrompt ? 'Toque para instalar' : 'Abra no Chrome para instalar'}</small>Instalar no Android</span>
+                  </button>
+                ) : (
+                  <div className="lp-install-btn ios">
+                    <svg className="lp-install-btn-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+                    <span className="lp-install-btn-text"><small>Siga os passos ao lado</small>Instalar no iPhone</span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="lp-install-right lp-anim">
+              {selectedOS === 'android' ? (
+                <>
+                  <p className="lp-install-os-label">Android · Chrome</p>
+                  {[
+                    { title: 'Abra no Chrome', desc: 'Acesse meandyou.com.br pelo navegador Chrome no seu Android.' },
+                    { title: 'Toque nos 3 pontos', desc: 'No canto superior direito do Chrome, abra o menu de opcoes.' },
+                    { title: 'Adicionar a tela inicial', desc: 'Selecione a opcao e confirme. O icone aparece na sua tela.' },
+                  ].map((s, i) => (
+                    <div key={i} className="lp-install-step">
+                      <div className="lp-install-step-num android">{i + 1}</div>
+                      <div><h4>{s.title}</h4><p>{s.desc}</p></div>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <>
+                  <p className="lp-install-os-label">iPhone · Safari</p>
+                  {[
+                    { title: 'Abra no Safari', desc: 'No iPhone, use o Safari — e o unico navegador que permite instalar apps pela web.' },
+                    { title: 'Toque em Compartilhar', desc: 'Icone de seta para cima na barra inferior do Safari.' },
+                    { title: 'Adicionar a Tela de Inicio', desc: 'Role o menu para baixo, toque na opcao e confirme.' },
+                  ].map((s, i) => (
+                    <div key={i} className="lp-install-step">
+                      <div className="lp-install-step-num ios">{i + 1}</div>
+                      <div><h4>{s.title}</h4><p>{s.desc}</p></div>
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
           </div>
         </section>
@@ -1233,21 +1329,50 @@ export default function Home() {
 
         {/* ── FOOTER ── */}
         <footer className="lp-footer">
-          <a href="/" className="lp-footer-logo">MeAnd<span>You</span></a>
-          <div className="lp-footer-links">
-            <a href="/privacidade">Privacidade</a>
-            <a href="/termos">Termos de uso</a>
-            <a href="/ajuda">Ajuda</a>
-            <a href="/fale-conosco">Contato</a>
-            <a href="/suporte">Suporte</a>
+          <div className="lp-footer-top">
+            <div>
+              <a href="/" className="lp-footer-logo2">MeAnd<span>You</span></a>
+              <p style={{ fontSize: 13, lineHeight: 1.75, maxWidth: 260, color: 'var(--dim)' }}>O app de relacionamentos com verificacao real de identidade e os filtros mais completos do Brasil.</p>
+            </div>
+            <div className="lp-footer-col">
+              <h4>Produto</h4>
+              <a href="#features">Recursos</a>
+              <a href="#planos">Planos e precos</a>
+              <a href="#camarote">Camarote</a>
+              <a href="#como-funciona">Como funciona</a>
+            </div>
+            <div className="lp-footer-col">
+              <h4>Legal</h4>
+              <a href="/termos">Termos de uso</a>
+              <a href="/privacidade">Politica de privacidade</a>
+            </div>
+            <div className="lp-footer-col">
+              <h4>Conta</h4>
+              <a href="/planos">Criar conta</a>
+              <a href="/login">Entrar</a>
+              <a href="/fale-conosco">Fale Conosco</a>
+              <a href="/suporte">Suporte</a>
+            </div>
           </div>
-          <div className="lp-footer-copy">© 2026 MeAndYou. Todos os direitos reservados.</div>
+          <div className="lp-footer-bottom">
+            <div>
+              <p>© {new Date().getFullYear()} MeAndYou · Todos os direitos reservados</p>
+              <p style={{ fontSize: 11, marginTop: 4, color: 'rgba(248,249,250,0.35)' }}>Feito por brasileiros</p>
+            </div>
+            <div className="lp-footer-btm-links">
+              <a href="/privacidade">Privacidade</a>
+              <a href="/termos">Termos</a>
+            </div>
+          </div>
         </footer>
 
         {/* ── NOTIFICAÇÕES ── */}
         <div className="lp-notif-wrap">
           {notifList.map(n => (
-            <div key={n.id} className={`lp-notif ${n.exiting ? 'lp-notif--out' : ''}`}>{n.text}</div>
+            <div key={n.id} className={`lp-notif ${n.exiting ? 'lp-notif--out' : ''}`}>
+              <span className="lp-notif-dot" />
+              {n.text}
+            </div>
           ))}
         </div>
 
