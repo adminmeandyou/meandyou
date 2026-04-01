@@ -1314,6 +1314,17 @@ export default function Home() {
         .lp-social-v2-meta--left{text-align:left}
         @media(max-width:600px){.lp-social-v2{padding:72px 24px}}
 
+        /* CTA Final v2 (Etapa 14) */
+        .lp-cta-final{padding:120px 24px;background:linear-gradient(180deg,#08090E 0%,#140208 60%,#1c020a 100%);text-align:center;position:relative;overflow:hidden}
+        .lp-cta-final::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 50% at 50% 100%,rgba(225,29,72,0.18) 0%,transparent 65%);pointer-events:none}
+        .lp-cta-final-inner{max-width:600px;margin:0 auto;position:relative;z-index:1}
+        .lp-cta-final-title{font-family:var(--font-fraunces),serif;font-size:clamp(2.5rem,7vw,4rem);font-weight:700;color:var(--text);line-height:1.05;margin-bottom:20px}
+        .lp-cta-final-sub{font-size:1.125rem;color:rgba(248,249,250,0.55);line-height:1.75;max-width:480px;margin:0 auto 48px}
+        .lp-cta-final-btn{display:inline-block;padding:18px 56px;background:linear-gradient(135deg,#E11D48,#be123c);color:#fff;font-size:17px;font-weight:700;border-radius:14px;text-decoration:none;animation:lpCtaPulse 2.8s ease-in-out infinite;box-shadow:0 8px 32px rgba(225,29,72,0.35)}
+        @keyframes lpCtaPulse{0%,100%{box-shadow:0 8px 32px rgba(225,29,72,0.35)}50%{box-shadow:0 12px 48px rgba(225,29,72,0.55),0 0 0 8px rgba(225,29,72,0.06)}}
+        .lp-cta-final-micro{margin-top:20px;font-size:13px;color:rgba(248,249,250,0.28)}
+        @media(max-width:600px){.lp-cta-final{padding:88px 24px}}
+
         /* Features */
         .lp-features-grid{display:flex;flex-direction:column;gap:80px}
         .lp-feature{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
@@ -2183,6 +2194,16 @@ export default function Home() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* ── CTA FINAL (Etapa 14) ── */}
+        <section className="lp-cta-final">
+          <div className="lp-cta-final-inner">
+            <h2 className="lp-cta-final-title lp-anim">Comece agora.</h2>
+            <p className="lp-cta-final-sub lp-anim">Entre, defina o que você quer e veja como tudo muda quando você tem controle.</p>
+            <a href="/cadastro" className="lp-cta-final-btn lp-anim">Criar conta</a>
+            <p className="lp-cta-final-micro lp-anim">Leva menos de 1 minuto para começar</p>
           </div>
         </section>
 
