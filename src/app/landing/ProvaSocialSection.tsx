@@ -18,7 +18,7 @@ export default function ProvaSocialSection() {
           ].map((m, i) => (
             <div key={i} className={`lp-social-v2-msg${m.right ? ' lp-social-v2-msg--right' : ''} lp-anim`} style={{ animationDelay: `${i * 150}ms` }}>
               {!m.right && <div className={`lp-social-v2-avatar lp-social-v2-avatar--${m.avatarCls || 'a'}`} />}
-              <div>
+              <div style={{ maxWidth: 'calc(100% - 50px)' }}>
                 <div className={`lp-social-v2-bubble lp-social-v2-bubble--${m.right ? 'right' : 'left'}`}>{m.txt}</div>
                 <div className={`lp-social-v2-meta${m.right ? '' : ' lp-social-v2-meta--left'}`}>{m.name}</div>
               </div>
