@@ -1295,6 +1295,25 @@ export default function Home() {
         @media(max-width:768px){.lp-plans-v2-grid{grid-template-columns:1fr;max-width:360px;margin:0 auto}}
         @media(max-width:600px){.lp-plans-v2{padding:72px 24px}}
 
+        /* Prova Social v2 (Etapa 13) */
+        .lp-social-v2{padding:96px 24px;background:linear-gradient(180deg,#08090E 0%,#0a0b11 100%)}
+        .lp-social-v2-inner{max-width:560px;margin:0 auto}
+        .lp-social-v2-header{text-align:center;margin-bottom:48px}
+        .lp-social-v2-title{font-family:var(--font-fraunces),serif;font-size:clamp(1.875rem,5vw,2.75rem);font-weight:700;color:var(--text);line-height:1.15;margin:12px 0}
+        .lp-social-v2-msgs{display:flex;flex-direction:column;gap:10px}
+        .lp-social-v2-msg{display:flex;gap:12px;align-items:flex-end;animation:lpSocialIn 0.5s ease both}
+        .lp-social-v2-msg--right{flex-direction:row-reverse}
+        @keyframes lpSocialIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+        .lp-social-v2-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1a0a14,#3d1530)}
+        .lp-social-v2-avatar--b{background:linear-gradient(135deg,#0a1020,#1a2a4a)}
+        .lp-social-v2-avatar--c{background:linear-gradient(135deg,#0a1a10,#1a3a20)}
+        .lp-social-v2-bubble{max-width:75%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.6;color:var(--text)}
+        .lp-social-v2-bubble--left{background:rgba(19,22,31,0.95);border:1px solid rgba(255,255,255,0.07);border-bottom-left-radius:4px}
+        .lp-social-v2-bubble--right{background:rgba(225,29,72,0.15);border:1px solid rgba(225,29,72,0.18);border-bottom-right-radius:4px}
+        .lp-social-v2-meta{font-size:11px;color:rgba(248,249,250,0.28);margin-top:4px;text-align:right}
+        .lp-social-v2-meta--left{text-align:left}
+        @media(max-width:600px){.lp-social-v2{padding:72px 24px}}
+
         /* Features */
         .lp-features-grid{display:flex;flex-direction:column;gap:80px}
         .lp-feature{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
@@ -2137,6 +2156,33 @@ export default function Home() {
             </div>
             <p className="lp-plans-v2-highlight lp-anim">Mais usado por quem quer ter controle total da experiência</p>
             <p className="lp-plans-v2-micro lp-anim">Você pode cancelar a qualquer momento</p>
+          </div>
+        </section>
+
+        {/* ── PROVA SOCIAL (Etapa 13) ── */}
+        <section className="lp-social-v2">
+          <div className="lp-social-v2-inner">
+            <div className="lp-social-v2-header lp-anim">
+              <p className="lp-section-label">O que as pessoas dizem</p>
+              <h2 className="lp-social-v2-title">Quem entrou,<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>não quer sair.</em></h2>
+            </div>
+            <div className="lp-social-v2-msgs">
+              {[
+                { right: false, avatarCls: '', name: 'Mariana, 28', txt: 'Finalmente um app em que eu não preciso ficar adivinhando o que a pessoa quer. Todo mundo já entra sabendo.', delay: 0 },
+                { right: true, avatarCls: 'b', name: 'Rafael, 31', txt: 'Os filtros são o que fazem a diferença. Zero perda de tempo com perfis que não fazem sentido.', delay: 150 },
+                { right: false, avatarCls: 'c', name: 'Camila, 26', txt: 'A videochamada antes de encontrar alguém foi um divisor de águas pra mim. Cheguei no café sem nenhuma surpresa.', delay: 300 },
+                { right: true, avatarCls: '', name: 'Thiago, 33', txt: 'Matching por intenção real muda tudo. Sem joguinho, sem ambiguidade. Direto ao ponto.', delay: 450 },
+                { right: false, avatarCls: 'b', name: 'Ana, 29', txt: 'Nunca me senti tão no controle de quem entra na minha vida. Recomendo para todo mundo.', delay: 600 },
+              ].map((m, i) => (
+                <div key={i} className={`lp-social-v2-msg${m.right ? ' lp-social-v2-msg--right' : ''} lp-anim`} style={{ animationDelay: `${m.delay}ms` }}>
+                  <div className={`lp-social-v2-avatar lp-social-v2-avatar--${m.avatarCls || 'a'}`} style={m.avatarCls === '' ? { background: 'linear-gradient(135deg,#1a0a14,#3d1530)' } : {}} />
+                  <div>
+                    <div className={`lp-social-v2-bubble lp-social-v2-bubble--${m.right ? 'right' : 'left'}`}>{m.txt}</div>
+                    <div className={`lp-social-v2-meta${m.right ? '' : ' lp-social-v2-meta--left'}`}>{m.name}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 

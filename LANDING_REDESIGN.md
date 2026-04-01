@@ -29,8 +29,8 @@ Se isso não acontecer, perdeu.
 | 10 | Perfil | Concluída | 2026-03-31 às 23:22 |
 | 11 | Backstage | Concluída | 2026-03-31 às 23:28 |
 | 12 | Planos | Concluída | 2026-03-31 às 23:35 |
-| 13 | Prova Social | Pendente — PRÓXIMA ETAPA | |
-| 14 | CTA Final | Pendente | |
+| 13 | Prova Social | Concluída | 2026-03-31 às 23:42 |
+| 14 | CTA Final | Pendente — PRÓXIMA ETAPA | |
 
 ---
 
