@@ -68,7 +68,7 @@ export default function PlanosSection() {
       <div className="lp-plans-v2-inner">
         <div className="lp-plans-v2-header lp-anim">
           <p className="lp-section-label">Planos</p>
-          <h2 className="lp-plans-v2-title">Escolha o nível de controle que você quer ter.</h2>
+          <h2 className="lp-plans-v2-title">Escolha o nível de controle<br />que você quer ter.</h2>
           <p className="lp-plans-v2-sub">Cada plano libera uma forma diferente de viver o app.</p>
         </div>
         <div className="lp-plans-v2-grid">
