@@ -36,7 +36,7 @@ export default function HeroSection({ userCity, notifList }: HeroProps) {
             <span className="lp-badge-dot" />
             Relacionamentos com intenção real
           </div>
-          <h1><em style={{color:'var(--accent)',fontStyle:'italic'}}>Você decide</em> quem entra<br /><em>no seu mundo.</em></h1>
+          <h1><em style={{color:'var(--accent)',fontStyle:'italic'}}>Você decide</em> quem entra<br /><em style={{color:'var(--text)',fontStyle:'italic'}}>no seu mundo.</em></h1>
           <p className="lp-hero-sub">
             Relacionamentos, encontros, salas, videochamada e filtros avançados. Tudo no seu controle, do primeiro contato ao encontro.
           </p>

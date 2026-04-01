@@ -33,7 +33,7 @@ export default function BackstageSection() {
           {backstageOpen && (
             <div style={{ marginTop:16, padding:'20px 24px', borderRadius:14, background:'rgba(120,0,20,0.12)', border:'1px solid rgba(180,0,30,0.20)', maxWidth:520 }}>
               <p style={{ fontSize:14, color:'rgba(248,249,250,0.65)', lineHeight:1.75, margin:0 }}>
-                O Backstage e a area privada exclusiva do plano Black. Aqui voce encontra perfis com intencoes especificas que nao aparecem em nenhum outro lugar: Sugar, Swing, Fetiches, BDSM e Poliamor. A regra e simples: voce so ve quem marcou as mesmas intencoes. Zero exposicao, zero julgamento.
+                O Backstage é a área privada exclusiva do plano Black. Aqui você encontra perfis com intenções específicas que não aparecem em nenhum outro lugar: Sugar, Swing, Fetiches, BDSM e Poliamor. A regra é simples: você só vê quem marcou as mesmas intenções. Zero exposição, zero julgamento.
               </p>
             </div>
           )}

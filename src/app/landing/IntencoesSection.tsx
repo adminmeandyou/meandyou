@@ -5,13 +5,13 @@ export default function IntencoesSection() {
     <section className="lp-intencoes-v2">
       <div className="lp-intencoes-v2-inner">
         <div className="lp-intencoes-v2-header lp-anim">
-          <p className="lp-section-label">Intencoes</p>
-          <h2 className="lp-intencoes-v2-title">Sem duvida.<br />Sem joguinho.</h2>
+          <p className="lp-section-label">Intenções</p>
+          <h2 className="lp-intencoes-v2-title">Sem dúvida.<br />Sem joguinho.</h2>
           <p className="lp-intencoes-v2-text">
-            Cada pessoa ja entra com clareza do que quer.<br />
-            Voce nao precisa adivinhar nem perder tempo tentando entender.
+            Cada pessoa já entra com clareza do que quer.<br />
+            Você não precisa adivinhar nem perder tempo tentando entender.
           </p>
-          <p className="lp-intencoes-v2-compl">Ou faz sentido, ou nao aparece.</p>
+          <p className="lp-intencoes-v2-compl">Ou faz sentido, ou não aparece.</p>
         </div>
         <div className="lp-intencoes-grid-v2">
           {[
