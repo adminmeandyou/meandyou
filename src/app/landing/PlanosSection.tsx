@@ -53,7 +53,7 @@ export default function PlanosSection() {
         { ok: true, gold: true,  txt: '10 SuperCurtidas por dia' },
         { ok: true, gold: true,  txt: '3 tickets de roleta por dia' },
         { ok: true, gold: true,  txt: '2 Lupas por dia no Destaque' },
-        { ok: true, gold: false, txt: 'Tudo do Plus' },
+        { ok: true, gold: true,  txt: 'Tudo do Plus' },
         { ok: true, gold: true,  txt: 'Acesso ao Backstage' },
         { ok: true, gold: true,  txt: 'Modo Casal (exclusivo Black)' },
         { ok: true, gold: true,  txt: '2 Boosts simultâneos' },
