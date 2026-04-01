@@ -1264,6 +1264,37 @@ export default function Home() {
         @keyframes lpBackPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.50;transform:scale(0.80)}}
         @media(max-width:600px){.lp-back-v2{padding:72px 24px}}
 
+        /* Planos v2 (Etapa 12) */
+        .lp-plans-v2{padding:96px 24px;background:#08090E}
+        .lp-plans-v2-inner{max-width:860px;margin:0 auto}
+        .lp-plans-v2-header{text-align:center;margin-bottom:56px}
+        .lp-plans-v2-title{font-family:var(--font-fraunces),serif;font-size:clamp(2rem,5vw,2.875rem);font-weight:700;color:var(--text);line-height:1.15;margin:12px 0 16px}
+        .lp-plans-v2-sub{font-size:1.0625rem;color:var(--muted);line-height:1.7}
+        .lp-plans-v2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:start}
+        .lp-plans-v2-card{border-radius:20px;padding:28px 24px;border:1px solid rgba(255,255,255,0.07);background:rgba(19,22,31,0.95);position:relative;transition:transform 0.25s,box-shadow 0.25s}
+        .lp-plans-v2-card:hover{transform:translateY(-4px);box-shadow:0 16px 40px rgba(0,0,0,0.35)}
+        .lp-plans-v2-card--featured{border-color:rgba(225,29,72,0.35);background:linear-gradient(180deg,rgba(30,8,14,0.98) 0%,rgba(19,22,31,0.98) 100%);box-shadow:0 0 0 1px rgba(225,29,72,0.20),0 12px 40px rgba(225,29,72,0.12)}
+        .lp-plans-v2-card--black{border-color:rgba(245,158,11,0.22);background:linear-gradient(180deg,rgba(20,15,5,0.98) 0%,rgba(19,22,31,0.98) 100%)}
+        .lp-plans-v2-badge{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;padding:4px 12px;border-radius:100px;margin-bottom:16px}
+        .lp-plans-v2-badge--featured{background:rgba(225,29,72,0.15);color:var(--accent);border:1px solid rgba(225,29,72,0.25)}
+        .lp-plans-v2-badge--black{background:rgba(245,158,11,0.12);color:#F59E0B;border:1px solid rgba(245,158,11,0.22)}
+        .lp-plans-v2-badge--free{background:rgba(255,255,255,0.06);color:rgba(248,249,250,0.45);border:1px solid rgba(255,255,255,0.08)}
+        .lp-plans-v2-name{font-family:var(--font-fraunces),serif;font-size:1.375rem;font-weight:700;color:var(--text);margin-bottom:6px}
+        .lp-plans-v2-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:20px;min-height:40px}
+        .lp-plans-v2-feats{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+        .lp-plans-v2-feats li{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:rgba(248,249,250,0.65)}
+        .lp-plans-v2-feats li span{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+        .lp-plans-v2-feats li span.ok{background:rgba(16,185,129,0.15);color:#10b981}
+        .lp-plans-v2-feats li span.acc{background:rgba(225,29,72,0.12);color:var(--accent)}
+        .lp-plans-v2-cta{display:block;width:100%;padding:12px;border-radius:12px;font-size:14px;font-weight:700;text-align:center;cursor:default}
+        .lp-plans-v2-cta--free{background:rgba(255,255,255,0.06);color:rgba(248,249,250,0.65);border:1px solid rgba(255,255,255,0.08)}
+        .lp-plans-v2-cta--featured{background:linear-gradient(135deg,#E11D48,#be123c);color:#fff;border:none}
+        .lp-plans-v2-cta--black{background:linear-gradient(135deg,#d4880a,#b8700a);color:#fff;border:none}
+        .lp-plans-v2-highlight{text-align:center;margin-top:16px;font-size:12px;color:rgba(225,29,72,0.65);font-weight:500}
+        .lp-plans-v2-micro{text-align:center;margin-top:28px;font-size:13px;color:rgba(248,249,250,0.28)}
+        @media(max-width:768px){.lp-plans-v2-grid{grid-template-columns:1fr;max-width:360px;margin:0 auto}}
+        @media(max-width:600px){.lp-plans-v2{padding:72px 24px}}
+
         /* Features */
         .lp-features-grid{display:flex;flex-direction:column;gap:80px}
         .lp-feature{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
@@ -2033,6 +2064,79 @@ export default function Home() {
                 Exclusivo para plano Black
               </div>
             </div>
+          </div>
+        </section>
+
+        {/* ── PLANOS (Etapa 12) ── */}
+        <section className="lp-plans-v2">
+          <div className="lp-plans-v2-inner">
+            <div className="lp-plans-v2-header lp-anim">
+              <p className="lp-section-label">Planos</p>
+              <h2 className="lp-plans-v2-title">Escolha o nível de controle<br />que você quer ter.</h2>
+              <p className="lp-plans-v2-sub">Cada plano libera uma forma diferente de viver o app.</p>
+            </div>
+            <div className="lp-plans-v2-grid">
+              {[
+                {
+                  badge: 'Essencial', badgeCls: 'free', ctaCls: 'free',
+                  nome: 'Grátis', desc: 'Para explorar e sentir como funciona.',
+                  feats: [
+                    { ok: true, txt: '10 curtidas por dia' },
+                    { ok: true, txt: 'Acesso ao Descobrir' },
+                    { ok: true, txt: 'Videochamada nativa' },
+                    { ok: false, txt: 'Filtros avançados' },
+                    { ok: false, txt: 'Ver quem curtiu você' },
+                  ],
+                },
+                {
+                  badge: 'Mais escolhido', badgeCls: 'featured', ctaCls: 'featured', featured: true,
+                  nome: 'Plus', desc: 'Para quem quer controle total da experiência.',
+                  feats: [
+                    { ok: true, txt: 'Curtidas ilimitadas' },
+                    { ok: true, txt: 'Filtros avançados completos' },
+                    { ok: true, txt: 'Ver quem curtiu você' },
+                    { ok: true, txt: 'Roleta diária e SuperCurtidas' },
+                    { ok: true, txt: 'Modo invisível' },
+                  ],
+                },
+                {
+                  badge: 'Black', badgeCls: 'black', ctaCls: 'black',
+                  nome: 'Black', desc: 'Para quem quer o máximo — sem restrições.',
+                  feats: [
+                    { ok: true, txt: 'Tudo do Plus' },
+                    { ok: true, txt: 'Acesso ao Backstage' },
+                    { ok: true, txt: 'Destaque no topo do feed' },
+                    { ok: true, txt: 'Lupa e Rewind ilimitados' },
+                    { ok: true, txt: 'Boosts mensais inclusos' },
+                  ],
+                },
+              ].map((plan, i) => (
+                <div key={i} className={`lp-plans-v2-card lp-anim${plan.featured ? ' lp-plans-v2-card--featured' : plan.badgeCls === 'black' ? ' lp-plans-v2-card--black' : ''}`} style={{ animationDelay: `${i * 100}ms` }}>
+                  <span className={`lp-plans-v2-badge lp-plans-v2-badge--${plan.badgeCls}`}>{plan.badge}</span>
+                  <div className="lp-plans-v2-name">{plan.nome}</div>
+                  <p className="lp-plans-v2-desc">{plan.desc}</p>
+                  <ul className="lp-plans-v2-feats">
+                    {plan.feats.map((f, j) => (
+                      <li key={j}>
+                        <span className={f.ok ? (plan.featured ? 'acc' : 'ok') : ''} style={!f.ok ? { background: 'rgba(255,255,255,0.04)', color: 'rgba(248,249,250,0.18)' } : {}}>
+                          {f.ok ? (
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
+                          ) : (
+                            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                          )}
+                        </span>
+                        {f.txt}
+                      </li>
+                    ))}
+                  </ul>
+                  <div className={`lp-plans-v2-cta lp-plans-v2-cta--${plan.ctaCls}`}>
+                    {plan.badgeCls === 'free' ? 'Começar grátis' : 'Assinar agora'}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <p className="lp-plans-v2-highlight lp-anim">Mais usado por quem quer ter controle total da experiência</p>
+            <p className="lp-plans-v2-micro lp-anim">Você pode cancelar a qualquer momento</p>
           </div>
         </section>
 
