@@ -41,7 +41,7 @@ export default function HeroSection({ userCity, notifList }: HeroProps) {
             Relacionamentos, encontros, salas, videochamada e filtros avançados. Tudo no seu controle, do primeiro contato ao encontro.
           </p>
           <p className="lp-hero-complement">
-            Sem se adaptar. Sem perder tempo. Sem precisar fingir.
+            Sem máscaras. Sem precisar fingir ou se adaptar para caber na expectativa do outro.
           </p>
           <div className="lp-actions">
             <a href="/cadastro" className="lp-btn-main">
