@@ -1,7 +1,12 @@
 'use client'
 
+type Feat = { ok: boolean; gold?: boolean; txt: string }
+
 export default function PlanosSection() {
-  const plans = [
+  const plans: Array<{
+    badge: string; badgeCls: string; ctaCls: string; featured?: boolean
+    nome: string; area: string; preco: string; desc: string; feats: Feat[]
+  }> = [
     {
       badge: 'Essencial', badgeCls: 'free', ctaCls: 'free',
       nome: 'Essencial',
