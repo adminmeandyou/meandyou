@@ -4,30 +4,9 @@ export default function QuemSomosSection() {
   return (
     <section className="lp-about">
       <div className="lp-about-inner">
-        <div className="lp-about-intro">
-          <div className="lp-about-intro-left lp-anim">
-            <p className="lp-section-label">Quem somos</p>
-            <h2>
-              <span style={{
-                display: 'block', fontSize: '0.52em', fontWeight: 400,
-                color: 'rgba(248,249,250,0.42)', fontStyle: 'italic',
-                letterSpacing: '0', lineHeight: 1.5, marginBottom: '14px',
-                borderLeft: '2px solid var(--accent-border)', paddingLeft: '14px',
-              }}>
-                O mercado parou no tempo.
-              </span>
-              <em>Nós adiantamos<br />o relógio.</em>
-            </h2>
-          </div>
-          <div className="lp-about-intro-right lp-anim">
-            <p>Olhe para os aplicativos que você usa hoje. Eles são obsoletos na segurança, ultrapassados nas funções e desenhados para prender você na tela. O mercado transformou a busca por alguém em um videogame sem graça: as pessoas dão like, like, like, dão match, e a conversa simplesmente nunca acontece. Virou vício em validação, não em conexão.</p>
-            <p className="lp-about-highlight">O MeAndYou nasceu para quebrar esse ciclo.</p>
-            <p>Nosso foco é a modernidade e a precisão absoluta. Acreditamos que conexões reais nascem de estilos de vida alinhados, e não de acasos. Se você não suporta quem fuma, você tem o direito de limpar essas pessoas da sua tela com um clique. Se você fuma e quer alguém que acompanhe seu ritmo sem encher o seu saco, você vai encontrar exatamente essa pessoa aqui.</p>
-            <p>Sem máscaras. Sem precisar fingir ou se adaptar para caber na expectativa do outro. Quanto mais filtros você usa, menos julgamento você sofre, e mais rápido o encontro real acontece.</p>
-          </div>
-        </div>
         <div className="lp-about-pillars">
           <div className="lp-about-pillar lp-anim">
+            <p className="lp-section-label" style={{ marginBottom: 12 }}>Quem somos</p>
             <div className="lp-about-pillar-label">Ecossistema</div>
             <h4>O mais inclusivo do Brasil — e talvez do mundo.</h4>
             <p>Não importa sua raça, identidade de gênero, religião, se você é PCD, assexual ou qual é a sua orientação. Com mais de 100 filtros, você molda o app em volta de você. Nós nos recusamos a criar &quot;só mais um app&quot;. Construímos a primeira plataforma com arquitetura de inclusão total.</p>

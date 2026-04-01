@@ -26,7 +26,7 @@ export default function ModosSection() {
     <section className="lp-modos-section">
       <div className="lp-modos-inner">
         <div className="lp-modos-header lp-anim">
-          <h2>Nem todo momento pede<br />a mesma forma de conexão.</h2>
+          <h2>Nem todo momento pede<br />a mesma forma de <em style={{color:'var(--accent)',fontStyle:'italic'}}>conexão</em>.</h2>
           <p>Aqui você muda a forma de se conectar conforme o momento.</p>
         </div>
         <p className="lp-modos-desc lp-anim">

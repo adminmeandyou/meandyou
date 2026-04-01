@@ -106,15 +106,17 @@ export default function PlanosPage() {
 
       {/* Header */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
-        <button
-          onClick={() => router.back()}
-          style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
-        >
-          <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
-        </button>
+        {!loading && currentPlan && (
+          <button
+            onClick={() => router.back()}
+            style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+          >
+            <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
+          </button>
+        )}
         <div>
           <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>Planos</h1>
-          <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Escolha o seu</p>
+          <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>{!loading && !currentPlan ? 'Escolha um plano para continuar' : 'Escolha o seu'}</p>
         </div>
       </header>
 
@@ -290,6 +292,7 @@ export default function PlanosPage() {
       <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(248,249,250,0.20)', padding: '0 20px 8px' }}>
         Pagamento seguro via PIX ou cartão · Cancele quando quiser
       </p>
+
 
       {checkoutOpen && checkoutPlan && (
         <CheckoutModal

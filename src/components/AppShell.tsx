@@ -7,6 +7,7 @@ import { AppBottomNav } from './AppBottomNav'
 import { AppSidebar } from './AppSidebar'
 import { AppHeaderProvider, useAppHeader } from '@/contexts/AppHeaderContext'
 import { ToastProvider } from './Toast'
+import { PlanGuard } from './PlanGuard'
 
 /**
  * Rotas que recebem o shell do app (header + bottom nav + sidebar).
@@ -88,7 +89,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               id="app-main-content"
               className="app-main-content"
             >
-              {children}
+              <PlanGuard>{children}</PlanGuard>
             </main>
 
             {/* Bottom Nav — visível apenas em mobile (< md) */}

@@ -6,7 +6,7 @@ export default function GamificacaoSection() {
       <div className="lp-gamif-v2-inner">
         <div className="lp-gamif-v2-header lp-anim">
           <p className="lp-section-label">Muito mais do que curtidas</p>
-          <h2 className="lp-gamif-v2-title">Seu tempo aqui<br />vale algo.</h2>
+          <h2 className="lp-gamif-v2-title">Seu tempo aqui<br /><em style={{color:'#10b981',fontStyle:'italic'}}>vale algo</em>.</h2>
           <p className="lp-gamif-v2-sub">Enquanto voce usa, voce evolui dentro do app.</p>
           <p className="lp-gamif-v2-text">A cada acesso, interacao ou conexao, voce acumula beneficios, desbloqueia recursos e ganha destaque.</p>
         </div>
@@ -42,7 +42,7 @@ export default function GamificacaoSection() {
             },
           ].map((item, i) => (
             <div key={i} className="lp-gamif-v2-card lp-anim" style={{ animationDelay: `${i * 100}ms` }}>
-              <div className={`lp-gamif-v2-icon ${item.anim}`}>{item.icon}</div>
+              <div className={`lp-gamif-v2-icon ${item.anim}`} style={{color:'#10b981',background:'rgba(16,185,129,0.10)',borderColor:'rgba(16,185,129,0.25)'}}>{item.icon}</div>
               <div>
                 <div className="lp-gamif-v2-card-title">{item.titulo}</div>
                 <p className="lp-gamif-v2-card-text">{item.texto}</p>

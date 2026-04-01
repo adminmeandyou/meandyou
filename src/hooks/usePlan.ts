@@ -153,10 +153,10 @@ export function usePlan() {
         supabase.from('user_tickets').select('amount').eq('user_id', user.id).single(),
       ])
 
-    const plan = (userRes.data?.plan as PlanType) ?? 'essencial'
+    const plan = (userRes.data?.plan as PlanType) ?? null
     const revealsAtivo = userRes.data?.curtidas_reveals_until
       && new Date(userRes.data.curtidas_reveals_until) > new Date()
-    const config = PLAN_CONFIG[plan] ?? PLAN_CONFIG.essencial
+    const config = PLAN_CONFIG[plan ?? 'essencial'] ?? PLAN_CONFIG.essencial
 
     const likesUsedToday = likesRes.count ?? 0
     const likesPerDay    = config.likesPerDay ?? 5

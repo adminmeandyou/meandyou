@@ -137,12 +137,32 @@ export default function Home() {
 
   // IP geolocation
   useEffect(() => {
-    const cidades = ['São Paulo', 'Rio de Janeiro', 'Belo Horizonte', 'Curitiba', 'Porto Alegre', 'Salvador', 'Fortaleza', 'Recife', 'Manaus', 'Goiânia', 'Campinas', 'Florianópolis']
-    const cidadeAleatoria = cidades[Math.floor(Math.random() * cidades.length)]
-    fetch('https://ipapi.co/json/')
-      .then(r => r.json())
-      .then(d => { setUserCity(d.city || cidadeAleatoria) })
-      .catch(() => { setUserCity(cidadeAleatoria) })
+    const viaCoordenadas = (lat: number, lon: number) => {
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=pt-BR`, {
+        headers: { 'User-Agent': 'MeAndYou/1.0 (meandyou.com.br)' }
+      })
+        .then(r => r.json())
+        .then(d => {
+          const cidade = d.address?.city || d.address?.town || d.address?.village || d.address?.municipality
+          if (cidade) setUserCity(cidade)
+        })
+        .catch(() => {})
+    }
+    const viaIP = () => {
+      fetch('https://ipapi.co/json/')
+        .then(r => r.json())
+        .then(d => { if (d.city) setUserCity(d.city) })
+        .catch(() => {})
+    }
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        pos => viaCoordenadas(pos.coords.latitude, pos.coords.longitude),
+        () => viaIP(),
+        { timeout: 5000 }
+      )
+    } else {
+      viaIP()
+    }
   }, [])
 
   // Fake notifications

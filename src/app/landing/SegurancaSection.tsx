@@ -27,7 +27,7 @@ export default function SegurancaSection() {
               feats: [
                 { cor: 'verde', txt: 'Bloqueio e denuncia em um toque, sem confirmacoes desnecessarias' },
                 { cor: 'verde', txt: 'Modo invisivel — sai do radar sem precisar explicar nada' },
-                { cor: 'alerta', txt: 'Alerta automatico para comportamentos suspeitos na conversa' },
+                { cor: 'verde', txt: 'Alerta automatico para comportamentos suspeitos na conversa' },
               ],
             },
             {
@@ -37,7 +37,7 @@ export default function SegurancaSection() {
               feats: [
                 { cor: 'verde', txt: 'Registro privado de encontro guardado so para voce' },
                 { cor: 'verde', txt: 'Check-in automatico pos-encontro — o app pergunta se voce esta bem' },
-                { cor: 'alerta', txt: 'Botao de emergencia — 190 em um toque, a qualquer momento' },
+                { cor: 'verde', txt: 'Botao de emergencia — 190 em um toque, a qualquer momento' },
               ],
             },
           ].map((fase, i) => (

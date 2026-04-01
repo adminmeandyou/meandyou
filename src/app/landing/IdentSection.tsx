@@ -4,7 +4,7 @@ export default function IdentSection() {
   return (
     <section className="lp-ident-section">
       <div className="lp-ident-inner">
-        <h2 className="lp-ident-title lp-anim">Em algum momento,<br />você já sentiu<br />isso.</h2>
+        <h2 className="lp-ident-title lp-anim">Em algum momento, você já <em style={{color:'var(--accent)',fontStyle:'italic'}}>sentiu</em> isso.</h2>
         <div className="lp-ident-bullets">
           {[
             'Ter que se adaptar só para conseguir atenção',

@@ -41,7 +41,7 @@ export default function FiltrosSection() {
       <div className="lp-filtros-v2-inner">
         <div className="lp-filtros-v2-left lp-anim">
           <p className="lp-section-label">FILTROS</p>
-          <h2 className="lp-filtros-v2-title">Se não combina,<br />nem aparece.</h2>
+          <h2 className="lp-filtros-v2-title">Se não combina,<br /><em style={{color:'var(--accent)',fontStyle:'italic'}}>nem aparece</em>.</h2>
           <p className="lp-filtros-v2-text">
             Você define exatamente o que faz sentido para você.<br />
             O resto simplesmente não entra no seu radar.

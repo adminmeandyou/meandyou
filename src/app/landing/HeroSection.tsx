@@ -36,10 +36,9 @@ export default function HeroSection({ userCity, notifList }: HeroProps) {
             <span className="lp-badge-dot" />
             Relacionamentos com intenção real
           </div>
-          <h1><em style={{color:'var(--accent)',fontStyle:'italic'}}>Você decide</em> quem entra<br /><em>no seu mundo.</em></h1>
+          <h1><em style={{color:'var(--accent)',fontStyle:'italic'}}>Você</em> decide quem entra<br />no seu mundo.</h1>
           <p className="lp-hero-sub">
-            Relacionamentos, encontros, salas, videochamada e filtros avançados.<br />
-            Tudo no seu controle, do primeiro contato ao encontro.
+            Relacionamentos, encontros, salas, videochamada e filtros avançados. Tudo no seu controle, do primeiro contato ao encontro.
           </p>
           <p className="lp-hero-complement">
             Sem se adaptar. Sem perder tempo. Sem precisar fingir.
@@ -50,7 +49,7 @@ export default function HeroSection({ userCity, notifList }: HeroProps) {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
             </a>
           </div>
-          <p className="lp-hero-microcopy">Leva menos de 1 minuto para começar</p>
+          <p className="lp-hero-microcopy">A partir de <strong>R$9,97/mês</strong> · Sem conta gratuita</p>
           <div className="lp-hero-social-proof">
             <span className="lp-hero-social-proof-dot" />
             <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas já estão usando {userCity ? <>em <strong className="lp-hero-proof-number">{userCity}</strong></> : 'na sua região mesmo'}</span>
