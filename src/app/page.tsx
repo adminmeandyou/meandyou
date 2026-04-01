@@ -127,6 +127,9 @@ export default function Home() {
   // Camarote (extraído do page.tsx v2)
   const [camaroteRevealed, setCamaroteRevealed] = useState(false)
 
+  // Backstage saiba mais
+  const [backstageOpen, setBackstageOpen] = useState(false)
+
   // Notifications
   const [notifList, setNotifList] = useState<Array<{id: number, text: string, exiting: boolean}>>([])
   const notifIdRef = useRef(0)
@@ -708,7 +711,7 @@ export default function Home() {
         .lp-tag-cloud { display: flex; flex-wrap: wrap; gap: 6px; }
         .lp-ftag { border-radius: 100px; padding: 4px 12px; font-size: 12px; font-weight: 500; cursor: pointer; transition: var(--transition-smooth); border: 1px solid transparent; user-select: none; }
         .lp-ftag.inc { background: rgba(46,196,160,0.12); color: #2ec4a0; border-color: rgba(46,196,160,0.30); }
-        .lp-ftag.exc { background: rgba(244,63,94,0.08); color: #F43F5E; border-color: rgba(244,63,94,0.25); }
+        .lp-ftag.exc { background: rgba(225,29,72,0.10); color: #E11D48; border-color: rgba(225,29,72,0.30); }
         .lp-ftag.neu { background: rgba(255,255,255,0.04); color: var(--text-muted); border-color: var(--border-premium); }
         .lp-ftag:hover { transform: scale(1.05); }
         .lp-filter-tip { font-size: 11px; color: var(--text-dim); margin-top: 12px; font-style: italic; }
@@ -720,7 +723,7 @@ export default function Home() {
         .lp-intentions-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 14px; }
         .lp-intent-card { border: 1px solid var(--border-premium); border-radius: 20px; padding: 28px 18px; text-align: center; background: var(--bg-card-grad); box-shadow: var(--shadow-card); transition: all 0.25s cubic-bezier(.34,1.56,.64,1); cursor: default; }
         .lp-intent-card:hover { border-color: var(--accent-border); background: rgba(225,29,72,0.06); transform: translateY(-6px) scale(1.02); box-shadow: 0 16px 40px rgba(225,29,72,0.12); }
-        .lp-intent-icon { width: 46px; height: 46px; margin: 0 auto 14px; color: var(--accent); transition: transform 0.3s; }
+        .lp-intent-icon { width: 46px; height: 46px; margin: 0 auto 14px; color: rgba(248,249,250,0.70); transition: transform 0.3s; }
         .lp-intent-card:hover .lp-intent-icon { transform: scale(1.15) rotate(-5deg); }
         .lp-intent-card h3 { font-family: var(--font-fraunces), serif; font-size: 15px; font-weight: 700; margin-bottom: 5px; color: var(--text); }
         .lp-intent-card p { font-size: 11px; font-weight: 400; color: rgba(248,249,250,0.65); line-height: 1.55; }
@@ -859,7 +862,11 @@ export default function Home() {
         .lp-testi-stars { color: var(--gold); font-size: 13px; margin-bottom: 14px; letter-spacing: 2px; }
         .lp-testi-text { font-size: 14px; font-weight: 400; color: rgba(248,249,250,0.78); line-height: 1.75; margin-bottom: 20px; font-style: italic; }
         .lp-testi-author { display: flex; align-items: center; gap: 12px; }
-        .lp-testi-av { width: 40px; height: 40px; border-radius: 50%; background: var(--accent); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .lp-testi-av { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg,#E11D48,#F43F5E); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .lp-testi-av--1 { background: linear-gradient(135deg,#E11D48,#F43F5E); }
+        .lp-testi-av--2 { background: linear-gradient(135deg,#7C3AED,#A855F7); }
+        .lp-testi-av--3 { background: linear-gradient(135deg,#0EA5E9,#38BDF8); }
+        .lp-testi-av--4 { background: linear-gradient(135deg,#F59E0B,#FCD34D); }
         .lp-testi-name { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
         .lp-testi-role { font-size: 11px; color: var(--text-dim); }
 
@@ -1184,7 +1191,7 @@ export default function Home() {
         .lp-seg-feat{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(248,249,250,0.60)}
         .lp-seg-feat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
         .lp-seg-feat-dot.verde{background:#2ec4a0;box-shadow:0 0 6px rgba(46,196,160,0.50)}
-        .lp-seg-feat-dot.alerta{background:#F59E0B;box-shadow:0 0 6px rgba(245,158,11,0.45)}
+        .lp-seg-feat-dot.alerta{background:#E11D48;box-shadow:0 0 6px rgba(225,29,72,0.50)}
         .lp-seg-closing{text-align:center;padding:28px;background:var(--bg);border:1px solid var(--border-premium);border-radius:16px}
         .lp-seg-closing-text{font-family:var(--font-fraunces),serif;font-size:clamp(18px,2.5vw,26px);font-weight:700;color:var(--text)}
         .lp-seg-closing-text em{color:#2ec4a0;font-style:italic}
@@ -1194,7 +1201,7 @@ export default function Home() {
         /* Gamificacao v2 (Etapa 8) */
         @keyframes lpSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         @keyframes lpGlow{0%,100%{box-shadow:0 0 8px rgba(225,29,72,0.30)}50%{box-shadow:0 0 22px rgba(225,29,72,0.70),0 0 40px rgba(225,29,72,0.20)}}
-        @keyframes lpFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+        @keyframes lpFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-1px)}}
         @keyframes lpPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.75;transform:scale(0.96)}}
         .lp-gamif-v2{padding:100px 56px;background:var(--bg);border-top:1px solid var(--border-premium)}
         .lp-gamif-v2-inner{max-width:1140px;margin:0 auto}
@@ -1241,13 +1248,10 @@ export default function Home() {
         .lp-perf-v2-text{font-size:1.0625rem;color:var(--muted);line-height:1.7;margin-bottom:48px}
         .lp-perf-v2-demo{display:flex;flex-direction:column;align-items:center;gap:28px}
         .lp-perf-v2-toggle{position:relative;display:inline-flex;align-items:center;background:rgba(19,22,31,0.95);border:1px solid rgba(255,255,255,0.07);border-radius:100px;padding:4px}
-        .lp-perf-v2-pill{position:absolute;top:4px;height:calc(100% - 8px);width:calc(50% - 4px);background:var(--accent);border-radius:100px;animation:lpPerfPill 5s ease-in-out infinite}
-        .lp-perf-v2-opt{position:relative;z-index:1;padding:10px 28px;font-size:14px;font-weight:600;border-radius:100px;min-width:110px}
-        .lp-perf-v2-opt--a{animation:lpPerfOptA 5s ease-in-out infinite}
-        .lp-perf-v2-opt--b{animation:lpPerfOptB 5s ease-in-out infinite}
-        @keyframes lpPerfPill{0%,40%{left:4px}50%,90%{left:calc(50%)}100%{left:4px}}
-        @keyframes lpPerfOptA{0%,40%{color:#fff}50%,90%{color:rgba(248,249,250,0.45)}100%{color:#fff}}
-        @keyframes lpPerfOptB{0%,40%{color:rgba(248,249,250,0.45)}50%,90%{color:#fff}100%{color:rgba(248,249,250,0.45)}}
+        .lp-perf-v2-pill{position:absolute;top:4px;height:calc(100% - 8px);width:calc(50% - 4px);background:var(--accent);border-radius:100px}
+        .lp-perf-v2-opt{position:relative;z-index:1;padding:10px 28px;font-size:14px;font-weight:600;border-radius:100px;min-width:110px;cursor:pointer}
+        .lp-perf-v2-opt--a{}
+        .lp-perf-v2-opt--b{}
         .lp-perf-v2-card-wrap{position:relative;width:280px;height:80px}
         .lp-perf-v2-card{position:absolute;inset:0;display:flex;align-items:center;gap:16px;background:rgba(19,22,31,0.95);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:16px}
         .lp-perf-v2-card--a{transition:opacity 0.4s ease}
@@ -1316,12 +1320,12 @@ export default function Home() {
         .lp-social-v2-msg{display:flex;gap:12px;align-items:flex-end;animation:lpSocialIn 0.5s ease both}
         .lp-social-v2-msg--right{flex-direction:row-reverse}
         @keyframes lpSocialIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-        .lp-social-v2-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1a0a14,#3d1530)}
-        .lp-social-v2-avatar--b{background:linear-gradient(135deg,#0a1020,#1a2a4a)}
-        .lp-social-v2-avatar--a{background:linear-gradient(135deg,#1a0a14,#3d1530)}
-        .lp-social-v2-avatar--c{background:linear-gradient(135deg,#0a1a10,#1a3a20)}
-        .lp-social-v2-avatar--d{background:linear-gradient(135deg,#150a20,#2a1540)}
-        .lp-social-v2-avatar--e{background:linear-gradient(135deg,#1a150a,#352a10)}
+        .lp-social-v2-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#E11D48,#F43F5E)}
+        .lp-social-v2-avatar--a{background:linear-gradient(135deg,#E11D48,#F43F5E)}
+        .lp-social-v2-avatar--b{background:linear-gradient(135deg,#7C3AED,#A855F7)}
+        .lp-social-v2-avatar--c{background:linear-gradient(135deg,#0EA5E9,#38BDF8)}
+        .lp-social-v2-avatar--d{background:linear-gradient(135deg,#F59E0B,#FCD34D)}
+        .lp-social-v2-avatar--e{background:linear-gradient(135deg,#10B981,#34D399)}
         .lp-social-v2-bubble{max-width:75%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.6;color:var(--text)}
         .lp-social-v2-bubble--left{background:rgba(19,22,31,0.95);border:1px solid rgba(255,255,255,0.07);border-bottom-left-radius:4px}
         .lp-social-v2-bubble--right{background:rgba(225,29,72,0.15);border:1px solid rgba(225,29,72,0.18);border-bottom-right-radius:4px}
@@ -1390,7 +1394,7 @@ export default function Home() {
         /* Early Adopter */
         .lp-early-wrap{background:linear-gradient(135deg,rgba(245,158,11,0.07),rgba(8,9,14,0)),var(--bg-card);border:1px solid rgba(245,158,11,0.20);border-radius:24px;padding:64px 48px;text-align:center;position:relative;overflow:hidden}
         .lp-early-wrap::before{content:'';position:absolute;top:-40px;left:50%;transform:translateX(-50%);width:400px;height:400px;background:radial-gradient(circle,rgba(245,158,11,0.08),transparent 70%);pointer-events:none}
-        .lp-early-badge-v2{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(245,158,11,0.05));border:2px solid rgba(245,158,11,0.20);display:flex;align-items:center;justify-content:center;margin:0 auto 28px;font-size:36px;position:relative;z-index:1;animation:float-y 4s ease-in-out infinite}
+        .lp-early-badge-v2{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,rgba(245,158,11,0.2),rgba(245,158,11,0.05));border:2px solid rgba(245,158,11,0.20);display:flex;align-items:center;justify-content:center;margin:0 auto 28px;font-size:36px;position:relative;z-index:1}
         .lp-early-title-v2{font-family:var(--font-fraunces),serif;font-size:clamp(26px,4vw,44px);font-weight:700;letter-spacing:-1px;line-height:1.2;margin-bottom:16px;position:relative;z-index:1}
         .lp-early-title-v2 span{color:var(--gold)}
         .lp-early-text-v2{font-size:clamp(15px,1.8vw,17px);color:var(--text-muted);line-height:1.75;max-width:560px;margin:0 auto 32px;position:relative;z-index:1}
@@ -1462,7 +1466,7 @@ export default function Home() {
               <p className="lp-hero-microcopy">Leva menos de 1 minuto para começar</p>
               <div className="lp-hero-social-proof">
                 <span className="lp-hero-social-proof-dot" />
-                <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas já estão usando {userCity ? <>em <strong className="lp-hero-proof-number">{userCity}</strong></> : 'na sua região'}</span>
+                <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas já estão usando {userCity ? <>em <strong className="lp-hero-proof-number">{userCity}</strong></> : 'na sua região mesmo'}</span>
               </div>
             </div>
 
@@ -1556,7 +1560,7 @@ export default function Home() {
         {/* ── IDENTIFICAÇÃO ── */}
         <section className="lp-ident-section">
           <div className="lp-ident-inner">
-            <h2 className="lp-ident-title lp-anim">Em algum momento,<br />você já sentiu isso.</h2>
+            <h2 className="lp-ident-title lp-anim">Em algum momento,<br />você já sentiu<br />isso.</h2>
             <div className="lp-ident-bullets">
               {[
                 'Ter que se adaptar só para conseguir atenção',
@@ -1642,96 +1646,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── Filtros ── */}
-        <section id="filtros" className="lp-filters-section">
-          <div className="lp-filters-inner">
-            <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-              <p className="lp-section-label">Filtros</p>
-              <h2 className="lp-section-title">Você decide exatamente quem quer,<br />e quem <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>não</em> quer.</h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto 20px', lineHeight: 1.7 }}>
-                Mais de 100 filtros. Clique uma vez para <strong style={{ color: '#2ec4a0' }}>incluir</strong>, clique de novo para <strong style={{ color: 'var(--red)' }}>excluir</strong>.
-              </p>
-            </div>
-            <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-              <div className="lp-filter-note">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ color: 'var(--accent)', flexShrink: 0 }}><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
-                Clique nas tags abaixo para alternar entre incluir e excluir.
-              </div>
-            </div>
-            <div className="lp-filter-categories">
-              {filterCats.map((cat, i) => (
-                <div key={i} className="lp-filter-cat lp-anim">
-                  <div className="lp-cat-header">
-                    {cat.icon}
-                    <h3>{cat.title}</h3>
-                  </div>
-                  <p>{cat.desc}</p>
-                  <div className="lp-tag-cloud">
-                    {cat.tags.map((tag, j) => (
-                      <span key={j} className="lp-ftag inc">{tag}</span>
-                    ))}
-                  </div>
-                  {cat.tip && <p className="lp-filter-tip">{cat.tip}</p>}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Intenções ── */}
-        <section className="lp-intentions">
-          <div className="lp-intentions-inner">
-            <div className="lp-intentions-header">
-              <p className="lp-section-label">Intenções</p>
-              <h2 className="lp-section-title">Todo mundo sabe o que quer.<br />Agora você também <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>filtra</em> isso.</h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '14px auto 0', lineHeight: 1.7 }}>
-                Chega de descobrir depois de semanas que vocês querem coisas completamente diferentes.
-              </p>
-            </div>
-            <div className="lp-intentions-grid">
-              {[
-                { icon: <svg className="lp-intent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>, t: 'Relacionamento sério', d: 'Busca comprometimento e futuro juntos' },
-                { icon: <svg className="lp-intent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><circle cx="12" cy="12" r="10" /><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32" /></svg>, t: 'Encontros casuais', d: 'Sem compromisso, com respeito e clareza' },
-                { icon: <svg className="lp-intent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>, t: 'Amizade', d: 'Expandir o círculo social de verdade' },
-                { icon: <svg className="lp-intent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /><line x1="12" y1="12" x2="12" y2="16" /><line x1="10" y1="14" x2="14" y2="14" /></svg>, t: 'Companhia para evento', d: 'Casamento, festa, jantar social' },
-                { icon: <svg className="lp-intent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>, t: 'Sugar', d: 'Relacionamentos com benefícios mútuos' },
-                { icon: <svg className="lp-intent-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>, t: 'Romance', d: 'Conexão emocional profunda e gradual' },
-              ].map((item, i) => (
-                <div key={i} className="lp-intent-card lp-anim">
-                  {item.icon}
-                  <h3>{item.t}</h3>
-                  <p>{item.d}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Como funciona ── */}
-        <section className="lp-how" id="como-funciona">
-          <div className="lp-how-inner">
-            <p className="lp-section-label">Como funciona</p>
-            <h2 className="lp-section-title">Em <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>minutos</em> você já tem matches reais.</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '520px', margin: '0 auto', lineHeight: 1.7 }}>
-              Simples e direto, com a segurança que outros apps nunca tiveram.
-            </p>
-            <div className="lp-steps-row">
-              {[
-                { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="5" y="2" width="14" height="20" rx="2" /><line x1="12" y1="18" x2="12.01" y2="18" /></svg>, t: 'Escolha seu plano', d: 'A partir de R$10/mês. Sem conta gratuita. Isso afasta golpistas.' },
-                { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>, t: 'Verifique sua identidade', d: 'Selfie ao vivo + documento. Menos de 3 minutos pelo celular.' },
-                { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="6" r="2"/><circle cx="15" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></svg>, t: 'Configure seus filtros', d: 'Inclua e exclua como quiser. 100+ opções para ser preciso.' },
-                { svg: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>, t: 'Dê match e conecte', d: 'Só pessoas reais, com intenções compatíveis com as suas.' },
-              ].map((step, i) => (
-                <div key={i} className="lp-how-step">
-                  <div className="lp-step-icon">{step.svg}</div>
-                  <h3>{step.t}</h3>
-                  <p>{step.d}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* ── 4 MODOS ── */}
         <section className="lp-modos-section">
           <div className="lp-modos-inner">
@@ -1786,19 +1700,19 @@ export default function Home() {
 
         {/* ── FILTROS (Etapa 5) ── */}
         {(() => {
-          const filtroTags = ['Tem pets', 'Gosta de culinária', 'Fã de cinema', 'Não fuma', 'Bebe socialmente', 'Pratica esporte', 'Ama viajar', 'Vegetariano(a)', 'Gosta de balada', 'Solteiro(a)', 'Gosta de trilha', 'Curte barzinhos', 'Amante de música', 'Cuida da saúde', 'Trabalha remoto', 'Gosta de culinária japonesa']
+          const filtroTags = ['Tem pets', 'Não fuma', 'Pratica esporte', 'Bebe socialmente', 'Quer relacionamento', 'Viaja com frequência', 'Sem filhos', 'Vegetariana(o)', 'Trabalha remoto', 'Gosta de trilha', 'Gosta de cinema', 'Gosta de comida japonesa', 'Gosta de balada', 'Solteiro(a)', 'Gosta de séries', 'Tem cachorro']
           return (
             <section className="lp-filtros-v2">
               <div className="lp-filtros-v2-inner">
                 <div className="lp-filtros-v2-left lp-anim">
-                  <p className="lp-section-label">Filtros</p>
-                  <h2 className="lp-filtros-v2-title">Se nao combina,<br />nem aparece.</h2>
+                  <p className="lp-section-label">FILTROS</p>
+                  <h2 className="lp-filtros-v2-title">Se não combina,<br />nem aparece.</h2>
                   <p className="lp-filtros-v2-text">
-                    Voce define exatamente o que faz sentido para voce.<br />
-                    O resto simplesmente nao entra no seu radar.
+                    Você define exatamente o que faz sentido para você.<br />
+                    O resto simplesmente não entra no seu radar.
                   </p>
-                  <p className="lp-filtros-v2-compl">Menos ruido. Mais conexao real.</p>
-                  <span className="lp-filtros-v2-micro">Voce define. O app obedece.</span>
+                  <p className="lp-filtros-v2-compl">Menos ruído. Mais conexão real.</p>
+                  <span className="lp-filtros-v2-micro">Você define. O app obedece.</span>
                 </div>
                 <div className="lp-filtros-v2-right lp-anim" style={{ transitionDelay: '0.1s' }}>
                   <div className="lp-filtros-demo">
@@ -2073,14 +1987,14 @@ export default function Home() {
                 <span className="lp-perf-v2-opt lp-perf-v2-opt--b" style={{ color: perfMode === 'cas' ? '#fff' : 'rgba(248,249,250,0.45)' }} onClick={() => setPerfMode('cas')}>Casal</span>
               </div>
               <div className="lp-perf-v2-card-wrap">
-                <div className={`lp-perf-v2-card lp-perf-v2-card--a${perfMode === 'cas' ? ' hidden' : ''}`}>
+                <div className="lp-perf-v2-card lp-perf-v2-card--a" style={{ display: perfMode === 'cas' ? 'none' : 'flex' }}>
                   <div className="lp-perf-v2-avatar" style={{ background: 'linear-gradient(135deg,#1a0a14,#3d1530)' }} />
                   <div>
                     <div className="lp-perf-v2-card-name">Sofia, 27</div>
                     <div className="lp-perf-v2-card-sub">São Paulo · Escritora</div>
                   </div>
                 </div>
-                <div className={`lp-perf-v2-card lp-perf-v2-card--b${perfMode === 'ind' ? ' hidden' : ''}`}>
+                <div className="lp-perf-v2-card lp-perf-v2-card--b" style={{ display: perfMode === 'ind' ? 'none' : 'flex' }}>
                   <div className="lp-perf-v2-avatars">
                     <div className="lp-perf-v2-avatar" style={{ background: 'linear-gradient(135deg,#0a1020,#1a2a4a)' }} />
                     <div className="lp-perf-v2-avatar lp-perf-v2-avatar--2" style={{ background: 'linear-gradient(135deg,#1a0a14,#3d1530)' }} />
@@ -2113,6 +2027,20 @@ export default function Home() {
                   Exclusivo para plano Black
                 </div>
               </div>
+              <button
+                onClick={() => setBackstageOpen(o => !o)}
+                style={{ marginTop:24, background:'none', border:'1px solid rgba(180,0,30,0.30)', borderRadius:10, color:'rgba(248,249,250,0.60)', fontSize:13, fontWeight:600, padding:'10px 20px', cursor:'pointer', display:'inline-flex', alignItems:'center', gap:8, fontFamily:'var(--font-jakarta), sans-serif', transition:'color 0.2s, border-color 0.2s' }}
+              >
+                {backstageOpen ? 'Fechar' : 'Saiba mais sobre o Backstage'}
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ transform: backstageOpen ? 'rotate(180deg)' : 'none', transition:'transform 0.3s' }}><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              {backstageOpen && (
+                <div style={{ marginTop:16, padding:'20px 24px', borderRadius:14, background:'rgba(120,0,20,0.12)', border:'1px solid rgba(180,0,30,0.20)', maxWidth:520 }}>
+                  <p style={{ fontSize:14, color:'rgba(248,249,250,0.65)', lineHeight:1.75, margin:0 }}>
+                    O Backstage e a area privada exclusiva do plano Black. Aqui voce encontra perfis com intencoes especificas que nao aparecem em nenhum outro lugar: Sugar, Swing, Fetiches, BDSM e Poliamor. A regra e simples: voce so ve quem marcou as mesmas intencoes. Zero exposicao, zero julgamento.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -2286,7 +2214,6 @@ export default function Home() {
                       </div>
                       <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>Videochamada em andamento</div>
                     </div>
-                    <div style={{ width: 64, height: 48, borderRadius: 8, background: 'linear-gradient(135deg,#1a0a14,#3d1530)', border: '1px solid rgba(255,255,255,0.15)', position: 'absolute', top: 8, right: 8 }} />
                   </div>
                 </div>
               </div>
@@ -2395,82 +2322,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── Planos ── */}
-        <section className="lp-pricing" id="precos">
-          <div className="lp-pricing-inner">
-            <p className="lp-section-label">Planos</p>
-            <h2 className="lp-section-title">Sem conta gratuita.<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Mais seriedade.</em></h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '560px', margin: '0 auto', lineHeight: 1.7 }}>
-              Um ambiente controlado para pessoas que sabem o que buscam.
-            </p>
-            <div className="lp-cards">
-              <div className="lp-card lp-anim">
-                <p className="lp-plan-name">Essencial</p>
-                <p className="lp-plan-area">Pista</p>
-                <div className="lp-plan-price"><sup>R$</sup>10</div>
-                <p className="lp-plan-period">por mês</p>
-                <p className="lp-plan-desc">O ponto de entrada. Para quem quer explorar a plataforma com pessoas verificadas e já ter acesso aos filtros essenciais.</p>
-                <ul className="lp-feats">
-                  <li>Verificação de identidade</li>
-                  <li>30 curtidas por dia</li>
-                  <li>1 filtro ativo por vez</li>
-                  <li>Ver matches recebidos</li>
-                  <li className="off">Filtros acumulados</li>
-                  <li className="off">Filtro de exclusão</li>
-                  <li className="off">Ver quem curtiu você</li>
-                  <li className="off">Desfazer curtida</li>
-                </ul>
-                <a href="/planos" className="lp-btn-price lp-btn-outline-p">Assinar Essencial</a>
-              </div>
-
-              <div className="lp-card mid lp-anim">
-                <span className="lp-feat-badge rose">Mais popular</span>
-                <p className="lp-plan-name">Plus</p>
-                <p className="lp-plan-area">Área VIP</p>
-                <div className="lp-plan-price"><sup>R$</sup>39</div>
-                <p className="lp-plan-period">por mês</p>
-                <p className="lp-plan-desc">A experiência completa de filtragem. Para quem está realmente em busca de uma conexão e quer usar todos os recursos da plataforma.</p>
-                <ul className="lp-feats">
-                  <li>Verificação de identidade</li>
-                  <li>100 curtidas por dia</li>
-                  <li>Todos os filtros acumulados</li>
-                  <li>Filtro de exclusão</li>
-                  <li>Ver quem curtiu você</li>
-                  <li>Desfazer curtida (1/dia)</li>
-                  <li>Boost semanal de perfil</li>
-                  <li>1 Lupa/dia no Destaque</li>
-                  <li>2 tickets de roleta/dia</li>
-                </ul>
-                <a href="/planos" className="lp-btn-price lp-btn-rose">Assinar Plus</a>
-              </div>
-
-              <div className="lp-card vip lp-anim">
-                <span className="lp-feat-badge gold">Camarote</span>
-                <p className="lp-plan-name">Black</p>
-                <p className="lp-plan-area">Backstage</p>
-                <div className="lp-plan-price"><sup>R$</sup>100</div>
-                <p className="lp-plan-period">por mês</p>
-                <p className="lp-plan-desc">Você acessa todos os perfis, tem área exclusiva Backstage com filtros de nicho (Sugar, BDSM, Swing, Fetiche) e visibilidade máxima.</p>
-                <ul className="lp-feats">
-                  <li className="gold-check">Tudo do Plus</li>
-                  <li className="gold-check">Curtidas ilimitadas</li>
-                  <li className="gold-check">10 SuperCurtidas/dia</li>
-                  <li className="gold-check">Área exclusiva Backstage</li>
-                  <li className="gold-check">Filtros de nicho (Sugar, Fetiche…)</li>
-                  <li className="gold-check">2 Lupas/dia no Destaque</li>
-                  <li className="gold-check">3 tickets de roleta/dia</li>
-                  <li className="gold-check">Destaque máximo no algoritmo</li>
-                  <li className="gold-check">Suporte prioritário 24h</li>
-                  <li className="gold-check">Chat exclusivo do Backstage (tema preto e dourado)</li>
-                  <li className="gold-check">Seja resgatado: outros assinantes pagam para te alcançar</li>
-                  <li className="gold-check" style={{ color: 'rgba(245,158,11,0.7)', fontStyle: 'italic' }}>Mais recursos exclusivos revelados ao entrar...</li>
-                </ul>
-                <a href="/planos" className="lp-btn-price lp-btn-gold">Assinar Camarote Black</a>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* ── EARLY ADOPTER ── */}
         <section className="lp-section-v2 lp-section-v2--dark">
           <div className="lp-section-inner-v2">
@@ -2493,7 +2344,7 @@ export default function Home() {
             <h2 className="lp-section-title">Chega de encontros frustrantes.<br />Veja quem já está <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>vivendo</em> o mundo real.</h2>
             <div className="lp-testi-grid">
               {[
-                { name: 'Camila S.', role: 'Belo Horizonte · 27 anos · Plano Plus', text: 'Passei muito tempo em apps conversando com pessoas que estavam em momentos diferentes do meu. Aqui eu fui direto ao ponto: ativei os filtros e deixei claro que procuro algo sério. O app cortou o ruído e me conectou só com quem estava na mesma página. Encontrei uma pessoa incrível, sem perder o meu tempo nem o tempo de ninguém.' },
+                { name: 'Camila S.', role: 'Belo Horizonte · 31 anos · Plano Plus', text: 'Passei muito tempo em apps conversando com pessoas que estavam em momentos diferentes do meu. Aqui eu fui direto ao ponto: ativei os filtros e deixei claro que procuro algo sério. O app cortou o ruído e me conectou só com quem estava na mesma página. Encontrei uma pessoa incrível, sem perder o meu tempo nem o tempo de ninguém.' },
                 { name: 'Lucas M.', role: 'Rio de Janeiro · 34 anos · Camarote Black', text: 'A pior parte de conhecer gente nova é quando um quer uma coisa e o outro quer outra. No Backstage, eu joguei limpo sobre o que eu curto e deixei claro que meu foco agora é apenas diversão casual. Deu match com uma mulher que queria exatamente a mesma coisa para aquela noite. Fomos direto ao assunto, com muita química e zero cobrança.' },
                 { name: 'Thiago R.', role: 'Curitiba · 36 anos · Camarote Black', text: 'Eu valorizo muito o meu tempo e gosto de proporcionar experiências exclusivas. O Camarote Black é perfeito porque atrai pessoas que buscam esse mesmo nível. A verificação rigorosa por documento e selfie garante que os perfis são reais. Você conversa com a tranquilidade de que a pessoa existe de verdade e que os interesses estão 100% alinhados desde o primeiro oi.' },
                 { name: 'Fernanda O.', role: 'São Paulo · 29 anos · Plano Plus', text: 'Eu queria sair e me divertir, mas dava uma preguiça enorme de chegar no bar e descobrir na hora que a química não rolava. A videochamada aqui mudou o jogo. Bati 40 minutos de papo, vi que a energia batia pela tela mesmo, e fomos pro encontro presencial já com aquele clima bom. Corta toda a tensão de conhecer alguém novo.' },
@@ -2502,7 +2353,7 @@ export default function Home() {
                   <div className="lp-testi-stars">★★★★★</div>
                   <p className="lp-testi-text">"{t.text}"</p>
                   <div className="lp-testi-author">
-                    <div className="lp-testi-av">
+                    <div className={`lp-testi-av lp-testi-av--${i + 1}`}>
                       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                     </div>
                     <div>
