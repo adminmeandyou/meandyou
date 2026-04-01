@@ -115,6 +115,13 @@ export default function Home() {
   const [installDone, setInstallDone] = useState(false)
   const [selectedOS, setSelectedOS] = useState<'android' | 'ios'>('android')
 
+  // Modos
+  const [modoAtivo, setModoAtivo] = useState(0)
+
+  // Filtros demo (Etapa 5)
+  const [filtroSimAtivos, setFiltroSimAtivos] = useState<number[]>([0, 2])
+  const [filtroSlider, setFiltroSlider] = useState(34)
+
   // Camarote (extraído do page.tsx v2)
   const [camaroteRevealed, setCamaroteRevealed] = useState(false)
 
@@ -317,6 +324,28 @@ export default function Home() {
     timer = setTimeout(addNotif, 1500 + Math.random() * 2000)
     return () => clearTimeout(timer)
   }, [checking, userCity]) // eslint-disable-line
+
+  // Simulação automática de filtros (Etapa 5)
+  useEffect(() => {
+    if (checking) return
+    const totalTags = 10
+    let tagIdx = 0
+    const tagTimer = setInterval(() => {
+      const i = tagIdx % totalTags
+      setFiltroSimAtivos(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])
+      tagIdx++
+    }, 1100)
+    let sliderDir = 1
+    const sliderTimer = setInterval(() => {
+      setFiltroSlider(v => {
+        const next = v + sliderDir * 2
+        if (next >= 46) { sliderDir = -1; return 44 }
+        if (next <= 20) { sliderDir = 1; return 22 }
+        return next
+      })
+    }, 120)
+    return () => { clearInterval(tagTimer); clearInterval(sliderTimer) }
+  }, [checking])
 
   const handleSwipe = (dir: 'left' | 'right' | 'up') => {
     if (swipeLock.current) return
@@ -559,7 +588,13 @@ export default function Home() {
           align-items: center; gap: 10px; box-shadow: 0 4px 16px rgba(225,29,72,.25), 0 12px 40px rgba(225,29,72,.20);
           transition: var(--transition-smooth); cursor: pointer;
         }
-        .lp-btn-main:hover { background: #be123c; transform: translateY(-2px); box-shadow: 0 12px 40px rgba(225,29,72,.45); }
+        .lp-btn-main:hover { background: linear-gradient(135deg, #be123c 0%, #9f1239 100%); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(225,29,72,.45), 0 0 32px rgba(225,29,72,.20); }
+        .lp-btn-main:active { transform: scale(0.97); box-shadow: 0 4px 16px rgba(225,29,72,.25); }
+        .lp-hero-complement { font-size: 15px; color: rgba(248,249,250,0.50); margin-top: -20px; margin-bottom: 36px; line-height: 1.7; animation: lp-fadeUp .5s .25s ease both; }
+        .lp-hero-microcopy { font-size: 12px; color: rgba(248,249,250,0.35); margin-top: 12px; letter-spacing: 0.2px; animation: lp-fadeUp .5s .38s ease both; }
+        .lp-hero-social-proof { display: flex; align-items: center; gap: 10px; margin-top: 20px; font-size: 13px; color: rgba(248,249,250,0.60); animation: lp-fadeUp .5s .45s ease both; }
+        .lp-hero-social-proof-dot { width: 8px; height: 8px; border-radius: 50%; background: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.60); flex-shrink: 0; animation: lp-pulse 2s ease-in-out infinite; }
+        .lp-hero-proof-number { color: #10b981; font-weight: 700; font-size: 14px; }
         .lp-btn-outline {
           background: transparent; color: var(--text); padding: 15px 30px; border-radius: 12px;
           font-weight: 600; font-size: 15px; text-decoration: none; border: 1px solid var(--border-premium);
@@ -1009,6 +1044,22 @@ export default function Home() {
         .lp-stat-label-v2{font-size:13px;color:var(--text-muted);margin-top:6px}
         @media(max-width:900px){.lp-stats-inner{grid-template-columns:repeat(2,1fr)}}
 
+        /* 4 Pilares */
+        .lp-pilares-section{padding:100px 56px;background:var(--bg-card-grad);border-top:1px solid var(--border-premium);border-bottom:1px solid var(--border-premium)}
+        .lp-pilares-inner{max-width:1140px;margin:0 auto}
+        .lp-pilares-header{text-align:center;margin-bottom:64px}
+        .lp-pilares-header h2{font-family:var(--font-fraunces),serif;font-size:clamp(30px,4vw,52px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin-bottom:14px}
+        .lp-pilares-header p{font-size:17px;color:rgba(248,249,250,0.60);line-height:1.7;max-width:480px;margin:0 auto}
+        .lp-pilares-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+        .lp-pilar-card{background:var(--bg-card);border:1px solid var(--border-premium);border-radius:20px;padding:32px 26px;cursor:default;transition:transform 0.28s cubic-bezier(0.4,0,0.2,1),box-shadow 0.28s cubic-bezier(0.4,0,0.2,1),border-color 0.28s cubic-bezier(0.4,0,0.2,1)}
+        .lp-pilar-card:hover{transform:translateY(-6px);box-shadow:0 24px 56px rgba(0,0,0,0.45),0 0 0 1px rgba(225,29,72,0.18);border-color:var(--accent-border)}
+        .lp-pilar-card:hover .lp-pilar-title{color:var(--accent)}
+        .lp-pilar-num{font-family:var(--font-fraunces),serif;font-size:13px;font-weight:700;color:rgba(225,29,72,0.40);letter-spacing:1px;margin-bottom:20px}
+        .lp-pilar-title{font-family:var(--font-fraunces),serif;font-size:19px;font-weight:700;color:var(--text);margin-bottom:12px;line-height:1.25;transition:color 0.28s cubic-bezier(0.4,0,0.2,1)}
+        .lp-pilar-text{font-size:14px;color:rgba(248,249,250,0.55);line-height:1.7;margin:0}
+        @media(max-width:1024px){.lp-pilares-grid{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:600px){.lp-pilares-grid{grid-template-columns:1fr}.lp-pilares-section{padding:72px 24px}}
+
         /* Por que não gratuito (Pillars) */
         .lp-section-v2{padding:100px 24px;position:relative}
         .lp-section-v2--dark{background:rgba(15,17,23,0.6)}
@@ -1023,29 +1074,69 @@ export default function Home() {
         .lp-pillar-text{font-size:15px;color:var(--text-muted);line-height:1.65}
         @media(max-width:900px){.lp-pillars{grid-template-columns:1fr}.lp-section-v2{padding:72px 24px}}
 
-        /* Problema */
-        .lp-problem-grid-v2{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
-        .lp-problem-text-v2 p{font-size:clamp(15px,1.8vw,17px);color:var(--text-muted);line-height:1.8;margin-bottom:18px}
-        .lp-problem-text-v2 p:last-child{margin-bottom:0}
-        .lp-problem-pains{display:flex;flex-direction:column;gap:12px}
-        .lp-pain{display:flex;align-items:flex-start;gap:14px;background:var(--bg-card);border:1px solid var(--border-premium);border-radius:14px;padding:18px 20px}
-        .lp-pain-icon{width:36px;height:36px;border-radius:10px;background:var(--accent-soft);border:1px solid var(--accent-border);color:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-        .lp-pain-text{font-size:14px;color:var(--text-muted);line-height:1.55}
-        .lp-pain-text strong{display:block;font-size:15px;color:var(--text);font-weight:600;margin-bottom:3px}
-        @media(max-width:900px){.lp-problem-grid-v2{grid-template-columns:1fr}}
+        /* Identificação */
+        .lp-ident-section{padding:100px 56px;background:var(--bg);border-top:1px solid var(--border-premium)}
+        .lp-ident-inner{max-width:720px;margin:0 auto;text-align:center}
+        .lp-ident-title{font-family:var(--font-fraunces),serif;font-size:clamp(30px,4vw,52px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin-bottom:48px;color:var(--text)}
+        .lp-ident-bullets{display:flex;flex-direction:column;gap:0;margin-bottom:48px;text-align:left}
+        .lp-ident-bullet{display:flex;align-items:center;gap:18px;padding:20px 24px;border-left:3px solid transparent;border-radius:0 12px 12px 0;cursor:default;transition:border-color 0.25s cubic-bezier(0.4,0,0.2,1),background 0.25s cubic-bezier(0.4,0,0.2,1)}
+        .lp-ident-bullet:hover{border-left-color:var(--accent);background:rgba(225,29,72,0.05)}
+        .lp-ident-bullet-text{font-size:clamp(16px,2vw,19px);color:rgba(248,249,250,0.65);line-height:1.5;font-weight:400;transition:color 0.25s}
+        .lp-ident-bullet:hover .lp-ident-bullet-text{color:var(--text)}
+        .lp-ident-bullet-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;opacity:0;transition:opacity 0.25s}
+        .lp-ident-bullet:hover .lp-ident-bullet-dot{opacity:1}
+        .lp-ident-closing{font-size:clamp(18px,2.2vw,22px);color:var(--text);font-weight:600;line-height:1.6;font-family:var(--font-fraunces),serif}
+        .lp-ident-closing em{color:var(--accent);font-style:italic}
+        @media(max-width:768px){.lp-ident-section{padding:72px 24px}}
 
         /* 4 Modos */
-        .lp-modos-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-        .lp-modo-card{background:var(--bg-card);border:1px solid var(--border-premium);border-radius:20px;padding:28px 24px;transition:border-color 0.3s,transform 0.3s,box-shadow 0.3s}
-        .lp-modo-card:hover{border-color:var(--accent-border);transform:translateY(-5px);box-shadow:0 20px 48px rgba(0,0,0,0.4)}
-        .lp-modo-num{font-family:var(--font-fraunces),serif;font-size:13px;font-weight:700;color:var(--accent);margin-bottom:16px;letter-spacing:1px}
-        .lp-modo-icon{width:44px;height:44px;background:var(--accent-soft);border:1px solid var(--accent-border);border-radius:12px;display:flex;align-items:center;justify-content:center;color:var(--accent);margin-bottom:16px}
-        .lp-modo-title{font-weight:700;font-size:16px;margin-bottom:8px;color:var(--text)}
-        .lp-modo-text{font-size:14px;color:var(--text-muted);line-height:1.6;margin-bottom:12px}
-        .lp-modo-tag{display:inline-block;background:var(--accent-soft);border:1px solid var(--accent-border);color:var(--accent);font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px}
-        .lp-modo-tag--gold{background:rgba(245,158,11,0.08);border-color:rgba(245,158,11,0.20);color:var(--gold)}
-        @media(max-width:900px){.lp-modos-grid{grid-template-columns:1fr 1fr}}
-        @media(max-width:600px){.lp-modos-grid{grid-template-columns:1fr}}
+        .lp-modos-section{padding:100px 56px;background:var(--bg);border-top:1px solid var(--border-premium)}
+        .lp-modos-inner{max-width:1140px;margin:0 auto}
+        .lp-modos-header{text-align:center;margin-bottom:16px}
+        .lp-modos-header h2{font-family:var(--font-fraunces),serif;font-size:clamp(30px,4vw,52px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin-bottom:14px}
+        .lp-modos-header p{font-size:17px;color:rgba(248,249,250,0.60);line-height:1.7;max-width:520px;margin:0 auto}
+        .lp-modos-desc{text-align:center;font-size:14px;color:rgba(248,249,250,0.38);line-height:1.7;max-width:480px;margin:10px auto 56px}
+        .lp-modos-layout{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+        .lp-modos-tabs{display:flex;flex-direction:column;gap:8px}
+        .lp-modo-tab{display:flex;align-items:flex-start;gap:16px;padding:20px 22px;border:1px solid transparent;border-radius:16px;cursor:pointer;transition:all 0.25s cubic-bezier(0.4,0,0.2,1);background:transparent}
+        .lp-modo-tab:hover{background:rgba(225,29,72,0.04);border-color:var(--border-premium)}
+        .lp-modo-tab.active{background:var(--bg-card);border-color:var(--accent-border);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+        .lp-modo-tab-num{font-family:var(--font-fraunces),serif;font-size:12px;font-weight:700;color:rgba(225,29,72,0.35);flex-shrink:0;padding-top:3px;min-width:24px}
+        .lp-modo-tab.active .lp-modo-tab-num{color:var(--accent)}
+        .lp-modo-tab-title{font-family:var(--font-fraunces),serif;font-size:17px;font-weight:700;color:rgba(248,249,250,0.45);margin-bottom:4px;transition:color 0.25s}
+        .lp-modo-tab.active .lp-modo-tab-title{color:var(--text)}
+        .lp-modo-tab-text{font-size:13px;color:rgba(248,249,250,0.35);line-height:1.6;display:none}
+        .lp-modo-tab.active .lp-modo-tab-text{display:block;color:rgba(248,249,250,0.55)}
+        .lp-modos-preview{background:var(--bg-card);border:1px solid var(--border-premium);border-radius:24px;padding:40px 32px;min-height:340px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+        .lp-modos-preview-icon{width:56px;height:56px;border-radius:16px;background:var(--accent-soft);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;color:var(--accent);margin-bottom:8px}
+        .lp-modos-preview-title{font-family:var(--font-fraunces),serif;font-size:22px;font-weight:700;color:var(--text);text-align:center}
+        .lp-modos-preview-sub{font-size:14px;color:rgba(248,249,250,0.50);text-align:center;line-height:1.7;max-width:280px}
+        @media(max-width:900px){.lp-modos-layout{grid-template-columns:1fr}.lp-modos-preview{display:none}}
+        @media(max-width:600px){.lp-modos-section{padding:72px 24px}}
+
+        /* Filtros v2 (Etapa 5) */
+        .lp-filtros-v2{padding:100px 56px;background:var(--bg-card);border-top:1px solid var(--border-premium)}
+        .lp-filtros-v2-inner{max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+        .lp-filtros-v2-title{font-family:var(--font-fraunces),serif;font-size:clamp(32px,4vw,54px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin:12px 0 24px}
+        .lp-filtros-v2-text{font-size:17px;color:rgba(248,249,250,0.60);line-height:1.75;margin-bottom:16px}
+        .lp-filtros-v2-compl{font-size:16px;color:rgba(248,249,250,0.45);line-height:1.7;margin-bottom:20px}
+        .lp-filtros-v2-micro{display:inline-block;font-size:13px;font-weight:600;color:#2ec4a0;letter-spacing:0.5px;padding:6px 14px;border-radius:100px;background:rgba(46,196,160,0.10);border:1px solid rgba(46,196,160,0.25)}
+        .lp-filtros-demo{background:var(--bg);border:1px solid var(--border-premium);border-radius:24px;padding:28px;box-shadow:var(--shadow-card)}
+        .lp-filtros-demo-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+        .lp-filtros-demo-header span{font-size:13px;font-weight:600;color:rgba(248,249,250,0.50);text-transform:uppercase;letter-spacing:0.8px}
+        .lp-filtros-count{background:rgba(46,196,160,0.15);border:1px solid rgba(46,196,160,0.30);color:#2ec4a0;font-size:12px;font-weight:700;padding:3px 10px;border-radius:100px}
+        .lp-filtros-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+        .lp-filtro-tag{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:100px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);background:var(--bg-card);border:1px solid var(--border);color:rgba(248,249,250,0.55)}
+        .lp-filtro-tag.ativo{background:rgba(46,196,160,0.12);border-color:rgba(46,196,160,0.40);color:#2ec4a0;box-shadow:0 0 0 3px rgba(46,196,160,0.08)}
+        .lp-filtros-slider-wrap{border-top:1px solid var(--border-soft);padding-top:20px}
+        .lp-filtros-slider-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+        .lp-filtros-slider-label span:first-child{font-size:13px;color:rgba(248,249,250,0.50);font-weight:500}
+        .lp-filtros-slider-val{font-size:13px;font-weight:700;color:#2ec4a0}
+        .lp-filtros-slider-track{height:4px;background:rgba(255,255,255,0.08);border-radius:100px;overflow:hidden;position:relative}
+        .lp-filtros-slider-fill{height:100%;background:linear-gradient(90deg,rgba(46,196,160,0.5),#2ec4a0);border-radius:100px;transition:width 0.15s linear;position:relative}
+        .lp-filtros-slider-fill::after{content:'';position:absolute;right:-1px;top:50%;transform:translateY(-50%);width:12px;height:12px;border-radius:50%;background:#2ec4a0;box-shadow:0 0 8px rgba(46,196,160,0.60);margin-right:-5px}
+        @media(max-width:900px){.lp-filtros-v2-inner{grid-template-columns:1fr;gap:48px}}
+        @media(max-width:600px){.lp-filtros-v2{padding:72px 24px}}
 
         /* Features */
         .lp-features-grid{display:flex;flex-direction:column;gap:80px}
@@ -1150,28 +1241,26 @@ export default function Home() {
             <div>
               <div className="lp-badge">
                 <span className="lp-badge-dot" />
-                Verificação real · Filtros que funcionam
+                Relacionamentos com intenção real
               </div>
-              <h1>Encontre alguém<br /><em>de verdade.</em></h1>
+              <h1>Você decide quem entra<br /><em>no seu mundo.</em></h1>
               <p className="lp-hero-sub">
-                O app de relacionamentos com <strong>verificação rigorosa de identidade</strong> e os filtros mais completos do Brasil.
+                Relacionamentos, encontros, salas, videochamada e filtros avançados.<br />
+                Tudo no seu controle, do primeiro contato ao encontro.
+              </p>
+              <p className="lp-hero-complement">
+                Sem se adaptar. Sem perder tempo. Sem precisar fingir.
               </p>
               <div className="lp-actions">
-                <a href="/planos" className="lp-btn-main">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>
-                  Começar agora
-                </a>
-                <a href="#como-funciona" className="lp-btn-outline">
-                  Como funciona
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
+                <a href="/cadastro" className="lp-btn-main">
+                  Entrar agora
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
                 </a>
               </div>
-              <div className="lp-stats">
-                <div><div className="lp-stat-val">100%</div><div className="lp-stat-label">Perfis verificados</div></div>
-                <div className="lp-stat-div" />
-                <div><div className="lp-stat-val">100+</div><div className="lp-stat-label">Filtros disponíveis</div></div>
-                <div className="lp-stat-div" />
-                <div><div className="lp-stat-val">Anti-golpe</div><div className="lp-stat-label">Sistema ativo 24h</div></div>
+              <p className="lp-hero-microcopy">Leva menos de 1 minuto para começar</p>
+              <div className="lp-hero-social-proof">
+                <span className="lp-hero-social-proof-dot" />
+                <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas já estão usando na sua região</span>
               </div>
             </div>
 
@@ -1262,109 +1351,63 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── PROBLEMA ── */}
-        <section className="lp-section-v2">
-          <div className="lp-section-inner-v2">
-            <div className="lp-problem-grid-v2">
-              <div className="lp-problem-text-v2 lp-anim">
-                <span className="lp-section-label-v2">O problema</span>
-                <h2 className="lp-section-title-v2">Você já se cansou de apps que desperdiçam o seu tempo?</h2>
-                <p>Perfis falsos. Matches que somem. Algoritmos que te encaixam em uma caixinha.</p>
-                <p>A maioria dos apps de relacionamento foi feita para todo mundo — e por isso não funciona direito para ninguém.</p>
-                <p>Você não consegue filtrar o que realmente importa. Não sabe se a pessoa do outro lado é real. E se tiver algo diferente na sua cabeça — seja lá o que for — você guarda pra si com medo do julgamento.</p>
-                <p style={{ color: 'var(--text)', fontWeight: 600 }}>Isso não é um problema seu. É o app que está errado.</p>
-              </div>
-              <div className="lp-problem-pains lp-anim" style={{ transitionDelay: '0.1s' }}>
-                {[
-                  { icon: <IcUsers />, title: 'Perfis falsos e bots', text: 'Você perde tempo com contas que nunca vão responder — ou que foram criadas para golpe.' },
-                  { icon: <IcFilter />, title: 'Filtros que não filtram', text: 'Deslizar infinitamente sem encontrar quem combina porque você não tem como ser preciso.' },
-                  { icon: <IcLock />, title: 'Intenções veladas', text: 'Ninguém deixa claro o que quer — e você só descobre depois de investir tempo numa conversa.' },
-                  { icon: <IcShield />, title: 'Sem segurança real', text: 'Você não sabe se a pessoa é quem diz ser. Não tem como registrar um encontro ou pedir ajuda de dentro do app.' },
-                ].map((pain, i) => (
-                  <div key={i} className="lp-pain lp-anim" style={{ transitionDelay: `${(i + 1) * 0.08}s` }}>
-                    <div className="lp-pain-icon">{pain.icon}</div>
-                    <div className="lp-pain-text"><strong>{pain.title}</strong>{pain.text}</div>
-                  </div>
-                ))}
-              </div>
+        {/* ── IDENTIFICAÇÃO ── */}
+        <section className="lp-ident-section">
+          <div className="lp-ident-inner">
+            <h2 className="lp-ident-title lp-anim">Em algum momento, você já sentiu isso.</h2>
+            <div className="lp-ident-bullets">
+              {[
+                'Ter que se adaptar só para conseguir atenção',
+                'Conversar sem saber o que a outra pessoa realmente quer',
+                'Investir tempo e energia em algo que não vai para frente',
+                'Sentir que está sempre no lugar errado',
+              ].map((texto, i) => (
+                <div key={i} className="lp-ident-bullet lp-anim" style={{ animationDelay: `${i * 120}ms` }}>
+                  <span className="lp-ident-bullet-dot" />
+                  <span className="lp-ident-bullet-text">{texto}</span>
+                </div>
+              ))}
             </div>
+            <p className="lp-ident-closing lp-anim">
+              O problema nunca foi você.<br /><em>Era o ambiente.</em>
+            </p>
           </div>
         </section>
 
-        {/* ── Comparativo ── */}
-        <section className="lp-problem">
-          <div className="lp-problem-inner">
-            <div className="lp-problem-header lp-anim">
-              <p className="lp-section-label">Comparativo</p>
-              <h2>MeAndYou vs.<br /><em>os outros apps.</em></h2>
-              <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '480px', margin: '0 auto', lineHeight: 1.7 }}>
-                Não é opinião. É uma lista do que existe aqui e não existe em nenhum outro lugar.
-              </p>
+        {/* ── 4 PILARES ── */}
+        <section className="lp-pilares-section">
+          <div className="lp-pilares-inner">
+            <div className="lp-pilares-header lp-anim">
+              <h2>Aqui tudo funciona diferente.</h2>
+              <p>Você não entra para tentar. Você entra para escolher.</p>
             </div>
-
-            <div className="lp-anim">
-              <div className="lp-cmp-header">
-                <div className="lp-cmp-col-label feature" />
-                <div className="lp-cmp-col-label them">Outros apps</div>
-                <div className="lp-cmp-col-label us">MeAnd<span style={{color:"#E11D48"}}>You</span></div>
-              </div>
-
+            <div className="lp-pilares-grid">
               {[
                 {
-                  feature: 'Verificação de identidade',
-                  them: 'Opcional ou inexistente',
-                  us: 'Selfie ao vivo + documento + CPF',
+                  num: '01',
+                  titulo: 'Você controla tudo',
+                  texto: 'Você decide quem aparece, quem fica e quem sai. Nada acontece por acaso.',
                 },
                 {
-                  feature: 'Filtros de busca',
-                  them: 'Apenas idade e distância',
-                  us: '100+ filtros: corpo, estilo, personalidade e mais',
+                  num: '02',
+                  titulo: 'Do seu jeito',
+                  texto: 'Nem todo mundo quer se conectar da mesma forma. Aqui você escolhe como.',
                 },
                 {
-                  feature: 'Diversidade e inclusão',
-                  them: 'Campos genéricos e limitados',
-                  us: 'Todas as orientações, gêneros e identidades',
+                  num: '03',
+                  titulo: 'Antes, durante e depois',
+                  texto: 'Você tem controle antes de conversar, durante a interação e até depois de um encontro.',
                 },
                 {
-                  feature: 'Espaço para fetiches',
-                  them: 'Não existe',
-                  us: 'Área Backstage exclusiva e privada',
+                  num: '04',
+                  titulo: 'Seu tempo vale algo',
+                  texto: 'Seu uso se transforma em benefícios, vantagens e destaque dentro do app.',
                 },
-                {
-                  feature: 'Privacidade',
-                  them: 'Perfil visível para qualquer um',
-                  us: 'Você controla quem te vê e o que aparece',
-                },
-                {
-                  feature: 'Qualidade dos perfis',
-                  them: 'Gratuito, entra quem quiser',
-                  us: 'Acesso pago = pessoas com intenção real',
-                },
-                {
-                  feature: 'Videochamada',
-                  them: 'Precisa sair do app',
-                  us: 'Direto no chat, em tempo real',
-                },
-                {
-                  feature: 'Proteção contra contas falsas',
-                  them: 'Reativa com outro e-mail',
-                  us: '1 conta por CPF. Banimento permanente.',
-                },
-              ].map((row, i) => (
-                <div key={i} className="lp-cmp-row">
-                  <div className="lp-cmp-feature">{row.feature}</div>
-                  <div className="lp-cmp-cell them">
-                    <span className="lp-cmp-x">
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </span>
-                    {row.them}
-                  </div>
-                  <div className="lp-cmp-cell us">
-                    <span className="lp-cmp-check">
-                      <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"/></svg>
-                    </span>
-                    {row.us}
-                  </div>
+              ].map((card, i) => (
+                <div key={i} className="lp-pilar-card lp-anim" style={{ animationDelay: `${i * 100}ms` }}>
+                  <div className="lp-pilar-num">{card.num}</div>
+                  <h3 className="lp-pilar-title">{card.titulo}</h3>
+                  <p className="lp-pilar-text">{card.texto}</p>
                 </div>
               ))}
             </div>
@@ -1488,31 +1531,111 @@ export default function Home() {
         </section>
 
         {/* ── 4 MODOS ── */}
-        <section className="lp-section-v2">
-          <div className="lp-section-inner-v2">
-            <div className="lp-anim" style={{ textAlign: 'center', marginBottom: 56 }}>
-              <span className="lp-section-label-v2">Modos de conexão</span>
-              <h2 className="lp-section-title-v2">Quatro formas de encontrar sua conexão.</h2>
-              <p className="lp-section-sub-v2" style={{ margin: '0 auto' }}>Cada modo foi criado para um tipo diferente de busca. Você escolhe como quer explorar.</p>
+        <section className="lp-modos-section">
+          <div className="lp-modos-inner">
+            <div className="lp-modos-header lp-anim">
+              <h2>Nem todo momento pede a mesma forma de conexão.</h2>
+              <p>Aqui você muda a forma de se conectar conforme o momento.</p>
             </div>
-            <div className="lp-modos-grid">
-              {[
-                { num: '01', icon: <IcZap />, title: 'Descobrir', text: 'Explore perfis com swipe. Curta, passe ou envie uma SuperCurtida. O modo mais rápido, com perfis verificados.', tag: 'Swipe verificado', gold: false },
-                { num: '02', icon: <IcFilter />, title: 'Busca Avançada', text: 'Mais de 100 filtros: corpo, estilo, personalidade, hábitos, orientação, intenções. Inclua quem quer ver, exclua quem não combina.', tag: '100+ filtros', gold: false },
-                { num: '03', icon: <IcStar />, title: 'Match do Dia', text: 'Todo dia, uma curadoria personalizada baseada no seu perfil, seus filtros e seu comportamento dentro do app.', tag: 'Curadoria para você', gold: false },
-                { num: '04', icon: <IcUsers />, title: 'Salas', text: 'Entre em salas temáticas por interesse ou humor e descubra quem está no mesmo astral que você neste momento.', tag: 'Plus e Black', gold: true },
-              ].map((m, i) => (
-                <div key={i} className="lp-modo-card lp-anim" style={{ transitionDelay: `${(i + 1) * 0.08}s` }}>
-                  <div className="lp-modo-num">{m.num}</div>
-                  <div className="lp-modo-icon">{m.icon}</div>
-                  <div className="lp-modo-title">{m.title}</div>
-                  <div className="lp-modo-text">{m.text}</div>
-                  <span className={`lp-modo-tag ${m.gold ? 'lp-modo-tag--gold' : ''}`}>{m.tag}</span>
+            <p className="lp-modos-desc lp-anim">
+              Explorar rápido, buscar com precisão, entrar em salas ou receber sugestões. Tudo dentro do mesmo ambiente.
+            </p>
+            <div className="lp-modos-layout">
+              <div className="lp-modos-tabs">
+                {[
+                  { num: '01', icon: <IcZap />, title: 'Descobrir', text: 'Explore perfis com swipe. Curta, passe ou envie uma SuperCurtida. O modo mais rápido, com perfis verificados.' },
+                  { num: '02', icon: <IcFilter />, title: 'Busca Avançada', text: 'Mais de 100 filtros: corpo, estilo, personalidade, hábitos e intenções. Inclua quem quer ver, exclua quem não combina.' },
+                  { num: '03', icon: <IcStar />, title: 'Match do Dia', text: 'Todo dia, uma curadoria personalizada baseada no seu perfil, seus filtros e seu comportamento dentro do app.' },
+                  { num: '04', icon: <IcUsers />, title: 'Salas', text: 'Entre em salas temáticas por interesse ou humor e descubra quem está no mesmo astral que você neste momento.' },
+                ].map((m, i) => (
+                  <div
+                    key={i}
+                    className={`lp-modo-tab${modoAtivo === i ? ' active' : ''}`}
+                    onMouseEnter={() => setModoAtivo(i)}
+                    onClick={() => setModoAtivo(i)}
+                  >
+                    <span className="lp-modo-tab-num">{m.num}</span>
+                    <div>
+                      <div className="lp-modo-tab-title">{m.title}</div>
+                      <div className="lp-modo-tab-text">{m.text}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="lp-modos-preview lp-anim">
+                <div className="lp-modos-preview-icon">
+                  {[<IcZap />, <IcFilter />, <IcStar />, <IcUsers />][modoAtivo]}
                 </div>
-              ))}
+                <div className="lp-modos-preview-title">
+                  {['Descobrir', 'Busca Avançada', 'Match do Dia', 'Salas'][modoAtivo]}
+                </div>
+                <div className="lp-modos-preview-sub">
+                  {[
+                    'Explore perfis com swipe. O modo mais rápido com perfis verificados.',
+                    'Mais de 100 filtros para encontrar exatamente quem faz sentido.',
+                    'Uma curadoria personalizada todo dia, só para você.',
+                    'Salas temáticas para quem está no mesmo astral agora.',
+                  ][modoAtivo]}
+                </div>
+              </div>
             </div>
           </div>
         </section>
+
+        {/* ── FILTROS (Etapa 5) ── */}
+        {(() => {
+          const filtroTags = ['Nao fuma', 'Tem pets', 'Pratica esporte', 'Bebe socialmente', 'Quer relacionamento', 'Viaja com frequencia', 'Sem filhos', 'Vegetariano(a)', 'Trabalha remoto', 'Gosta de trilha']
+          return (
+            <section className="lp-filtros-v2">
+              <div className="lp-filtros-v2-inner">
+                <div className="lp-filtros-v2-left lp-anim">
+                  <p className="lp-section-label">Filtros</p>
+                  <h2 className="lp-filtros-v2-title">Se nao combina,<br />nem aparece.</h2>
+                  <p className="lp-filtros-v2-text">
+                    Voce define exatamente o que faz sentido para voce.<br />
+                    O resto simplesmente nao entra no seu radar.
+                  </p>
+                  <p className="lp-filtros-v2-compl">Menos ruido. Mais conexao real.</p>
+                  <span className="lp-filtros-v2-micro">Voce define. O app obedece.</span>
+                </div>
+                <div className="lp-filtros-v2-right lp-anim" style={{ transitionDelay: '0.1s' }}>
+                  <div className="lp-filtros-demo">
+                    <div className="lp-filtros-demo-header">
+                      <span>Filtros ativos</span>
+                      <span className="lp-filtros-count">{filtroSimAtivos.length}</span>
+                    </div>
+                    <div className="lp-filtros-tags">
+                      {filtroTags.map((tag, i) => (
+                        <span
+                          key={i}
+                          className={`lp-filtro-tag${filtroSimAtivos.includes(i) ? ' ativo' : ''}`}
+                          onClick={() => setFiltroSimAtivos(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])}
+                        >
+                          {filtroSimAtivos.includes(i) && (
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12" /></svg>
+                          )}
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="lp-filtros-slider-wrap">
+                      <div className="lp-filtros-slider-label">
+                        <span>Idade</span>
+                        <span className="lp-filtros-slider-val">20 a {filtroSlider} anos</span>
+                      </div>
+                      <div className="lp-filtros-slider-track">
+                        <div
+                          className="lp-filtros-slider-fill"
+                          style={{ width: `${((filtroSlider - 18) / (60 - 18)) * 100}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )
+        })()}
 
         {/* ── FEATURES ── */}
         <section className="lp-section-v2 lp-section-v2--dark" id="features">
