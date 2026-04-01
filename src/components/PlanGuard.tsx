@@ -29,19 +29,22 @@ export function PlanGuard({ children }: { children: React.ReactNode }) {
     if (authLoading) return
     if (!user || isExempt) { setAllowed(true); return }
 
-    supabase
-      .from('profiles')
-      .select('plan')
-      .eq('id', user.id)
-      .single()
-      .then(({ data }) => {
+    ;(async () => {
+      try {
+        const { data } = await supabase
+          .from('profiles')
+          .select('plan')
+          .eq('id', user.id)
+          .single()
         if (!data?.plan) {
           router.replace('/planos')
         } else {
           setAllowed(true)
         }
-      })
-      .catch(() => setAllowed(true))
+      } catch {
+        setAllowed(true)
+      }
+    })()
   }, [user?.id, authLoading, isExempt])
 
   if (!allowed) return null
