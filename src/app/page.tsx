@@ -1251,6 +1251,19 @@ export default function Home() {
         .lp-perf-v2-card-sub{font-size:12px;color:var(--muted)}
         @media(max-width:600px){.lp-perf-v2{padding:72px 24px}}
 
+        /* Backstage v2 (Etapa 11) */
+        .lp-back-v2{padding:96px 24px;background:linear-gradient(180deg,#060609 0%,#0a0508 100%);position:relative;overflow:hidden}
+        .lp-back-v2::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 60% at 50% 40%,rgba(120,0,20,0.12) 0%,transparent 70%);pointer-events:none}
+        .lp-back-v2-inner{max-width:680px;margin:0 auto;position:relative;z-index:1}
+        .lp-back-v2-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:2.5px;color:rgba(180,0,30,0.85);display:block;margin-bottom:16px}
+        .lp-back-v2-title{font-family:var(--font-fraunces),serif;font-size:clamp(2.25rem,5vw,3.25rem);font-weight:700;color:var(--text);line-height:1.1;margin-bottom:24px}
+        .lp-back-v2-text{font-size:1.125rem;color:rgba(248,249,250,0.55);line-height:1.75;max-width:520px;margin-bottom:16px}
+        .lp-back-v2-comp{font-size:1rem;color:rgba(180,0,30,0.75);font-weight:600}
+        .lp-back-v2-badge{display:inline-flex;align-items:center;gap:8px;margin-top:40px;padding:10px 20px;border-radius:100px;background:rgba(120,0,20,0.15);border:1px solid rgba(180,0,30,0.22);font-size:13px;color:rgba(248,249,250,0.50)}
+        .lp-back-v2-badge-dot{width:8px;height:8px;border-radius:50%;background:rgba(180,0,30,0.70);animation:lpBackPulse 2.4s ease-in-out infinite}
+        @keyframes lpBackPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.50;transform:scale(0.80)}}
+        @media(max-width:600px){.lp-back-v2{padding:72px 24px}}
+
         /* Features */
         .lp-features-grid{display:flex;flex-direction:column;gap:80px}
         .lp-feature{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
@@ -2002,6 +2015,22 @@ export default function Home() {
                     <div className="lp-perf-v2-card-sub">Rio de Janeiro · Casal</div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── BACKSTAGE (Etapa 11) ── */}
+        <section className="lp-back-v2">
+          <div className="lp-back-v2-inner">
+            <div className="lp-anim">
+              <span className="lp-back-v2-label">Backstage</span>
+              <h2 className="lp-back-v2-title">Nem tudo é<br />para todo mundo.</h2>
+              <p className="lp-back-v2-text">Existe um espaço reservado para quem busca experiências mais específicas, com mais liberdade e menos limitações.</p>
+              <p className="lp-back-v2-comp">Aqui, você escolhe até o nível da experiência.</p>
+              <div className="lp-back-v2-badge lp-anim">
+                <span className="lp-back-v2-badge-dot" />
+                Exclusivo para plano Black
               </div>
             </div>
           </div>
