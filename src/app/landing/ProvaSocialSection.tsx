@@ -17,11 +17,12 @@ export default function ProvaSocialSection() {
             { right: false, avatarCls: 'e', name: 'Ana, 37', txt: 'Nunca me senti tão no controle de quem entra na minha vida. Recomendo para todo mundo.' },
           ].map((m, i) => (
             <div key={i} className={`lp-social-v2-msg${m.right ? ' lp-social-v2-msg--right' : ''} lp-anim`} style={{ animationDelay: `${i * 150}ms` }}>
-              <div className={`lp-social-v2-avatar lp-social-v2-avatar--${m.avatarCls || 'a'}`} />
+              {!m.right && <div className={`lp-social-v2-avatar lp-social-v2-avatar--${m.avatarCls || 'a'}`} />}
               <div>
                 <div className={`lp-social-v2-bubble lp-social-v2-bubble--${m.right ? 'right' : 'left'}`}>{m.txt}</div>
                 <div className={`lp-social-v2-meta${m.right ? '' : ' lp-social-v2-meta--left'}`}>{m.name}</div>
               </div>
+              {m.right && <div className={`lp-social-v2-avatar lp-social-v2-avatar--${m.avatarCls || 'a'}`} />}
             </div>
           ))}
         </div>
