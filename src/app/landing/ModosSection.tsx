@@ -3,24 +3,36 @@
 import { useState } from 'react'
 import { IcZap, IcFilter, IcStar, IcUsers } from './icons'
 
+const modos = [
+  {
+    num: '01', icon: <IcZap />, title: 'Descobrir',
+    text: 'Swipe rápido, decisão instantânea. Curta, passe ou mande uma SuperCurtida. Só perfis verificados no seu radar.',
+    preview: 'Perfis verificados. Decisão em segundos.',
+    color: '#E11D48', colorSoft: 'rgba(225,29,72,0.12)', colorBorder: 'rgba(225,29,72,0.25)', colorGlow: 'rgba(225,29,72,0.30)',
+  },
+  {
+    num: '02', icon: <IcFilter />, title: 'Busca Avançada',
+    text: 'Mais de 100 filtros. Você define tudo — corpo, estilo, hábitos, intenções. Quem não combina, não aparece.',
+    preview: 'Você define o tipo. O app filtra tudo que não encaixa.',
+    color: '#A855F7', colorSoft: 'rgba(168,85,247,0.12)', colorBorder: 'rgba(168,85,247,0.25)', colorGlow: 'rgba(168,85,247,0.30)',
+  },
+  {
+    num: '03', icon: <IcStar />, title: 'Match do Dia',
+    text: 'Todo dia, o app analisa seu perfil e te entrega uma seleção cirúrgica. Sem sorte. Com precisão.',
+    preview: 'Uma seleção nova todo dia, feita só para você.',
+    color: '#F59E0B', colorSoft: 'rgba(245,158,11,0.10)', colorBorder: 'rgba(245,158,11,0.25)', colorGlow: 'rgba(245,158,11,0.28)',
+  },
+  {
+    num: '04', icon: <IcUsers />, title: 'Salas',
+    text: 'Entre em salas públicas com até 20 pessoas ou crie a sua — privada ou aberta para todos. Conexão em tempo real.',
+    preview: 'Salas públicas ou personalizadas. Você decide quem entra.',
+    color: '#10B981', colorSoft: 'rgba(16,185,129,0.10)', colorBorder: 'rgba(16,185,129,0.22)', colorGlow: 'rgba(16,185,129,0.25)',
+  },
+]
+
 export default function ModosSection() {
   const [modoAtivo, setModoAtivo] = useState(0)
-
-  const modos = [
-    { num: '01', icon: <IcZap />, title: 'Descobrir', text: 'Explore perfis com swipe. Curta, passe ou envie uma SuperCurtida. O modo mais rápido, com perfis verificados.' },
-    { num: '02', icon: <IcFilter />, title: 'Busca Avançada', text: 'Mais de 100 filtros: corpo, estilo, personalidade, hábitos e intenções. Inclua quem quer ver, exclua quem não combina.' },
-    { num: '03', icon: <IcStar />, title: 'Match do Dia', text: 'Todo dia, uma curadoria personalizada baseada no seu perfil, seus filtros e seu comportamento dentro do app.' },
-    { num: '04', icon: <IcUsers />, title: 'Salas', text: 'Entre em salas temáticas por interesse ou humor e descubra quem está no mesmo astral que você neste momento.' },
-  ]
-
-  const previewIcons = [<IcZap key={0} />, <IcFilter key={1} />, <IcStar key={2} />, <IcUsers key={3} />]
-  const previewTitles = ['Descobrir', 'Busca Avançada', 'Match do Dia', 'Salas']
-  const previewSubs = [
-    'Explore perfis com swipe. O modo mais rápido com perfis verificados.',
-    'Mais de 100 filtros para encontrar exatamente quem faz sentido.',
-    'Uma curadoria personalizada todo dia, só para você.',
-    'Salas temáticas para quem está no mesmo astral agora.',
-  ]
+  const modo = modos[modoAtivo]
 
   return (
     <section className="lp-modos-section">
@@ -40,19 +52,38 @@ export default function ModosSection() {
                 className={`lp-modo-tab${modoAtivo === i ? ' active' : ''}`}
                 onMouseEnter={() => setModoAtivo(i)}
                 onClick={() => setModoAtivo(i)}
+                style={modoAtivo === i ? { borderColor: m.colorBorder, background: m.colorSoft } as React.CSSProperties : {}}
               >
-                <span className="lp-modo-tab-num">{m.num}</span>
-                <div>
-                  <div className="lp-modo-tab-title">{m.title}</div>
+                <span className="lp-modo-tab-num" style={modoAtivo === i ? { color: m.color } : {}}>{m.num}</span>
+                <div style={{ position: 'relative', flex: 1 }}>
+                  {modoAtivo === i && (
+                    <span className="lp-modo-tab-num-bg" style={{ color: m.color }}>{m.num}</span>
+                  )}
+                  <div className="lp-modo-tab-title" style={modoAtivo === i ? { color: '#fff' } : {}}>{m.title}</div>
                   <div className="lp-modo-tab-text">{m.text}</div>
                 </div>
+                {modoAtivo === i && (
+                  <span className="lp-modo-tab-bar" style={{ background: m.color }} />
+                )}
               </div>
             ))}
           </div>
-          <div className="lp-modos-preview lp-anim">
-            <div className="lp-modos-preview-icon">{previewIcons[modoAtivo]}</div>
-            <div className="lp-modos-preview-title">{previewTitles[modoAtivo]}</div>
-            <div className="lp-modos-preview-sub">{previewSubs[modoAtivo]}</div>
+
+          <div key={modoAtivo} className="lp-modos-preview lp-anim" style={{
+            background: `radial-gradient(ellipse at 50% 0%, ${modo.colorSoft} 0%, var(--bg-card) 65%)`,
+            borderColor: modo.colorBorder,
+            boxShadow: `0 0 60px ${modo.colorGlow}, 0 8px 32px rgba(0,0,0,0.4)`,
+          }}>
+            <div className="lp-modos-preview-icon" style={{
+              background: modo.colorSoft,
+              borderColor: modo.colorBorder,
+              color: modo.color,
+              boxShadow: `0 0 24px ${modo.colorGlow}`,
+            }}>
+              {modo.icon}
+            </div>
+            <div className="lp-modos-preview-title" style={{ color: modo.color }}>{modo.title}</div>
+            <div className="lp-modos-preview-sub">{modo.preview}</div>
           </div>
         </div>
       </div>
