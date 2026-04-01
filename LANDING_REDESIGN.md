@@ -24,8 +24,8 @@ Se isso não acontecer, perdeu.
 | 5 | Filtros | Concluída | 2026-03-31 às 22:30 |
 | 6 | Intenções | Concluída | 2026-03-31 às 22:38 |
 | 7 | Segurança | Concluída | 2026-03-31 às 22:48 |
-| 8 | Gamificação | Pendente — PRÓXIMA ETAPA | |
-| 9 | Encontro | Pendente | |
+| 8 | Gamificação | Concluída | 2026-03-31 às 22:57 |
+| 9 | Encontro | Pendente — PRÓXIMA ETAPA | |
 | 10 | Perfil | Pendente | |
 | 11 | Backstage | Pendente | |
 | 12 | Planos | Pendente | |
