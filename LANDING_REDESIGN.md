@@ -26,8 +26,8 @@ Se isso não acontecer, perdeu.
 | 7 | Segurança | Concluída | 2026-03-31 às 22:48 |
 | 8 | Gamificação | Concluída | 2026-03-31 às 22:57 |
 | 9 | Encontro | Concluída | 2026-03-31 às 23:15 |
-| 10 | Perfil | Pendente — PRÓXIMA ETAPA | |
-| 11 | Backstage | Pendente | |
+| 10 | Perfil | Concluída | 2026-03-31 às 23:22 |
+| 11 | Backstage | Pendente — PRÓXIMA ETAPA | |
 | 12 | Planos | Pendente | |
 | 13 | Prova Social | Pendente | |
 | 14 | CTA Final | Pendente | |

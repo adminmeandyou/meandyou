@@ -1224,6 +1224,33 @@ export default function Home() {
         .lp-enc-v2-step-text{font-size:0.9rem;color:var(--muted);line-height:1.65;margin:0}
         @media(max-width:600px){.lp-enc-v2{padding:72px 24px}}
 
+        /* Perfil v2 (Etapa 10) */
+        .lp-perf-v2{padding:96px 24px;background:#0a0c14}
+        .lp-perf-v2-inner{max-width:560px;margin:0 auto;text-align:center}
+        .lp-perf-v2-title{font-family:var(--font-fraunces),serif;font-size:clamp(2rem,5vw,2.875rem);font-weight:700;color:var(--text);line-height:1.15;margin:12px 0 20px}
+        .lp-perf-v2-text{font-size:1.0625rem;color:var(--muted);line-height:1.7;margin-bottom:48px}
+        .lp-perf-v2-demo{display:flex;flex-direction:column;align-items:center;gap:28px}
+        .lp-perf-v2-toggle{position:relative;display:inline-flex;align-items:center;background:rgba(19,22,31,0.95);border:1px solid rgba(255,255,255,0.07);border-radius:100px;padding:4px}
+        .lp-perf-v2-pill{position:absolute;top:4px;height:calc(100% - 8px);width:calc(50% - 4px);background:var(--accent);border-radius:100px;animation:lpPerfPill 5s ease-in-out infinite}
+        .lp-perf-v2-opt{position:relative;z-index:1;padding:10px 28px;font-size:14px;font-weight:600;border-radius:100px;min-width:110px}
+        .lp-perf-v2-opt--a{animation:lpPerfOptA 5s ease-in-out infinite}
+        .lp-perf-v2-opt--b{animation:lpPerfOptB 5s ease-in-out infinite}
+        @keyframes lpPerfPill{0%,40%{left:4px}50%,90%{left:calc(50%)}100%{left:4px}}
+        @keyframes lpPerfOptA{0%,40%{color:#fff}50%,90%{color:rgba(248,249,250,0.45)}100%{color:#fff}}
+        @keyframes lpPerfOptB{0%,40%{color:rgba(248,249,250,0.45)}50%,90%{color:#fff}100%{color:rgba(248,249,250,0.45)}}
+        .lp-perf-v2-card-wrap{position:relative;width:280px;height:80px}
+        .lp-perf-v2-card{position:absolute;inset:0;display:flex;align-items:center;gap:16px;background:rgba(19,22,31,0.95);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:16px}
+        .lp-perf-v2-card--a{animation:lpPerfCardA 5s ease-in-out infinite}
+        .lp-perf-v2-card--b{animation:lpPerfCardB 5s ease-in-out infinite}
+        @keyframes lpPerfCardA{0%,40%{opacity:1;transform:scale(1)}50%,90%{opacity:0;transform:scale(0.96)}100%{opacity:1;transform:scale(1)}}
+        @keyframes lpPerfCardB{0%,40%{opacity:0;transform:scale(0.96)}50%,90%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0.96)}}
+        .lp-perf-v2-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0}
+        .lp-perf-v2-avatars{display:flex;flex-shrink:0}
+        .lp-perf-v2-avatar--2{margin-left:-12px;border:2px solid rgba(10,12,20,0.95)}
+        .lp-perf-v2-card-name{font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px}
+        .lp-perf-v2-card-sub{font-size:12px;color:var(--muted)}
+        @media(max-width:600px){.lp-perf-v2{padding:72px 24px}}
+
         /* Features */
         .lp-features-grid{display:flex;flex-direction:column;gap:80px}
         .lp-feature{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
@@ -1939,6 +1966,43 @@ export default function Home() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── PERFIL (Etapa 10) ── */}
+        <section className="lp-perf-v2">
+          <div className="lp-perf-v2-inner">
+            <div className="lp-perf-v2-header lp-anim">
+              <p className="lp-section-label">Perfil</p>
+              <h2 className="lp-perf-v2-title">Você entra do jeito<br />que faz sentido para você.</h2>
+              <p className="lp-perf-v2-text">Individual ou casal. Você define sua forma de se apresentar e se conectar.</p>
+            </div>
+            <div className="lp-perf-v2-demo lp-anim">
+              <div className="lp-perf-v2-toggle">
+                <div className="lp-perf-v2-pill" />
+                <span className="lp-perf-v2-opt lp-perf-v2-opt--a">Individual</span>
+                <span className="lp-perf-v2-opt lp-perf-v2-opt--b">Casal</span>
+              </div>
+              <div className="lp-perf-v2-card-wrap">
+                <div className="lp-perf-v2-card lp-perf-v2-card--a">
+                  <div className="lp-perf-v2-avatar" style={{ background: 'linear-gradient(135deg,#1a0a14,#3d1530)' }} />
+                  <div>
+                    <div className="lp-perf-v2-card-name">Sofia, 27</div>
+                    <div className="lp-perf-v2-card-sub">São Paulo · Escritora</div>
+                  </div>
+                </div>
+                <div className="lp-perf-v2-card lp-perf-v2-card--b">
+                  <div className="lp-perf-v2-avatars">
+                    <div className="lp-perf-v2-avatar" style={{ background: 'linear-gradient(135deg,#0a1020,#1a2a4a)' }} />
+                    <div className="lp-perf-v2-avatar lp-perf-v2-avatar--2" style={{ background: 'linear-gradient(135deg,#1a0a14,#3d1530)' }} />
+                  </div>
+                  <div>
+                    <div className="lp-perf-v2-card-name">Ana e Pedro</div>
+                    <div className="lp-perf-v2-card-sub">Rio de Janeiro · Casal</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </section>
