@@ -22,8 +22,8 @@ Se isso não acontecer, perdeu.
 | 3 | 4 Pilares | Concluída | 2026-03-31 às 21:42 |
 | 4 | Modos | Concluída | 2026-03-31 às 21:51 |
 | 5 | Filtros | Concluída | 2026-03-31 às 22:30 |
-| 6 | Intenções | Pendente — PRÓXIMA ETAPA | |
-| 7 | Segurança | Pendente | |
+| 6 | Intenções | Concluída | 2026-03-31 às 22:38 |
+| 7 | Segurança | Pendente — PRÓXIMA ETAPA | |
 | 8 | Gamificação | Pendente | |
 | 9 | Encontro | Pendente | |
 | 10 | Perfil | Pendente | |

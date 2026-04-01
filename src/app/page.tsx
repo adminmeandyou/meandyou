@@ -1138,6 +1138,23 @@ export default function Home() {
         @media(max-width:900px){.lp-filtros-v2-inner{grid-template-columns:1fr;gap:48px}}
         @media(max-width:600px){.lp-filtros-v2{padding:72px 24px}}
 
+        /* Intencoes v2 (Etapa 6) */
+        .lp-intencoes-v2{padding:100px 56px;background:var(--bg);border-top:1px solid var(--border-premium)}
+        .lp-intencoes-v2-inner{max-width:1140px;margin:0 auto}
+        .lp-intencoes-v2-header{text-align:center;margin-bottom:56px}
+        .lp-intencoes-v2-title{font-family:var(--font-fraunces),serif;font-size:clamp(32px,4vw,54px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin:12px 0 20px}
+        .lp-intencoes-v2-text{font-size:17px;color:rgba(248,249,250,0.55);line-height:1.75;max-width:540px;margin:0 auto 14px}
+        .lp-intencoes-v2-compl{font-size:15px;color:rgba(248,249,250,0.35);font-style:italic}
+        .lp-intencoes-grid-v2{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+        .lp-intencao-card-v2{background:var(--bg-card);border:1px solid var(--border-premium);border-radius:20px;padding:28px 24px;display:flex;flex-direction:column;gap:14px;transition:var(--transition-smooth);cursor:default}
+        .lp-intencao-card-v2:hover{border-color:var(--accent-border);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.35)}
+        .lp-intencao-icon-v2{width:44px;height:44px;border-radius:12px;background:var(--accent-soft);border:1px solid var(--accent-border);display:flex;align-items:center;justify-content:center;color:var(--accent);flex-shrink:0}
+        .lp-intencao-title-v2{font-family:var(--font-fraunces),serif;font-size:17px;font-weight:700;color:var(--text)}
+        .lp-intencao-desc-v2{font-size:13px;color:rgba(248,249,250,0.45);line-height:1.65}
+        .lp-intencao-label{display:inline-block;font-size:11px;font-weight:600;padding:3px 10px;border-radius:100px;background:var(--accent-soft);border:1px solid var(--accent-border);color:rgba(225,29,72,0.85);letter-spacing:0.4px;margin-top:4px;align-self:flex-start}
+        @media(max-width:900px){.lp-intencoes-grid-v2{grid-template-columns:repeat(2,1fr)}}
+        @media(max-width:600px){.lp-intencoes-v2{padding:72px 24px}.lp-intencoes-grid-v2{grid-template-columns:1fr}}
+
         /* Features */
         .lp-features-grid{display:flex;flex-direction:column;gap:80px}
         .lp-feature{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
@@ -1636,6 +1653,70 @@ export default function Home() {
             </section>
           )
         })()}
+
+        {/* ── INTENCOES (Etapa 6) ── */}
+        <section className="lp-intencoes-v2">
+          <div className="lp-intencoes-v2-inner">
+            <div className="lp-intencoes-v2-header lp-anim">
+              <p className="lp-section-label">Intencoes</p>
+              <h2 className="lp-intencoes-v2-title">Sem duvida.<br />Sem joguinho.</h2>
+              <p className="lp-intencoes-v2-text">
+                Cada pessoa ja entra com clareza do que quer.<br />
+                Voce nao precisa adivinhar nem perder tempo tentando entender.
+              </p>
+              <p className="lp-intencoes-v2-compl">Ou faz sentido, ou nao aparece.</p>
+            </div>
+            <div className="lp-intencoes-grid-v2">
+              {[
+                {
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>,
+                  titulo: 'Relacionamento serio',
+                  desc: 'Busca comprometimento e construir algo de verdade com alguem.',
+                  label: 'Mais comum no Plus',
+                },
+                {
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>,
+                  titulo: 'Encontros casuais',
+                  desc: 'Sem compromisso, com respeito e clareza desde o primeiro contato.',
+                  label: 'Disponivel no Essencial',
+                },
+                {
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+                  titulo: 'Amizade',
+                  desc: 'Expandir o circulo social com pessoas reais e verificadas.',
+                  label: 'Disponivel no Essencial',
+                },
+                {
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></svg>,
+                  titulo: 'Companhia para evento',
+                  desc: 'Casamento, jantar, festa ou qualquer compromisso social.',
+                  label: 'Disponivel no Plus',
+                },
+                {
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+                  titulo: 'Romance',
+                  desc: 'Conexao emocional profunda, construida com cuidado e intencao.',
+                  label: 'Disponivel no Plus',
+                },
+                {
+                  icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>,
+                  titulo: 'Sugar',
+                  desc: 'Relacoes com beneficios mutuos definidos desde o inicio, sem surpresas.',
+                  label: 'Exclusivo Black',
+                },
+              ].map((item, i) => (
+                <div key={i} className="lp-intencao-card-v2 lp-anim" style={{ animationDelay: `${i * 80}ms` }}>
+                  <div className="lp-intencao-icon-v2">{item.icon}</div>
+                  <div>
+                    <div className="lp-intencao-title-v2">{item.titulo}</div>
+                    <p className="lp-intencao-desc-v2">{item.desc}</p>
+                    <span className="lp-intencao-label">{item.label}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* ── FEATURES ── */}
         <section className="lp-section-v2 lp-section-v2--dark" id="features">
