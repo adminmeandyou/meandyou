@@ -120,7 +120,9 @@ export default function Home() {
 
   // Filtros demo (Etapa 5)
   const [filtroSimAtivos, setFiltroSimAtivos] = useState<number[]>([0, 2])
+  const [filtroSimRejeitados, setFiltroSimRejeitados] = useState<number[]>([])
   const [filtroSlider, setFiltroSlider] = useState(34)
+  const [perfMode, setPerfMode] = useState<'ind' | 'cas'>('ind')
 
   // Camarote (extraído do page.tsx v2)
   const [camaroteRevealed, setCamaroteRevealed] = useState(false)
@@ -328,11 +330,18 @@ export default function Home() {
   // Simulação automática de filtros (Etapa 5)
   useEffect(() => {
     if (checking) return
-    const totalTags = 10
+    const totalTags = 16
     let tagIdx = 0
     const tagTimer = setInterval(() => {
       const i = tagIdx % totalTags
-      setFiltroSimAtivos(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])
+      setFiltroSimAtivos(prev => {
+        if (prev.includes(i)) {
+          setFiltroSimRejeitados(r => [...r, i])
+          setTimeout(() => setFiltroSimRejeitados(r => r.filter(x => x !== i)), 700)
+          return prev.filter(x => x !== i)
+        }
+        return [...prev, i]
+      })
       tagIdx++
     }, 1100)
     let sliderDir = 1
@@ -1128,6 +1137,7 @@ export default function Home() {
         .lp-filtros-tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
         .lp-filtro-tag{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:100px;font-size:13px;font-weight:500;cursor:pointer;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);background:var(--bg-card);border:1px solid var(--border);color:rgba(248,249,250,0.55)}
         .lp-filtro-tag.ativo{background:rgba(46,196,160,0.12);border-color:rgba(46,196,160,0.40);color:#2ec4a0;box-shadow:0 0 0 3px rgba(46,196,160,0.08)}
+        .lp-filtro-tag.rejeitado{background:rgba(225,29,72,0.08);border-color:rgba(225,29,72,0.30);color:rgba(225,29,72,0.70)}
         .lp-filtros-slider-wrap{border-top:1px solid var(--border-soft);padding-top:20px}
         .lp-filtros-slider-label{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
         .lp-filtros-slider-label span:first-child{font-size:13px;color:rgba(248,249,250,0.50);font-weight:500}
@@ -1174,7 +1184,7 @@ export default function Home() {
         .lp-seg-feat{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(248,249,250,0.60)}
         .lp-seg-feat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
         .lp-seg-feat-dot.verde{background:#2ec4a0;box-shadow:0 0 6px rgba(46,196,160,0.50)}
-        .lp-seg-feat-dot.alerta{background:var(--accent);box-shadow:0 0 6px rgba(225,29,72,0.45)}
+        .lp-seg-feat-dot.alerta{background:#F59E0B;box-shadow:0 0 6px rgba(245,158,11,0.45)}
         .lp-seg-closing{text-align:center;padding:28px;background:var(--bg);border:1px solid var(--border-premium);border-radius:16px}
         .lp-seg-closing-text{font-family:var(--font-fraunces),serif;font-size:clamp(18px,2.5vw,26px);font-weight:700;color:var(--text)}
         .lp-seg-closing-text em{color:#2ec4a0;font-style:italic}
@@ -1184,7 +1194,7 @@ export default function Home() {
         /* Gamificacao v2 (Etapa 8) */
         @keyframes lpSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
         @keyframes lpGlow{0%,100%{box-shadow:0 0 8px rgba(225,29,72,0.30)}50%{box-shadow:0 0 22px rgba(225,29,72,0.70),0 0 40px rgba(225,29,72,0.20)}}
-        @keyframes lpFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+        @keyframes lpFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
         @keyframes lpPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.75;transform:scale(0.96)}}
         .lp-gamif-v2{padding:100px 56px;background:var(--bg);border-top:1px solid var(--border-premium)}
         .lp-gamif-v2-inner{max-width:1140px;margin:0 auto}
@@ -1240,10 +1250,12 @@ export default function Home() {
         @keyframes lpPerfOptB{0%,40%{color:rgba(248,249,250,0.45)}50%,90%{color:#fff}100%{color:rgba(248,249,250,0.45)}}
         .lp-perf-v2-card-wrap{position:relative;width:280px;height:80px}
         .lp-perf-v2-card{position:absolute;inset:0;display:flex;align-items:center;gap:16px;background:rgba(19,22,31,0.95);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:16px}
-        .lp-perf-v2-card--a{animation:lpPerfCardA 5s ease-in-out infinite}
-        .lp-perf-v2-card--b{animation:lpPerfCardB 5s ease-in-out infinite}
-        @keyframes lpPerfCardA{0%,40%{opacity:1;transform:scale(1)}50%,90%{opacity:0;transform:scale(0.96)}100%{opacity:1;transform:scale(1)}}
-        @keyframes lpPerfCardB{0%,40%{opacity:0;transform:scale(0.96)}50%,90%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(0.96)}}
+        .lp-perf-v2-card--a{transition:opacity 0.4s ease}
+        .lp-perf-v2-card--b{transition:opacity 0.4s ease}
+        .lp-perf-v2-card--a.hidden{opacity:0;pointer-events:none}
+        .lp-perf-v2-card--b.hidden{opacity:0;pointer-events:none}
+        .lp-perf-v2-pill{position:absolute;top:4px;height:calc(100% - 8px);width:calc(50% - 4px);background:var(--accent);border-radius:100px;transition:left 0.35s cubic-bezier(0.4,0,0.2,1)}
+        .lp-perf-v2-opt{cursor:pointer;transition:color 0.3s}
         .lp-perf-v2-avatar{width:44px;height:44px;border-radius:50%;flex-shrink:0}
         .lp-perf-v2-avatars{display:flex;flex-shrink:0}
         .lp-perf-v2-avatar--2{margin-left:-12px;border:2px solid rgba(10,12,20,0.95)}
@@ -1306,7 +1318,10 @@ export default function Home() {
         @keyframes lpSocialIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
         .lp-social-v2-avatar{width:32px;height:32px;border-radius:50%;flex-shrink:0;background:linear-gradient(135deg,#1a0a14,#3d1530)}
         .lp-social-v2-avatar--b{background:linear-gradient(135deg,#0a1020,#1a2a4a)}
+        .lp-social-v2-avatar--a{background:linear-gradient(135deg,#1a0a14,#3d1530)}
         .lp-social-v2-avatar--c{background:linear-gradient(135deg,#0a1a10,#1a3a20)}
+        .lp-social-v2-avatar--d{background:linear-gradient(135deg,#150a20,#2a1540)}
+        .lp-social-v2-avatar--e{background:linear-gradient(135deg,#1a150a,#352a10)}
         .lp-social-v2-bubble{max-width:75%;padding:12px 16px;border-radius:16px;font-size:14px;line-height:1.6;color:var(--text)}
         .lp-social-v2-bubble--left{background:rgba(19,22,31,0.95);border:1px solid rgba(255,255,255,0.07);border-bottom-left-radius:4px}
         .lp-social-v2-bubble--right{background:rgba(225,29,72,0.15);border:1px solid rgba(225,29,72,0.18);border-bottom-right-radius:4px}
@@ -1352,7 +1367,7 @@ export default function Home() {
         .lp-phone-scanline-v2{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(225,29,72,0.6),transparent);animation:scan 2s linear infinite}
         .lp-phone-verified-v2{position:absolute;top:12px;right:12px;background:var(--accent);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:100px}
         @keyframes scan{0%{top:8%}100%{top:92%}}
-        @keyframes float-y{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+        @keyframes float-y{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 
         /* Camarote */
         .lp-camarote-wrap{background:linear-gradient(135deg,rgba(245,158,11,0.04) 0%,rgba(8,9,14,0) 50%),var(--bg-card);border:1px solid rgba(245,158,11,0.20);border-radius:24px;padding:56px 48px;display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center}
@@ -1430,7 +1445,7 @@ export default function Home() {
                 <span className="lp-badge-dot" />
                 Relacionamentos com intenção real
               </div>
-              <h1>Você decide quem entra<br /><em>no seu mundo.</em></h1>
+              <h1><em style={{color:'var(--accent)',fontStyle:'italic'}}>Você decide</em> quem entra<br /><em>no seu mundo.</em></h1>
               <p className="lp-hero-sub">
                 Relacionamentos, encontros, salas, videochamada e filtros avançados.<br />
                 Tudo no seu controle, do primeiro contato ao encontro.
@@ -1447,7 +1462,7 @@ export default function Home() {
               <p className="lp-hero-microcopy">Leva menos de 1 minuto para começar</p>
               <div className="lp-hero-social-proof">
                 <span className="lp-hero-social-proof-dot" />
-                <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas já estão usando na sua região</span>
+                <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas já estão usando {userCity ? <>em <strong className="lp-hero-proof-number">{userCity}</strong></> : 'na sua região'}</span>
               </div>
             </div>
 
@@ -1541,7 +1556,7 @@ export default function Home() {
         {/* ── IDENTIFICAÇÃO ── */}
         <section className="lp-ident-section">
           <div className="lp-ident-inner">
-            <h2 className="lp-ident-title lp-anim">Em algum momento, você já sentiu isso.</h2>
+            <h2 className="lp-ident-title lp-anim">Em algum momento,<br />você já sentiu isso.</h2>
             <div className="lp-ident-bullets">
               {[
                 'Ter que se adaptar só para conseguir atenção',
@@ -1565,7 +1580,7 @@ export default function Home() {
         <section className="lp-pilares-section">
           <div className="lp-pilares-inner">
             <div className="lp-pilares-header lp-anim">
-              <h2>Aqui tudo funciona diferente.</h2>
+              <h2>Aqui tudo funciona <em style={{color:'var(--accent)',fontStyle:'italic'}}>diferente.</em></h2>
               <p>Você não entra para tentar. Você entra para escolher.</p>
             </div>
             <div className="lp-pilares-grid">
@@ -1721,7 +1736,7 @@ export default function Home() {
         <section className="lp-modos-section">
           <div className="lp-modos-inner">
             <div className="lp-modos-header lp-anim">
-              <h2>Nem todo momento pede a mesma forma de conexão.</h2>
+              <h2>Nem todo momento pede<br />a mesma forma de conexão.</h2>
               <p>Aqui você muda a forma de se conectar conforme o momento.</p>
             </div>
             <p className="lp-modos-desc lp-anim">
@@ -1771,7 +1786,7 @@ export default function Home() {
 
         {/* ── FILTROS (Etapa 5) ── */}
         {(() => {
-          const filtroTags = ['Nao fuma', 'Tem pets', 'Pratica esporte', 'Bebe socialmente', 'Quer relacionamento', 'Viaja com frequencia', 'Sem filhos', 'Vegetariano(a)', 'Trabalha remoto', 'Gosta de trilha']
+          const filtroTags = ['Tem pets', 'Gosta de culinária', 'Fã de cinema', 'Não fuma', 'Bebe socialmente', 'Pratica esporte', 'Ama viajar', 'Vegetariano(a)', 'Gosta de balada', 'Solteiro(a)', 'Gosta de trilha', 'Curte barzinhos', 'Amante de música', 'Cuida da saúde', 'Trabalha remoto', 'Gosta de culinária japonesa']
           return (
             <section className="lp-filtros-v2">
               <div className="lp-filtros-v2-inner">
@@ -1795,7 +1810,7 @@ export default function Home() {
                       {filtroTags.map((tag, i) => (
                         <span
                           key={i}
-                          className={`lp-filtro-tag${filtroSimAtivos.includes(i) ? ' ativo' : ''}`}
+                          className={`lp-filtro-tag${filtroSimAtivos.includes(i) ? ' ativo' : filtroSimRejeitados.includes(i) ? ' rejeitado' : ''}`}
                           onClick={() => setFiltroSimAtivos(prev => prev.includes(i) ? prev.filter(x => x !== i) : [...prev, i])}
                         >
                           {filtroSimAtivos.includes(i) && (
@@ -1840,47 +1855,46 @@ export default function Home() {
               {[
                 {
                   icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" /></svg>,
-                  titulo: 'Relacionamento serio',
-                  desc: 'Busca comprometimento e construir algo de verdade com alguem.',
-                  label: 'Mais comum no Plus',
+                  iconBg: 'rgba(225,29,72,0.12)', iconBorder: 'rgba(225,29,72,0.28)', iconColor: 'var(--accent)',
+                  titulo: 'Relacionamento sério',
+                  desc: 'Busca comprometimento e construir algo de verdade com alguém.',
                 },
                 {
                   icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><line x1="9" y1="9" x2="9.01" y2="9" /><line x1="15" y1="9" x2="15.01" y2="9" /></svg>,
+                  iconBg: 'rgba(59,130,246,0.12)', iconBorder: 'rgba(59,130,246,0.28)', iconColor: 'rgb(96,165,250)',
                   titulo: 'Encontros casuais',
                   desc: 'Sem compromisso, com respeito e clareza desde o primeiro contato.',
-                  label: 'Disponivel no Essencial',
                 },
                 {
                   icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>,
+                  iconBg: 'rgba(16,185,129,0.12)', iconBorder: 'rgba(16,185,129,0.28)', iconColor: '#10b981',
                   titulo: 'Amizade',
-                  desc: 'Expandir o circulo social com pessoas reais e verificadas.',
-                  label: 'Disponivel no Essencial',
+                  desc: 'Expandir o círculo social com pessoas reais e verificadas.',
                 },
                 {
                   icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></svg>,
+                  iconBg: 'rgba(139,92,246,0.12)', iconBorder: 'rgba(139,92,246,0.28)', iconColor: 'rgb(167,139,250)',
                   titulo: 'Companhia para evento',
                   desc: 'Casamento, jantar, festa ou qualquer compromisso social.',
-                  label: 'Disponivel no Plus',
                 },
                 {
                   icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>,
+                  iconBg: 'rgba(236,72,153,0.12)', iconBorder: 'rgba(236,72,153,0.28)', iconColor: 'rgb(244,114,182)',
                   titulo: 'Romance',
-                  desc: 'Conexao emocional profunda, construida com cuidado e intencao.',
-                  label: 'Disponivel no Plus',
+                  desc: 'Conexão emocional profunda, construída com cuidado e intenção.',
                 },
                 {
                   icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>,
+                  iconBg: 'rgba(245,158,11,0.10)', iconBorder: 'rgba(245,158,11,0.25)', iconColor: '#F59E0B',
                   titulo: 'Sugar',
-                  desc: 'Relacoes com beneficios mutuos definidos desde o inicio, sem surpresas.',
-                  label: 'Exclusivo Black',
+                  desc: 'Relações com benefícios mútuos definidos desde o início, sem surpresas.',
                 },
               ].map((item, i) => (
                 <div key={i} className="lp-intencao-card-v2 lp-anim" style={{ animationDelay: `${i * 80}ms` }}>
-                  <div className="lp-intencao-icon-v2">{item.icon}</div>
+                  <div className="lp-intencao-icon-v2" style={{ background: item.iconBg, border: `1px solid ${item.iconBorder}`, color: item.iconColor }}>{item.icon}</div>
                   <div>
                     <div className="lp-intencao-title-v2">{item.titulo}</div>
                     <p className="lp-intencao-desc-v2">{item.desc}</p>
-                    <span className="lp-intencao-label">{item.label}</span>
                   </div>
                 </div>
               ))}
@@ -2054,19 +2068,19 @@ export default function Home() {
             </div>
             <div className="lp-perf-v2-demo lp-anim">
               <div className="lp-perf-v2-toggle">
-                <div className="lp-perf-v2-pill" />
-                <span className="lp-perf-v2-opt lp-perf-v2-opt--a">Individual</span>
-                <span className="lp-perf-v2-opt lp-perf-v2-opt--b">Casal</span>
+                <div className="lp-perf-v2-pill" style={{ left: perfMode === 'ind' ? 4 : 'calc(50%)' }} />
+                <span className="lp-perf-v2-opt lp-perf-v2-opt--a" style={{ color: perfMode === 'ind' ? '#fff' : 'rgba(248,249,250,0.45)' }} onClick={() => setPerfMode('ind')}>Individual</span>
+                <span className="lp-perf-v2-opt lp-perf-v2-opt--b" style={{ color: perfMode === 'cas' ? '#fff' : 'rgba(248,249,250,0.45)' }} onClick={() => setPerfMode('cas')}>Casal</span>
               </div>
               <div className="lp-perf-v2-card-wrap">
-                <div className="lp-perf-v2-card lp-perf-v2-card--a">
+                <div className={`lp-perf-v2-card lp-perf-v2-card--a${perfMode === 'cas' ? ' hidden' : ''}`}>
                   <div className="lp-perf-v2-avatar" style={{ background: 'linear-gradient(135deg,#1a0a14,#3d1530)' }} />
                   <div>
                     <div className="lp-perf-v2-card-name">Sofia, 27</div>
                     <div className="lp-perf-v2-card-sub">São Paulo · Escritora</div>
                   </div>
                 </div>
-                <div className="lp-perf-v2-card lp-perf-v2-card--b">
+                <div className={`lp-perf-v2-card lp-perf-v2-card--b${perfMode === 'ind' ? ' hidden' : ''}`}>
                   <div className="lp-perf-v2-avatars">
                     <div className="lp-perf-v2-avatar" style={{ background: 'linear-gradient(135deg,#0a1020,#1a2a4a)' }} />
                     <div className="lp-perf-v2-avatar lp-perf-v2-avatar--2" style={{ background: 'linear-gradient(135deg,#1a0a14,#3d1530)' }} />
@@ -2089,9 +2103,15 @@ export default function Home() {
               <h2 className="lp-back-v2-title">Nem tudo é<br />para todo mundo.</h2>
               <p className="lp-back-v2-text">Existe um espaço reservado para quem busca experiências mais específicas, com mais liberdade e menos limitações.</p>
               <p className="lp-back-v2-comp">Aqui, você escolhe até o nível da experiência.</p>
-              <div className="lp-back-v2-badge lp-anim">
-                <span className="lp-back-v2-badge-dot" />
-                Exclusivo para plano Black
+              <div style={{ display:'flex', gap:12, alignItems:'center', marginTop:40, flexWrap:'wrap' }}>
+                <a href="/planos" style={{ display:'inline-flex', alignItems:'center', gap:8, padding:'12px 24px', borderRadius:12, background:'rgba(120,0,20,0.35)', border:'1px solid rgba(180,0,30,0.35)', color:'rgba(248,249,250,0.85)', fontSize:14, fontWeight:700, textDecoration:'none' }}>
+                  Ver o plano Black
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+                </a>
+                <div className="lp-back-v2-badge">
+                  <span className="lp-back-v2-badge-dot" />
+                  Exclusivo para plano Black
+                </div>
               </div>
             </div>
           </div>
@@ -2179,11 +2199,11 @@ export default function Home() {
             </div>
             <div className="lp-social-v2-msgs">
               {[
-                { right: false, avatarCls: '', name: 'Mariana, 28', txt: 'Finalmente um app em que eu não preciso ficar adivinhando o que a pessoa quer. Todo mundo já entra sabendo.', delay: 0 },
-                { right: true, avatarCls: 'b', name: 'Rafael, 31', txt: 'Os filtros são o que fazem a diferença. Zero perda de tempo com perfis que não fazem sentido.', delay: 150 },
-                { right: false, avatarCls: 'c', name: 'Camila, 26', txt: 'A videochamada antes de encontrar alguém foi um divisor de águas pra mim. Cheguei no café sem nenhuma surpresa.', delay: 300 },
-                { right: true, avatarCls: '', name: 'Thiago, 33', txt: 'Matching por intenção real muda tudo. Sem joguinho, sem ambiguidade. Direto ao ponto.', delay: 450 },
-                { right: false, avatarCls: 'b', name: 'Ana, 29', txt: 'Nunca me senti tão no controle de quem entra na minha vida. Recomendo para todo mundo.', delay: 600 },
+                { right: false, avatarCls: 'a', name: 'Mariana, 34', txt: 'Finalmente um app em que eu não preciso ficar adivinhando o que a pessoa quer. Todo mundo já entra sabendo.', delay: 0 },
+                { right: true, avatarCls: 'b', name: 'Rafael, 41', txt: 'Os filtros são o que fazem a diferença. Zero perda de tempo com perfis que não fazem sentido.', delay: 150 },
+                { right: false, avatarCls: 'c', name: 'Camila, 29', txt: 'A videochamada antes de encontrar alguém foi um divisor de águas pra mim. Cheguei no café sem nenhuma surpresa.', delay: 300 },
+                { right: true, avatarCls: 'd', name: 'Thiago, 43', txt: 'Matching por intenção real muda tudo. Sem joguinho, sem ambiguidade. Direto ao ponto.', delay: 450 },
+                { right: false, avatarCls: 'e', name: 'Ana, 37', txt: 'Nunca me senti tão no controle de quem entra na minha vida. Recomendo para todo mundo.', delay: 600 },
               ].map((m, i) => (
                 <div key={i} className={`lp-social-v2-msg${m.right ? ' lp-social-v2-msg--right' : ''} lp-anim`} style={{ animationDelay: `${m.delay}ms` }}>
                   <div className={`lp-social-v2-avatar lp-social-v2-avatar--${m.avatarCls || 'a'}`} style={m.avatarCls === '' ? { background: 'linear-gradient(135deg,#1a0a14,#3d1530)' } : {}} />
@@ -2266,7 +2286,7 @@ export default function Home() {
                       </div>
                       <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 13 }}>Videochamada em andamento</div>
                     </div>
-                    <div style={{ width: 80, height: 60, borderRadius: 10, background: 'linear-gradient(135deg,#1a0a14,#3d1530)', border: '1px solid rgba(255,255,255,0.08)', margin: '0 auto', position: 'relative', right: -60, bottom: 12 }} />
+                    <div style={{ width: 64, height: 48, borderRadius: 8, background: 'linear-gradient(135deg,#1a0a14,#3d1530)', border: '1px solid rgba(255,255,255,0.15)', position: 'absolute', top: 8, right: 8 }} />
                   </div>
                 </div>
               </div>
@@ -2465,70 +2485,6 @@ export default function Home() {
           </div>
         </section>
 
-        {/* ── Gamificação ── */}
-        <section className="lp-gamif lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.75), rgba(8,9,14,0.88)), url('/backgrounds/MUITO%20MAIS%20DO%20QUE%20CURTIDAS.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
-          <div className="lp-gamif-inner">
-            <p className="lp-section-label">Muito mais do que curtidas</p>
-            <h2 className="lp-section-title"><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Recompensas</em> por<br />estar aqui</h2>
-            <p style={{ color: 'var(--text-muted)', fontSize: '16px', maxWidth: '500px', margin: '0 auto', lineHeight: 1.7 }}>
-              Todo dia tem prêmio. Quanto mais você usa, mais você ganha.
-            </p>
-            <div className="lp-gamif-grid">
-              {[
-                {
-                  icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>,
-                  t: 'Roleta diária',
-                  d: 'Gire todo dia e ganhe SuperCurtidas, Lupas, Boosts e até 1 dia de plano superior. Cada plano dá mais tickets por dia.',
-                },
-                {
-                  icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>,
-                  t: 'Streak de acesso',
-                  d: 'Entre todos os dias e desbloqueie recompensas crescentes no calendário mensal. Sequência de 30 dias = prêmios raros.',
-                },
-                {
-                  icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>,
-                  t: 'Indique e ganhe',
-                  d: 'Cada amigo que entrar pelo seu link te rende 1 SuperCurtida. Indicou 3? Ganhe 1 Boost. Quem entrou ganha 3 tickets de boas-vindas.',
-                },
-                {
-                  icon: <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>,
-                  t: 'Emblemas Colecionáveis',
-                  d: 'Conquistas que aparecem no seu perfil. Raridades Comum, Incomum, Raro e Lendário. Quanto mais você usa e interage, mais emblemas raros você desbloqueia.',
-                },
-              ].map((item, i) => (
-                <div key={i} className="lp-gamif-card lp-anim">
-                  <div className="lp-gamif-icon">{item.icon}</div>
-                  <h3>{item.t}</h3>
-                  <p>{item.d}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ── Salas Temáticas ── */}
-        <section style={{ padding: '80px 24px', textAlign: 'center', background: 'linear-gradient(180deg, #0d0f16 0%, #08090E 100%)' }}>
-          <div style={{ maxWidth: '720px', margin: '0 auto' }}>
-            <p className="lp-section-label">Em breve</p>
-            <h2 className="lp-section-title" style={{ marginBottom: '16px' }}>
-              <em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Salas Temáticas</em>
-            </h2>
-            <p style={{ color: 'rgba(248,249,250,0.55)', fontSize: '16px', maxWidth: '520px', margin: '0 auto 40px', lineHeight: 1.75, fontFamily: 'var(--font-jakarta)' }}>
-              Uma nova forma de se conectar. Entre em uma sala por interesse ou clima e descubra quem mais está no mesmo astral que você neste momento.
-            </p>
-            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
-              {['Bares e baladas', 'Games', 'Viagens', 'Música ao vivo', 'Relacionamento sério', 'Apenas diversão', 'K-pop', 'Fitness', 'LGBTQIA+'].map((sala, i) => (
-                <span key={i} style={{
-                  padding: '8px 18px', borderRadius: '100px',
-                  background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.2)',
-                  color: 'rgba(248,249,250,0.65)', fontSize: '13px', fontFamily: 'var(--font-jakarta)',
-                }}>
-                  {sala}
-                </span>
-              ))}
-            </div>
-          </div>
-        </section>
 
         {/* ── Depoimentos ── */}
         <section className="lp-testi lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.72), rgba(8,9,14,0.88)), url('/backgrounds/depoimentos.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
