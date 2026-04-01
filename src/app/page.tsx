@@ -1155,6 +1155,32 @@ export default function Home() {
         @media(max-width:900px){.lp-intencoes-grid-v2{grid-template-columns:repeat(2,1fr)}}
         @media(max-width:600px){.lp-intencoes-v2{padding:72px 24px}.lp-intencoes-grid-v2{grid-template-columns:1fr}}
 
+        /* Seguranca v2 (Etapa 7) */
+        .lp-seg-v2{padding:100px 56px;background:var(--bg-card);border-top:1px solid var(--border-premium)}
+        .lp-seg-v2-inner{max-width:1140px;margin:0 auto}
+        .lp-seg-v2-header{text-align:center;margin-bottom:64px}
+        .lp-seg-v2-title{font-family:var(--font-fraunces),serif;font-size:clamp(32px,4vw,54px);font-weight:700;letter-spacing:-1.5px;line-height:1.1;margin:12px 0 0}
+        .lp-seg-phases{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-bottom:48px}
+        .lp-seg-phase{background:var(--bg);border:1px solid var(--border-premium);border-radius:20px;padding:32px 28px;display:flex;flex-direction:column;gap:20px;transition:var(--transition-smooth)}
+        .lp-seg-phase:hover{border-color:rgba(46,196,160,0.30);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,0.35)}
+        .lp-seg-phase-head{display:flex;align-items:center;gap:12px}
+        .lp-seg-phase-num{font-family:var(--font-fraunces),serif;font-size:13px;font-weight:700;color:rgba(248,249,250,0.25);letter-spacing:1px;text-transform:uppercase}
+        .lp-seg-phase-badge{font-size:12px;font-weight:700;padding:4px 12px;border-radius:100px;letter-spacing:0.5px}
+        .lp-seg-phase-badge.verde{background:rgba(46,196,160,0.12);border:1px solid rgba(46,196,160,0.30);color:#2ec4a0}
+        .lp-seg-phase-badge.alerta{background:rgba(225,29,72,0.10);border:1px solid rgba(225,29,72,0.25);color:var(--accent)}
+        .lp-seg-phase-title{font-family:var(--font-fraunces),serif;font-size:20px;font-weight:700;color:var(--text);line-height:1.2}
+        .lp-seg-phase-text{font-size:14px;color:rgba(248,249,250,0.50);line-height:1.7}
+        .lp-seg-features{display:flex;flex-direction:column;gap:9px;margin-top:4px}
+        .lp-seg-feat{display:flex;align-items:center;gap:8px;font-size:13px;color:rgba(248,249,250,0.60)}
+        .lp-seg-feat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+        .lp-seg-feat-dot.verde{background:#2ec4a0;box-shadow:0 0 6px rgba(46,196,160,0.50)}
+        .lp-seg-feat-dot.alerta{background:var(--accent);box-shadow:0 0 6px rgba(225,29,72,0.45)}
+        .lp-seg-closing{text-align:center;padding:28px;background:var(--bg);border:1px solid var(--border-premium);border-radius:16px}
+        .lp-seg-closing-text{font-family:var(--font-fraunces),serif;font-size:clamp(18px,2.5vw,26px);font-weight:700;color:var(--text)}
+        .lp-seg-closing-text em{color:#2ec4a0;font-style:italic}
+        @media(max-width:900px){.lp-seg-phases{grid-template-columns:1fr}}
+        @media(max-width:600px){.lp-seg-v2{padding:72px 24px}}
+
         /* Features */
         .lp-features-grid{display:flex;flex-direction:column;gap:80px}
         .lp-feature{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
@@ -1714,6 +1740,78 @@ export default function Home() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── SEGURANCA (Etapa 7) ── */}
+        <section className="lp-seg-v2">
+          <div className="lp-seg-v2-inner">
+            <div className="lp-seg-v2-header lp-anim">
+              <p className="lp-section-label">Seguranca</p>
+              <h2 className="lp-seg-v2-title">Voce nunca entra<br />no escuro.</h2>
+            </div>
+            <div className="lp-seg-phases">
+              {[
+                {
+                  num: '01',
+                  badge: 'Antes',
+                  badgeType: 'verde',
+                  titulo: 'Voce ve antes de decidir.',
+                  texto: 'Voce pode ver, entender e sentir seguranca antes de qualquer decisao.',
+                  feats: [
+                    { cor: 'verde', txt: 'Perfis verificados com documento e selfie ao vivo' },
+                    { cor: 'verde', txt: 'Intencoes declaradas visiveis desde o primeiro contato' },
+                    { cor: 'verde', txt: 'Historico de atividade e nivel de confianca do perfil' },
+                  ],
+                },
+                {
+                  num: '02',
+                  badge: 'Durante',
+                  badgeType: 'verde',
+                  titulo: 'Voce mantem o controle.',
+                  texto: 'Voce mantem controle total da interacao enquanto ela acontece.',
+                  feats: [
+                    { cor: 'verde', txt: 'Bloqueio e denuncia em um toque, sem confirmacoes desnecessarias' },
+                    { cor: 'verde', txt: 'Modo invisivel — sai do radar sem precisar explicar nada' },
+                    { cor: 'alerta', txt: 'Alerta automatico para comportamentos suspeitos na conversa' },
+                  ],
+                },
+                {
+                  num: '03',
+                  badge: 'Depois',
+                  badgeType: 'verde',
+                  titulo: 'Voce continua protegido.',
+                  texto: 'Voce continua protegido mesmo fora da conversa, mesmo apos um encontro.',
+                  feats: [
+                    { cor: 'verde', txt: 'Registro privado de encontro guardado so para voce' },
+                    { cor: 'verde', txt: 'Check-in automatico pos-encontro — o app pergunta se voce esta bem' },
+                    { cor: 'alerta', txt: 'Botao de emergencia — 190 em um toque, a qualquer momento' },
+                  ],
+                },
+              ].map((fase, i) => (
+                <div key={i} className="lp-seg-phase lp-anim" style={{ animationDelay: `${i * 120}ms` }}>
+                  <div className="lp-seg-phase-head">
+                    <span className="lp-seg-phase-num">{fase.num}</span>
+                    <span className={`lp-seg-phase-badge ${fase.badgeType}`}>{fase.badge}</span>
+                  </div>
+                  <div>
+                    <div className="lp-seg-phase-title">{fase.titulo}</div>
+                    <p className="lp-seg-phase-text">{fase.texto}</p>
+                  </div>
+                  <div className="lp-seg-features">
+                    {fase.feats.map((f, j) => (
+                      <div key={j} className="lp-seg-feat">
+                        <span className={`lp-seg-feat-dot ${f.cor}`} />
+                        {f.txt}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="lp-seg-closing lp-anim">
+              <p className="lp-seg-closing-text">Voce decide <em>ate onde vai.</em></p>
             </div>
           </div>
         </section>

@@ -23,8 +23,8 @@ Se isso não acontecer, perdeu.
 | 4 | Modos | Concluída | 2026-03-31 às 21:51 |
 | 5 | Filtros | Concluída | 2026-03-31 às 22:30 |
 | 6 | Intenções | Concluída | 2026-03-31 às 22:38 |
-| 7 | Segurança | Pendente — PRÓXIMA ETAPA | |
-| 8 | Gamificação | Pendente | |
+| 7 | Segurança | Concluída | 2026-03-31 às 22:48 |
+| 8 | Gamificação | Pendente — PRÓXIMA ETAPA | |
 | 9 | Encontro | Pendente | |
 | 10 | Perfil | Pendente | |
 | 11 | Backstage | Pendente | |
