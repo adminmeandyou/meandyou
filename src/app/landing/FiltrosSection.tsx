@@ -46,7 +46,7 @@ export default function FiltrosSection() {
             Você define exatamente o que faz sentido para você.<br />
             O resto simplesmente não entra no seu radar.
           </p>
-          <p className="lp-filtros-v2-compl">Menos ruído. Mais conexão real.</p>
+          <p className="lp-filtros-v2-compl">Menos ruído.<br />Mais conexão real.</p>
           <span className="lp-filtros-v2-micro">Você define. O app obedece.</span>
         </div>
         <div className="lp-filtros-v2-right lp-anim" style={{ transitionDelay: '0.1s' }}>
