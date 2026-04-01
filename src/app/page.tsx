@@ -1206,6 +1206,24 @@ export default function Home() {
         @media(max-width:768px){.lp-gamif-v2-grid{grid-template-columns:1fr}}
         @media(max-width:600px){.lp-gamif-v2{padding:72px 24px}}
 
+        /* Encontro v2 (Etapa 9) */
+        .lp-enc-v2{padding:96px 24px;background:#08090E}
+        .lp-enc-v2-inner{max-width:640px;margin:0 auto}
+        .lp-enc-v2-header{text-align:center;margin-bottom:64px}
+        .lp-enc-v2-title{font-family:var(--font-fraunces),serif;font-size:clamp(2rem,5vw,2.875rem);font-weight:700;color:var(--text);line-height:1.15;margin:12px 0 20px}
+        .lp-enc-v2-text{font-size:1.0625rem;color:var(--muted);max-width:480px;margin:0 auto 12px;line-height:1.7}
+        .lp-enc-v2-comp{font-size:0.9375rem;color:rgba(248,249,250,0.32);font-style:italic}
+        .lp-enc-v2-steps{display:flex;flex-direction:column}
+        .lp-enc-v2-step{display:flex;gap:20px;align-items:flex-start}
+        .lp-enc-v2-step-left{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:40px}
+        .lp-enc-v2-step-dot{width:40px;height:40px;border-radius:50%;background:rgba(15,20,45,0.80);border:1.5px solid rgba(59,130,246,0.22);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:rgba(147,197,253,0.65);letter-spacing:0.5px;flex-shrink:0}
+        .lp-enc-v2-step-line{width:1.5px;flex:1;min-height:36px;background:linear-gradient(180deg,rgba(59,130,246,0.18) 0%,rgba(59,130,246,0.04) 100%);margin:4px 0}
+        .lp-enc-v2-step-body{padding-bottom:36px;flex:1}
+        .lp-enc-v2-step:last-child .lp-enc-v2-step-body{padding-bottom:0}
+        .lp-enc-v2-step-title{font-family:var(--font-fraunces),serif;font-size:1.125rem;font-weight:700;color:var(--text);margin-bottom:8px;margin-top:8px}
+        .lp-enc-v2-step-text{font-size:0.9rem;color:var(--muted);line-height:1.65;margin:0}
+        @media(max-width:600px){.lp-enc-v2{padding:72px 24px}}
+
         /* Features */
         .lp-features-grid{display:flex;flex-direction:column;gap:80px}
         .lp-feature{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
@@ -1887,6 +1905,37 @@ export default function Home() {
                     <div className="lp-gamif-v2-card-title">{item.titulo}</div>
                     <p className="lp-gamif-v2-card-text">{item.texto}</p>
                     <span className="lp-gamif-v2-card-tag">{item.tag}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* ── ENCONTRO (Etapa 9) ── */}
+        <section className="lp-enc-v2">
+          <div className="lp-enc-v2-inner">
+            <div className="lp-enc-v2-header lp-anim">
+              <p className="lp-section-label">Do match ao encontro</p>
+              <h2 className="lp-enc-v2-title">Quando fizer sentido,<br />você avança.</h2>
+              <p className="lp-enc-v2-text">Do primeiro contato ao encontro, tudo acontece dentro de um ambiente controlado.</p>
+              <p className="lp-enc-v2-comp">Sem exposição desnecessária. Sem pressão.</p>
+            </div>
+            <div className="lp-enc-v2-steps">
+              {[
+                { num: '01', titulo: 'Match', texto: 'Vocês dois querem conversar. O app confirma antes de abrir o canal.' },
+                { num: '02', titulo: 'Conversa', texto: 'O contato começa no app, no seu ritmo, sem pressão para avançar.' },
+                { num: '03', titulo: 'Videochamada', texto: 'Quando sentir que faz sentido, você vê quem é a pessoa. Ainda dentro do app.' },
+                { num: '04', titulo: 'Encontro', texto: 'Só quando você quiser. Com registro privado, check-in automático e botão de emergência.' },
+              ].map((step, i, arr) => (
+                <div key={i} className="lp-enc-v2-step lp-anim" style={{ animationDelay: `${i * 120}ms` }}>
+                  <div className="lp-enc-v2-step-left">
+                    <div className="lp-enc-v2-step-dot">{step.num}</div>
+                    {i < arr.length - 1 && <div className="lp-enc-v2-step-line" />}
+                  </div>
+                  <div className="lp-enc-v2-step-body">
+                    <div className="lp-enc-v2-step-title">{step.titulo}</div>
+                    <p className="lp-enc-v2-step-text">{step.texto}</p>
                   </div>
                 </div>
               ))}
