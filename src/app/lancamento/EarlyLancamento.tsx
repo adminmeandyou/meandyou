@@ -29,21 +29,21 @@ export default function EarlyLancamento() {
             background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.30)',
             marginBottom: 20,
           }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: '#F59E0B', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Lendario · Vitalicio · So no lancamento</span>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#F59E0B', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Lendário · Vitalício · Só no lançamento</span>
           </div>
 
           <h2 className="lp-early-title-v2">
-            Este emblema nunca mais<br /><span style={{ color: '#F59E0B' }}>sera oferecido.</span>
+            Este emblema nunca mais<br /><span style={{ color: '#F59E0B' }}>será oferecido.</span>
           </h2>
 
           <p className="lp-early-text-v2" style={{ maxWidth: 560, margin: '0 auto 16px' }}>
-            O MeAndYou esta lancando agora. Todo usuario que entrar durante o lancamento recebe automaticamente o <strong style={{ color: '#F59E0B' }}>Emblema de Fundador — raridade Lendaria</strong>.
+            O MeAndYou está lançando agora. Todo usuário que entrar durante o lançamento recebe automaticamente o <strong style={{ color: '#F59E0B' }}>Emblema de Fundador — raridade Lendária</strong>.
           </p>
           <p className="lp-early-text-v2" style={{ maxWidth: 560, margin: '0 auto 16px' }}>
-            Ele aparece no seu perfil para todos verem. Quando o lancamento encerrar, ninguem mais recebe. Quem ja tem, carrega para sempre. E uma prova permanente de que voce esteve aqui desde o comeco.
+            Ele aparece no seu perfil para todos verem. Quando o lançamento encerrar, ninguém mais recebe. Quem já tem, carrega para sempre. É uma prova permanente de que você esteve aqui desde o começo.
           </p>
           <p className="lp-early-text-v2" style={{ maxWidth: 560, margin: '0 auto 32px', color: 'rgba(248,249,250,0.40)', fontSize: 14 }}>
-            No futuro, quando o app estiver cheio, as pessoas vao ver esse emblema no seu perfil e vao saber: essa pessoa e uma Fundadora.
+            No futuro, quando o app estiver cheio, as pessoas vão ver esse emblema no seu perfil e vão saber: essa pessoa é uma Fundadora.
           </p>
 
           <a href="/cadastro" className="lp-btn-gold-v2" style={{ marginTop: 8 }}>
@@ -51,7 +51,7 @@ export default function EarlyLancamento() {
           </a>
 
           <p style={{ marginTop: 14, fontSize: 13, color: 'rgba(248,249,250,0.30)' }}>
-            Junto com 2 meses gratis do Plano Essencial
+            Junto com 2 meses grátis do Plano Essencial
           </p>
         </div>
       </div>

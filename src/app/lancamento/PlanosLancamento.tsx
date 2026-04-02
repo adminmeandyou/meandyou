@@ -8,22 +8,22 @@ export default function PlanosLancamento() {
     nome: string; area: string; preco: string; precoRiscado?: string; desc: string; feats: Feat[]; ctaText: string; nota?: string
   }> = [
     {
-      badge: '2 meses GRATIS', badgeCls: 'free', ctaCls: 'free', lancamento: true,
+      badge: '2 meses GRÁTIS', badgeCls: 'free', ctaCls: 'free', lancamento: true,
       nome: 'Essencial',
       area: 'Pista',
-      preco: 'Gratis',
+      preco: 'Grátis',
       precoRiscado: '9,97',
       desc: 'O plano de entrada. Use tudo por 2 meses sem pagar nada. Depois decide se quer continuar.',
-      ctaText: 'Comecar gratis agora',
-      nota: 'Apos o periodo: R$9,97/mes · Cancele quando quiser',
+      ctaText: 'Começar grátis agora',
+      nota: 'Após o período: R$9,97/mês · Cancele quando quiser',
       feats: [
         { ok: true,  txt: '20 curtidas por dia' },
         { ok: true,  txt: '1 SuperCurtida por dia' },
         { ok: true,  txt: '1 ticket de roleta por dia' },
         { ok: true,  txt: 'Videochamada nativa' },
-        { ok: true,  txt: 'Verificacao de identidade' },
-        { ok: false, txt: 'Filtros avancados' },
-        { ok: false, txt: 'Ver quem curtiu voce' },
+        { ok: true,  txt: 'Verificação de identidade' },
+        { ok: false, txt: 'Filtros avançados' },
+        { ok: false, txt: 'Ver quem curtiu você' },
         { ok: false, txt: 'Desfazer curtida' },
       ],
     },
@@ -32,16 +32,16 @@ export default function PlanosLancamento() {
       nome: 'Plus',
       area: 'Area VIP',
       preco: '39,97',
-      desc: 'A experiencia completa de filtragem. Para quem quer controle total desde o inicio.',
+      desc: 'A experiência completa de filtragem. Para quem quer controle total desde o início.',
       ctaText: 'Assinar o Plus',
       feats: [
         { ok: true,  txt: '50 curtidas por dia' },
         { ok: true,  txt: '5 SuperCurtidas por dia' },
         { ok: true,  txt: '2 tickets de roleta por dia' },
         { ok: true,  txt: '1 Lupa por dia no Destaque' },
-        { ok: true,  txt: 'Todos os filtros avancados' },
-        { ok: true,  txt: 'Filtro de exclusao' },
-        { ok: true,  txt: 'Ver quem curtiu voce' },
+        { ok: true,  txt: 'Todos os filtros avançados' },
+        { ok: true,  txt: 'Filtro de exclusão' },
+        { ok: true,  txt: 'Ver quem curtiu você' },
         { ok: true,  txt: 'Desfazer curtida' },
         { ok: false, txt: 'Acesso ao Backstage' },
       ],
@@ -51,7 +51,7 @@ export default function PlanosLancamento() {
       nome: 'Black',
       area: 'Backstage',
       preco: '99,97',
-      desc: 'Voce acessa tudo — sem restricoes. Com area exclusiva Backstage e o maximo do algoritmo.',
+      desc: 'Você acessa tudo — sem restrições. Com área exclusiva Backstage e o máximo do algoritmo.',
       ctaText: 'Assinar o Black',
       feats: [
         { ok: true, gold: true,  txt: 'Curtidas ilimitadas' },
@@ -61,9 +61,9 @@ export default function PlanosLancamento() {
         { ok: true, gold: true,  txt: 'Tudo do Plus' },
         { ok: true, gold: true,  txt: 'Acesso ao Backstage' },
         { ok: true, gold: true,  txt: 'Modo Casal (exclusivo Black)' },
-        { ok: true, gold: true,  txt: '2 Boosts simultaneos' },
-        { ok: true, gold: true,  txt: 'Destaque maximo no feed' },
-        { ok: true, gold: true,  txt: 'Suporte prioritario 24h' },
+        { ok: true, gold: true,  txt: '2 Boosts simultâneos' },
+        { ok: true, gold: true,  txt: 'Destaque máximo no feed' },
+        { ok: true, gold: true,  txt: 'Suporte prioritário 24h' },
       ],
     },
   ]
@@ -73,8 +73,8 @@ export default function PlanosLancamento() {
       <div className="lp-plans-v2-inner">
         <div className="lp-plans-v2-header lp-anim">
           <p className="lp-section-label">Planos</p>
-          <h2 className="lp-plans-v2-title">Comece gratis.<br />Faca upgrade quando quiser.</h2>
-          <p className="lp-plans-v2-sub">O Essencial e seu por 2 meses, sem pagar nada. Depois, voce escolhe o que faz mais sentido.</p>
+          <h2 className="lp-plans-v2-title">Comece grátis.<br />Faça upgrade quando quiser.</h2>
+          <p className="lp-plans-v2-sub">O Essencial é seu por 2 meses, sem pagar nada. Depois, você escolhe o que faz mais sentido.</p>
         </div>
         <div className="lp-plans-v2-grid">
           {plans.map((plan, i) => (
@@ -89,7 +89,7 @@ export default function PlanosLancamento() {
                   <span style={{ fontSize:14, color:'rgba(248,249,250,0.25)', textDecoration:'line-through', fontWeight:500 }}>R${plan.precoRiscado}</span>
                 )}
                 <span style={{ fontSize: plan.lancamento ? 28 : 36, fontWeight:700, letterSpacing:'-1.5px', lineHeight:1, color: plan.lancamento ? '#10b981' : plan.badgeCls === 'black' ? '#F59E0B' : plan.featured ? 'var(--accent)' : 'var(--text)', fontFamily:'var(--font-fraunces),serif' }}>{plan.preco}</span>
-                {!plan.lancamento && <span style={{ fontSize:12, color:'rgba(248,249,250,0.35)', fontWeight:400 }}>/mes</span>}
+                {!plan.lancamento && <span style={{ fontSize:12, color:'rgba(248,249,250,0.35)', fontWeight:400 }}>/mês</span>}
               </div>
               <p className="lp-plans-v2-desc">{plan.desc}</p>
               <ul className="lp-plans-v2-feats">
@@ -130,8 +130,8 @@ export default function PlanosLancamento() {
             </div>
           ))}
         </div>
-        <p className="lp-plans-v2-highlight lp-anim">Comece gratis no Essencial. Faca upgrade a qualquer momento.</p>
-        <p className="lp-plans-v2-micro lp-anim">Voce pode cancelar a qualquer momento, sem burocracia</p>
+        <p className="lp-plans-v2-highlight lp-anim">Comece grátis no Essencial. Faça upgrade a qualquer momento.</p>
+        <p className="lp-plans-v2-micro lp-anim">Você pode cancelar a qualquer momento, sem burocracia</p>
       </div>
     </section>
   )

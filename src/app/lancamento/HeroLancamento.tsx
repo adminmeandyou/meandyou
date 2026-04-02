@@ -34,27 +34,27 @@ export default function HeroLancamento({ userCity, notifList }: HeroProps) {
         <div>
           <div className="lp-badge" style={{ background: 'rgba(245,158,11,0.12)', borderColor: 'rgba(245,158,11,0.30)', color: '#F59E0B' }}>
             <span className="lp-badge-dot" style={{ background: '#F59E0B' }} />
-            Lançamento · Acesso antecipado disponivel
+            Lançamento · Acesso antecipado disponível
           </div>
-          <h1><em style={{color:'var(--accent)',fontStyle:'italic'}}>Voce decide</em> quem entra<br /><em style={{color:'var(--text)',fontStyle:'italic'}}>no seu mundo.</em></h1>
+          <h1><em style={{color:'var(--accent)',fontStyle:'italic'}}>Você decide</em> quem entra<br /><em style={{color:'var(--text)',fontStyle:'italic'}}>no seu mundo.</em></h1>
           <p className="lp-hero-sub">
-            Filtros avancados, videochamada, salas e muito mais. Antes do lançamento oficial, voce testa tudo de graca por 2 meses — e ainda ganha um emblema de Fundador que ninguem mais vai ter.
+            Filtros avançados, videochamada, salas e muito mais. Antes do lançamento oficial, você testa tudo de graça por 2 meses — e ainda ganha um emblema de Fundador que ninguém mais vai ter.
           </p>
           <p className="lp-hero-complement">
-            A plataforma e paga. Mas agora, antes de abrir para o mundo, precisamos de pessoas reais testando. A troca e justa.
+            A plataforma é paga. Mas agora, antes de abrir para o mundo, precisamos de pessoas reais testando. A troca é justa.
           </p>
           <div className="lp-actions">
             <a href="/cadastro" className="lp-btn-main">
-              Garantir meu acesso gratis
+              Garantir meu acesso grátis
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
             </a>
           </div>
           <p className="lp-hero-microcopy">
-            Plano Essencial · <strong>2 meses gratis</strong> · Depois R$9,97/mes · Cancele quando quiser
+            Plano Essencial · <strong>2 meses grátis</strong> · Depois R$9,97/mês · Cancele quando quiser
           </p>
           <div className="lp-hero-social-proof">
             <span className="lp-hero-social-proof-dot" />
-            <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas ja garantiram seu acesso {userCity ? <>em <strong className="lp-hero-proof-number">{userCity}</strong></> : 'na sua regiao'}</span>
+            <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas já garantiram seu acesso {userCity ? <>em <strong className="lp-hero-proof-number">{userCity}</strong></> : 'na sua região'}</span>
           </div>
         </div>
 

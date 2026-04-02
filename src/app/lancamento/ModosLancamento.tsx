@@ -6,26 +6,26 @@ import { IcZap, IcFilter, IcStar, IcUsers } from '../landing/icons'
 const modos = [
   {
     num: '01', icon: <IcZap />, title: 'Descobrir',
-    text: 'Swipe rapido, decisao instantanea. Curta, passe ou mande uma SuperCurtida. So perfis verificados no seu radar.',
-    preview: 'Perfis verificados. Decisao em segundos.',
+    text: 'Swipe rápido, decisão instantânea. Curta, passe ou mande uma SuperCurtida. Só perfis verificados no seu radar.',
+    preview: 'Perfis verificados. Decisão em segundos.',
     color: '#E11D48', colorSoft: 'rgba(225,29,72,0.12)', colorBorder: 'rgba(225,29,72,0.25)', colorGlow: 'rgba(225,29,72,0.30)',
   },
   {
-    num: '02', icon: <IcFilter />, title: 'Busca Avancada',
-    text: 'Mais de 100 filtros. Voce define tudo — corpo, estilo, habitos, intencoes. Quem nao combina, nao aparece.',
-    preview: 'Voce define o tipo. O app filtra tudo que nao encaixa.',
+    num: '02', icon: <IcFilter />, title: 'Busca Avançada',
+    text: 'Mais de 100 filtros. Você define tudo — corpo, estilo, hábitos, intenções. Quem não combina, não aparece.',
+    preview: 'Você define o tipo. O app filtra tudo que não encaixa.',
     color: '#A855F7', colorSoft: 'rgba(168,85,247,0.12)', colorBorder: 'rgba(168,85,247,0.25)', colorGlow: 'rgba(168,85,247,0.30)',
   },
   {
     num: '03', icon: <IcStar />, title: 'Match do Dia',
-    text: 'Todo dia, o app analisa seu perfil e te entrega uma selecao cirurgica. Sem sorte. Com precisao.',
-    preview: 'Uma selecao nova todo dia, feita so para voce.',
+    text: 'Todo dia, o app analisa seu perfil e te entrega uma seleção cirúrgica. Sem sorte. Com precisão.',
+    preview: 'Uma seleção nova todo dia, feita só para você.',
     color: '#F59E0B', colorSoft: 'rgba(245,158,11,0.10)', colorBorder: 'rgba(245,158,11,0.25)', colorGlow: 'rgba(245,158,11,0.28)',
   },
   {
     num: '04', icon: <IcUsers />, title: 'Salas',
-    text: 'Entre em salas publicas com ate 20 pessoas ou crie a sua — privada ou aberta para todos. Conexao em tempo real.',
-    preview: 'Salas publicas ou personalizadas. Voce decide quem entra.',
+    text: 'Entre em salas públicas com até 20 pessoas ou crie a sua — privada ou aberta para todos. Conexão em tempo real.',
+    preview: 'Salas públicas ou personalizadas. Você decide quem entra.',
     color: '#10B981', colorSoft: 'rgba(16,185,129,0.10)', colorBorder: 'rgba(16,185,129,0.22)', colorGlow: 'rgba(16,185,129,0.25)',
   },
 ]
@@ -38,11 +38,11 @@ export default function ModosLancamento() {
     <section className="lp-modos-section">
       <div className="lp-modos-inner">
         <div className="lp-modos-header lp-anim">
-          <h2>Quatro formas de se conectar.<br /><em style={{color:'var(--accent)',fontStyle:'italic'}}>Todas incluidas nos 2 meses gratis.</em></h2>
-          <p>Voce muda a forma de se conectar conforme o momento. E testa cada uma sem pagar nada.</p>
+          <h2>Quatro formas de se conectar.<br /><em style={{color:'var(--accent)',fontStyle:'italic'}}>Todas incluídas nos 2 meses grátis.</em></h2>
+          <p>Você muda a forma de se conectar conforme o momento. E testa cada uma sem pagar nada.</p>
         </div>
         <p className="lp-modos-desc lp-anim">
-          Explorar rapido, buscar com precisao, entrar em salas ou receber sugestoes diarias. Tudo dentro do mesmo app, disponivel agora no acesso antecipado.
+          Explorar rápido, buscar com precisão, entrar em salas ou receber sugestões diárias. Tudo dentro do mesmo app, disponível agora no acesso antecipado.
         </p>
         <div className="lp-modos-layout">
           <div className="lp-modos-tabs">

@@ -174,7 +174,7 @@ export default function LancamentoPage() {
     const ct = userCity
       ? [userCity,'Sao Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiania','Campinas','Florianopolis','Belem']
       : ['Sao Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiania','Campinas','Florianopolis','Belem','Natal']
-    const filtros = ['que nao queira ter filhos','que tenha pets','que seja evangelico(a)','que nao fume','que nao beba','que faca academia','que goste de viajar','que goste de leitura','que seja gamer','que goste de cinema','que seja solteiro(a) sem filhos']
+    const filtros = ['que não queira ter filhos','que tenha pets','que seja evangélico(a)','que não fume','que não beba','que faça academia','que goste de viajar','que goste de leitura','que seja gamer','que goste de cinema','que seja solteiro(a) sem filhos']
 
     const rnd = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)]
     const idade = () => Math.floor(Math.random() * 37) + 18
@@ -182,14 +182,14 @@ export default function LancamentoPage() {
     const gens = [
       () => `${rnd(nm)}, ${idade()} · garantiu acesso antecipado em ${rnd(ct)}`,
       () => `${rnd(nm)}, ${idade()} · recebeu o Emblema de Fundador agora`,
-      () => `${rnd(nm)} de ${rnd(ct)} · entrou no lancamento`,
-      () => `${rnd(nm)}, ${idade()} · verificou identidade e ja esta ativo`,
-      () => `${rnd(nm)} de ${rnd(ct)} · comecou os 2 meses gratis`,
+      () => `${rnd(nm)} de ${rnd(ct)} · entrou no lançamento`,
+      () => `${rnd(nm)}, ${idade()} · verificou identidade e já está ativo`,
+      () => `${rnd(nm)} de ${rnd(ct)} · começou os 2 meses grátis`,
       () => `${rnd(nm)}, ${idade()} · deu match logo no primeiro dia`,
-      () => `${rnd(nm)}, ${idade()} · esta procurando alguem ${rnd(filtros)}`,
+      () => `${rnd(nm)}, ${idade()} · está procurando alguém ${rnd(filtros)}`,
       () => `${rnd(nm)} de ${rnd(ct)} · configurou mais de 30 filtros`,
       () => `${rnd(nm)}, ${idade()} · ganhou tickets de roleta na boas-vindas`,
-      () => `${rnd(nm)} de ${rnd(ct)} · fez upgrade para Plus durante o lancamento`,
+      () => `${rnd(nm)} de ${rnd(ct)} · fez upgrade para Plus durante o lançamento`,
     ]
 
     let timer: ReturnType<typeof setTimeout>
