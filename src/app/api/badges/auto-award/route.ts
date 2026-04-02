@@ -79,12 +79,14 @@ export async function POST(req: NextRequest) {
     }
 
     case 'likes_received_gte': {
+      // target_id = quem recebeu o like
       const { data } = await supabase.rpc('get_users_likes_received', { min_count: count })
       userIds = (data ?? []).map((r: any) => r.user_id)
       break
     }
 
     case 'likes_sent_gte': {
+      // user_id = quem enviou o like
       const { data } = await supabase.rpc('get_users_likes_sent', { min_count: count })
       userIds = (data ?? []).map((r: any) => r.user_id)
       break
