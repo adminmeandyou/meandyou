@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
     if (method === 'pix') {
       const pixResp = await fetch(`${ABACATE_BASE}/pixQrCode/create`, {
         method: 'POST',
+        signal: AbortSignal.timeout(10000),
         headers: {
           'Authorization': `Bearer ${ABACATE_KEY}`,
           'Content-Type': 'application/json',
@@ -120,6 +121,7 @@ export async function POST(req: NextRequest) {
     } else {
       const billingResp = await fetch(`${ABACATE_BASE}/billing/create`, {
         method: 'POST',
+        signal: AbortSignal.timeout(10000),
         headers: {
           'Authorization': `Bearer ${ABACATE_KEY}`,
           'Content-Type': 'application/json',

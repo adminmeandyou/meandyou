@@ -37,17 +37,16 @@ export async function POST(req: NextRequest) {
   const { roomId, nickname: customNickname } = await req.json()
   if (!roomId) return NextResponse.json({ error: 'roomId obrigatorio' }, { status: 400 })
 
-  // Buscar sala
+  // Verificar acesso por tipo de sala
   const { data: room, error: roomErr } = await supabaseAdmin
     .from('chat_rooms')
-    .select('id, name, type, max_members, is_active')
+    .select('type, is_active')
     .eq('id', roomId)
     .single()
 
   if (roomErr || !room) return NextResponse.json({ error: 'Sala nao encontrada' }, { status: 404 })
   if (!room.is_active) return NextResponse.json({ error: 'Sala inativa' }, { status: 400 })
 
-  // Buscar plano do usuario
   const { data: profile } = await supabaseAdmin
     .from('profiles')
     .select('plan')
@@ -56,7 +55,6 @@ export async function POST(req: NextRequest) {
 
   const plan = profile?.plan ?? 'essencial'
 
-  // Verificar acesso por tipo de sala
   if (room.type === 'black' && plan !== 'black') {
     return NextResponse.json({ error: 'Sala exclusiva para plano Black' }, { status: 403 })
   }
@@ -64,58 +62,43 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Salas disponiveis a partir do plano Plus' }, { status: 403 })
   }
 
-  // Verificar se ja esta na sala
-  const { data: existing } = await supabaseAdmin
-    .from('room_members')
-    .select('nickname')
-    .eq('room_id', roomId)
-    .eq('user_id', user.id)
-    .single()
-
-  if (existing) {
-    return NextResponse.json({ ok: true, nickname: existing.nickname, alreadyIn: true })
-  }
-
-  // Limpar membros fantasmas (sem heartbeat ha mais de 2 minutos)
-  const cutoff = new Date(Date.now() - 2 * 60 * 1000).toISOString()
-  await supabaseAdmin
-    .from('room_members')
-    .delete()
-    .eq('room_id', roomId)
-    .lt('last_heartbeat', cutoff)
-
-  // Verificar capacidade
-  const { count } = await supabaseAdmin
-    .from('room_members')
-    .select('*', { count: 'exact', head: true })
-    .eq('room_id', roomId)
-
-  if ((count ?? 0) >= room.max_members) {
-    return NextResponse.json({ error: 'Sala cheia' }, { status: 409 })
-  }
-
-  // Gerar ou usar nickname
   const nickname = customNickname?.trim() || generateNickname()
 
-  // Inserir membro com heartbeat inicial
-  const { error: insertErr } = await supabaseAdmin
-    .from('room_members')
-    .insert({ room_id: roomId, user_id: user.id, nickname, last_heartbeat: new Date().toISOString() })
+  // Entrada atomica: lock de capacidade, limpeza de fantasmas e INSERT em uma unica transacao SQL.
+  // Resolve race condition onde multiplos usuarios entram simultaneamente e ultrapassam max_members.
+  const { data: result, error: rpcErr } = await supabaseAdmin.rpc('entrar_sala', {
+    p_room_id:  roomId,
+    p_user_id:  user.id,
+    p_nickname: nickname,
+  })
 
-  if (insertErr) {
+  if (rpcErr) {
+    console.error('[salas/entrar] rpc error:', rpcErr)
     return NextResponse.json({ error: 'Erro ao entrar na sala' }, { status: 500 })
+  }
+
+  const res = result as { status: string; nickname?: string }
+
+  if (res.status === 'sala_nao_encontrada') {
+    return NextResponse.json({ error: 'Sala nao encontrada' }, { status: 404 })
+  }
+  if (res.status === 'sala_cheia') {
+    return NextResponse.json({ error: 'Sala cheia' }, { status: 409 })
+  }
+  if (res.status === 'ja_membro') {
+    return NextResponse.json({ ok: true, nickname: res.nickname, alreadyIn: true })
   }
 
   // Mensagem de sistema
   try {
     await supabaseAdmin.from('room_messages').insert({
-      room_id: roomId,
+      room_id:   roomId,
       sender_id: user.id,
-      nickname: 'Sistema',
-      content: `${nickname} entrou na sala`,
+      nickname:  'Sistema',
+      content:   `${res.nickname} entrou na sala`,
       is_system: true,
     })
   } catch { /* silencioso */ }
 
-  return NextResponse.json({ ok: true, nickname })
+  return NextResponse.json({ ok: true, nickname: res.nickname })
 }

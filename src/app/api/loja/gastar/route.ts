@@ -30,6 +30,18 @@ async function incrementarSaldo(tabela: string, userId: string, amount: number):
   })
 }
 
+// Retry para updates diretos em profiles (campos de data/boolean).
+// As fichas ja foram debitadas antes de chegar aqui, entao se o update falhar
+// o usuario perde o beneficio sem perder as fichas. O retry reduz esse risco.
+async function atualizarProfile(userId: string, update: Record<string, unknown>): Promise<void> {
+  for (let tentativa = 0; tentativa < 3; tentativa++) {
+    const { error } = await supabaseAdmin.from('profiles').update(update).eq('id', userId)
+    if (!error) return
+    if (tentativa < 2) await new Promise(r => setTimeout(r, 300 * (tentativa + 1)))
+  }
+  console.error('[loja/gastar] falha ao atualizar profile apos 3 tentativas — user:', userId, 'update:', update)
+}
+
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get('Authorization')
@@ -92,20 +104,20 @@ export async function POST(req: NextRequest) {
       })
       if (ghostErr) {
         const until = new Date(Date.now() + days * 86400000).toISOString()
-        await supabaseAdmin.from('profiles').update({ ghost_mode_until: until }).eq('id', user.id)
+        await atualizarProfile(user.id, { ghost_mode_until: until })
       }
 
     } else if (item_key === 'reveals_5') {
       // Abre janela de 24h para ver quem curtiu
       const until = new Date(Date.now() + 86400000).toISOString()
-      await supabaseAdmin.from('profiles').update({ curtidas_reveals_until: until }).eq('id', user.id)
+      await atualizarProfile(user.id, { curtidas_reveals_until: until })
 
     } else if (item_key === 'xp_bonus_3d') {
       const until = new Date(Date.now() + 3 * 86400000).toISOString()
-      await supabaseAdmin.from('profiles').update({ xp_bonus_until: until }).eq('id', user.id)
+      await atualizarProfile(user.id, { xp_bonus_until: until })
 
     } else if (item_key === 'verified_plus') {
-      await supabaseAdmin.from('profiles').update({ verified_plus: true }).eq('id', user.id)
+      await atualizarProfile(user.id, { verified_plus: true })
       // Concede automaticamente o emblema de Identidade Verificada (se existir)
       const { data: verifiedBadge } = await supabaseAdmin
         .from('badges')

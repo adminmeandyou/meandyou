@@ -40,7 +40,10 @@ export async function GET(
     if (payment.method === 'pix' && payment.gateway_id) {
       const resp = await fetch(
         `https://api.abacatepay.com/v1/pixQrCode/check?id=${payment.gateway_id}`,
-        { headers: { 'Authorization': `Bearer ${process.env.ABACATEPAY_API_KEY}` } }
+        {
+          signal: AbortSignal.timeout(10000),
+          headers: { 'Authorization': `Bearer ${process.env.ABACATEPAY_API_KEY}` },
+        }
       )
       const data = await resp.json()
       const abStatus = data.data?.status
