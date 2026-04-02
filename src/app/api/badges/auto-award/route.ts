@@ -79,73 +79,38 @@ export async function POST(req: NextRequest) {
     }
 
     case 'likes_received_gte': {
-      const { data } = await supabase.from('likes').select('to_user')
-      const counts: Record<string, number> = {}
-      for (const r of data ?? []) { if (r.to_user) counts[r.to_user] = (counts[r.to_user] || 0) + 1 }
-      userIds = Object.entries(counts).filter(([, c]) => c >= count).map(([uid]) => uid)
+      const { data } = await supabase.rpc('get_users_likes_received', { min_count: count })
+      userIds = (data ?? []).map((r: any) => r.user_id)
       break
     }
 
     case 'likes_sent_gte': {
-      const { data } = await supabase.from('likes').select('from_user')
-      const counts: Record<string, number> = {}
-      for (const r of data ?? []) { if (r.from_user) counts[r.from_user] = (counts[r.from_user] || 0) + 1 }
-      userIds = Object.entries(counts).filter(([, c]) => c >= count).map(([uid]) => uid)
+      const { data } = await supabase.rpc('get_users_likes_sent', { min_count: count })
+      userIds = (data ?? []).map((r: any) => r.user_id)
       break
     }
 
     case 'messages_sent_gte': {
-      const { data } = await supabase.from('messages').select('sender_id')
-      const counts: Record<string, number> = {}
-      for (const r of data ?? []) { if (r.sender_id) counts[r.sender_id] = (counts[r.sender_id] || 0) + 1 }
-      userIds = Object.entries(counts).filter(([, c]) => c >= count).map(([uid]) => uid)
+      const { data } = await supabase.rpc('get_users_messages_sent', { min_count: count })
+      userIds = (data ?? []).map((r: any) => r.user_id)
       break
     }
 
     case 'messages_received_gte': {
-      // Count messages where user is NOT the sender in their conversations
-      // Uses a join approach via matches/conversations
-      const { data } = await supabase.from('messages').select('sender_id, match_id')
-      const { data: matchData } = await supabase.from('matches').select('id, user1, user2')
-      const matchMap: Record<string, { u1: string; u2: string }> = {}
-      for (const m of matchData ?? []) matchMap[m.id] = { u1: m.user1, u2: m.user2 }
-      const counts: Record<string, number> = {}
-      for (const msg of data ?? []) {
-        const match = matchMap[msg.match_id]
-        if (!match) continue
-        const receiver = match.u1 === msg.sender_id ? match.u2 : match.u1
-        if (receiver) counts[receiver] = (counts[receiver] || 0) + 1
-      }
-      userIds = Object.entries(counts).filter(([, c]) => c >= count).map(([uid]) => uid)
+      const { data } = await supabase.rpc('get_users_messages_received', { min_count: count })
+      userIds = (data ?? []).map((r: any) => r.user_id)
       break
     }
 
     case 'messages_total_gte': {
-      const { data: msgData } = await supabase.from('messages').select('sender_id, match_id')
-      const { data: matchData } = await supabase.from('matches').select('id, user1, user2')
-      const matchMap: Record<string, { u1: string; u2: string }> = {}
-      for (const m of matchData ?? []) matchMap[m.id] = { u1: m.user1, u2: m.user2 }
-      const counts: Record<string, number> = {}
-      for (const msg of msgData ?? []) {
-        if (msg.sender_id) counts[msg.sender_id] = (counts[msg.sender_id] || 0) + 1
-        const match = matchMap[msg.match_id]
-        if (match) {
-          const receiver = match.u1 === msg.sender_id ? match.u2 : match.u1
-          if (receiver) counts[receiver] = (counts[receiver] || 0) + 1
-        }
-      }
-      userIds = Object.entries(counts).filter(([, c]) => c >= count).map(([uid]) => uid)
+      const { data } = await supabase.rpc('get_users_messages_total', { min_count: count })
+      userIds = (data ?? []).map((r: any) => r.user_id)
       break
     }
 
     case 'matches_gte': {
-      const { data } = await supabase.from('matches').select('user1, user2').eq('status', 'active')
-      const counts: Record<string, number> = {}
-      for (const m of data ?? []) {
-        if (m.user1) counts[m.user1] = (counts[m.user1] || 0) + 1
-        if (m.user2) counts[m.user2] = (counts[m.user2] || 0) + 1
-      }
-      userIds = Object.entries(counts).filter(([, c]) => c >= count).map(([uid]) => uid)
+      const { data } = await supabase.rpc('get_users_matches', { min_count: count })
+      userIds = (data ?? []).map((r: any) => r.user_id)
       break
     }
 
@@ -162,20 +127,14 @@ export async function POST(req: NextRequest) {
     }
 
     case 'video_calls_gte': {
-      // Tabela real: video_minutes (cada linha = 1 sessão de vídeo)
-      const { data } = await supabase.from('video_minutes').select('user_id')
-      const counts: Record<string, number> = {}
-      for (const r of data ?? []) { if (r.user_id) counts[r.user_id] = (counts[r.user_id] || 0) + 1 }
-      userIds = Object.entries(counts).filter(([, c]) => c >= count).map(([uid]) => uid)
+      const { data } = await supabase.rpc('get_users_video_calls', { min_count: count })
+      userIds = (data ?? []).map((r: any) => r.user_id)
       break
     }
 
     case 'video_minutes_gte': {
-      // Tabela real: video_minutes com coluna minutes
-      const { data } = await supabase.from('video_minutes').select('user_id, minutes')
-      const totals: Record<string, number> = {}
-      for (const r of data ?? []) { if (r.user_id) totals[r.user_id] = (totals[r.user_id] || 0) + (r.minutes || 0) }
-      userIds = Object.entries(totals).filter(([, t]) => t >= count).map(([uid]) => uid)
+      const { data } = await supabase.rpc('get_users_video_minutes', { min_minutes: count })
+      userIds = (data ?? []).map((r: any) => r.user_id)
       break
     }
 

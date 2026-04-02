@@ -71,35 +71,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 403 })
     }
 
-    // 3. Rate limit por match: conta msgs do usuário nesse match na janela
-    const since = new Date(Date.now() - RATE_WINDOW_SECS * 1000).toISOString()
-    const { count } = await supabaseAdmin
-      .from('messages')
-      .select('id', { count: 'exact', head: true })
-      .eq('sender_id', user.id)
-      .eq('match_id', matchId)
-      .gte('created_at', since)
+    // 3+4. Rate limit + insert atomico via RPC.
+    // O advisory lock dentro da funcao serializa envios simultaneos do mesmo usuario
+    // no mesmo match, eliminando a race condition de COUNT -> INSERT separados.
+    const { data: result, error: rpcErr } = await supabaseAdmin.rpc('send_chat_message', {
+      p_match_id:  matchId,
+      p_sender_id: user.id,
+      p_content:   trimmed,
+      p_limit:     RATE_LIMIT,
+      p_window:    `${RATE_WINDOW_SECS} seconds`,
+    })
 
-    if ((count ?? 0) >= RATE_LIMIT) {
+    if (rpcErr) {
+      console.error('Erro ao inserir mensagem:', rpcErr)
+      return NextResponse.json({ error: 'Erro ao enviar mensagem.' }, { status: 500 })
+    }
+
+    const res = result as { status: string; message?: unknown }
+
+    if (res.status === 'rate_limited') {
       return NextResponse.json(
         { error: 'Muitas mensagens em pouco tempo. Aguarde um momento.' },
         { status: 429 }
       )
     }
 
-    // 4. Inserir mensagem
-    const { data: message, error: insertErr } = await supabaseAdmin
-      .from('messages')
-      .insert({ match_id: matchId, sender_id: user.id, content: trimmed, read_at: null })
-      .select()
-      .single()
-
-    if (insertErr) {
-      console.error('Erro ao inserir mensagem:', insertErr)
-      return NextResponse.json({ error: 'Erro ao enviar mensagem.' }, { status: 500 })
-    }
-
-    return NextResponse.json({ message })
+    return NextResponse.json({ message: res.message })
 
   } catch (err) {
     console.error('Erro em /api/chat/send:', err)

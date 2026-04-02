@@ -60,10 +60,16 @@ export async function enviarPushParaUsuario({
   // 3. Enviar para todos os dispositivos do usuário
   const promises = subs.map(async (sub) => {
     try {
-      await webpush.sendNotification(
-        { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
-        payload
-      )
+      // Timeout de 8 segundos — se o servico do browser nao responder, desiste
+      await Promise.race([
+        webpush.sendNotification(
+          { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } },
+          payload
+        ),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(Object.assign(new Error('timeout'), { statusCode: 0 })), 8000)
+        ),
+      ])
     } catch (err: any) {
       // Subscription expirada ou inválida — remover do banco
       if (err.statusCode === 404 || err.statusCode === 410) {
