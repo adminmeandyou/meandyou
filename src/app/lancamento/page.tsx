@@ -15,7 +15,6 @@ import GamificacaoLancamento from './GamificacaoLancamento'
 import OfertaLancamento from './OfertaLancamento'
 import PlanosLancamento from './PlanosLancamento'
 import EarlyLancamento from './EarlyLancamento'
-import ProvaSocialLancamento from './ProvaSocialLancamento'
 import CtaLancamento from './CtaLancamento'
 import QuemSomosLancamento from './QuemSomosLancamento'
 import FaqLancamento from './FaqLancamento'
@@ -264,9 +263,6 @@ export default function LancamentoPage() {
 
       {/* Emblema de Fundador — enfase maxima */}
       <EarlyLancamento />
-
-      {/* Prova social — depoimentos focados no lancamento */}
-      <ProvaSocialLancamento />
 
       {/* CTA final — seus 2 meses comecam agora */}
       <CtaLancamento />
