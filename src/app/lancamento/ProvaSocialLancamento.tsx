@@ -82,38 +82,6 @@ export default function ProvaSocialLancamento() {
           <h2 className="lp-social-v2-title">Quem chegou cedo,<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>não quer sair.</em></h2>
         </div>
 
-        {/* Stats row */}
-        <div className="lp-anim" style={{
-          display: 'flex', justifyContent: 'center', gap: 32, flexWrap: 'wrap',
-          marginBottom: 40, paddingBottom: 32,
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-        }}>
-          {[
-            { val: '4,9', label: 'estrelas', suffix: '/5' },
-            { val: '+1.200', label: 'avaliações', suffix: '' },
-            { val: '98%', label: 'recomendam', suffix: '' },
-          ].map(({ val, label, suffix }) => (
-            <div key={label} style={{ textAlign: 'center' }}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 2, justifyContent: 'center' }}>
-                <span style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: 32, fontWeight: 700, color: 'var(--text)', lineHeight: 1 }}>{val}</span>
-                {suffix && <span style={{ fontSize: 14, color: 'rgba(248,249,250,0.40)', fontWeight: 500 }}>{suffix}</span>}
-              </div>
-              <div style={{ marginTop: 4 }}>
-                {label === 'estrelas' ? (
-                  <div style={{ display: 'flex', gap: 1, justifyContent: 'center' }}>
-                    <Stars />
-                  </div>
-                ) : (
-                  <span style={{ fontSize: 12, color: 'rgba(248,249,250,0.45)', fontWeight: 500, letterSpacing: '0.03em' }}>{label}</span>
-                )}
-              </div>
-              {label === 'estrelas' && (
-                <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.35)', display: 'block', marginTop: 2 }}>{label}</span>
-              )}
-            </div>
-          ))}
-        </div>
-
         {/* Cards grid */}
         <div style={{
           display: 'grid',
