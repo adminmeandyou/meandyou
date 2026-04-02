@@ -5,8 +5,8 @@ export default function ProvaSocialLancamento() {
     <section className="lp-social-v2">
       <div className="lp-social-v2-inner">
         <div className="lp-social-v2-header lp-anim">
-          <p className="lp-section-label">Quem ja entrou</p>
-          <h2 className="lp-social-v2-title">Quem chegou cedo,<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>nao quer sair.</em></h2>
+          <p className="lp-section-label">Quem já entrou</p>
+          <h2 className="lp-social-v2-title">Quem chegou cedo,<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>não quer sair.</em></h2>
         </div>
         <div className="lp-social-v2-msgs">
           {[

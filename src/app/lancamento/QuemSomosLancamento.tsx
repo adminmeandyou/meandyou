@@ -30,7 +30,7 @@ export default function QuemSomosLancamento() {
             <div className="lp-about-brand-card">
               <div className="label">Nome no app</div>
               <div className="val">MeAndYou</div>
-              <div className="note">meandyou.com.br · nome tecnico e de dominio · simples de digitar e lembrar</div>
+              <div className="note">meandyou.com.br · nome técnico e de domínio · simples de digitar e lembrar</div>
             </div>
             <div className="lp-about-brand-card">
               <div className="label">Identidade visual</div>
