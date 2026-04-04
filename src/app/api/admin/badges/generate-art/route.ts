@@ -1,6 +1,6 @@
 // POST /api/admin/badges/generate-art
 // Gera imagem pixel art com cascata de providers e fundo transparente (PNG)
-// Ordem: Stable Diffusion local → HuggingFace Pixel Art → HuggingFace FLUX → Replicate
+// Ordem: HuggingFace Pixel Art → HuggingFace FLUX → Replicate → OpenRouter → DeepAI → Craiyon
 
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
@@ -11,9 +11,10 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const SD_API_URL      = process.env.SD_API_URL
 const HF_TOKEN        = process.env.HUGGINGFACE_API_TOKEN
 const REPLICATE_TOKEN = process.env.REPLICATE_API_TOKEN
+const OPENROUTER_KEY  = process.env.OPENROUTER_API_KEY
+const DEEPAI_KEY      = process.env.DEEPAI_API_KEY
 
 const HF_PIXEL_MODEL = 'https://router.huggingface.co/hf-inference/models/nerijs/pixel-art-xl'
 const HF_FLUX_MODEL  = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
@@ -71,24 +72,7 @@ async function makePngTransparent(buffer: Buffer): Promise<Buffer> {
   return sharp(Buffer.from(px), { raw: { width, height, channels: 4 } }).png().toBuffer() as Promise<Buffer>
 }
 
-// ─── Provider 1: Stable Diffusion local ──────────────────────────────────────
-async function generateWithSD(prompt: string): Promise<Buffer> {
-  const res = await fetch(`${SD_API_URL}/sdapi/v1/txt2img`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      prompt,
-      negative_prompt: 'blur, gradient, noise, photo, realistic, 3d, anti-aliasing',
-      width: 512, height: 512, steps: 20, cfg_scale: 7,
-      sampler_name: 'DPM++ 2M Karras',
-    }),
-  })
-  if (!res.ok) throw new Error(`SD ${res.status}: ${await res.text()}`)
-  const json = await res.json()
-  return Buffer.from(json.images[0], 'base64')
-}
-
-// ─── Provider 2: HuggingFace Pixel Art ───────────────────────────────────────
+// ─── Provider 1: HuggingFace Pixel Art ───────────────────────────────────────
 async function generateWithHFPixel(prompt: string): Promise<Buffer> {
   const res = await fetch(HF_PIXEL_MODEL, {
     method: 'POST',
@@ -105,7 +89,7 @@ async function generateWithHFPixel(prompt: string): Promise<Buffer> {
   return Buffer.from(await res.arrayBuffer())
 }
 
-// ─── Provider 3: HuggingFace FLUX ────────────────────────────────────────────
+// ─── Provider 2: HuggingFace FLUX ────────────────────────────────────────────
 async function generateWithHFFlux(prompt: string): Promise<Buffer> {
   const res = await fetch(HF_FLUX_MODEL, {
     method: 'POST',
@@ -122,7 +106,7 @@ async function generateWithHFFlux(prompt: string): Promise<Buffer> {
   return Buffer.from(await res.arrayBuffer())
 }
 
-// ─── Provider 4: Replicate ───────────────────────────────────────────────────
+// ─── Provider 3: Replicate ───────────────────────────────────────────────────
 async function generateWithReplicate(prompt: string): Promise<Buffer> {
   const startRes = await fetch('https://api.replicate.com/v1/predictions', {
     method: 'POST',
@@ -157,13 +141,76 @@ async function generateWithReplicate(prompt: string): Promise<Buffer> {
   return Buffer.from(await imgRes.arrayBuffer())
 }
 
+// ─── Provider 4: OpenRouter ───────────────────────────────────────────────────
+async function generateWithOpenRouter(prompt: string): Promise<Buffer> {
+  const res = await fetch('https://openrouter.ai/api/v1/images/generations', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${OPENROUTER_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://www.meandyou.com.br',
+    },
+    body: JSON.stringify({
+      model: 'black-forest-labs/flux-1-schnell:free',
+      prompt,
+      n: 1,
+      size: '512x512',
+    }),
+  })
+  if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${await res.text()}`)
+  const json = await res.json()
+  const item = json.data?.[0]
+  if (!item) throw new Error('OpenRouter: resposta sem imagem')
+  if (item.b64_json) return Buffer.from(item.b64_json, 'base64')
+  const imgRes = await fetch(item.url)
+  if (!imgRes.ok) throw new Error(`OpenRouter download ${imgRes.status}`)
+  return Buffer.from(await imgRes.arrayBuffer())
+}
+
+// ─── Provider 5: DeepAI (pixel-art-generator) ────────────────────────────────
+async function generateWithDeepAI(prompt: string): Promise<Buffer> {
+  const body = new URLSearchParams({ text: prompt })
+  const res = await fetch('https://api.deepai.org/api/pixel-art-generator', {
+    method: 'POST',
+    headers: { 'api-key': DEEPAI_KEY! },
+    body,
+  })
+  if (!res.ok) throw new Error(`DeepAI ${res.status}: ${await res.text()}`)
+  const json = await res.json()
+  if (!json.output_url) throw new Error('DeepAI: sem output_url')
+  const imgRes = await fetch(json.output_url)
+  if (!imgRes.ok) throw new Error(`DeepAI download ${imgRes.status}`)
+  return Buffer.from(await imgRes.arrayBuffer())
+}
+
+// ─── Provider 6: Craiyon (gratuito, sem API key, unofficial) ─────────────────
+async function generateWithCraiyon(prompt: string): Promise<Buffer> {
+  const res = await fetch('https://api.craiyon.com/v3', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      prompt,
+      negative_prompt: 'blur, photo, realistic',
+      model: 'art',
+      token: null,
+      version: '35s5hfwn9n78gb06',
+    }),
+  })
+  if (!res.ok) throw new Error(`Craiyon ${res.status}: ${await res.text()}`)
+  const json = await res.json()
+  if (!json.images?.length) throw new Error('Craiyon: sem imagens na resposta')
+  return Buffer.from(json.images[0], 'base64')
+}
+
 // ─── Orquestrador: cascata de providers ──────────────────────────────────────
 async function generateImage(prompt: string): Promise<{ buffer: Buffer; provider: string }> {
   const providers = [
-    { name: 'SD Local',             fn: generateWithSD,        enabled: !!SD_API_URL      },
-    { name: 'HuggingFace Pixel Art',fn: generateWithHFPixel,   enabled: !!HF_TOKEN        },
-    { name: 'HuggingFace FLUX',     fn: generateWithHFFlux,    enabled: !!HF_TOKEN        },
-    { name: 'Replicate',            fn: generateWithReplicate,  enabled: !!REPLICATE_TOKEN },
+    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel,     enabled: !!HF_TOKEN        },
+    { name: 'HuggingFace FLUX',      fn: generateWithHFFlux,       enabled: !!HF_TOKEN        },
+    { name: 'Replicate',             fn: generateWithReplicate,    enabled: !!REPLICATE_TOKEN },
+    { name: 'OpenRouter',            fn: generateWithOpenRouter,   enabled: !!OPENROUTER_KEY  },
+    { name: 'DeepAI',                fn: generateWithDeepAI,       enabled: !!DEEPAI_KEY      },
+    { name: 'Craiyon',               fn: generateWithCraiyon,      enabled: true              },
   ]
 
   const errors: string[] = []
@@ -198,9 +245,7 @@ export async function POST(req: NextRequest) {
     const { prompt, badgeId } = await req.json()
     if (!prompt?.trim()) return NextResponse.json({ error: 'Prompt obrigatório' }, { status: 400 })
 
-    if (!SD_API_URL && !HF_TOKEN && !REPLICATE_TOKEN) {
-      return NextResponse.json({ error: 'Nenhum provider configurado. Adicione SD_API_URL, HUGGINGFACE_API_TOKEN ou REPLICATE_API_TOKEN.' }, { status: 500 })
-    }
+    // Craiyon sempre disponível — sem necessidade de token
 
     const { buffer, provider } = await generateImage(prompt)
 

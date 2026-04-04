@@ -12,9 +12,11 @@ const env = Object.fromEntries(
 const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
 
 // ─── Tokens / URLs dos providers ───────────────────────────────────────────
-const SD_API_URL       = env.SD_API_URL          // ex: http://localhost:7860 (AUTOMATIC1111 local ou Docker)
 const HF_TOKEN         = env.HUGGINGFACE_API_TOKEN
 const REPLICATE_TOKEN  = env.REPLICATE_API_TOKEN
+const OPENROUTER_KEY   = env.OPENROUTER_API_KEY
+const DEEPAI_KEY       = env.DEEPAI_API_KEY
+// Craiyon não precisa de token — usa API pública unofficial
 
 // Modelos HuggingFace — tenta pixel art primeiro, FLUX como segundo
 const HF_PIXEL_MODEL = 'https://router.huggingface.co/hf-inference/models/nerijs/pixel-art-xl'
@@ -131,27 +133,7 @@ async function makePngTransparent(buffer) {
     .toBuffer()
 }
 
-// ─── Provider 1: Stable Diffusion local (AUTOMATIC1111 / Docker) ─────────────
-// Para ativar: adicionar SD_API_URL=http://localhost:7860 no .env.local
-// Docker: docker run -p 7860:7860 ghcr.io/automatic1111/stable-diffusion-webui
-async function generateWithSD(prompt) {
-  const res = await fetch(`${SD_API_URL}/sdapi/v1/txt2img`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      prompt,
-      negative_prompt: 'blur, gradient, noise, photo, realistic, 3d, anti-aliasing',
-      width: 512, height: 512,
-      steps: 20, cfg_scale: 7,
-      sampler_name: 'DPM++ 2M Karras',
-    }),
-  })
-  if (!res.ok) throw new Error(`SD ${res.status}: ${await res.text()}`)
-  const json = await res.json()
-  return Buffer.from(json.images[0], 'base64')
-}
-
-// ─── Provider 2: HuggingFace pixel art model ─────────────────────────────────
+// ─── Provider 1: HuggingFace pixel art model ─────────────────────────────────
 async function generateWithHFPixel(prompt) {
   for (let attempt = 1; attempt <= 3; attempt++) {
     const res = await fetch(HF_PIXEL_MODEL, {
@@ -173,7 +155,7 @@ async function generateWithHFPixel(prompt) {
   throw new Error('HF Pixel Art: max tentativas')
 }
 
-// ─── Provider 3: HuggingFace FLUX.1-schnell ──────────────────────────────────
+// ─── Provider 2: HuggingFace FLUX.1-schnell ──────────────────────────────────
 async function generateWithHFFlux(prompt) {
   for (let attempt = 1; attempt <= 3; attempt++) {
     const res = await fetch(HF_FLUX_MODEL, {
@@ -195,7 +177,7 @@ async function generateWithHFFlux(prompt) {
   throw new Error('HF FLUX: max tentativas')
 }
 
-// ─── Provider 4: Replicate ───────────────────────────────────────────────────
+// ─── Provider 3: Replicate ───────────────────────────────────────────────────
 // Para ativar: adicionar REPLICATE_API_TOKEN no .env.local
 // Para trocar modelo: REPLICATE_MODEL_VERSION=<version-hash>
 async function generateWithReplicate(prompt) {
@@ -232,13 +214,79 @@ async function generateWithReplicate(prompt) {
   return Buffer.from(await imgRes.arrayBuffer())
 }
 
+// ─── Provider 5: OpenRouter (FLUX via API compatível OpenAI) ─────────────────
+async function generateWithOpenRouter(prompt) {
+  const res = await fetch('https://openrouter.ai/api/v1/images/generations', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${OPENROUTER_KEY}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': 'https://www.meandyou.com.br',
+    },
+    body: JSON.stringify({
+      model: 'black-forest-labs/flux-1-schnell:free',
+      prompt,
+      n: 1,
+      size: '512x512',
+    }),
+  })
+  if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${await res.text()}`)
+  const json = await res.json()
+  const item = json.data?.[0]
+  if (!item) throw new Error('OpenRouter: resposta sem imagem')
+  if (item.b64_json) return Buffer.from(item.b64_json, 'base64')
+  // Se vier URL, faz download
+  const imgRes = await fetch(item.url)
+  if (!imgRes.ok) throw new Error(`OpenRouter download ${imgRes.status}`)
+  return Buffer.from(await imgRes.arrayBuffer())
+}
+
+// ─── Provider 6: DeepAI (pixel-art-generator) ────────────────────────────────
+async function generateWithDeepAI(prompt) {
+  const body = new URLSearchParams({ text: prompt })
+  const res = await fetch('https://api.deepai.org/api/pixel-art-generator', {
+    method: 'POST',
+    headers: { 'api-key': DEEPAI_KEY },
+    body,
+  })
+  if (!res.ok) throw new Error(`DeepAI ${res.status}: ${await res.text()}`)
+  const json = await res.json()
+  if (!json.output_url) throw new Error('DeepAI: sem output_url')
+  const imgRes = await fetch(json.output_url)
+  if (!imgRes.ok) throw new Error(`DeepAI download ${imgRes.status}`)
+  return Buffer.from(await imgRes.arrayBuffer())
+}
+
+// ─── Provider 7: Craiyon (gratuito, sem API key, unofficial) ─────────────────
+async function generateWithCraiyon(prompt) {
+  const res = await fetch('https://api.craiyon.com/v3', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      prompt,
+      negative_prompt: 'blur, photo, realistic',
+      model: 'art',
+      token: null,
+      version: '35s5hfwn9n78gb06',
+    }),
+  })
+  if (!res.ok) throw new Error(`Craiyon ${res.status}: ${await res.text()}`)
+  const json = await res.json()
+  const images = json.images
+  if (!images?.length) throw new Error('Craiyon: sem imagens na resposta')
+  // Pega a primeira imagem (vem como base64 sem prefixo data:)
+  return Buffer.from(images[0], 'base64')
+}
+
 // ─── Orquestrador: tenta providers na ordem ──────────────────────────────────
 async function generateImage(prompt) {
   const providers = [
-    { name: 'Stable Diffusion Local', fn: generateWithSD,       enabled: !!SD_API_URL      },
-    { name: 'HuggingFace Pixel Art',  fn: generateWithHFPixel,  enabled: !!HF_TOKEN        },
-    { name: 'HuggingFace FLUX',       fn: generateWithHFFlux,   enabled: !!HF_TOKEN        },
-    { name: 'Replicate',              fn: generateWithReplicate, enabled: !!REPLICATE_TOKEN },
+    { name: 'HuggingFace Pixel Art',  fn: generateWithHFPixel,      enabled: !!HF_TOKEN        },
+    { name: 'HuggingFace FLUX',       fn: generateWithHFFlux,        enabled: !!HF_TOKEN        },
+    { name: 'Replicate',              fn: generateWithReplicate,      enabled: !!REPLICATE_TOKEN },
+    { name: 'OpenRouter',             fn: generateWithOpenRouter,     enabled: !!OPENROUTER_KEY  },
+    { name: 'DeepAI',                 fn: generateWithDeepAI,         enabled: !!DEEPAI_KEY      },
+    { name: 'Craiyon',                fn: generateWithCraiyon,        enabled: true              },
   ]
 
   for (const p of providers) {
@@ -275,8 +323,13 @@ async function uploadImage(buffer, name) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 console.log('=== Gerador de Emblemas MeAndYou ===')
 console.log('Providers ativos:',
-  [SD_API_URL && 'SD Local', HF_TOKEN && 'HuggingFace', REPLICATE_TOKEN && 'Replicate']
-    .filter(Boolean).join(' → ')
+  [
+    HF_TOKEN         && 'HuggingFace',
+    REPLICATE_TOKEN  && 'Replicate',
+    OPENROUTER_KEY   && 'OpenRouter',
+    DEEPAI_KEY       && 'DeepAI',
+    'Craiyon',
+  ].filter(Boolean).join(' → ')
 )
 console.log()
 
