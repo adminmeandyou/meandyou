@@ -9,7 +9,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-const HF_MODEL = 'https://api-inference.huggingface.co/models/nerijs/pixel-art-xl'
+const HF_MODEL = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
 
 export async function POST(req: NextRequest) {
   try {
