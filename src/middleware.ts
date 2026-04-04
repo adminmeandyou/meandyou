@@ -1,11 +1,12 @@
-// src/proxy.ts
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
+// ── Portão de acesso ─────────────────────────────────────────────────────────
+const GATE_SENHA = 'inativo123'
+const GATE_COOKIE = 'may_gate'
+const GATE_PATH = '/acesso'
+
 // Rotas protegidas (requer autenticação)
-// ⚠️ /verificacao NÃO está aqui: o link de verificação é aberto no celular do usuário
-// que pode não ter sessão naquele dispositivo. A page /verificacao gerencia sua própria
-// autenticação internamente via token na URL ou via supabase.auth.getUser().
 const PROTECTED_ROUTES = [
   '/modos', '/busca', '/match', '/matches', '/chat', '/perfil', '/planos', '/dashboard',
   '/conversas', '/loja', '/destaque', '/indicar', '/backstage',
@@ -17,9 +18,18 @@ const PROTECTED_ROUTES = [
 // Rotas públicas (redireciona para /busca se já logado)
 const PUBLIC_ONLY_ROUTES = ['/login', '/cadastro', '/recuperar-senha', '/nova-senha']
 
-export async function proxy(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const pathname = req.nextUrl.pathname
+
+  // ── Portão: bloqueia tudo exceto a própria página /acesso e sua API ──────
+  if (pathname !== GATE_PATH && pathname !== '/api/acesso') {
+    const gateCookie = req.cookies.get(GATE_COOKIE)?.value
+    if (gateCookie !== GATE_SENHA) {
+      return NextResponse.redirect(new URL(GATE_PATH, req.url))
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -50,10 +60,8 @@ export async function proxy(req: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    // Admin tem acesso total
     if (profile?.role === 'admin') return res
 
-    // Verificar se é membro da equipe ativo
     const { data: staff } = await supabase
       .from('staff_members')
       .select('role, active')
@@ -65,7 +73,6 @@ export async function proxy(req: NextRequest) {
       return NextResponse.redirect(new URL('/modos', req.url))
     }
 
-    // Permissões por cargo — quais rotas cada role pode acessar
     const STAFF_PERMISSIONS: Record<string, string[]> = {
       gerente:            ['/admin', '/admin/financeiro', '/admin/usuarios', '/admin/denuncias', '/admin/cancelamentos'],
       suporte_financeiro: ['/admin', '/admin/financeiro', '/admin/cancelamentos'],
@@ -79,7 +86,6 @@ export async function proxy(req: NextRequest) {
     )
 
     if (!hasAccess) {
-      // Redireciona para o dashboard admin, que mostrará apenas o que ele pode ver
       return NextResponse.redirect(new URL('/admin', req.url))
     }
 
@@ -87,19 +93,16 @@ export async function proxy(req: NextRequest) {
   }
   // ─────────────────────────────────────────────────────────────────────────
 
-  // Rota protegida sem login → redireciona para /login
   const isProtected = PROTECTED_ROUTES.some(r => pathname.startsWith(r))
   if (isProtected && !user) {
     return NextResponse.redirect(new URL('/login', req.url))
   }
 
-  // Rota pública com login → redireciona para /busca
   const isPublicOnly = PUBLIC_ONLY_ROUTES.some(r => pathname.startsWith(r))
   if (isPublicOnly && user) {
     return NextResponse.redirect(new URL('/modos', req.url))
   }
 
-  // Verificar progresso do cadastro para rotas protegidas
   if (user && isProtected) {
     const { data: userRow } = await supabase
       .from('users')
@@ -117,10 +120,6 @@ export async function proxy(req: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    // Verificacao do final para tras:
-    // encontra a etapa mais avancada concluida e redireciona para a proxima pendente
-
-    // Onboarding concluido → acesso total
     if (profile?.onboarding_completed) {
       if (pathname.startsWith('/onboarding')) {
         return NextResponse.redirect(new URL('/dashboard', req.url))
@@ -128,7 +127,6 @@ export async function proxy(req: NextRequest) {
       return res
     }
 
-    // Facial verificado → falta onboarding
     if (profile?.reg_facial_verified) {
       if (!pathname.startsWith('/onboarding')) {
         return NextResponse.redirect(new URL('/onboarding', req.url))
@@ -136,7 +134,6 @@ export async function proxy(req: NextRequest) {
       return res
     }
 
-    // Email verificado → falta verificacao facial
     if (profile?.reg_email_verified) {
       if (!pathname.startsWith('/verificacao')) {
         return NextResponse.redirect(new URL('/verificacao', req.url))
@@ -144,7 +141,6 @@ export async function proxy(req: NextRequest) {
       return res
     }
 
-    // Credenciais criadas → falta verificar email
     if (profile?.reg_credentials_set) {
       if (!pathname.startsWith('/aguardando-email')) {
         return NextResponse.redirect(new URL('/aguardando-email', req.url))
@@ -152,13 +148,10 @@ export async function proxy(req: NextRequest) {
       return res
     }
 
-    // reg_credentials_set é null → conta criada antes do sistema de progresso
-    // Libera acesso para não causar loop de redirecionamento com contas antigas
     if (profile?.reg_credentials_set === null || profile?.reg_credentials_set === undefined) {
       return res
     }
 
-    // reg_credentials_set = false explícito → cadastro incompleto
     return NextResponse.redirect(new URL('/cadastro', req.url))
   }
 
