@@ -13,12 +13,9 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
 
 // ─── Tokens / URLs dos providers ───────────────────────────────────────────
 const HF_TOKEN         = env.HUGGINGFACE_API_TOKEN
-const REPLICATE_TOKEN  = env.REPLICATE_API_TOKEN
-const DEEPAI_KEY       = env.DEEPAI_API_KEY
+const DEEPAI_KEY = env.DEEPAI_API_KEY
 
 const HF_PIXEL_MODEL = 'https://router.huggingface.co/hf-inference/models/nerijs/pixel-art-xl'
-// Replicate: flux-schnell sem version hash (usa latest automaticamente)
-const REPLICATE_MODEL = env.REPLICATE_MODEL || 'black-forest-labs/flux-schnell'
 
 const RARITY_COLOR = {
   comum:'light gray and white', incomum:'blue and cyan', raro:'emerald green',
@@ -149,41 +146,7 @@ async function generateWithHFPixel(prompt) {
   throw new Error('HF Pixel Art: max tentativas')
 }
 
-// ─── Provider 2: Replicate (flux-schnell via /v1/models endpoint) ────────────
-async function generateWithReplicate(prompt) {
-  const startRes = await fetch(`https://api.replicate.com/v1/models/${REPLICATE_MODEL}/predictions`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${REPLICATE_TOKEN}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'wait=30',
-    },
-    body: JSON.stringify({
-      input: { prompt, num_outputs: 1, output_format: 'png', width: 512, height: 512 },
-    }),
-  })
-  if (!startRes.ok) throw new Error(`Replicate ${startRes.status}: ${await startRes.text()}`)
-  let prediction = await startRes.json()
-
-  // Polling até 90s
-  for (let i = 0; i < 30 && prediction.status !== 'succeeded' && prediction.status !== 'failed'; i++) {
-    await new Promise(r => setTimeout(r, 3000))
-    const poll = await fetch(prediction.urls.get, {
-      headers: { 'Authorization': `Bearer ${REPLICATE_TOKEN}` },
-    })
-    if (!poll.ok) throw new Error(`Replicate poll ${poll.status}`)
-    prediction = await poll.json()
-  }
-
-  if (prediction.status !== 'succeeded') throw new Error(`Replicate: ${prediction.error || 'timeout'}`)
-
-  const outputUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output
-  const imgRes = await fetch(outputUrl)
-  if (!imgRes.ok) throw new Error(`Replicate download ${imgRes.status}`)
-  return Buffer.from(await imgRes.arrayBuffer())
-}
-
-// ─── Provider 3: DeepAI (pixel-art-generator) ────────────────────────────────
+// ─── Provider 2: DeepAI (pixel-art-generator) ────────────────────────────────
 async function generateWithDeepAI(prompt) {
   const body = new URLSearchParams({ text: prompt })
   const res = await fetch('https://api.deepai.org/api/pixel-art-generator', {
@@ -202,9 +165,8 @@ async function generateWithDeepAI(prompt) {
 // ─── Orquestrador: tenta providers na ordem ──────────────────────────────────
 async function generateImage(prompt) {
   const providers = [
-    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel,   enabled: !!HF_TOKEN        },
-    { name: 'Replicate',             fn: generateWithReplicate, enabled: !!REPLICATE_TOKEN },
-    { name: 'DeepAI',                fn: generateWithDeepAI,    enabled: !!DEEPAI_KEY      },
+    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel, enabled: !!HF_TOKEN    },
+    { name: 'DeepAI',                fn: generateWithDeepAI,  enabled: !!DEEPAI_KEY  },
   ]
 
   for (const p of providers) {
@@ -241,8 +203,7 @@ async function uploadImage(buffer, name) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 console.log('=== Gerador de Emblemas MeAndYou ===')
 console.log('Providers ativos:',
-  [HF_TOKEN && 'HuggingFace', REPLICATE_TOKEN && 'Replicate', DEEPAI_KEY && 'DeepAI']
-    .filter(Boolean).join(' → ')
+  [HF_TOKEN && 'HuggingFace', DEEPAI_KEY && 'DeepAI'].filter(Boolean).join(' → ')
 )
 console.log()
 
