@@ -12,9 +12,23 @@ const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 )
 
-const RARIDADES = ['comum', 'incomum', 'raro', 'lendario']
+const RARIDADES = ['comum', 'raro', 'super_raro', 'epico', 'lendario', 'super_lendario']
+const RARIDADE_LABELS: Record<string, string> = {
+  comum:          'Comum',
+  raro:           'Raro',
+  super_raro:     'Super Raro',
+  epico:          'Épico',
+  lendario:       'Lendário',
+  super_lendario: 'Super Lendário',
+}
+// Paleta oficial — manter sincronizado com src/app/emblemas/page.tsx
 const RARIDADE_CORES: Record<string, string> = {
-  comum: '#9ca3af', incomum: '#34d399', raro: '#60a5fa', lendario: '#f59e0b',
+  comum:          '#9CA3AF',
+  raro:           '#22C55E',
+  super_raro:     '#A855F7',
+  epico:          '#F97316',
+  lendario:       '#F59E0B',
+  super_lendario: '#E11D48',
 }
 
 const STORE_ITEMS = [
@@ -374,7 +388,7 @@ export default function AdminEmblemas() {
         </div>
         <select value={filtroRaridade} onChange={e => setFiltroRaridade(e.target.value)} style={{ ...S.input, width: 'auto' }}>
           <option value="">Todas raridades</option>
-          {RARIDADES.map(r => <option key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</option>)}
+          {RARIDADES.map(r => <option key={r} value={r}>{RARIDADE_LABELS[r] ?? r}</option>)}
         </select>
         <select value={filtroStatus} onChange={e => setFiltroStatus(e.target.value)} style={{ ...S.input, width: 'auto' }}>
           <option value="">Todos os status</option>
@@ -418,7 +432,7 @@ export default function AdminEmblemas() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: 3 }}>
                     <span style={{ color: '#fff', fontWeight: 700, fontSize: '14px' }}>{b.name}</span>
                     <span style={{ padding: '2px 7px', borderRadius: '100px', fontSize: '10px', fontWeight: 700, backgroundColor: RARIDADE_CORES[b.rarity] + '20', color: RARIDADE_CORES[b.rarity] }}>
-                      {b.rarity}
+                      {RARIDADE_LABELS[b.rarity] ?? b.rarity}
                     </span>
                     {b.is_published && <span style={{ padding: '2px 7px', borderRadius: '100px', fontSize: '10px', fontWeight: 700, backgroundColor: '#10b98120', color: '#10b981' }}>publicado</span>}
                     {!b.is_active && <span style={{ padding: '2px 7px', borderRadius: '100px', fontSize: '10px', fontWeight: 700, backgroundColor: '#f8717120', color: '#f87171' }}>inativo</span>}
@@ -559,7 +573,7 @@ export default function AdminEmblemas() {
                 <select value={form.rarity} onChange={e => setForm(p => ({ ...p, rarity: e.target.value }))} style={{ ...S.input, width: 120 }}>
                   {RARIDADES.map(r => (
                     <option key={r} value={r}>
-                      {r.charAt(0).toUpperCase() + r.slice(1)}
+                      {RARIDADE_LABELS[r] ?? r}
                     </option>
                   ))}
                 </select>

@@ -12,7 +12,7 @@ interface Badge {
   icon_url?: string | null
   name: string
   description: string
-  rarity: 'comum' | 'incomum' | 'raro' | 'lendario'
+  rarity: 'comum' | 'raro' | 'super_raro' | 'epico' | 'lendario' | 'super_lendario'
   condition_type: string
   condition_value: any
 }
@@ -21,11 +21,14 @@ interface UserBadge {
   badge_id: string
 }
 
+// Paleta oficial de raridades — NÃO ALTERAR sem atualizar a migration e o painel admin
 const RARITY_CONFIG = {
-  comum:    { label: 'Comum',    color: '#9ca3af', bg: 'rgba(156,163,175,0.10)', border: 'rgba(156,163,175,0.25)' },
-  incomum:  { label: 'Incomum',  color: '#3b82f6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.25)'  },
-  raro:     { label: 'Raro',     color: '#a855f7', bg: 'rgba(168,85,247,0.10)',   border: 'rgba(168,85,247,0.25)'  },
-  lendario: { label: 'Lendário', color: '#F59E0B', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.25)'  },
+  comum:          { label: 'Comum',          color: '#9CA3AF', bg: 'rgba(156,163,175,0.15)', border: 'rgba(156,163,175,0.30)' },
+  raro:           { label: 'Raro',           color: '#22C55E', bg: 'rgba(34,197,94,0.15)',   border: 'rgba(34,197,94,0.30)'   },
+  super_raro:     { label: 'Super Raro',     color: '#A855F7', bg: 'rgba(168,85,247,0.15)',  border: 'rgba(168,85,247,0.30)'  },
+  epico:          { label: 'Épico',          color: '#F97316', bg: 'rgba(249,115,22,0.15)',  border: 'rgba(249,115,22,0.30)'  },
+  lendario:       { label: 'Lendário',       color: '#F59E0B', bg: 'rgba(245,158,11,0.15)',  border: 'rgba(245,158,11,0.30)'  },
+  super_lendario: { label: 'Super Lendário', color: '#E11D48', bg: 'rgba(225,29,72,0.15)',   border: 'rgba(225,29,72,0.30)'   },
 }
 
 const CONDITION_LABELS: Record<string, (val: number) => string> = {
@@ -91,7 +94,7 @@ export default function EmblemasPage() {
     setLoading(false)
   }
 
-  const rarities = ['todos', 'comum', 'incomum', 'raro', 'lendario']
+  const rarities = ['todos', 'comum', 'raro', 'super_raro', 'epico', 'lendario', 'super_lendario']
   const filtered = selectedRarity === 'todos' ? badges : badges.filter(b => b.rarity === selectedRarity)
 
   return (
