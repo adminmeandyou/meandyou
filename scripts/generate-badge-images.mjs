@@ -14,16 +14,11 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
 // ─── Tokens / URLs dos providers ───────────────────────────────────────────
 const HF_TOKEN         = env.HUGGINGFACE_API_TOKEN
 const REPLICATE_TOKEN  = env.REPLICATE_API_TOKEN
-const OPENROUTER_KEY   = env.OPENROUTER_API_KEY
 const DEEPAI_KEY       = env.DEEPAI_API_KEY
-// Craiyon não precisa de token — usa API pública unofficial
 
-// Modelos HuggingFace — tenta pixel art primeiro, FLUX como segundo
 const HF_PIXEL_MODEL = 'https://router.huggingface.co/hf-inference/models/nerijs/pixel-art-xl'
-
-// Modelo Replicate — pixel art XL (pode trocar pelo version hash de outro modelo)
-const REPLICATE_MODEL_VERSION = env.REPLICATE_MODEL_VERSION
-  || 'zylim0702/pixel-art-xl-lora:71e55e745b74c1b37d3f00d9e65e63a3b30a4b07a4d3c9b6e3a70e1c9e1d11b'
+// Replicate: flux-schnell sem version hash (usa latest automaticamente)
+const REPLICATE_MODEL = env.REPLICATE_MODEL || 'black-forest-labs/flux-schnell'
 
 const RARITY_COLOR = {
   comum:'light gray and white', incomum:'blue and cyan', raro:'emerald green',
@@ -154,36 +149,33 @@ async function generateWithHFPixel(prompt) {
   throw new Error('HF Pixel Art: max tentativas')
 }
 
-// ─── Provider 2: Replicate ───────────────────────────────────────────────────
-// Para ativar: adicionar REPLICATE_API_TOKEN no .env.local
-// Para trocar modelo: REPLICATE_MODEL_VERSION=<version-hash>
+// ─── Provider 2: Replicate (flux-schnell via /v1/models endpoint) ────────────
 async function generateWithReplicate(prompt) {
-  // Inicia predição
-  const startRes = await fetch('https://api.replicate.com/v1/predictions', {
+  const startRes = await fetch(`https://api.replicate.com/v1/models/${REPLICATE_MODEL}/predictions`, {
     method: 'POST',
     headers: {
-      'Authorization': `Token ${REPLICATE_TOKEN}`,
+      'Authorization': `Bearer ${REPLICATE_TOKEN}`,
       'Content-Type': 'application/json',
+      'Prefer': 'wait=30',
     },
     body: JSON.stringify({
-      version: REPLICATE_MODEL_VERSION,
-      input: { prompt, width: 512, height: 512, num_inference_steps: 20 },
+      input: { prompt, num_outputs: 1, output_format: 'png', width: 512, height: 512 },
     }),
   })
-  if (!startRes.ok) throw new Error(`Replicate start ${startRes.status}: ${await startRes.text()}`)
+  if (!startRes.ok) throw new Error(`Replicate ${startRes.status}: ${await startRes.text()}`)
   let prediction = await startRes.json()
 
-  // Aguarda resultado (polling)
-  while (prediction.status !== 'succeeded' && prediction.status !== 'failed') {
+  // Polling até 90s
+  for (let i = 0; i < 30 && prediction.status !== 'succeeded' && prediction.status !== 'failed'; i++) {
     await new Promise(r => setTimeout(r, 3000))
-    const pollRes = await fetch(prediction.urls.get, {
-      headers: { 'Authorization': `Token ${REPLICATE_TOKEN}` },
+    const poll = await fetch(prediction.urls.get, {
+      headers: { 'Authorization': `Bearer ${REPLICATE_TOKEN}` },
     })
-    if (!pollRes.ok) throw new Error(`Replicate poll ${pollRes.status}`)
-    prediction = await pollRes.json()
+    if (!poll.ok) throw new Error(`Replicate poll ${poll.status}`)
+    prediction = await poll.json()
   }
 
-  if (prediction.status === 'failed') throw new Error(`Replicate falhou: ${prediction.error}`)
+  if (prediction.status !== 'succeeded') throw new Error(`Replicate: ${prediction.error || 'timeout'}`)
 
   const outputUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output
   const imgRes = await fetch(outputUrl)
@@ -191,34 +183,7 @@ async function generateWithReplicate(prompt) {
   return Buffer.from(await imgRes.arrayBuffer())
 }
 
-// ─── Provider 5: OpenRouter (FLUX via API compatível OpenAI) ─────────────────
-async function generateWithOpenRouter(prompt) {
-  const res = await fetch('https://openrouter.ai/api/v1/images/generations', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${OPENROUTER_KEY}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': 'https://www.meandyou.com.br',
-    },
-    body: JSON.stringify({
-      model: 'black-forest-labs/flux-1-schnell:free',
-      prompt,
-      n: 1,
-      size: '512x512',
-    }),
-  })
-  if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${await res.text()}`)
-  const json = await res.json()
-  const item = json.data?.[0]
-  if (!item) throw new Error('OpenRouter: resposta sem imagem')
-  if (item.b64_json) return Buffer.from(item.b64_json, 'base64')
-  // Se vier URL, faz download
-  const imgRes = await fetch(item.url)
-  if (!imgRes.ok) throw new Error(`OpenRouter download ${imgRes.status}`)
-  return Buffer.from(await imgRes.arrayBuffer())
-}
-
-// ─── Provider 6: DeepAI (pixel-art-generator) ────────────────────────────────
+// ─── Provider 3: DeepAI (pixel-art-generator) ────────────────────────────────
 async function generateWithDeepAI(prompt) {
   const body = new URLSearchParams({ text: prompt })
   const res = await fetch('https://api.deepai.org/api/pixel-art-generator', {
@@ -234,35 +199,12 @@ async function generateWithDeepAI(prompt) {
   return Buffer.from(await imgRes.arrayBuffer())
 }
 
-// ─── Provider 7: Craiyon (gratuito, sem API key, unofficial) ─────────────────
-async function generateWithCraiyon(prompt) {
-  const res = await fetch('https://api.craiyon.com/v3', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      prompt,
-      negative_prompt: 'blur, photo, realistic',
-      model: 'art',
-      token: null,
-      version: '35s5hfwn9n78gb06',
-    }),
-  })
-  if (!res.ok) throw new Error(`Craiyon ${res.status}: ${await res.text()}`)
-  const json = await res.json()
-  const images = json.images
-  if (!images?.length) throw new Error('Craiyon: sem imagens na resposta')
-  // Pega a primeira imagem (vem como base64 sem prefixo data:)
-  return Buffer.from(images[0], 'base64')
-}
-
 // ─── Orquestrador: tenta providers na ordem ──────────────────────────────────
 async function generateImage(prompt) {
   const providers = [
-    { name: 'HuggingFace Pixel Art',  fn: generateWithHFPixel,      enabled: !!HF_TOKEN        },
-    { name: 'Replicate',              fn: generateWithReplicate,     enabled: !!REPLICATE_TOKEN },
-    { name: 'OpenRouter',             fn: generateWithOpenRouter,     enabled: !!OPENROUTER_KEY  },
-    { name: 'DeepAI',                 fn: generateWithDeepAI,         enabled: !!DEEPAI_KEY      },
-    { name: 'Craiyon',                fn: generateWithCraiyon,        enabled: true              },
+    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel,   enabled: !!HF_TOKEN        },
+    { name: 'Replicate',             fn: generateWithReplicate, enabled: !!REPLICATE_TOKEN },
+    { name: 'DeepAI',                fn: generateWithDeepAI,    enabled: !!DEEPAI_KEY      },
   ]
 
   for (const p of providers) {
@@ -299,13 +241,8 @@ async function uploadImage(buffer, name) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 console.log('=== Gerador de Emblemas MeAndYou ===')
 console.log('Providers ativos:',
-  [
-    HF_TOKEN         && 'HuggingFace',
-    REPLICATE_TOKEN  && 'Replicate',
-    OPENROUTER_KEY   && 'OpenRouter',
-    DEEPAI_KEY       && 'DeepAI',
-    'Craiyon',
-  ].filter(Boolean).join(' → ')
+  [HF_TOKEN && 'HuggingFace', REPLICATE_TOKEN && 'Replicate', DEEPAI_KEY && 'DeepAI']
+    .filter(Boolean).join(' → ')
 )
 console.log()
 
