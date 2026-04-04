@@ -20,7 +20,6 @@ const DEEPAI_KEY       = env.DEEPAI_API_KEY
 
 // Modelos HuggingFace — tenta pixel art primeiro, FLUX como segundo
 const HF_PIXEL_MODEL = 'https://router.huggingface.co/hf-inference/models/nerijs/pixel-art-xl'
-const HF_FLUX_MODEL  = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
 
 // Modelo Replicate — pixel art XL (pode trocar pelo version hash de outro modelo)
 const REPLICATE_MODEL_VERSION = env.REPLICATE_MODEL_VERSION
@@ -155,29 +154,7 @@ async function generateWithHFPixel(prompt) {
   throw new Error('HF Pixel Art: max tentativas')
 }
 
-// ─── Provider 2: HuggingFace FLUX.1-schnell ──────────────────────────────────
-async function generateWithHFFlux(prompt) {
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const res = await fetch(HF_FLUX_MODEL, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${HF_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ inputs: prompt }),
-    })
-    if (res.status === 503) {
-      const e = await res.json().catch(() => ({}))
-      const wait = Math.ceil(e.estimated_time ?? 20)
-      console.log(`    modelo carregando, aguardando ${wait}s...`)
-      await new Promise(r => setTimeout(r, (wait + 3) * 1000))
-      continue
-    }
-    if (res.status === 402) throw new Error('créditos HuggingFace esgotados')
-    if (!res.ok) throw new Error(`HF FLUX ${res.status}: ${await res.text()}`)
-    return Buffer.from(await res.arrayBuffer())
-  }
-  throw new Error('HF FLUX: max tentativas')
-}
-
-// ─── Provider 3: Replicate ───────────────────────────────────────────────────
+// ─── Provider 2: Replicate ───────────────────────────────────────────────────
 // Para ativar: adicionar REPLICATE_API_TOKEN no .env.local
 // Para trocar modelo: REPLICATE_MODEL_VERSION=<version-hash>
 async function generateWithReplicate(prompt) {
@@ -282,8 +259,7 @@ async function generateWithCraiyon(prompt) {
 async function generateImage(prompt) {
   const providers = [
     { name: 'HuggingFace Pixel Art',  fn: generateWithHFPixel,      enabled: !!HF_TOKEN        },
-    { name: 'HuggingFace FLUX',       fn: generateWithHFFlux,        enabled: !!HF_TOKEN        },
-    { name: 'Replicate',              fn: generateWithReplicate,      enabled: !!REPLICATE_TOKEN },
+    { name: 'Replicate',              fn: generateWithReplicate,     enabled: !!REPLICATE_TOKEN },
     { name: 'OpenRouter',             fn: generateWithOpenRouter,     enabled: !!OPENROUTER_KEY  },
     { name: 'DeepAI',                 fn: generateWithDeepAI,         enabled: !!DEEPAI_KEY      },
     { name: 'Craiyon',                fn: generateWithCraiyon,        enabled: true              },
