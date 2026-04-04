@@ -9,7 +9,10 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
+// HuggingFace (principal) — usa créditos mensais gratuitos
 const HF_MODEL = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
+// Pollinations.ai (fallback) — 100% gratuito, sem API key, sem limite
+const POLLINATIONS_URL = 'https://image.pollinations.ai/prompt/'
 
 export async function POST(req: NextRequest) {
   try {
@@ -31,6 +34,10 @@ export async function POST(req: NextRequest) {
     const hfToken = process.env.HUGGINGFACE_API_TOKEN
     if (!hfToken) return NextResponse.json({ error: 'HUGGINGFACE_API_TOKEN não configurado no servidor' }, { status: 500 })
 
+    let imageBuffer: Buffer
+    let contentType = 'image/png'
+
+    // Tenta HuggingFace primeiro
     const hfRes = await fetch(HF_MODEL, {
       method: 'POST',
       headers: {
@@ -40,20 +47,25 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({ inputs: prompt }),
     })
 
-    // Modelo pode estar carregando (cold start)
     if (hfRes.status === 503) {
       const err = await hfRes.json().catch(() => ({}))
       const tempo = err.estimated_time ? `Tente novamente em ~${Math.ceil(err.estimated_time)}s` : 'Tente novamente em instantes'
       return NextResponse.json({ error: `Modelo carregando. ${tempo}` }, { status: 503 })
     }
 
-    if (!hfRes.ok) {
-      const err = await hfRes.text()
-      return NextResponse.json({ error: `Erro HuggingFace: ${err}` }, { status: 500 })
+    if (hfRes.status === 402 || !hfRes.ok) {
+      // Fallback: Pollinations.ai (gratuito, sem limite)
+      const encoded = encodeURIComponent(prompt)
+      const polRes = await fetch(`${POLLINATIONS_URL}${encoded}?width=512&height=512&nologo=true&seed=${Date.now()}`)
+      if (!polRes.ok) {
+        const err = await hfRes.text().catch(() => '')
+        return NextResponse.json({ error: `Erro HuggingFace: ${err}. Fallback Pollinations também falhou.` }, { status: 500 })
+      }
+      imageBuffer = Buffer.from(await polRes.arrayBuffer())
+    } else {
+      contentType = hfRes.headers.get('content-type') ?? 'image/png'
+      imageBuffer = Buffer.from(await hfRes.arrayBuffer())
     }
-
-    const contentType = hfRes.headers.get('content-type') ?? 'image/png'
-    const imageBuffer = Buffer.from(await hfRes.arrayBuffer())
     const ext = contentType.includes('jpeg') ? 'jpg' : 'png'
     const filename = `badge-ai-${Date.now()}.${ext}`
 
