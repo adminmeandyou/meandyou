@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { readFileSync } from 'fs'
+import sharp from 'sharp'
 
 const envContent = readFileSync('.env.local', 'utf-8')
 const env = Object.fromEntries(
@@ -9,13 +10,24 @@ const env = Object.fromEntries(
 )
 
 const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
-const HF_TOKEN = env.HUGGINGFACE_API_TOKEN
-// HuggingFace (principal) — usa créditos mensais gratuitos
-const HF_MODEL = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
+
+// ─── Tokens / URLs dos providers ───────────────────────────────────────────
+const SD_API_URL       = env.SD_API_URL          // ex: http://localhost:7860 (AUTOMATIC1111 local ou Docker)
+const HF_TOKEN         = env.HUGGINGFACE_API_TOKEN
+const REPLICATE_TOKEN  = env.REPLICATE_API_TOKEN
+
+// Modelos HuggingFace — tenta pixel art primeiro, FLUX como segundo
+const HF_PIXEL_MODEL = 'https://router.huggingface.co/hf-inference/models/nerijs/pixel-art-xl'
+const HF_FLUX_MODEL  = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
+
+// Modelo Replicate — pixel art XL (pode trocar pelo version hash de outro modelo)
+const REPLICATE_MODEL_VERSION = env.REPLICATE_MODEL_VERSION
+  || 'zylim0702/pixel-art-xl-lora:71e55e745b74c1b37d3f00d9e65e63a3b30a4b07a4d3c9b6e3a70e1c9e1d11b'
 
 const RARITY_COLOR = {
-  comum:'light gray and white', raro:'emerald green', super_raro:'purple and violet',
-  epico:'orange and amber', lendario:'golden yellow', super_lendario:'crimson red',
+  comum:'light gray and white', incomum:'blue and cyan', raro:'emerald green',
+  super_raro:'purple and violet', epico:'orange and amber',
+  lendario:'golden yellow', super_lendario:'crimson red and black',
 }
 
 const BADGES = [
@@ -47,68 +59,245 @@ const BADGES = [
   { name:'Elite Black',         type:'reputacao', rarity:'super_lendario', condition_type:'plan_black',         condition_value:null,        description:'Membro com plano Black - o topo do MeAndYou.',          requirement:'Ter plano Black ativo',                                icon:'black crown with red glowing gems and dark aura',          level:null  },
 ]
 
+// ─── Prompt builder ─────────────────────────────────────────────────────────
+// REGRA DE FUNDO: a imagem do ícone pode ter cores, mas o fundo FORA do emblema
+// deve ser branco sólido para remoção automática → PNG transparente final.
 function buildPrompt(b) {
   const color = RARITY_COLOR[b.rarity] || 'gray'
   return [
-    '[pixel art badge]','[retro social game style]','[thick black outline]',
-    '[limited color palette]','[clean pixel grid]','[no blur]','[no anti-aliasing]',
-    '[symmetrical composition]',`[central icon: ${b.icon}]`,`[color theme: ${color}]`,
+    '[pixel art badge icon]',
+    '[retro social game style like Habbo Hotel]',
+    '[thick black outline on icon]',
+    '[limited color palette]',
+    '[clean pixel grid, no blur, no anti-aliasing]',
+    '[symmetrical composition, centered icon]',
+    `[central icon: ${b.icon}]`,
+    `[color theme: ${color}]`,
     b.level ? `[bottom banner with roman numeral ${b.level}]` : '',
-    '[transparent background]','[high contrast]','[high readability]',
+    '[solid pure white background outside the badge icon]',
+    '[high contrast, high readability]',
+    '[512x512 pixels]',
   ].filter(Boolean).join(' ')
 }
 
-async function generateImage(prompt) {
-  for (let i = 1; i <= 3; i++) {
-    process.stdout.write(`  [HF] Tentativa ${i}/3... `)
-    const res = await fetch(HF_MODEL, {
-      method:'POST',
-      headers:{'Authorization':`Bearer ${HF_TOKEN}`,'Content-Type':'application/json'},
-      body:JSON.stringify({inputs:prompt}),
-    })
-    if (res.status === 503) {
-      const e = await res.json().catch(()=>({}))
-      const w = Math.ceil(e.estimated_time ?? 20)
-      console.log(`modelo carregando, aguardando ${w}s...`)
-      await new Promise(r=>setTimeout(r,(w+3)*1000))
-      continue
-    }
-    if (!res.ok) throw new Error(`HF ${res.status}: ${await res.text()}`)
-    console.log('ok!')
-    return Buffer.from(await res.arrayBuffer())
+// ─── Remoção de fundo via flood-fill (corners → alpha) ──────────────────────
+async function makePngTransparent(buffer) {
+  const { data, info } = await sharp(buffer)
+    .ensureAlpha()
+    .raw()
+    .toBuffer({ resolveWithObject: true })
+
+  const { width, height } = info
+  const px = new Uint8Array(data)
+  const idx = (x, y) => (y * width + x) * 4
+
+  // Cor de fundo = pixel do canto superior esquerdo
+  const bgR = px[0], bgG = px[1], bgB = px[2]
+  const TOLERANCE = 40
+
+  const isBg = (x, y) => {
+    const i = idx(x, y)
+    return (
+      Math.abs(px[i]   - bgR) <= TOLERANCE &&
+      Math.abs(px[i+1] - bgG) <= TOLERANCE &&
+      Math.abs(px[i+2] - bgB) <= TOLERANCE
+    )
   }
-  throw new Error('Max tentativas HuggingFace')
+
+  // BFS a partir dos 4 cantos
+  const visited = new Uint8Array(width * height)
+  const queue = []
+  const enqueue = (x, y) => {
+    const k = y * width + x
+    if (x < 0 || x >= width || y < 0 || y >= height) return
+    if (visited[k]) return
+    visited[k] = 1
+    queue.push(x, y)
+  }
+  enqueue(0, 0); enqueue(width-1, 0)
+  enqueue(0, height-1); enqueue(width-1, height-1)
+
+  let qi = 0
+  while (qi < queue.length) {
+    const x = queue[qi++], y = queue[qi++]
+    if (!isBg(x, y)) continue
+    px[idx(x,y)+3] = 0 // transparente
+    enqueue(x-1, y); enqueue(x+1, y)
+    enqueue(x, y-1); enqueue(x, y+1)
+  }
+
+  return sharp(Buffer.from(px), { raw: { width, height, channels: 4 } })
+    .png()
+    .toBuffer()
 }
 
+// ─── Provider 1: Stable Diffusion local (AUTOMATIC1111 / Docker) ─────────────
+// Para ativar: adicionar SD_API_URL=http://localhost:7860 no .env.local
+// Docker: docker run -p 7860:7860 ghcr.io/automatic1111/stable-diffusion-webui
+async function generateWithSD(prompt) {
+  const res = await fetch(`${SD_API_URL}/sdapi/v1/txt2img`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      prompt,
+      negative_prompt: 'blur, gradient, noise, photo, realistic, 3d, anti-aliasing',
+      width: 512, height: 512,
+      steps: 20, cfg_scale: 7,
+      sampler_name: 'DPM++ 2M Karras',
+    }),
+  })
+  if (!res.ok) throw new Error(`SD ${res.status}: ${await res.text()}`)
+  const json = await res.json()
+  return Buffer.from(json.images[0], 'base64')
+}
+
+// ─── Provider 2: HuggingFace pixel art model ─────────────────────────────────
+async function generateWithHFPixel(prompt) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const res = await fetch(HF_PIXEL_MODEL, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${HF_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inputs: prompt }),
+    })
+    if (res.status === 503) {
+      const e = await res.json().catch(() => ({}))
+      const wait = Math.ceil(e.estimated_time ?? 20)
+      console.log(`    modelo carregando, aguardando ${wait}s...`)
+      await new Promise(r => setTimeout(r, (wait + 3) * 1000))
+      continue
+    }
+    if (res.status === 402) throw new Error('créditos HuggingFace esgotados')
+    if (!res.ok) throw new Error(`HF Pixel ${res.status}: ${await res.text()}`)
+    return Buffer.from(await res.arrayBuffer())
+  }
+  throw new Error('HF Pixel Art: max tentativas')
+}
+
+// ─── Provider 3: HuggingFace FLUX.1-schnell ──────────────────────────────────
+async function generateWithHFFlux(prompt) {
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const res = await fetch(HF_FLUX_MODEL, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${HF_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inputs: prompt }),
+    })
+    if (res.status === 503) {
+      const e = await res.json().catch(() => ({}))
+      const wait = Math.ceil(e.estimated_time ?? 20)
+      console.log(`    modelo carregando, aguardando ${wait}s...`)
+      await new Promise(r => setTimeout(r, (wait + 3) * 1000))
+      continue
+    }
+    if (res.status === 402) throw new Error('créditos HuggingFace esgotados')
+    if (!res.ok) throw new Error(`HF FLUX ${res.status}: ${await res.text()}`)
+    return Buffer.from(await res.arrayBuffer())
+  }
+  throw new Error('HF FLUX: max tentativas')
+}
+
+// ─── Provider 4: Replicate ───────────────────────────────────────────────────
+// Para ativar: adicionar REPLICATE_API_TOKEN no .env.local
+// Para trocar modelo: REPLICATE_MODEL_VERSION=<version-hash>
+async function generateWithReplicate(prompt) {
+  // Inicia predição
+  const startRes = await fetch('https://api.replicate.com/v1/predictions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Token ${REPLICATE_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      version: REPLICATE_MODEL_VERSION,
+      input: { prompt, width: 512, height: 512, num_inference_steps: 20 },
+    }),
+  })
+  if (!startRes.ok) throw new Error(`Replicate start ${startRes.status}: ${await startRes.text()}`)
+  let prediction = await startRes.json()
+
+  // Aguarda resultado (polling)
+  while (prediction.status !== 'succeeded' && prediction.status !== 'failed') {
+    await new Promise(r => setTimeout(r, 3000))
+    const pollRes = await fetch(prediction.urls.get, {
+      headers: { 'Authorization': `Token ${REPLICATE_TOKEN}` },
+    })
+    if (!pollRes.ok) throw new Error(`Replicate poll ${pollRes.status}`)
+    prediction = await pollRes.json()
+  }
+
+  if (prediction.status === 'failed') throw new Error(`Replicate falhou: ${prediction.error}`)
+
+  const outputUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output
+  const imgRes = await fetch(outputUrl)
+  if (!imgRes.ok) throw new Error(`Replicate download ${imgRes.status}`)
+  return Buffer.from(await imgRes.arrayBuffer())
+}
+
+// ─── Orquestrador: tenta providers na ordem ──────────────────────────────────
+async function generateImage(prompt) {
+  const providers = [
+    { name: 'Stable Diffusion Local', fn: generateWithSD,       enabled: !!SD_API_URL      },
+    { name: 'HuggingFace Pixel Art',  fn: generateWithHFPixel,  enabled: !!HF_TOKEN        },
+    { name: 'HuggingFace FLUX',       fn: generateWithHFFlux,   enabled: !!HF_TOKEN        },
+    { name: 'Replicate',              fn: generateWithReplicate, enabled: !!REPLICATE_TOKEN },
+  ]
+
+  for (const p of providers) {
+    if (!p.enabled) {
+      console.log(`  [${p.name}] sem token, pulando`)
+      continue
+    }
+    process.stdout.write(`  [${p.name}] gerando... `)
+    try {
+      const raw = await p.fn(prompt)
+      const transparent = await makePngTransparent(raw)
+      console.log('ok! (fundo removido)')
+      return transparent
+    } catch (e) {
+      console.log(`falhou: ${e.message}`)
+    }
+  }
+  throw new Error('Todos os providers falharam')
+}
+
+// ─── Upload para Supabase Storage ────────────────────────────────────────────
 async function uploadImage(buffer, name) {
-  await supabase.storage.createBucket('badge-images',{public:true}).catch(()=>{})
+  await supabase.storage.createBucket('badge-images', { public: true }).catch(() => {})
   const slug = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'-')
   const filename = `badge-${slug}.png`
-  const {error} = await supabase.storage.from('badge-images').upload(filename,buffer,{contentType:'image/png',upsert:true})
+  const { error } = await supabase.storage.from('badge-images').upload(filename, buffer, {
+    contentType: 'image/png', upsert: true,
+  })
   if (error) throw new Error(error.message)
-  const {data:{publicUrl}} = supabase.storage.from('badge-images').getPublicUrl(filename)
+  const { data: { publicUrl } } = supabase.storage.from('badge-images').getPublicUrl(filename)
   return publicUrl
 }
 
-console.log('=== Gerador de Emblemas MeAndYou ===\n')
-const {data:existing,error:fetchErr} = await supabase.from('badges').select('id,name,rarity,icon_url')
-if (fetchErr) { console.error('Erro Supabase:', fetchErr.message); process.exit(1) }
-const dbMap = Object.fromEntries((existing??[]).map(b=>[b.name,b]))
-console.log(`Badges no banco: ${existing?.length??0}\n`)
+// ─── Main ─────────────────────────────────────────────────────────────────────
+console.log('=== Gerador de Emblemas MeAndYou ===')
+console.log('Providers ativos:',
+  [SD_API_URL && 'SD Local', HF_TOKEN && 'HuggingFace', REPLICATE_TOKEN && 'Replicate']
+    .filter(Boolean).join(' → ')
+)
+console.log()
 
-let inseridos=0, gerados=0, pulados=0, erros=0
+const { data: existing, error: fetchErr } = await supabase.from('badges').select('id,name,rarity,icon_url')
+if (fetchErr) { console.error('Erro Supabase:', fetchErr.message); process.exit(1) }
+const dbMap = Object.fromEntries((existing ?? []).map(b => [b.name, b]))
+console.log(`Badges no banco: ${existing?.length ?? 0}\n`)
+
+let inseridos = 0, gerados = 0, pulados = 0, erros = 0
 
 for (const badge of BADGES) {
   let inDb = dbMap[badge.name]
   if (!inDb) {
-    const {data:ins,error:insErr} = await supabase.from('badges').insert({
-      id: crypto.randomUUID(), name:badge.name, type:badge.type, description:badge.description,
-      icon:'*', icon_url:null, rarity:badge.rarity, requirement_description:badge.requirement,
-      condition_type:badge.condition_type, condition_value:badge.condition_value,
-      condition_extra:badge.condition_extra??{}, user_cohort:'all', is_active:true, is_published:true,
+    const { data: ins, error: insErr } = await supabase.from('badges').insert({
+      id: crypto.randomUUID(), name: badge.name, type: badge.type, description: badge.description,
+      icon: '*', icon_url: null, rarity: badge.rarity, requirement_description: badge.requirement,
+      condition_type: badge.condition_type, condition_value: badge.condition_value,
+      condition_extra: badge.condition_extra ?? {}, user_cohort: 'all', is_active: true, is_published: true,
     }).select('id').single()
     if (insErr) { console.log(`x [INSERT] ${badge.name}: ${insErr.message}`); erros++; continue }
-    dbMap[badge.name] = {id:ins.id, name:badge.name, rarity:badge.rarity, icon_url:null}
+    dbMap[badge.name] = { id: ins.id, name: badge.name, rarity: badge.rarity, icon_url: null }
     inDb = dbMap[badge.name]
     inseridos++
     console.log(`+ [INSERT] ${badge.name} (${badge.rarity})`)
@@ -120,14 +309,14 @@ for (const badge of BADGES) {
   try {
     const buf = await generateImage(buildPrompt(badge))
     const url = await uploadImage(buf, badge.name)
-    await supabase.from('badges').update({icon_url:url}).eq('id',inDb.id)
+    await supabase.from('badges').update({ icon_url: url }).eq('id', inDb.id)
     console.log(`  URL: ${url}`)
     gerados++
-  } catch(err) {
+  } catch (err) {
     console.error(`  ERRO: ${err.message}`)
     erros++
   }
-  await new Promise(r=>setTimeout(r,4000))
+  await new Promise(r => setTimeout(r, 2000))
 }
 
 console.log(`\n=== Resultado ===`)
