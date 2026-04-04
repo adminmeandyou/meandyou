@@ -44,7 +44,7 @@ export default function AcessoPage() {
           MeAnd<span style={{ color: '#E11D48' }}>You</span>
         </h1>
         <p style={{ fontSize: 14, color: 'rgba(248,249,250,0.50)', marginBottom: 32 }}>
-          Site em manutencao. Acesso restrito.
+          Em breve. Algo incrivel esta chegando.
         </p>
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
