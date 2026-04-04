@@ -8,6 +8,7 @@ import { AppSidebar } from './AppSidebar'
 import { AppHeaderProvider, useAppHeader } from '@/contexts/AppHeaderContext'
 import { ToastProvider } from './Toast'
 import { PlanGuard } from './PlanGuard'
+import { BadgeWatcher } from './BadgeWatcher'
 
 /**
  * Rotas que recebem o shell do app (header + bottom nav + sidebar).
@@ -64,6 +65,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <ToastProvider>
+    <BadgeWatcher />
     <AppHeaderProvider>
       <div className="app-shell-outer">
         {/* Sidebar — visível apenas em md+ */}
