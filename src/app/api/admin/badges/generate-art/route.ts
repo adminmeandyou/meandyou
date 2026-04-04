@@ -9,10 +9,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-// HuggingFace (principal) — usa créditos mensais gratuitos
 const HF_MODEL = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
-// Pollinations.ai (fallback) — 100% gratuito, sem API key, sem limite
-const POLLINATIONS_URL = 'https://image.pollinations.ai/prompt/'
 
 export async function POST(req: NextRequest) {
   try {
@@ -53,19 +50,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: `Modelo carregando. ${tempo}` }, { status: 503 })
     }
 
-    if (hfRes.status === 402 || !hfRes.ok) {
-      // Fallback: Pollinations.ai (gratuito, sem limite)
-      const encoded = encodeURIComponent(prompt)
-      const polRes = await fetch(`${POLLINATIONS_URL}${encoded}?width=512&height=512&nologo=true&seed=${Date.now()}`)
-      if (!polRes.ok) {
-        const err = await hfRes.text().catch(() => '')
-        return NextResponse.json({ error: `Erro HuggingFace: ${err}. Fallback Pollinations também falhou.` }, { status: 500 })
-      }
-      imageBuffer = Buffer.from(await polRes.arrayBuffer())
-    } else {
-      contentType = hfRes.headers.get('content-type') ?? 'image/png'
-      imageBuffer = Buffer.from(await hfRes.arrayBuffer())
+    if (hfRes.status === 402) {
+      return NextResponse.json({ error: 'Créditos HuggingFace esgotados. Aguarde a renovação mensal.' }, { status: 402 })
     }
+
+    if (!hfRes.ok) {
+      const err = await hfRes.text().catch(() => '')
+      return NextResponse.json({ error: `Erro HuggingFace: ${err}` }, { status: 500 })
+    }
+
+    contentType = hfRes.headers.get('content-type') ?? 'image/png'
+    imageBuffer = Buffer.from(await hfRes.arrayBuffer())
     const ext = contentType.includes('jpeg') ? 'jpg' : 'png'
     const filename = `badge-ai-${Date.now()}.${ext}`
 

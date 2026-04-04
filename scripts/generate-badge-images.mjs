@@ -12,8 +12,6 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
 const HF_TOKEN = env.HUGGINGFACE_API_TOKEN
 // HuggingFace (principal) — usa créditos mensais gratuitos
 const HF_MODEL = 'https://router.huggingface.co/hf-inference/models/black-forest-labs/FLUX.1-schnell'
-// Pollinations.ai (fallback) — 100% gratuito, sem API key, sem limite
-const POLLINATIONS_URL = 'https://image.pollinations.ai/prompt/'
 
 const RARITY_COLOR = {
   comum:'light gray and white', raro:'emerald green', super_raro:'purple and violet',
@@ -60,58 +58,26 @@ function buildPrompt(b) {
   ].filter(Boolean).join(' ')
 }
 
-async function generateWithHF(prompt) {
-  const res = await fetch(HF_MODEL, {
-    method:'POST',
-    headers:{'Authorization':`Bearer ${HF_TOKEN}`,'Content-Type':'application/json'},
-    body:JSON.stringify({inputs:prompt}),
-  })
-  if (res.status === 503) {
-    const e = await res.json().catch(()=>({}))
-    const w = Math.ceil(e.estimated_time ?? 20)
-    console.log(`modelo carregando, aguardando ${w}s...`)
-    await new Promise(r=>setTimeout(r,(w+3)*1000))
-    return null // sinaliza para tentar de novo
-  }
-  if (res.status === 402) {
-    console.log('créditos HuggingFace esgotados, usando Pollinations...')
-    return 'USE_POLLINATIONS'
-  }
-  if (!res.ok) throw new Error(`HF ${res.status}: ${await res.text()}`)
-  return Buffer.from(await res.arrayBuffer())
-}
-
-async function generateWithPollinations(prompt) {
-  const encoded = encodeURIComponent(prompt)
-  const url = `${POLLINATIONS_URL}${encoded}?width=512&height=512&nologo=true&seed=${Date.now()}`
-  const res = await fetch(url)
-  if (!res.ok) throw new Error(`Pollinations ${res.status}`)
-  return Buffer.from(await res.arrayBuffer())
-}
-
 async function generateImage(prompt) {
-  // Tenta HuggingFace primeiro (até 3x)
   for (let i = 1; i <= 3; i++) {
     process.stdout.write(`  [HF] Tentativa ${i}/3... `)
-    const result = await generateWithHF(prompt).catch(e => { throw e })
-    if (result === 'USE_POLLINATIONS') break
-    if (result === null) continue // modelo carregando, retry
-    console.log('ok!')
-    return result
-  }
-  // Fallback: Pollinations.ai (gratuito, sem limite)
-  for (let i = 1; i <= 3; i++) {
-    process.stdout.write(`  [Pollinations] Tentativa ${i}/3... `)
-    try {
-      const buf = await generateWithPollinations(prompt)
-      console.log('ok!')
-      return buf
-    } catch(e) {
-      console.log(`erro, tentando de novo...`)
-      await new Promise(r=>setTimeout(r,3000))
+    const res = await fetch(HF_MODEL, {
+      method:'POST',
+      headers:{'Authorization':`Bearer ${HF_TOKEN}`,'Content-Type':'application/json'},
+      body:JSON.stringify({inputs:prompt}),
+    })
+    if (res.status === 503) {
+      const e = await res.json().catch(()=>({}))
+      const w = Math.ceil(e.estimated_time ?? 20)
+      console.log(`modelo carregando, aguardando ${w}s...`)
+      await new Promise(r=>setTimeout(r,(w+3)*1000))
+      continue
     }
+    if (!res.ok) throw new Error(`HF ${res.status}: ${await res.text()}`)
+    console.log('ok!')
+    return Buffer.from(await res.arrayBuffer())
   }
-  throw new Error('Max tentativas (HF + Pollinations)')
+  throw new Error('Max tentativas HuggingFace')
 }
 
 async function uploadImage(buffer, name) {
