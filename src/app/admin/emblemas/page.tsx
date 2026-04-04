@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import {
   Plus, Search, Edit2, Trash2, Award, Users, CheckCircle, XCircle,
-  Zap, Upload, X, ImageIcon, ChevronDown, ChevronUp, RefreshCw
+  Zap, Upload, X, ImageIcon, ChevronDown, ChevronUp, RefreshCw, Sparkles
 } from 'lucide-react'
 
 const supabase = createClient(
@@ -134,6 +134,8 @@ export default function AdminEmblemas() {
   const [confirmarDelete, setConfirmarDelete] = useState<string | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
+  const [gerandoIA, setGerandoIA] = useState(false)
+  const [promptIA, setPromptIA] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => { loadBadges() }, [])
@@ -164,6 +166,7 @@ export default function AdminEmblemas() {
   function abrirCriar() {
     setForm(EMPTY_FORM)
     setPreviewUrl(null)
+    setPromptIA('pixel art badge icon, game achievement, habbo hotel style, vibrant colors, dark background, 32x32')
     setEditandoId(null)
     setModal('criar')
   }
@@ -177,8 +180,36 @@ export default function AdminEmblemas() {
       is_active: b.is_active, is_published: b.is_published,
     })
     setPreviewUrl(b.icon_url ?? null)
+    setPromptIA(`pixel art badge icon, ${b.name}, game achievement, habbo hotel style, vibrant colors, dark background, 32x32`)
     setEditandoId(b.id)
     setModal('editar')
+  }
+
+  async function gerarComIA() {
+    if (!promptIA.trim()) return
+    setGerandoIA(true)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/admin/badges/generate-art', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({ prompt: promptIA }),
+      })
+      const json = await res.json()
+      if (json.url) {
+        setForm(p => ({ ...p, icon_url: json.url }))
+        setPreviewUrl(json.url)
+      } else {
+        alert('Erro ao gerar: ' + (json.error ?? 'desconhecido'))
+      }
+    } catch (err: any) {
+      alert('Erro: ' + err.message)
+    } finally {
+      setGerandoIA(false)
+    }
   }
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -480,6 +511,32 @@ export default function AdminEmblemas() {
                   </button>
                   <p style={{ fontSize: 11, color: 'rgba(248,249,250,0.40)', margin: '5px 0 0' }}>Qualquer tamanho — será cortado e redimensionado para 72x72 px automaticamente</p>
                   <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" onChange={handleImageUpload} style={{ display: 'none' }} />
+
+                  {/* Gerador IA */}
+                  <div style={{ marginTop: 10, padding: '10px 12px', backgroundColor: 'rgba(124,58,237,0.08)', border: '1px solid rgba(124,58,237,0.20)', borderRadius: 8 }}>
+                    <p style={{ fontSize: 11, color: '#a78bfa', fontWeight: 700, margin: '0 0 6px', display: 'flex', alignItems: 'center', gap: 5 }}>
+                      <Sparkles size={11} /> Gerar com IA (HuggingFace)
+                    </p>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <input
+                        value={promptIA}
+                        onChange={e => setPromptIA(e.target.value)}
+                        placeholder="Descreva a imagem em inglês..."
+                        style={{ ...S.input, flex: 1, fontSize: 12, padding: '7px 10px' }}
+                      />
+                      <button
+                        onClick={gerarComIA}
+                        disabled={gerandoIA || !promptIA.trim()}
+                        style={{ padding: '7px 12px', backgroundColor: '#7c3aed', border: 'none', borderRadius: 8, color: '#fff', cursor: gerandoIA || !promptIA.trim() ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 700, opacity: gerandoIA || !promptIA.trim() ? 0.6 : 1, flexShrink: 0 }}
+                      >
+                        {gerandoIA
+                          ? <div style={{ width: 12, height: 12, border: '2px solid #fff', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+                          : <Sparkles size={12} />}
+                        {gerandoIA ? 'Gerando...' : 'Gerar'}
+                      </button>
+                    </div>
+                    <p style={{ fontSize: 10, color: 'rgba(167,139,250,0.50)', margin: '4px 0 0' }}>~10-20s por imagem — gratis no plano free do HuggingFace</p>
+                  </div>
                 </div>
 
                 {/* Emoji fallback */}
