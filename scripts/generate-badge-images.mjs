@@ -53,10 +53,11 @@ const BADGES = [
   { name:'Elite Black',         type:'reputacao', rarity:'super_lendario', condition_type:'plan_black',         condition_value:null,        description:'Membro com plano Black - o topo do MeAndYou.',          requirement:'Ter plano Black ativo',                                icon:'black crown with red glowing gems and dark aura',          level:null  },
 ]
 
-// ─── Prompt builder ─────────────────────────────────────────────────────────
-// REGRA DE FUNDO: a imagem do ícone pode ter cores, mas o fundo FORA do emblema
-// deve ser branco sólido para remoção automática → PNG transparente final.
-function buildPrompt(b) {
+// ─── Prompt builders ─────────────────────────────────────────────────────────
+// Cada provider tem seu formato ideal de prompt.
+
+// Formato descritivo com colchetes — para HuggingFace e OpenRouter (modelos de linguagem/difusão guiados por texto)
+function buildPromptDescriptive(b) {
   const color = RARITY_COLOR[b.rarity] || 'gray'
   return [
     '[pixel art badge icon]',
@@ -72,6 +73,37 @@ function buildPrompt(b) {
     '[high contrast, high readability]',
     '[512x512 pixels]',
   ].filter(Boolean).join(' ')
+}
+
+// Formato SD (palavras-chave + negativo) — para AI Horde e Pollinations (Stable Diffusion)
+// O separador ### indica o início do prompt negativo no SD
+function buildPromptSD(b) {
+  const color = RARITY_COLOR[b.rarity] || 'gray'
+  const positive = [
+    'pixel art badge icon',
+    b.icon,
+    'habbo hotel style',
+    'retro game sprite',
+    `${color} color theme`,
+    b.level ? `roman numeral ${b.level} banner` : '',
+    'single centered icon',
+    'black outline',
+    'limited color palette',
+    '8bit',
+    'flat icon',
+    'white background',
+    'clean',
+    'high contrast',
+  ].filter(Boolean).join(', ')
+
+  const negative = 'blurry, anime, realistic, 3d, text, watermark, multiple icons, grid, collage, nsfw, ugly, distorted'
+
+  return `${positive} ### ${negative}`
+}
+
+// Atalho: retorna o prompt certo para cada provider
+function buildPrompt(b, style = 'descriptive') {
+  return style === 'sd' ? buildPromptSD(b) : buildPromptDescriptive(b)
 }
 
 // ─── Remoção de fundo via flood-fill (corners → alpha) ──────────────────────
@@ -199,7 +231,7 @@ async function generateWithAIHorde(prompt) {
     body: JSON.stringify({
       prompt,
       params: { width: 512, height: 512, steps: 20, cfg_scale: 7, sampler_name: 'k_euler', n: 1 },
-      models: ['Dreamshaper'],
+      models: ['AIO Pixel Art'],
       r2: true,
     }),
   })
@@ -269,13 +301,16 @@ async function generateWithDeepAI(prompt) {
 }
 
 // ─── Orquestrador: tenta providers na ordem ──────────────────────────────────
-async function generateImage(prompt) {
+// Cada provider recebe o prompt no formato ideal para ele:
+//   'descriptive' → colchetes, para HuggingFace e OpenRouter
+//   'sd'          → palavras-chave + ### negativo, para AI Horde e Pollinations
+async function generateImage(badge) {
   const providers = [
-    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel,      enabled: !!HF_TOKEN       },
-    { name: 'OpenRouter Gemini',      fn: generateWithOpenRouter,   enabled: !!OPENROUTER_KEY },
-    { name: 'AI Horde',              fn: generateWithAIHorde,      enabled: true             },
-    { name: 'Pollinations.ai',        fn: generateWithPollinations, enabled: true             },
-    { name: 'DeepAI',                 fn: generateWithDeepAI,       enabled: !!DEEPAI_KEY     },
+    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel,      enabled: !!HF_TOKEN,       promptStyle: 'descriptive' },
+    { name: 'OpenRouter Gemini',      fn: generateWithOpenRouter,   enabled: !!OPENROUTER_KEY, promptStyle: 'descriptive' },
+    { name: 'AI Horde',               fn: generateWithAIHorde,      enabled: true,             promptStyle: 'sd'          },
+    { name: 'Pollinations.ai',        fn: generateWithPollinations, enabled: true,             promptStyle: 'sd'          },
+    { name: 'DeepAI',                 fn: generateWithDeepAI,       enabled: !!DEEPAI_KEY,     promptStyle: 'descriptive' },
   ]
 
   for (const p of providers) {
@@ -283,6 +318,7 @@ async function generateImage(prompt) {
       console.log(`  [${p.name}] sem token, pulando`)
       continue
     }
+    const prompt = buildPrompt(badge, p.promptStyle)
     process.stdout.write(`  [${p.name}] gerando... `)
     try {
       const raw = await p.fn(prompt)
@@ -343,7 +379,7 @@ for (const badge of BADGES) {
 
   console.log(`\n> [GERAR]  ${badge.name} (${badge.rarity})`)
   try {
-    const buf = await generateImage(buildPrompt(badge))
+    const buf = await generateImage(badge)
     const url = await uploadImage(buf, badge.name)
     await supabase.from('badges').update({ icon_url: url }).eq('id', inDb.id)
     console.log(`  URL: ${url}`)
