@@ -84,7 +84,7 @@ async function generateWithHFPixel(prompt: string): Promise<Buffer> {
   return Buffer.from(await res.arrayBuffer())
 }
 
-// ─── Provider 2: OpenRouter (google/gemini-2.0-flash-exp:free → imagem) ──────
+// ─── Provider 2: OpenRouter (google/gemini-3.1-flash-image-preview — pago) ───
 async function generateWithOpenRouter(prompt: string): Promise<Buffer> {
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -93,42 +93,50 @@ async function generateWithOpenRouter(prompt: string): Promise<Buffer> {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'google/gemini-2.0-flash-exp:free',
+      model: 'google/gemini-3.1-flash-image-preview',
       messages: [{ role: 'user', content: prompt }],
       modalities: ['image'],
+      max_tokens: 8192,
     }),
   })
   if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${await res.text()}`)
   const json = await res.json()
-  const content = json.choices?.[0]?.message?.content
-  if (!content) throw new Error('OpenRouter: resposta sem conteúdo')
 
-  if (typeof content === 'string' && content.startsWith('data:image')) {
-    const base64 = content.split(',')[1]
-    return Buffer.from(base64, 'base64')
+  // A imagem vem em message.images (campo não-padrão do OpenRouter para Gemini)
+  const images = json.choices?.[0]?.message?.images
+  if (Array.isArray(images) && images.length > 0) {
+    const imgUrl = images[0]?.image_url?.url || images[0]?.url
+    if (imgUrl?.startsWith('data:image')) {
+      return Buffer.from(imgUrl.split(',')[1], 'base64') as Buffer
+    }
+    if (imgUrl) {
+      const imgRes = await fetch(imgUrl)
+      if (!imgRes.ok) throw new Error(`OpenRouter download ${imgRes.status}`)
+      return Buffer.from(await imgRes.arrayBuffer()) as Buffer
+    }
   }
 
-  if (Array.isArray(content)) {
-    for (const part of content) {
-      if (part.type === 'image_url') {
-        const url = part.image_url?.url
-        if (url?.startsWith('data:image')) {
-          const base64 = url.split(',')[1]
-          return Buffer.from(base64, 'base64')
-        }
-        if (url) {
-          const imgRes = await fetch(url)
-          if (!imgRes.ok) throw new Error(`OpenRouter download ${imgRes.status}`)
-          return Buffer.from(await imgRes.arrayBuffer())
-        }
-      }
-    }
+  // Fallback: content como data URI
+  const content = json.choices?.[0]?.message?.content
+  if (typeof content === 'string' && content.startsWith('data:image')) {
+    return Buffer.from(content.split(',')[1], 'base64') as Buffer
   }
 
   throw new Error('OpenRouter: não foi possível extrair imagem da resposta')
 }
 
-// ─── Provider 3: DeepAI (pixel-art-generator) ────────────────────────────────
+// ─── Provider 3: Pollinations.ai (gratuito, sem API key) ─────────────────────
+async function generateWithPollinations(prompt: string): Promise<Buffer> {
+  const encoded = encodeURIComponent(prompt)
+  const url = `https://image.pollinations.ai/prompt/${encoded}?width=512&height=512&nologo=true&seed=${Date.now()}`
+  const res = await fetch(url, { signal: AbortSignal.timeout(60000) })
+  if (!res.ok) throw new Error(`Pollinations ${res.status}`)
+  const ct = res.headers.get('content-type') || ''
+  if (!ct.includes('image')) throw new Error(`Pollinations retornou ${ct} (não é imagem)`)
+  return Buffer.from(await res.arrayBuffer()) as Buffer
+}
+
+// ─── Provider 4: DeepAI (pixel-art-generator) ────────────────────────────────
 async function generateWithDeepAI(prompt: string): Promise<Buffer> {
   const body = new URLSearchParams({ text: prompt })
   const res = await fetch('https://api.deepai.org/api/pixel-art-generator', {
@@ -147,9 +155,10 @@ async function generateWithDeepAI(prompt: string): Promise<Buffer> {
 // ─── Orquestrador: cascata de providers ──────────────────────────────────────
 async function generateImage(prompt: string): Promise<{ buffer: Buffer; provider: string }> {
   const providers = [
-    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel,    enabled: !!HF_TOKEN       },
-    { name: 'OpenRouter Gemini',      fn: generateWithOpenRouter, enabled: !!OPENROUTER_KEY },
-    { name: 'DeepAI',                 fn: generateWithDeepAI,     enabled: !!DEEPAI_KEY     },
+    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel,      enabled: !!HF_TOKEN       },
+    { name: 'OpenRouter Gemini',      fn: generateWithOpenRouter,   enabled: !!OPENROUTER_KEY },
+    { name: 'Pollinations.ai',        fn: generateWithPollinations, enabled: true             },
+    { name: 'DeepAI',                 fn: generateWithDeepAI,       enabled: !!DEEPAI_KEY     },
   ]
 
   const errors: string[] = []

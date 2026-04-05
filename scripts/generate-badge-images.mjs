@@ -147,7 +147,7 @@ async function generateWithHFPixel(prompt) {
   throw new Error('HF Pixel Art: max tentativas')
 }
 
-// ─── Provider 2: OpenRouter (google/gemini-2.0-flash-exp:free → imagem) ──────
+// ─── Provider 2: OpenRouter (google/gemini-3.1-flash-image-preview — pago) ───
 async function generateWithOpenRouter(prompt) {
   const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
@@ -156,45 +156,103 @@ async function generateWithOpenRouter(prompt) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'google/gemini-2.0-flash-exp:free',
+      model: 'google/gemini-3.1-flash-image-preview',
       messages: [{ role: 'user', content: prompt }],
       modalities: ['image'],
+      max_tokens: 8192,
     }),
   })
   if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${await res.text()}`)
   const json = await res.json()
-  // A resposta vem como data URI base64 ou URL dependendo do modelo
-  const content = json.choices?.[0]?.message?.content
-  if (!content) throw new Error('OpenRouter: resposta sem conteúdo')
 
-  // Suporte a data URI base64
-  if (typeof content === 'string' && content.startsWith('data:image')) {
-    const base64 = content.split(',')[1]
-    return Buffer.from(base64, 'base64')
+  // A imagem vem em message.images (campo não-padrão do OpenRouter para Gemini)
+  const images = json.choices?.[0]?.message?.images
+  if (Array.isArray(images) && images.length > 0) {
+    const imgUrl = images[0]?.image_url?.url || images[0]?.url
+    if (imgUrl?.startsWith('data:image')) {
+      return Buffer.from(imgUrl.split(',')[1], 'base64')
+    }
+    if (imgUrl) {
+      const imgRes = await fetch(imgUrl)
+      if (!imgRes.ok) throw new Error(`OpenRouter download ${imgRes.status}`)
+      return Buffer.from(await imgRes.arrayBuffer())
+    }
   }
 
-  // Suporte a array de partes (multimodal)
-  if (Array.isArray(content)) {
-    for (const part of content) {
-      if (part.type === 'image_url') {
-        const url = part.image_url?.url
-        if (url?.startsWith('data:image')) {
-          const base64 = url.split(',')[1]
-          return Buffer.from(base64, 'base64')
-        }
-        if (url) {
-          const imgRes = await fetch(url)
-          if (!imgRes.ok) throw new Error(`OpenRouter download ${imgRes.status}`)
-          return Buffer.from(await imgRes.arrayBuffer())
-        }
-      }
-    }
+  // Fallback: content como data URI
+  const content = json.choices?.[0]?.message?.content
+  if (typeof content === 'string' && content.startsWith('data:image')) {
+    return Buffer.from(content.split(',')[1], 'base64')
   }
 
   throw new Error('OpenRouter: não foi possível extrair imagem da resposta')
 }
 
-// ─── Provider 3: DeepAI (pixel-art-generator) ────────────────────────────────
+// ─── Provider 3: AI Horde (gratuito, Stable Diffusion distribuído) ───────────
+const AIHORDE_KEY = env.AIHORDE_API_KEY || '0000000000'
+
+async function generateWithAIHorde(prompt) {
+  // Envia o job
+  const submitRes = await fetch('https://stablehorde.net/api/v2/generate/async', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'apikey': AIHORDE_KEY },
+    body: JSON.stringify({
+      prompt,
+      params: { width: 512, height: 512, steps: 20, cfg_scale: 7, sampler_name: 'k_euler', n: 1 },
+      models: ['Dreamshaper'],
+      r2: true,
+    }),
+  })
+  if (!submitRes.ok) throw new Error(`AI Horde submit ${submitRes.status}: ${await submitRes.text()}`)
+  const { id } = await submitRes.json()
+  if (!id) throw new Error('AI Horde: sem job id')
+
+  // Polling até concluir (máx 3 minutos)
+  for (let i = 0; i < 36; i++) {
+    await new Promise(r => setTimeout(r, 5000))
+    const checkRes = await fetch(`https://stablehorde.net/api/v2/generate/check/${id}`)
+    const check = await checkRes.json()
+    if (check.faulted) throw new Error('AI Horde: job com falha')
+    if (!check.done) {
+      process.stdout.write(`(fila:${check.queue_position ?? '?'} ~${check.wait_time ?? '?'}s) `)
+      continue
+    }
+    // Busca resultado
+    const statusRes = await fetch(`https://stablehorde.net/api/v2/generate/status/${id}`)
+    const data = await statusRes.json()
+    const imgData = data.generations?.[0]?.img
+    if (!imgData) throw new Error('AI Horde: sem imagem no resultado')
+    if (imgData.startsWith('http')) {
+      const dl = await fetch(imgData)
+      if (!dl.ok) throw new Error(`AI Horde download ${dl.status}`)
+      return Buffer.from(await dl.arrayBuffer())
+    }
+    return Buffer.from(imgData, 'base64')
+  }
+  throw new Error('AI Horde: timeout (3 minutos)')
+}
+
+// ─── Provider 4: Pollinations.ai (gratuito, sem API key) ─────────────────────
+async function generateWithPollinations(prompt) {
+  const encoded = encodeURIComponent(prompt)
+  const url = `https://image.pollinations.ai/prompt/${encoded}?width=512&height=512&nologo=true&seed=${Date.now()}`
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    const res = await fetch(url, { signal: AbortSignal.timeout(120000) })
+    if (res.status === 429) {
+      const wait = 15 * attempt
+      console.log(`\n    rate limit, aguardando ${wait}s...`)
+      await new Promise(r => setTimeout(r, wait * 1000))
+      continue
+    }
+    if (!res.ok) throw new Error(`Pollinations ${res.status}`)
+    const ct = res.headers.get('content-type') || ''
+    if (!ct.includes('image')) throw new Error(`Pollinations retornou ${ct} (não é imagem)`)
+    return Buffer.from(await res.arrayBuffer())
+  }
+  throw new Error('Pollinations: max tentativas')
+}
+
+// ─── Provider 4: DeepAI (pixel-art-generator) ────────────────────────────────
 async function generateWithDeepAI(prompt) {
   const body = new URLSearchParams({ text: prompt })
   const res = await fetch('https://api.deepai.org/api/pixel-art-generator', {
@@ -213,9 +271,11 @@ async function generateWithDeepAI(prompt) {
 // ─── Orquestrador: tenta providers na ordem ──────────────────────────────────
 async function generateImage(prompt) {
   const providers = [
-    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel,    enabled: !!HF_TOKEN        },
-    { name: 'OpenRouter Gemini',      fn: generateWithOpenRouter, enabled: !!OPENROUTER_KEY  },
-    { name: 'DeepAI',                 fn: generateWithDeepAI,     enabled: !!DEEPAI_KEY      },
+    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel,      enabled: !!HF_TOKEN       },
+    { name: 'OpenRouter Gemini',      fn: generateWithOpenRouter,   enabled: !!OPENROUTER_KEY },
+    { name: 'AI Horde',              fn: generateWithAIHorde,      enabled: true             },
+    { name: 'Pollinations.ai',        fn: generateWithPollinations, enabled: true             },
+    { name: 'DeepAI',                 fn: generateWithDeepAI,       enabled: !!DEEPAI_KEY     },
   ]
 
   for (const p of providers) {
@@ -252,7 +312,7 @@ async function uploadImage(buffer, name) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 console.log('=== Gerador de Emblemas MeAndYou ===')
 console.log('Providers ativos:',
-  [HF_TOKEN && 'HuggingFace', OPENROUTER_KEY && 'OpenRouter Gemini', DEEPAI_KEY && 'DeepAI'].filter(Boolean).join(' → ')
+  [HF_TOKEN && 'HuggingFace', OPENROUTER_KEY && 'OpenRouter Gemini', 'AI Horde', 'Pollinations.ai', DEEPAI_KEY && 'DeepAI'].filter(Boolean).join(' → ')
 )
 console.log()
 
@@ -292,7 +352,7 @@ for (const badge of BADGES) {
     console.error(`  ERRO: ${err.message}`)
     erros++
   }
-  await new Promise(r => setTimeout(r, 2000))
+  await new Promise(r => setTimeout(r, 8000))
 }
 
 console.log(`\n=== Resultado ===`)
