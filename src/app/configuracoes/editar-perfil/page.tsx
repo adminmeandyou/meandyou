@@ -479,6 +479,17 @@ function FotosBioSection({ userId, profileData, onSaved }: {
       const { error: saveErr } = await supabase.from('profiles').update({ bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, ...update }).eq('id', userId)
       if (saveErr) throw saveErr
       onSaved({ bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, photo_best: update['photo_best'], ...Object.fromEntries(fotoSlots.map((s, i) => [s, fotosUrls[i]])) } as any)
+      // Verifica emblemas de perfil (Perfil Completo, Galeria Rica)
+      if (userId) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) {
+          fetch('/api/badges/trigger', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetUserId: userId, trigger: ['profile_complete', 'photos_gte'] }),
+          }).catch(() => {})
+        }
+      }
       setSucesso(true)
       setTimeout(() => setSucesso(false), 3000)
     } catch (err) { console.error('[editar-perfil] fotos-bio', err); setErro('Erro ao salvar. Verifique sua conexao e tente novamente.') }

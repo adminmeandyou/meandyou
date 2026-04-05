@@ -120,6 +120,23 @@ export async function POST(req: NextRequest) {
         await supabase.rpc('reward_referral', { p_referred_id: payment.user_id })
       } catch { /* ignora se RPC nao existir */ }
 
+      // Concede emblema Elite Black imediatamente ao assinar plano Black
+      if (meta.plan === 'black') {
+        try {
+          const { data: badge } = await supabase
+            .from('badges')
+            .select('id')
+            .eq('condition_type', 'plan_black')
+            .eq('is_active', true)
+            .single()
+          if (badge) {
+            await supabase
+              .from('user_badges')
+              .upsert({ user_id: payment.user_id, badge_id: badge.id }, { onConflict: 'user_id,badge_id', ignoreDuplicates: true })
+          }
+        } catch { /* ignora erro de badge */ }
+      }
+
     } else if (payment.type === 'fichas') {
       const quantidade = fichasFromAmount(Number(payment.amount))
       if (quantidade > 0) {

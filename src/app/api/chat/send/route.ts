@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { moderateContent, getModerationMessage, containsSensitiveData } from '@/app/lib/moderation'
+import { awardBadges } from '@/lib/badges'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -95,6 +96,9 @@ export async function POST(req: NextRequest) {
         { status: 429 }
       )
     }
+
+    // Verifica emblemas de mensagens enviadas (Comunicativo I/II/III)
+    awardBadges(user.id, 'messages_sent_gte').catch(() => {})
 
     return NextResponse.json({ message: res.message })
 

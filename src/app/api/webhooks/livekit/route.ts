@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { WebhookReceiver } from 'livekit-server-sdk'
+import { awardBadges } from '@/lib/badges'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -82,6 +83,10 @@ export async function POST(req: NextRequest) {
           p_minutes:  duracaoMinutos,
         }),
       ])
+
+      // Verifica emblemas de videochamada para ambos (Presença I/II/III)
+      awardBadges(matchData.user1, ['video_calls_gte', 'video_minutes_gte']).catch(() => {})
+      awardBadges(matchData.user2, ['video_calls_gte', 'video_minutes_gte']).catch(() => {})
 
       console.log(`Videochamada finalizada — match ${matchId}, ${duracaoMinutos} min`)
       return NextResponse.json({ success: true })

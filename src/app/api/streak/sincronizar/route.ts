@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient as createServerClient, createAdminClient } from '@/lib/supabase/server'
+import { awardBadges } from '@/lib/badges'
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,6 +23,9 @@ export async function POST(req: NextRequest) {
       console.error(`[streak/sincronizar] ${rpcName} error:`, error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    // Verifica emblemas de streak (Fiel I/II/III)
+    awardBadges(user.id, ['streak_gte', 'streak_longest_gte']).catch(() => {})
 
     return NextResponse.json({ ok: true })
   } catch (err) {

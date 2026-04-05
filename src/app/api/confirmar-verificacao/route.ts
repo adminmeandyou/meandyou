@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendVerificationApprovedEmail } from '@/app/lib/email'
+import { awardBadges } from '@/lib/badges'
 import { createClient as createServerClient } from '@/lib/supabase/server'
 
 const supabase = createClient(
@@ -119,6 +120,9 @@ export async function POST(req: NextRequest) {
         console.error('[confirmar-verificacao] Falha ao enviar email de aprovação:', err)
       )
     }
+
+    // Concede emblema Identidade Verificada imediatamente
+    awardBadges(userId, 'on_verify').catch(() => {})
 
     return NextResponse.json({ ok: true })
   } catch (err) {

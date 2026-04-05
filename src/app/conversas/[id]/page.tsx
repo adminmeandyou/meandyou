@@ -440,6 +440,15 @@ export default function ChatPage() {
           reporter_id: userId,
           reported_id: otherUser?.id,
         })
+        // Verifica emblema Relato Corajoso
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token && userId) {
+          fetch('/api/badges/trigger', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ targetUserId: userId, trigger: 'took_bolo' }),
+          }).catch(() => {})
+        }
       } catch { /* silencioso */ }
     }
   }

@@ -95,6 +95,16 @@ export function useSwipe(profiles: ProfileResult[], onRefresh: () => void) {
         })
       }
 
+      // Verifica emblemas de likes recebidos para o alvo (Desejado I/II/III) — fire-and-forget
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session?.access_token) return
+        fetch('/api/badges/trigger', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ targetUserId: currentProfile.id, trigger: 'likes_received_gte' }),
+        }).catch(() => {})
+      })
+
       setCurrentIndex(i => i + 1)
     } catch (err) {
       console.error('Erro ao processar swipe:', err)

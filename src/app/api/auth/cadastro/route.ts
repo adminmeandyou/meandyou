@@ -2,6 +2,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import { sendInstitutionalEmail } from '@/app/lib/email'
+import { awardBadges } from '@/lib/badges'
 import { randomUUID } from 'crypto'
 
 const APP_URL = 'https://www.meandyou.com.br'
@@ -197,6 +198,9 @@ export async function POST(req: NextRequest) {
           status: 'pending',
         })
 
+        // Verifica emblemas de indicação para quem indicou (Embaixador I/II/III)
+        awardBadges(referrer.id, 'invited_gte').catch(() => {})
+
         // Novo usuário indicado ganha 3 tickets de boas-vindas (soma, não sobrescreve)
         await supabase.rpc('increment_user_balance', {
           p_table:   'user_tickets',
@@ -271,6 +275,9 @@ export async function POST(req: NextRequest) {
       'Verificar email',
       verifyLink
     ).catch(err => console.error('[cadastro] Falha ao enviar email de verificacao:', err))
+
+    // Concede emblema Bem-vindo imediatamente ao se cadastrar
+    awardBadges(userId, ['on_join', 'early_adopter']).catch(() => {})
 
     return NextResponse.json({ ok: true })
   } catch (err) {

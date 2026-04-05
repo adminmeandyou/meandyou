@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendNewMatchEmail } from '@/app/lib/email'
 import { enviarPushParaUsuario } from '@/lib/push'
+import { awardBadges } from '@/lib/badges'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -73,6 +74,10 @@ export async function POST(req: NextRequest) {
         fromUserId:   fromUserId,
       }),
     ])
+
+    // Verifica emblemas de matches para ambos (Magnético I/II/III)
+    awardBadges(fromUserId, 'matches_gte').catch(() => {})
+    awardBadges(toUserId, 'matches_gte').catch(() => {})
 
     return NextResponse.json({ ok: true })
 
