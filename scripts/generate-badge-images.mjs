@@ -13,7 +13,8 @@ const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE
 
 // ─── Tokens / URLs dos providers ───────────────────────────────────────────
 const HF_TOKEN         = env.HUGGINGFACE_API_TOKEN
-const DEEPAI_KEY = env.DEEPAI_API_KEY
+const DEEPAI_KEY       = env.DEEPAI_API_KEY
+const OPENROUTER_KEY   = env.OPENROUTER_API_KEY
 
 const HF_PIXEL_MODEL = 'https://router.huggingface.co/hf-inference/models/nerijs/pixel-art-xl'
 
@@ -146,7 +147,54 @@ async function generateWithHFPixel(prompt) {
   throw new Error('HF Pixel Art: max tentativas')
 }
 
-// ─── Provider 2: DeepAI (pixel-art-generator) ────────────────────────────────
+// ─── Provider 2: OpenRouter (google/gemini-2.0-flash-exp:free → imagem) ──────
+async function generateWithOpenRouter(prompt) {
+  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${OPENROUTER_KEY}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'google/gemini-2.0-flash-exp:free',
+      messages: [{ role: 'user', content: prompt }],
+      modalities: ['image'],
+    }),
+  })
+  if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${await res.text()}`)
+  const json = await res.json()
+  // A resposta vem como data URI base64 ou URL dependendo do modelo
+  const content = json.choices?.[0]?.message?.content
+  if (!content) throw new Error('OpenRouter: resposta sem conteúdo')
+
+  // Suporte a data URI base64
+  if (typeof content === 'string' && content.startsWith('data:image')) {
+    const base64 = content.split(',')[1]
+    return Buffer.from(base64, 'base64')
+  }
+
+  // Suporte a array de partes (multimodal)
+  if (Array.isArray(content)) {
+    for (const part of content) {
+      if (part.type === 'image_url') {
+        const url = part.image_url?.url
+        if (url?.startsWith('data:image')) {
+          const base64 = url.split(',')[1]
+          return Buffer.from(base64, 'base64')
+        }
+        if (url) {
+          const imgRes = await fetch(url)
+          if (!imgRes.ok) throw new Error(`OpenRouter download ${imgRes.status}`)
+          return Buffer.from(await imgRes.arrayBuffer())
+        }
+      }
+    }
+  }
+
+  throw new Error('OpenRouter: não foi possível extrair imagem da resposta')
+}
+
+// ─── Provider 3: DeepAI (pixel-art-generator) ────────────────────────────────
 async function generateWithDeepAI(prompt) {
   const body = new URLSearchParams({ text: prompt })
   const res = await fetch('https://api.deepai.org/api/pixel-art-generator', {
@@ -165,8 +213,9 @@ async function generateWithDeepAI(prompt) {
 // ─── Orquestrador: tenta providers na ordem ──────────────────────────────────
 async function generateImage(prompt) {
   const providers = [
-    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel, enabled: !!HF_TOKEN    },
-    { name: 'DeepAI',                fn: generateWithDeepAI,  enabled: !!DEEPAI_KEY  },
+    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel,    enabled: !!HF_TOKEN        },
+    { name: 'OpenRouter Gemini',      fn: generateWithOpenRouter, enabled: !!OPENROUTER_KEY  },
+    { name: 'DeepAI',                 fn: generateWithDeepAI,     enabled: !!DEEPAI_KEY      },
   ]
 
   for (const p of providers) {
@@ -203,7 +252,7 @@ async function uploadImage(buffer, name) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 console.log('=== Gerador de Emblemas MeAndYou ===')
 console.log('Providers ativos:',
-  [HF_TOKEN && 'HuggingFace', DEEPAI_KEY && 'DeepAI'].filter(Boolean).join(' → ')
+  [HF_TOKEN && 'HuggingFace', OPENROUTER_KEY && 'OpenRouter Gemini', DEEPAI_KEY && 'DeepAI'].filter(Boolean).join(' → ')
 )
 console.log()
 
