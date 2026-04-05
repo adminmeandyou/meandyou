@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import { createAdminClient } from '@/lib/supabase/server'
 
-// Chamado pelo Supabase Scheduled Webhooks ou cron externo (cron-job.org)
+// Chamado pelo Vercel Cron (GET) ou cron externo (POST)
 // Protegido por CRON_SECRET no header Authorization
-export async function POST(req: Request) {
+async function run(req: Request) {
   const auth = req.headers.get('authorization') ?? ''
   const secret = process.env.CRON_SECRET ?? ''
 
@@ -28,3 +28,6 @@ export async function POST(req: Request) {
 
   return NextResponse.json({ ok: true, ts: new Date().toISOString() })
 }
+
+export const GET = run
+export const POST = run

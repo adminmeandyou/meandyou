@@ -16,7 +16,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-export async function POST(req: Request) {
+async function run(req: Request) {
   const auth = req.headers.get('authorization') ?? ''
   const secret = process.env.CRON_SECRET ?? ''
 
@@ -93,3 +93,7 @@ export async function POST(req: Request) {
     blackRevoked: blackUserIds.length,
   })
 }
+
+// Vercel Cron usa GET — POST mantido para compatibilidade com cron externo
+export const GET = run
+export const POST = run
