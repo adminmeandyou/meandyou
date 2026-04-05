@@ -172,8 +172,8 @@ export async function POST(req: NextRequest) {
       const { data } = await supabase.from('profiles').select('id').eq('plan', 'black')
       userIds = (data ?? []).map((r: any) => r.id)
 
-      // Revogar de quem não tem mais plano Black
-      if (badge.is_revocable) {
+      // Revogar de quem não tem mais plano Black (plan_black sempre é revogável)
+      if (true) {
         const qualifiedSet = new Set(userIds)
         const { data: currentOwners } = await supabase
           .from('user_badges')

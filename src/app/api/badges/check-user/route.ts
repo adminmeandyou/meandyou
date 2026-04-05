@@ -195,8 +195,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Tipos de condição que são revogáveis (badge some se condição deixar de ser verdadeira)
+  const REVOCABLE_CONDITIONS = new Set(['plan_black', 'plan_active'])
+
   // Revogar badges revogáveis que o usuário não merece mais (ex: perdeu plano Black)
-  const revocableBadges = (allBadges ?? []).filter((b: any) => b.is_revocable && owned.has(b.id))
+  const revocableBadges = (allBadges ?? []).filter((b: any) => REVOCABLE_CONDITIONS.has(b.condition_type) && owned.has(b.id))
   for (const badge of revocableBadges) {
     const stillQualifies = await meetsCondition(user.id, badge.condition_type, badge.condition_value, badge.condition_extra, profile)
     if (!stillQualifies) {
