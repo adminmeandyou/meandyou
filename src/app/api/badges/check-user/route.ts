@@ -180,10 +180,9 @@ export async function POST(req: NextRequest) {
   const owned = new Set((userBadges ?? []).map((b: any) => b.badge_id))
   const toCheck = (allBadges ?? []).filter((b: any) => !owned.has(b.id))
 
-  if (toCheck.length === 0) return NextResponse.json({ awarded: [] })
-
   const newlyAwarded: any[] = []
 
+  // Conceder badges que o usuário ainda não tem mas já merece
   for (const badge of toCheck) {
     const qualifies = await meetsCondition(user.id, badge.condition_type, badge.condition_value, badge.condition_extra, profile)
     if (qualifies) {
@@ -193,6 +192,19 @@ export async function POST(req: NextRequest) {
         .select()
         .single()
       if (!error) newlyAwarded.push(badge)
+    }
+  }
+
+  // Revogar badges revogáveis que o usuário não merece mais (ex: perdeu plano Black)
+  const revocableBadges = (allBadges ?? []).filter((b: any) => b.is_revocable && owned.has(b.id))
+  for (const badge of revocableBadges) {
+    const stillQualifies = await meetsCondition(user.id, badge.condition_type, badge.condition_value, badge.condition_extra, profile)
+    if (!stillQualifies) {
+      await supabase
+        .from('user_badges')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('badge_id', badge.id)
     }
   }
 

@@ -171,6 +171,23 @@ export async function POST(req: NextRequest) {
     case 'plan_black': {
       const { data } = await supabase.from('profiles').select('id').eq('plan', 'black')
       userIds = (data ?? []).map((r: any) => r.id)
+
+      // Revogar de quem não tem mais plano Black
+      if (badge.is_revocable) {
+        const qualifiedSet = new Set(userIds)
+        const { data: currentOwners } = await supabase
+          .from('user_badges')
+          .select('user_id')
+          .eq('badge_id', badge.id)
+        const toRevoke = (currentOwners ?? []).map((r: any) => r.user_id).filter((uid: string) => !qualifiedSet.has(uid))
+        if (toRevoke.length > 0) {
+          await supabase
+            .from('user_badges')
+            .delete()
+            .eq('badge_id', badge.id)
+            .in('user_id', toRevoke)
+        }
+      }
       break
     }
 
