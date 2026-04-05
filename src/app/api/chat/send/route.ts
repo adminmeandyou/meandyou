@@ -97,8 +97,8 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Verifica emblemas de mensagens enviadas (Comunicativo I/II/III)
-    awardBadges(user.id, 'messages_sent_gte').catch(() => {})
+    // Verifica emblemas de mensagens (Comunicativo I-VI) — usa total (enviadas + recebidas)
+    awardBadges(user.id, 'messages_total_gte').catch(() => {})
 
     return NextResponse.json({ message: res.message })
 

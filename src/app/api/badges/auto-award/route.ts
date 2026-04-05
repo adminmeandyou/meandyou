@@ -110,6 +110,19 @@ export async function POST(req: NextRequest) {
       break
     }
 
+    case 'sala_unique_gte': {
+      const { data } = await supabase.from('room_members').select('user_id, room_id')
+      const counts: Record<string, Set<string>> = {}
+      for (const r of data ?? []) {
+        if (!counts[r.user_id]) counts[r.user_id] = new Set()
+        counts[r.user_id].add(r.room_id)
+      }
+      userIds = Object.entries(counts)
+        .filter(([, rooms]) => rooms.size >= count)
+        .map(([uid]) => uid)
+      break
+    }
+
     case 'matches_gte': {
       const { data } = await supabase.rpc('get_users_matches', { min_count: count })
       userIds = (data ?? []).map((r: any) => r.user_id)

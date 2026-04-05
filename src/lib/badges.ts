@@ -17,7 +17,10 @@ export type BadgeTrigger =
   | 'photos_gte'
   | 'matches_gte'
   | 'likes_received_gte'
+  | 'likes_sent_gte'
   | 'messages_sent_gte'
+  | 'messages_total_gte'
+  | 'sala_unique_gte'
   | 'invited_gte'
   | 'video_calls_gte'
   | 'video_minutes_gte'
@@ -81,12 +84,44 @@ async function meetsCondition(
         return (c ?? 0) >= count
       }
 
+      case 'likes_sent_gte': {
+        const { count: c } = await supabase
+          .from('likes')
+          .select('id', { count: 'exact', head: true })
+          .eq('user_id', userId)
+        return (c ?? 0) >= count
+      }
+
       case 'messages_sent_gte': {
         const { count: c } = await supabase
           .from('messages')
           .select('id', { count: 'exact', head: true })
           .eq('sender_id', userId)
         return (c ?? 0) >= count
+      }
+
+      case 'messages_total_gte': {
+        const { data: userMatchIds } = await supabase
+          .from('matches')
+          .select('id')
+          .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+          .eq('status', 'matched')
+        const mids = (userMatchIds ?? []).map((m: any) => m.id)
+        if (mids.length === 0) return false
+        const { count: c } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .in('match_id', mids)
+        return (c ?? 0) >= count
+      }
+
+      case 'sala_unique_gte': {
+        const { data } = await supabase
+          .from('room_members')
+          .select('room_id')
+          .eq('user_id', userId)
+        const unique = new Set((data ?? []).map((r: any) => r.room_id)).size
+        return unique >= count
       }
 
       case 'streak_gte': {

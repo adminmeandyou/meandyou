@@ -95,13 +95,19 @@ export function useSwipe(profiles: ProfileResult[], onRefresh: () => void) {
         })
       }
 
-      // Verifica emblemas de likes recebidos para o alvo (Desejado I/II/III) — fire-and-forget
+      // Verifica emblemas de likes — fire-and-forget
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (!session?.access_token) return
+        const headers = { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }
+        // Desejado I-VI: curtidas recebidas pelo alvo
         fetch('/api/badges/trigger', {
-          method: 'POST',
-          headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+          method: 'POST', headers,
           body: JSON.stringify({ targetUserId: currentProfile.id, trigger: 'likes_received_gte' }),
+        }).catch(() => {})
+        // Caçador I-VI: curtidas enviadas pelo remetente
+        fetch('/api/badges/trigger', {
+          method: 'POST', headers,
+          body: JSON.stringify({ targetUserId: user.id, trigger: 'likes_sent_gte' }),
         }).catch(() => {})
       })
 

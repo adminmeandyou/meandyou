@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
+import { awardBadges } from '@/lib/badges'
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -99,6 +100,9 @@ export async function POST(req: NextRequest) {
       is_system: true,
     })
   } catch { /* silencioso */ }
+
+  // Verifica emblemas Social I-VI (salas únicas visitadas) — fire-and-forget
+  awardBadges(user.id, 'sala_unique_gte').catch(() => {})
 
   return NextResponse.json({ ok: true, nickname: res.nickname })
 }
