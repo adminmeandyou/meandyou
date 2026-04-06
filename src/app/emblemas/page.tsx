@@ -55,6 +55,7 @@ const CONDITION_LABELS: Record<string, (val: number) => string> = {
   early_adopter:        () => 'Pioneiro — entrou cedo no app',
   profile_complete:     () => 'Completar 100% do perfil',
   took_bolo:            () => 'Relatar um bolo recebido',
+  caixa_lendaria:       () => 'Exclusivo da Caixa Super Lendaria',
 }
 
 function getConditionLabel(condition_type: string, condition_value: any): string {

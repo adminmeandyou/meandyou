@@ -153,7 +153,7 @@ export async function POST(req: NextRequest) {
         .from('badges')
         .select('id, name, icon_url')
         .eq('condition_type', 'caixa_lendaria')
-        .eq('active', true)
+        .eq('is_active', true)
 
       if (!lendBadges || lendBadges.length === 0) {
         // Emblemas ainda nao cadastrados — informa ao usuario
