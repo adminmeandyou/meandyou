@@ -12,9 +12,13 @@ const env = Object.fromEntries(
 const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
 
 const RARITY_COLOR = {
-  comum:'light gray and white', incomum:'blue and cyan', raro:'emerald green',
-  super_raro:'purple and violet', epico:'orange and amber',
-  lendario:'golden yellow', super_lendario:'crimson red and black',
+  comum:'#9CA3AF gray on #08090E black background',
+  incomum:'#22C55E green on #08090E black background',
+  raro:'#22C55E emerald green on #08090E black background',
+  super_raro:'#A855F7 purple and #7C3AED violet on #08090E black background',
+  epico:'#F97316 orange and #F59E0B amber on #08090E black background',
+  lendario:'#F59E0B gold and #D97706 dark gold on #08090E black background',
+  super_lendario:'#E11D48 rose red and #F43F5E on #08090E black background',
 }
 
 // Mapa de ícone por nome do badge — descreve o objeto visual central
@@ -75,6 +79,18 @@ const ICON_MAP = {
   'Vibe Boa':        'party room with music notes and confetti',
   'Onipresente':     'multiple doors in circle with figure in center',
   'Ímã Social':      'magnet attracting group of tiny people',
+  // Super Lendários — Caixa Super Lendária (raridade)
+  'Classe S':        '#E11D48 rose red S letter inside a dark #08090E hexagonal badge with #E11D48 laurel wreath',
+  'Lenda Viva':      '#E11D48 rose red ancient scroll with #F43F5E glow and #E11D48 sparks on #08090E black background',
+  'Glitch':          '#E11D48 rose red broken screen with #F43F5E glitch artifacts and static on #08090E black',
+  'Nível 999':       '#E11D48 glowing 999 counter on #08090E dark arcade screen with #F43F5E lightning',
+  // Super Lendários — Caixa Super Lendária (riqueza/poder)
+  'Magnata':         '#E11D48 rose red briefcase overflowing with #F43F5E coins and #E11D48 gems on #08090E black velvet',
+  'Royalty':         '#E11D48 rose red crown with #be123c ruby jewels on a #E11D48 cushion #08090E black background',
+  'Majestade':       '#E11D48 rose red throne with #F43F5E velvet and #E11D48 glowing scepter on #08090E black',
+  'Nobreza':         '#E11D48 rose red coat of arms shield with #be123c lions and #F43F5E fleur de lis on #08090E black',
+  'Imperium':        '#E11D48 rose red eagle with spread wings on a #be123c roman shield on #08090E black',
+  'Dinastia':        '#E11D48 rose red family crest with #F43F5E chain links and #E11D48 flame torch on #08090E black',
 }
 
 // ─── Prompt builder (SD style para AI Horde / Pollinations) ──────────────────
