@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Verifica emblemas de streak (Fiel I/II/III)
+    // Verifica emblemas de streak (Pontual → Patrimônio)
     awardBadges(user.id, ['streak_gte', 'streak_longest_gte']).catch(() => {})
 
     return NextResponse.json({ ok: true })

@@ -198,7 +198,7 @@ export async function POST(req: NextRequest) {
           status: 'pending',
         })
 
-        // Verifica emblemas de indicação para quem indicou (Embaixador I/II/III)
+        // Verifica emblemas de indicação (Boca a Boca → Lenda Urbana) — fire-and-forget
         awardBadges(referrer.id, 'invited_gte').catch(() => {})
 
         // Novo usuário indicado ganha 3 tickets de boas-vindas (soma, não sobrescreve)

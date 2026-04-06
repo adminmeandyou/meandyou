@@ -99,7 +99,7 @@ export function useSwipe(profiles: ProfileResult[], onRefresh: () => void) {
       supabase.auth.getSession().then(({ data: { session } }) => {
         if (!session?.access_token) return
         const headers = { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' }
-        // Desejado I-VI: curtidas recebidas pelo alvo
+        // Desejável → Inigualável: curtidas recebidas pelo alvo
         fetch('/api/badges/trigger', {
           method: 'POST', headers,
           body: JSON.stringify({ targetUserId: currentProfile.id, trigger: 'likes_received_gte' }),

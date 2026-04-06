@@ -1,133 +1,102 @@
 -- ═══════════════════════════════════════════════════════════════════════
--- Migration: séries completas de emblemas — 6 níveis por categoria
--- Data: 2026-04-05
+-- Migration: nomes definitivos dos emblemas — aprovados 06/04
 -- Rodar no Supabase SQL Editor
 -- ═══════════════════════════════════════════════════════════════════════
 
--- ─── MAGNÉTICO: II→incomum, III→raro, ADD IV/V/VI ───────────────────────────
-UPDATE badges SET rarity = 'incomum' WHERE name = 'Magnetico II';
-UPDATE badges SET rarity = 'raro'    WHERE name = 'Magnetico III';
+-- ─── PASSO 1: Limpar duplicados antigos da sessão 04/04 ────────────────
+-- Remove user_badges órfãos antes de deletar os badges
+DELETE FROM user_badges WHERE badge_id IN (
+  SELECT id FROM badges WHERE name IN (
+    'Matcher', 'Match Maker', 'Pegador', 'Irresistivel',
+    'Popular', 'Da Paquera', 'Popstar',
+    'Bom de Papo',
+    'Conversador', 'Falante',
+    'Indicador', 'Super Indicador', 'Hiper Indicador'
+  )
+);
 
-INSERT INTO badges (id, name, type, description, icon, icon_url, rarity, requirement_description, condition_type, condition_value, condition_extra, user_cohort, is_active, is_published) VALUES
-  (gen_random_uuid(), 'Magnetico IV', 'conexao', 'Conseguiu 150 matches - uma forca de atracao incrivel.', '*', NULL, 'super_raro', 'Conseguir 150 matches', 'matches_gte', '{"count":150}', '{}', 'all', true, true),
-  (gen_random_uuid(), 'Magnetico V',  'conexao', 'Conseguiu 500 matches - quase irresistivel.',             '*', NULL, 'epico',      'Conseguir 500 matches', 'matches_gte', '{"count":500}', '{}', 'all', true, true),
-  (gen_random_uuid(), 'Magnetico VI', 'conexao', 'Conseguiu 1000 matches - o maior magnetico do app.',      '*', NULL, 'lendario',   'Conseguir 1000 matches', 'matches_gte', '{"count":1000}', '{}', 'all', true, true);
+DELETE FROM badges WHERE name IN (
+  'Matcher', 'Match Maker', 'Pegador', 'Irresistivel',
+  'Popular', 'Da Paquera', 'Popstar',
+  'Bom de Papo',
+  'Conversador', 'Falante',
+  'Indicador', 'Super Indicador', 'Hiper Indicador'
+);
 
--- ─── COMUNICATIVO: I/II/III → messages_total_gte + novos thresholds + rarities + ADD IV/V/VI ──
-UPDATE badges SET
-  condition_type = 'messages_total_gte',
-  condition_value = '{"count":50}',
-  rarity = 'comum',
-  description = 'Trocou as primeiras 50 mensagens no app.',
-  requirement_description = 'Trocar 50 mensagens (enviadas + recebidas)'
-WHERE name = 'Comunicativo I';
+-- Embaixador sem número (duplicado, diferente de Embaixador I/II/III)
+DELETE FROM user_badges WHERE badge_id IN (
+  SELECT id FROM badges WHERE name = 'Embaixador' AND condition_type = 'invited_gte'
+);
+DELETE FROM badges WHERE name = 'Embaixador' AND condition_type = 'invited_gte';
 
-UPDATE badges SET
-  condition_type = 'messages_total_gte',
-  condition_value = '{"count":200}',
-  rarity = 'incomum',
-  description = 'Trocou mais de 200 mensagens no app.',
-  requirement_description = 'Trocar 200 mensagens (enviadas + recebidas)'
-WHERE name = 'Comunicativo II';
+-- ─── PASSO 2: MATCHES — Atraente → Bunitin → Te Quiero → Muito Quente → Me Liga? → Irresistível ──
 
-UPDATE badges SET
-  condition_type = 'messages_total_gte',
-  condition_value = '{"count":500}',
-  rarity = 'raro',
-  description = 'Trocou mais de 500 mensagens no app.',
-  requirement_description = 'Trocar 500 mensagens (enviadas + recebidas)'
-WHERE name = 'Comunicativo III';
+UPDATE badges SET name = 'Atraente',       description = 'Conseguiu o primeiro match. O início de tudo.',                  requirement_description = 'Conseguir 1 match'     WHERE name = 'Magnetico I';
+UPDATE badges SET name = 'Bunitin',        description = 'Conseguiu 10 matches. Já chamou atenção.',                       requirement_description = 'Conseguir 10 matches'   WHERE name = 'Magnetico II';
+UPDATE badges SET name = 'Te Quiero',      description = 'Conseguiu 50 matches. Encanta quem cruza.',                      requirement_description = 'Conseguir 50 matches'   WHERE name = 'Magnetico III';
+UPDATE badges SET name = 'Muito Quente',   description = 'Conseguiu 150 matches. Ninguém desvia o olhar.',                 requirement_description = 'Conseguir 150 matches'  WHERE name = 'Magnetico IV';
+UPDATE badges SET name = 'Me Liga?',       description = 'Conseguiu 500 matches. Todo mundo quer uma chance.',              requirement_description = 'Conseguir 500 matches'  WHERE name = 'Magnetico V';
+UPDATE badges SET name = 'Irresistível',   description = 'Conseguiu 1000 matches. Simplesmente irresistível.',             requirement_description = 'Conseguir 1000 matches' WHERE name = 'Magnetico VI';
 
-INSERT INTO badges (id, name, type, description, icon, icon_url, rarity, requirement_description, condition_type, condition_value, condition_extra, user_cohort, is_active, is_published) VALUES
-  (gen_random_uuid(), 'Comunicativo IV', 'conexao', 'Trocou mais de 1000 mensagens - papo que nao para.',       '*', NULL, 'super_raro', 'Trocar 1000 mensagens (enviadas + recebidas)',  'messages_total_gte', '{"count":1000}',  '{}', 'all', true, true),
-  (gen_random_uuid(), 'Comunicativo V',  'conexao', 'Trocou mais de 5000 mensagens - mestre da conversa.',      '*', NULL, 'epico',      'Trocar 5000 mensagens (enviadas + recebidas)',  'messages_total_gte', '{"count":5000}',  '{}', 'all', true, true),
-  (gen_random_uuid(), 'Comunicativo VI', 'conexao', 'Trocou mais de 15000 mensagens - lenda do papo.', '*', NULL, 'lendario',   'Trocar 15000 mensagens (enviadas + recebidas)', 'messages_total_gte', '{"count":15000}', '{}', 'all', true, true);
+-- ─── PASSO 3: MENSAGENS — Desenrola → Sem Vergonha → Papo Solto → Matraca → Dominante → Hipnotiza ──
 
--- ─── DESEJADO: II→incomum, III→raro, ADD IV/V/VI ────────────────────────────
-UPDATE badges SET rarity = 'incomum' WHERE name = 'Desejado II';
-UPDATE badges SET rarity = 'raro'    WHERE name = 'Desejado III';
+UPDATE badges SET name = 'Desenrola',      description = 'Trocou 50 mensagens no app. Desenrolou o papo.',                 requirement_description = 'Trocar 50 mensagens'    WHERE name = 'Comunicativo I';
+UPDATE badges SET name = 'Sem Vergonha',   description = 'Trocou 200 mensagens. Não tem vergonha de chegar.',              requirement_description = 'Trocar 200 mensagens'   WHERE name = 'Comunicativo II';
+UPDATE badges SET name = 'Papo Solto',     description = 'Trocou 500 mensagens. O papo flui sem parar.',                   requirement_description = 'Trocar 500 mensagens'   WHERE name = 'Comunicativo III';
+UPDATE badges SET name = 'Matraca',        description = 'Trocou 1000 mensagens. Conversa que não acaba nunca.',            requirement_description = 'Trocar 1000 mensagens'  WHERE name = 'Comunicativo IV';
+UPDATE badges SET name = 'Dominante',      description = 'Trocou 5000 mensagens. Domina qualquer conversa.',               requirement_description = 'Trocar 5000 mensagens'  WHERE name = 'Comunicativo V';
+UPDATE badges SET name = 'Hipnotiza',      description = 'Trocou 15000 mensagens. Hipnotiza com palavras.',                requirement_description = 'Trocar 15000 mensagens' WHERE name = 'Comunicativo VI';
 
-INSERT INTO badges (id, name, type, description, icon, icon_url, rarity, requirement_description, condition_type, condition_value, condition_extra, user_cohort, is_active, is_published) VALUES
-  (gen_random_uuid(), 'Desejado IV', 'reputacao', 'Recebeu 1000 curtidas - um fenomeno do app.',           '*', NULL, 'super_raro', 'Receber 1000 curtidas',  'likes_received_gte', '{"count":1000}',  '{}', 'all', true, true),
-  (gen_random_uuid(), 'Desejado V',  'reputacao', 'Recebeu 3000 curtidas - verdadeiramente irresistivel.', '*', NULL, 'epico',      'Receber 3000 curtidas',  'likes_received_gte', '{"count":3000}',  '{}', 'all', true, true),
-  (gen_random_uuid(), 'Desejado VI', 'reputacao', 'Recebeu 10000 curtidas - a lenda do MeAndYou.',         '*', NULL, 'lendario',   'Receber 10000 curtidas', 'likes_received_gte', '{"count":10000}', '{}', 'all', true, true);
+-- ─── PASSO 4: LIKES RECEBIDOS — Desejável → Me Nota → Tentação → Diferente → Destaque → Inigualável ──
 
--- ─── PRESENÇA: reescrever I/II para video_minutes_gte, III→raro+300min, ADD IV/V/VI ──
-UPDATE badges SET
-  condition_type = 'video_minutes_gte',
-  condition_value = '{"count":30}',
-  rarity = 'comum',
-  description = 'Acumulou 30 minutos em videochamadas.',
-  requirement_description = 'Acumular 30 minutos em videochamadas'
-WHERE name = 'Presenca I';
+UPDATE badges SET name = 'Desejável',      description = 'Recebeu 10 curtidas. Alguém tá de olho.',                        requirement_description = 'Receber 10 curtidas'    WHERE name = 'Desejado I';
+UPDATE badges SET name = 'Me Nota',        description = 'Recebeu 50 curtidas. Difícil passar despercebido.',              requirement_description = 'Receber 50 curtidas'    WHERE name = 'Desejado II';
+UPDATE badges SET name = 'Tentação',       description = 'Recebeu 200 curtidas. Difícil resistir.',                        requirement_description = 'Receber 200 curtidas'   WHERE name = 'Desejado III';
+UPDATE badges SET name = 'Diferente',      description = 'Recebeu 1000 curtidas. Tem algo diferente em você.',             requirement_description = 'Receber 1000 curtidas'  WHERE name = 'Desejado IV';
+UPDATE badges SET name = 'Destaque',       description = 'Recebeu 3000 curtidas. Impossível não notar.',                   requirement_description = 'Receber 3000 curtidas'  WHERE name = 'Desejado V';
+UPDATE badges SET name = 'Inigualável',    description = 'Recebeu 10000 curtidas. Não existe igual.',                      requirement_description = 'Receber 10000 curtidas' WHERE name = 'Desejado VI';
 
-UPDATE badges SET
-  condition_type = 'video_minutes_gte',
-  condition_value = '{"count":120}',
-  rarity = 'incomum',
-  description = 'Acumulou 2 horas em videochamadas.',
-  requirement_description = 'Acumular 2 horas em videochamadas'
-WHERE name = 'Presenca II';
+-- ─── PASSO 5: VÍDEO — Cara a Cara → Aparece → Olho no Olho → Ao Vivo → Presente → Reality Star ──
 
-UPDATE badges SET
-  condition_value = '{"count":300}',
-  rarity = 'raro',
-  description = 'Acumulou 5 horas em videochamadas.',
-  requirement_description = 'Acumular 5 horas em videochamadas'
-WHERE name = 'Presenca III';
+UPDATE badges SET name = 'Cara a Cara',    description = 'Acumulou 30 minutos em vídeo. Sem medo de mostrar a cara.',      requirement_description = 'Acumular 30 min em vídeo'   WHERE name = 'Presenca I';
+UPDATE badges SET name = 'Aparece',        description = 'Acumulou 2 horas em vídeo. Sempre aparece.',                     requirement_description = 'Acumular 2 horas em vídeo'  WHERE name = 'Presenca II';
+UPDATE badges SET name = 'Olho no Olho',   description = 'Acumulou 5 horas em vídeo. Conexão real.',                       requirement_description = 'Acumular 5 horas em vídeo'  WHERE name = 'Presenca III';
+UPDATE badges SET name = 'Ao Vivo',        description = 'Acumulou 16 horas em vídeo. Sempre ao vivo.',                    requirement_description = 'Acumular 16 horas em vídeo' WHERE name = 'Presenca IV';
+UPDATE badges SET name = 'Presente',       description = 'Acumulou 50 horas em vídeo. Presença constante.',                requirement_description = 'Acumular 50 horas em vídeo'  WHERE name = 'Presenca V';
+UPDATE badges SET name = 'Reality Star',   description = 'Acumulou 166 horas em vídeo. Basicamente no BBB.',               requirement_description = 'Acumular 166 horas em vídeo' WHERE name = 'Presenca VI';
 
-INSERT INTO badges (id, name, type, description, icon, icon_url, rarity, requirement_description, condition_type, condition_value, condition_extra, user_cohort, is_active, is_published) VALUES
-  (gen_random_uuid(), 'Presenca IV', 'conexao', 'Acumulou mais de 16 horas em videochamadas.',    '*', NULL, 'super_raro', 'Acumular 1000 minutos em videochamadas',  'video_minutes_gte', '{"count":1000}',  '{}', 'all', true, true),
-  (gen_random_uuid(), 'Presenca V',  'conexao', 'Acumulou mais de 50 horas em videochamadas.',    '*', NULL, 'epico',      'Acumular 3000 minutos em videochamadas',  'video_minutes_gte', '{"count":3000}',  '{}', 'all', true, true),
-  (gen_random_uuid(), 'Presenca VI', 'conexao', 'Acumulou mais de 166 horas em videochamadas - lenda.', '*', NULL, 'lendario', 'Acumular 10000 minutos em videochamadas', 'video_minutes_gte', '{"count":10000}', '{}', 'all', true, true);
+-- ─── PASSO 6: STREAK — Pontual → Constante → Não Falha → Da Casa → Forever → Patrimônio ──
 
--- ─── FIEL: I/II → streak_longest_gte + novos thresholds, III→raro, ADD IV/V/VI ──
-UPDATE badges SET
-  condition_type = 'streak_longest_gte',
-  condition_value = '{"count":7}',
-  rarity = 'comum',
-  description = 'Atingiu o maior streak de 7 dias no app.',
-  requirement_description = 'Atingir streak maximo de 7 dias'
-WHERE name = 'Fiel I';
+UPDATE badges SET name = 'Pontual',        description = 'Streak de 7 dias seguidos. Sempre pontual.',                     requirement_description = 'Atingir streak de 7 dias'   WHERE name = 'Fiel I';
+UPDATE badges SET name = 'Constante',      description = 'Streak de 14 dias seguidos. Não falha um dia.',                  requirement_description = 'Atingir streak de 14 dias'  WHERE name = 'Fiel II';
+UPDATE badges SET name = 'Não Falha',      description = 'Streak de 30 dias seguidos. Um mês inteiro sem falhar.',         requirement_description = 'Atingir streak de 30 dias'  WHERE name = 'Fiel III';
+UPDATE badges SET name = 'Da Casa',        description = 'Streak de 60 dias seguidos. Já é da casa.',                      requirement_description = 'Atingir streak de 60 dias'  WHERE name = 'Fiel IV';
+UPDATE badges SET name = 'Forever',        description = 'Streak de 180 dias seguidos. Meio ano sem parar.',               requirement_description = 'Atingir streak de 180 dias' WHERE name = 'Fiel V';
+UPDATE badges SET name = 'Patrimônio',     description = 'Streak de 365 dias seguidos. Um ano inteiro. Tesouro do app.',   requirement_description = 'Atingir streak de 365 dias' WHERE name = 'Fiel VI';
 
-UPDATE badges SET
-  condition_type = 'streak_longest_gte',
-  condition_value = '{"count":14}',
-  rarity = 'incomum',
-  description = 'Atingiu o maior streak de 14 dias seguidos.',
-  requirement_description = 'Atingir streak maximo de 14 dias'
-WHERE name = 'Fiel II';
+-- ─── PASSO 7: INDICAÇÕES — Boca a Boca → Cupido → Famoso → Influência → Celebridade → Lenda Urbana ──
 
-UPDATE badges SET rarity = 'raro' WHERE name = 'Fiel III';
+UPDATE badges SET name = 'Boca a Boca',    description = 'Indicou 1 pessoa. Espalhou a palavra.',                          requirement_description = 'Indicar 1 pessoa'    WHERE name = 'Embaixador I';
+UPDATE badges SET name = 'Cupido',         description = 'Indicou 5 pessoas. Juntando casais por aí.',                    requirement_description = 'Indicar 5 pessoas'   WHERE name = 'Embaixador II';
+UPDATE badges SET name = 'Famoso',         description = 'Indicou 20 pessoas. Todo mundo já sabe.',                        requirement_description = 'Indicar 20 pessoas'  WHERE name = 'Embaixador III';
+UPDATE badges SET name = 'Influência',     description = 'Indicou 30 pessoas. Formou opinião.',                            requirement_description = 'Indicar 30 pessoas'  WHERE name = 'Embaixador IV';
+UPDATE badges SET name = 'Celebridade',    description = 'Indicou 75 pessoas. Todo mundo conhece.',                        requirement_description = 'Indicar 75 pessoas'  WHERE name = 'Embaixador V';
+UPDATE badges SET name = 'Lenda Urbana',   description = 'Indicou 200 pessoas. Falam, mas não acreditam.',                 requirement_description = 'Indicar 200 pessoas' WHERE name = 'Embaixador VI';
 
-INSERT INTO badges (id, name, type, description, icon, icon_url, rarity, requirement_description, condition_type, condition_value, condition_extra, user_cohort, is_active, is_published) VALUES
-  (gen_random_uuid(), 'Fiel IV', 'reputacao', 'Atingiu o maior streak de 60 dias - dedicacao total.',         '*', NULL, 'super_raro', 'Atingir streak maximo de 60 dias',  'streak_longest_gte', '{"count":60}',  '{}', 'all', true, true),
-  (gen_random_uuid(), 'Fiel V',  'reputacao', 'Atingiu o maior streak de 180 dias - meio ano de presenca.',   '*', NULL, 'epico',      'Atingir streak maximo de 180 dias', 'streak_longest_gte', '{"count":180}', '{}', 'all', true, true),
-  (gen_random_uuid(), 'Fiel VI', 'reputacao', 'Atingiu o maior streak de 365 dias - um ano inteiro no app.', '*', NULL, 'lendario',   'Atingir streak maximo de 365 dias', 'streak_longest_gte', '{"count":365}', '{}', 'all', true, true);
+-- ─── PASSO 8: LIKES ENVIADOS — De Olho → Coração Acelerado → Sem Freio → Na Pista → Aventura ON → Uma Máquina ──
 
--- ─── EMBAIXADOR: II→incomum, III→raro, ADD IV/V/VI ──────────────────────────
-UPDATE badges SET rarity = 'incomum' WHERE name = 'Embaixador II';
-UPDATE badges SET rarity = 'raro'    WHERE name = 'Embaixador III';
+UPDATE badges SET name = 'De Olho',            description = 'Enviou 50 curtidas. Tá de olho em alguém.',                  requirement_description = 'Enviar 50 curtidas'    WHERE name = 'Cacador I';
+UPDATE badges SET name = 'Coração Acelerado',  description = 'Enviou 200 curtidas. Coração batendo forte.',                requirement_description = 'Enviar 200 curtidas'   WHERE name = 'Cacador II';
+UPDATE badges SET name = 'Sem Freio',          description = 'Enviou 500 curtidas. Não para mesmo.',                       requirement_description = 'Enviar 500 curtidas'   WHERE name = 'Cacador III';
+UPDATE badges SET name = 'Na Pista',           description = 'Enviou 1500 curtidas. Sempre na pista.',                     requirement_description = 'Enviar 1500 curtidas'  WHERE name = 'Cacador IV';
+UPDATE badges SET name = 'Aventura ON',        description = 'Enviou 5000 curtidas. Modo aventura ativado.',               requirement_description = 'Enviar 5000 curtidas'  WHERE name = 'Cacador V';
+UPDATE badges SET name = 'Uma Máquina',        description = 'Enviou 15000 curtidas. Sobre-humano. Não cansa nunca.',      requirement_description = 'Enviar 15000 curtidas' WHERE name = 'Cacador VI';
 
-INSERT INTO badges (id, name, type, description, icon, icon_url, rarity, requirement_description, condition_type, condition_value, condition_extra, user_cohort, is_active, is_published) VALUES
-  (gen_random_uuid(), 'Embaixador IV', 'indicacao', 'Indicou 30 amigos - um verdadeiro embaixador.',  '*', NULL, 'super_raro', 'Indicar 30 amigos',  'invited_gte', '{"count":30}',  '{}', 'all', true, true),
-  (gen_random_uuid(), 'Embaixador V',  'indicacao', 'Indicou 75 amigos - influenciador do amor.',     '*', NULL, 'epico',      'Indicar 75 amigos',  'invited_gte', '{"count":75}',  '{}', 'all', true, true),
-  (gen_random_uuid(), 'Embaixador VI', 'indicacao', 'Indicou 200 amigos - a lenda das indicacoes.',   '*', NULL, 'lendario',   'Indicar 200 amigos', 'invited_gte', '{"count":200}', '{}', 'all', true, true);
+-- ─── PASSO 9: SALAS — Visita → Turista → Hóspede → Vibe Boa → Onipresente → Ímã Social ──
 
--- ─── CAÇADOR: NOVA SÉRIE completa (likes_sent_gte) ──────────────────────────
-INSERT INTO badges (id, name, type, description, icon, icon_url, rarity, requirement_description, condition_type, condition_value, condition_extra, user_cohort, is_active, is_published) VALUES
-  (gen_random_uuid(), 'Cacador I',   'conexao', 'Enviou as primeiras 50 curtidas no app.',             '*', NULL, 'comum',      'Enviar 50 curtidas',    'likes_sent_gte', '{"count":50}',    '{}', 'all', true, true),
-  (gen_random_uuid(), 'Cacador II',  'conexao', 'Enviou 200 curtidas no app.',                         '*', NULL, 'incomum',    'Enviar 200 curtidas',   'likes_sent_gte', '{"count":200}',   '{}', 'all', true, true),
-  (gen_random_uuid(), 'Cacador III', 'conexao', 'Enviou 500 curtidas - em busca do amor.',             '*', NULL, 'raro',       'Enviar 500 curtidas',   'likes_sent_gte', '{"count":500}',   '{}', 'all', true, true),
-  (gen_random_uuid(), 'Cacador IV',  'conexao', 'Enviou 1500 curtidas - um cacador dedicado.',         '*', NULL, 'super_raro', 'Enviar 1500 curtidas',  'likes_sent_gte', '{"count":1500}',  '{}', 'all', true, true),
-  (gen_random_uuid(), 'Cacador V',   'conexao', 'Enviou 5000 curtidas - incansavel na busca.',         '*', NULL, 'epico',      'Enviar 5000 curtidas',  'likes_sent_gte', '{"count":5000}',  '{}', 'all', true, true),
-  (gen_random_uuid(), 'Cacador VI',  'conexao', 'Enviou 15000 curtidas - a lenda do amor.',            '*', NULL, 'lendario',   'Enviar 15000 curtidas', 'likes_sent_gte', '{"count":15000}', '{}', 'all', true, true);
-
--- ─── SOCIAL: NOVA SÉRIE completa (sala_unique_gte) ──────────────────────────
-INSERT INTO badges (id, name, type, description, icon, icon_url, rarity, requirement_description, condition_type, condition_value, condition_extra, user_cohort, is_active, is_published) VALUES
-  (gen_random_uuid(), 'Social I',   'conexao', 'Entrou na primeira sala de bate-papo.',                '*', NULL, 'comum',      'Entrar em 1 sala diferente',    'sala_unique_gte', '{"count":1}',    '{}', 'all', true, true),
-  (gen_random_uuid(), 'Social II',  'conexao', 'Explorou 5 salas diferentes no app.',                 '*', NULL, 'incomum',    'Entrar em 5 salas diferentes',  'sala_unique_gte', '{"count":5}',    '{}', 'all', true, true),
-  (gen_random_uuid(), 'Social III', 'conexao', 'Visitou 20 salas diferentes - verdadeiro social.',    '*', NULL, 'raro',       'Entrar em 20 salas diferentes', 'sala_unique_gte', '{"count":20}',   '{}', 'all', true, true),
-  (gen_random_uuid(), 'Social IV',  'conexao', 'Visitou 75 salas - alma do pedaco.',                  '*', NULL, 'super_raro', 'Entrar em 75 salas diferentes', 'sala_unique_gte', '{"count":75}',   '{}', 'all', true, true),
-  (gen_random_uuid(), 'Social V',   'conexao', 'Visitou 200 salas - o mais social do app.',           '*', NULL, 'epico',      'Entrar em 200 salas diferentes','sala_unique_gte', '{"count":200}',  '{}', 'all', true, true),
-  (gen_random_uuid(), 'Social VI',  'conexao', 'Visitou 1000 salas - lenda das salas do MeAndYou.',   '*', NULL, 'lendario',   'Entrar em 1000 salas diferentes','sala_unique_gte', '{"count":1000}', '{}', 'all', true, true);
+UPDATE badges SET name = 'Visita',         description = 'Entrou na primeira sala. A primeira visita.',                    requirement_description = 'Entrar em 1 sala'     WHERE name = 'Social I';
+UPDATE badges SET name = 'Turista',        description = 'Visitou 5 salas diferentes. Explorando o território.',           requirement_description = 'Entrar em 5 salas'    WHERE name = 'Social II';
+UPDATE badges SET name = 'Hóspede',        description = 'Visitou 20 salas. Figurinha carimbada.',                         requirement_description = 'Entrar em 20 salas'   WHERE name = 'Social III';
+UPDATE badges SET name = 'Vibe Boa',       description = 'Visitou 75 salas. A energia boa do lugar.',                      requirement_description = 'Entrar em 75 salas'   WHERE name = 'Social IV';
+UPDATE badges SET name = 'Onipresente',    description = 'Visitou 200 salas. Tá em todo lugar ao mesmo tempo.',            requirement_description = 'Entrar em 200 salas'  WHERE name = 'Social V';
+UPDATE badges SET name = 'Ímã Social',     description = 'Visitou 1000 salas. Atrai todo mundo pra perto.',                requirement_description = 'Entrar em 1000 salas' WHERE name = 'Social VI';

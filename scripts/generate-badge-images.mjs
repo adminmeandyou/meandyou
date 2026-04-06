@@ -11,123 +11,82 @@ const env = Object.fromEntries(
 
 const supabase = createClient(env.NEXT_PUBLIC_SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY)
 
-// ─── Tokens / URLs dos providers ───────────────────────────────────────────
-const HF_TOKEN         = env.HUGGINGFACE_API_TOKEN
-const DEEPAI_KEY       = env.DEEPAI_API_KEY
-const OPENROUTER_KEY   = env.OPENROUTER_API_KEY
-
-const HF_PIXEL_MODEL = 'https://router.huggingface.co/hf-inference/models/nerijs/pixel-art-xl'
-
 const RARITY_COLOR = {
   comum:'light gray and white', incomum:'blue and cyan', raro:'emerald green',
   super_raro:'purple and violet', epico:'orange and amber',
   lendario:'golden yellow', super_lendario:'crimson red and black',
 }
 
-const BADGES = [
-  { name:'Bem-vindo',           type:'conexao',   rarity:'comum',          condition_type:'on_join',            condition_value:null,        description:'Criou uma conta no MeAndYou.',                          requirement:'Criar uma conta no app',                               icon:'cheerful pixel character waving hello with welcome sign',  level:null },
-  { name:'Perfil Completo',     type:'reputacao', rarity:'comum',          condition_type:'profile_complete',   condition_value:null,        description:'Preencheu foto e bio com pelo menos 30 caracteres.',    requirement:'Adicionar foto e preencher a bio com 30+ caracteres',  icon:'glowing profile card with checkmark and star',             level:null },
-  { name:'Galeria Rica',        type:'reputacao', rarity:'comum',          condition_type:'photos_gte',         condition_value:{count:5},   description:'Tem 5 ou mais fotos no perfil.',                        requirement:'Adicionar 5 ou mais fotos ao perfil',                  icon:'three photo frames stacked with sparkle',                  level:null },
-  { name:'Relato Corajoso',     type:'reputacao', rarity:'comum',          condition_type:'took_bolo',          condition_value:null,        description:'Reportou ter sido deixado para tras em um encontro.',   requirement:'Registrar um bolo recebido',                           icon:'shield with cracked heart and lightning bolt',             level:null },
-  { name:'Magnetico I',         type:'conexao',   rarity:'comum',          condition_type:'matches_gte',        condition_value:{count:1},   description:'Conseguiu o primeiro match no app.',                    requirement:'Conseguir 1 match',                                    icon:'two pixel hearts connecting together with spark',          level:'I'   },
-  { name:'Desejado I',          type:'reputacao', rarity:'comum',          condition_type:'likes_received_gte', condition_value:{count:10},  description:'Recebeu as primeiras curtidas de outros usuarios.',     requirement:'Receber 10 curtidas',                                  icon:'single heart with sparkle rays around it',                 level:'I'   },
-  { name:'Embaixador I',        type:'indicacao', rarity:'comum',          condition_type:'invited_gte',        condition_value:{count:1},   description:'Indicou o primeiro amigo para o app.',                  requirement:'Indicar 1 amigo',                                      icon:'pixel character holding sealed envelope letter',           level:'I'   },
-  { name:'Presenca I',          type:'conexao',   rarity:'comum',          condition_type:'video_calls_gte',    condition_value:{count:1},   description:'Realizou a primeira videochamada no app.',              requirement:'Realizar 1 videochamada',                              icon:'retro pixel video camera with power button',               level:'I'   },
-  { name:'Comunicativo I',      type:'conexao',   rarity:'comum',          condition_type:'messages_sent_gte',  condition_value:{count:10},  description:'Enviou as primeiras mensagens no app.',                 requirement:'Enviar 10 mensagens',                                  icon:'speech bubble with three dots inside',                     level:'I'   },
-  { name:'Fiel I',              type:'reputacao', rarity:'comum',          condition_type:'streak_gte',         condition_value:{count:3},   description:'Manteve streak de 3 dias seguidos no app.',             requirement:'Manter streak de 3 dias seguidos',                     icon:'small calendar page with tiny flame',                      level:'I'   },
-  { name:'Identidade Verificada',type:'reputacao',rarity:'raro',           condition_type:'on_verify',          condition_value:null,        description:'Verificou sua identidade com biometria facial.',        requirement:'Verificar identidade biometrica',                      icon:'shield with checkmark and scan lines',                     level:null  },
-  { name:'Magnetico II',        type:'conexao',   rarity:'raro',           condition_type:'matches_gte',        condition_value:{count:10},  description:'Ja fez mais de 10 matches no app.',                     requirement:'Conseguir 10 matches',                                 icon:'two intertwined hearts with glow aura',                    level:'II'  },
-  { name:'Desejado II',         type:'reputacao', rarity:'raro',           condition_type:'likes_received_gte', condition_value:{count:50},  description:'Recebeu 50 curtidas de outros usuarios.',               requirement:'Receber 50 curtidas',                                  icon:'multiple hearts surrounding a shining star',               level:'II'  },
-  { name:'Embaixador II',       type:'indicacao', rarity:'raro',           condition_type:'invited_gte',        condition_value:{count:5},   description:'Indicou 5 amigos para o app.',                          requirement:'Indicar 5 amigos',                                     icon:'pixel character with megaphone and sound waves',           level:'II'  },
-  { name:'Presenca II',         type:'conexao',   rarity:'raro',           condition_type:'video_calls_gte',    condition_value:{count:5},   description:'Realizou 5 videochamadas no app.',                      requirement:'Realizar 5 videochamadas',                             icon:'video camera with shining star above lens',                level:'II'  },
-  { name:'Comunicativo II',     type:'conexao',   rarity:'raro',           condition_type:'messages_sent_gte',  condition_value:{count:100}, description:'Enviou mais de 100 mensagens no app.',                  requirement:'Enviar 100 mensagens',                                 icon:'two speech bubbles overlapping with sparkles',             level:'II'  },
-  { name:'Fiel II',             type:'reputacao', rarity:'raro',           condition_type:'streak_gte',         condition_value:{count:7},   description:'Manteve streak de 7 dias seguidos.',                    requirement:'Manter streak de 7 dias seguidos',                     icon:'calendar with tall fire flame',                            level:'II'  },
-  { name:'Magnetico III',       type:'conexao',   rarity:'super_raro',     condition_type:'matches_gte',        condition_value:{count:50},  description:'Fez 50 matches - verdadeira forca de atracao.',         requirement:'Conseguir 50 matches',                                 icon:'heart magnet attracting many floating hearts',             level:'III' },
-  { name:'Desejado III',        type:'reputacao', rarity:'super_raro',     condition_type:'likes_received_gte', condition_value:{count:200}, description:'Recebeu 200 curtidas - um verdadeiro fenomeno.',        requirement:'Receber 200 curtidas',                                 icon:'crown made entirely of hearts with gems',                  level:'III' },
-  { name:'Comunicativo III',    type:'conexao',   rarity:'super_raro',     condition_type:'messages_sent_gte',  condition_value:{count:500}, description:'Enviou mais de 500 mensagens no app.',                  requirement:'Enviar 500 mensagens',                                 icon:'many speech bubbles arranged in star formation',           level:'III' },
-  { name:'Embaixador III',      type:'indicacao', rarity:'epico',          condition_type:'invited_gte',        condition_value:{count:20},  description:'Indicou 20 amigos - o maior embaixador do app.',        requirement:'Indicar 20 amigos',                                    icon:'pixel character holding burning torch flag',               level:'III' },
-  { name:'Presenca III',        type:'conexao',   rarity:'epico',          condition_type:'video_minutes_gte',  condition_value:{count:120}, description:'Acumulou 2 horas em videochamadas no app.',              requirement:'Acumular 120 minutos em videochamadas',                icon:'video camera with golden crown on top',                    level:'III' },
-  { name:'Fiel III',            type:'reputacao', rarity:'epico',          condition_type:'streak_longest_gte', condition_value:{count:30},  description:'Alcancou o maior streak de 30 dias.',                   requirement:'Atingir streak maximo de 30 dias',                     icon:'infinity symbol made of fire',                             level:'III' },
-  { name:'Assinante',           type:'reputacao', rarity:'epico',          condition_type:'plan_active',        condition_value:null,         description:'Tem plano Plus ou Black ativo no app.',                 requirement:'Ter plano Plus ou Black ativo',                        icon:'diamond membership card with glowing star',                       level:null  },
-  { name:'Membro Fundador',     type:'fundador',  rarity:'lendario',       condition_type:'early_adopter',      condition_value:null,         description:'Pioneiro - estava aqui desde o inicio.',                requirement:'Entrar no app durante o periodo de lancamento',        icon:'golden key with crown floating above it',                        level:null, condition_extra:{reference_date:'2026-08-01'} },
-  { name:'Elite Black',         type:'reputacao', rarity:'super_lendario', condition_type:'plan_black',         condition_value:null,         description:'Membro com plano Black - o topo do MeAndYou.',          requirement:'Ter plano Black ativo',                                icon:'black crown with red glowing gems and dark aura',                level:null  },
-  // Badges únicos automáticos — níveis extras e condições distintas
-  // ── Séries — níveis IV/V/VI ────────────────────────────────────────────────
-  { name:'Magnetico IV',      type:'conexao',   rarity:'super_raro',     condition_type:'matches_gte',        condition_value:{count:150},  description:'Conseguiu 150 matches.',                                requirement:'Conseguir 150 matches',                                icon:'powerful magnet with golden glow pulling floating hearts',        level:'IV'  },
-  { name:'Magnetico V',       type:'conexao',   rarity:'epico',          condition_type:'matches_gte',        condition_value:{count:500},  description:'Conseguiu 500 matches.',                                requirement:'Conseguir 500 matches',                                icon:'magnet made of crystal surrounded by swirling hearts',           level:'V'   },
-  { name:'Magnetico VI',      type:'conexao',   rarity:'lendario',       condition_type:'matches_gte',        condition_value:{count:1000}, description:'Conseguiu 1000 matches.',                               requirement:'Conseguir 1000 matches',                               icon:'golden magnet radiating light with heart constellation',         level:'VI'  },
-  { name:'Comunicativo IV',   type:'conexao',   rarity:'super_raro',     condition_type:'messages_total_gte', condition_value:{count:1000}, description:'Trocou mais de 1000 mensagens.',                        requirement:'Trocar 1000 mensagens',                                icon:'many overlapping speech bubbles with sparkle burst',             level:'IV'  },
-  { name:'Comunicativo V',    type:'conexao',   rarity:'epico',          condition_type:'messages_total_gte', condition_value:{count:5000}, description:'Trocou mais de 5000 mensagens.',                        requirement:'Trocar 5000 mensagens',                                icon:'speech bubble galaxy with orbiting message icons',               level:'V'   },
-  { name:'Comunicativo VI',   type:'conexao',   rarity:'lendario',       condition_type:'messages_total_gte', condition_value:{count:15000},description:'Trocou mais de 15000 mensagens.',                       requirement:'Trocar 15000 mensagens',                               icon:'golden speech bubble throne with crown and lightning',           level:'VI'  },
-  { name:'Desejado IV',       type:'reputacao', rarity:'super_raro',     condition_type:'likes_received_gte', condition_value:{count:1000}, description:'Recebeu 1000 curtidas.',                                requirement:'Receber 1000 curtidas',                                icon:'crown of hearts with gemstones and golden rays',                 level:'IV'  },
-  { name:'Desejado V',        type:'reputacao', rarity:'epico',          condition_type:'likes_received_gte', condition_value:{count:3000}, description:'Recebeu 3000 curtidas.',                                requirement:'Receber 3000 curtidas',                                icon:'glowing heart on a pedestal with many smaller hearts orbiting',  level:'V'   },
-  { name:'Desejado VI',       type:'reputacao', rarity:'lendario',       condition_type:'likes_received_gte', condition_value:{count:10000},description:'Recebeu 10000 curtidas.',                               requirement:'Receber 10000 curtidas',                               icon:'legendary heart radiating pure golden light with hearts raining', level:'VI'  },
-  { name:'Presenca IV',       type:'conexao',   rarity:'super_raro',     condition_type:'video_minutes_gte',  condition_value:{count:1000}, description:'Acumulou mais de 16 horas em video.',                   requirement:'Acumular 1000 minutos em videochamadas',               icon:'video camera with glowing gems and purple aura',                 level:'IV'  },
-  { name:'Presenca V',        type:'conexao',   rarity:'epico',          condition_type:'video_minutes_gte',  condition_value:{count:3000}, description:'Acumulou mais de 50 horas em video.',                   requirement:'Acumular 3000 minutos em videochamadas',               icon:'video camera on golden throne with spotlight',                   level:'V'   },
-  { name:'Presenca VI',       type:'conexao',   rarity:'lendario',       condition_type:'video_minutes_gte',  condition_value:{count:10000},description:'Acumulou mais de 166 horas em video.',                  requirement:'Acumular 10000 minutos em videochamadas',              icon:'legendary video camera radiating pure white light',              level:'VI'  },
-  { name:'Fiel IV',           type:'reputacao', rarity:'super_raro',     condition_type:'streak_longest_gte', condition_value:{count:60},   description:'Atingiu streak maximo de 60 dias.',                     requirement:'Atingir streak maximo de 60 dias',                     icon:'tall purple flame column with star at top',                      level:'IV'  },
-  { name:'Fiel V',            type:'reputacao', rarity:'epico',          condition_type:'streak_longest_gte', condition_value:{count:180},  description:'Atingiu streak maximo de 180 dias.',                    requirement:'Atingir streak maximo de 180 dias',                    icon:'eternal flame pillar with orbiting sparks and crown',            level:'V'   },
-  { name:'Fiel VI',           type:'reputacao', rarity:'lendario',       condition_type:'streak_longest_gte', condition_value:{count:365},  description:'Atingiu streak maximo de 365 dias.',                    requirement:'Atingir streak maximo de 365 dias',                    icon:'golden infinity flame with calendar and legendary aura',         level:'VI'  },
-  { name:'Embaixador IV',     type:'indicacao', rarity:'super_raro',     condition_type:'invited_gte',        condition_value:{count:30},   description:'Indicou 30 amigos.',                                    requirement:'Indicar 30 amigos',                                    icon:'pixel character with purple ambassador badge and crowd',          level:'IV'  },
-  { name:'Embaixador V',      type:'indicacao', rarity:'epico',          condition_type:'invited_gte',        condition_value:{count:75},   description:'Indicou 75 amigos.',                                    requirement:'Indicar 75 amigos',                                    icon:'pixel character on stage with microphone and huge crowd',         level:'V'   },
-  { name:'Embaixador VI',     type:'indicacao', rarity:'lendario',       condition_type:'invited_gte',        condition_value:{count:200},  description:'Indicou 200 amigos.',                                   requirement:'Indicar 200 amigos',                                   icon:'golden ambassador crown with world map and radiating lines',     level:'VI'  },
-  // ── Caçador — série nova (likes_sent_gte) ─────────────────────────────────
-  { name:'Cacador I',         type:'conexao',   rarity:'comum',          condition_type:'likes_sent_gte',     condition_value:{count:50},   description:'Enviou 50 curtidas no app.',                            requirement:'Enviar 50 curtidas',                                   icon:'pixel bow and arrow with heart-tipped arrow',                    level:'I'   },
-  { name:'Cacador II',        type:'conexao',   rarity:'incomum',        condition_type:'likes_sent_gte',     condition_value:{count:200},  description:'Enviou 200 curtidas no app.',                           requirement:'Enviar 200 curtidas',                                  icon:'bow with glowing blue heart arrow and sparkles',                 level:'II'  },
-  { name:'Cacador III',       type:'conexao',   rarity:'raro',           condition_type:'likes_sent_gte',     condition_value:{count:500},  description:'Enviou 500 curtidas no app.',                           requirement:'Enviar 500 curtidas',                                  icon:'emerald bow shooting multiple heart arrows',                     level:'III' },
-  { name:'Cacador IV',        type:'conexao',   rarity:'super_raro',     condition_type:'likes_sent_gte',     condition_value:{count:1500}, description:'Enviou 1500 curtidas no app.',                          requirement:'Enviar 1500 curtidas',                                 icon:'purple crossbow with heart bolt and target',                     level:'IV'  },
-  { name:'Cacador V',         type:'conexao',   rarity:'epico',          condition_type:'likes_sent_gte',     condition_value:{count:5000}, description:'Enviou 5000 curtidas no app.',                          requirement:'Enviar 5000 curtidas',                                 icon:'epic golden bow radiating heart sparks',                         level:'V'   },
-  { name:'Cacador VI',        type:'conexao',   rarity:'lendario',       condition_type:'likes_sent_gte',     condition_value:{count:15000},description:'Enviou 15000 curtidas no app.',                         requirement:'Enviar 15000 curtidas',                                icon:'legendary cupid bow with golden wings and heart constellation',  level:'VI'  },
-  // ── Social — série nova (sala_unique_gte) ─────────────────────────────────
-  { name:'Social I',          type:'conexao',   rarity:'comum',          condition_type:'sala_unique_gte',    condition_value:{count:1},    description:'Entrou na primeira sala.',                              requirement:'Entrar em 1 sala',                                     icon:'pixel chat room door opening with welcome sign',                 level:'I'   },
-  { name:'Social II',         type:'conexao',   rarity:'incomum',        condition_type:'sala_unique_gte',    condition_value:{count:5},    description:'Explorou 5 salas diferentes.',                          requirement:'Entrar em 5 salas diferentes',                         icon:'blue door with multiple room icons floating around it',          level:'II'  },
-  { name:'Social III',        type:'conexao',   rarity:'raro',           condition_type:'sala_unique_gte',    condition_value:{count:20},   description:'Visitou 20 salas diferentes.',                          requirement:'Entrar em 20 salas diferentes',                        icon:'emerald chat room map with many doors highlighted',              level:'III' },
-  { name:'Social IV',         type:'conexao',   rarity:'super_raro',     condition_type:'sala_unique_gte',    condition_value:{count:75},   description:'Visitou 75 salas diferentes.',                          requirement:'Entrar em 75 salas diferentes',                        icon:'purple party room with balloons and crowd of pixels',            level:'IV'  },
-  { name:'Social V',          type:'conexao',   rarity:'epico',          condition_type:'sala_unique_gte',    condition_value:{count:200},  description:'Visitou 200 salas diferentes.',                         requirement:'Entrar em 200 salas diferentes',                       icon:'epic glowing party hall with confetti explosion',                level:'V'   },
-  { name:'Social VI',         type:'conexao',   rarity:'lendario',       condition_type:'sala_unique_gte',    condition_value:{count:1000}, description:'Visitou 1000 salas diferentes.',                        requirement:'Entrar em 1000 salas diferentes',                      icon:'legendary golden hall of rooms with eternal party lights',       level:'VI'  },
-  // ── Badges únicos ────────────────────────────────────────────────────────
-  { name:'Da Paquera',          type:'reputacao', rarity:'raro',           condition_type:'likes_received_gte', condition_value:{count:100},  description:'Recebeu 100 curtidas de outros usuarios.',              requirement:'Receber 100 curtidas',                                 icon:'heart surrounded by many smaller hearts with glow',              level:null  },
-  { name:'Irresistivel',        type:'reputacao', rarity:'lendario',       condition_type:'matches_gte',        condition_value:{count:200},  description:'Fez 200 matches - verdadeiramente irresistivel.',       requirement:'Conseguir 200 matches',                                icon:'magnet made of gold attracting flying hearts',                    level:null  },
-  { name:'Popstar',             type:'reputacao', rarity:'lendario',       condition_type:'likes_received_gte', condition_value:{count:500},  description:'Recebeu 500 curtidas - uma lenda do app.',              requirement:'Receber 500 curtidas',                                 icon:'shining star with hearts orbiting around it',                    level:null  },
-  { name:'Super Indicador',     type:'indicacao', rarity:'raro',           condition_type:'invited_gte',        condition_value:{count:10},   description:'Indicou 10 amigos para o app.',                         requirement:'Indicar 10 amigos',                                    icon:'pixel character with loudspeaker and crowd behind',              level:null  },
-  { name:'Conectado',           type:'conexao',   rarity:'incomum',        condition_type:'video_calls_gte',    condition_value:{count:10},   description:'Realizou 10 videochamadas no app.',                     requirement:'Realizar 10 videochamadas',                            icon:'video camera with wifi signal waves',                            level:null  },
-  { name:'Bom de Papo',         type:'conexao',   rarity:'incomum',        condition_type:'messages_total_gte', condition_value:{count:250},  description:'Trocou mais de 250 mensagens no total.',                requirement:'Trocar 250 mensagens (enviadas + recebidas)',           icon:'two speech bubbles linked together with lightning bolt',          level:null  },
-  { name:'Dedicado',            type:'reputacao', rarity:'raro',           condition_type:'streak_gte',         condition_value:{count:30},   description:'Manteve streak de 30 dias consecutivos.',               requirement:'Manter streak de 30 dias seguidos',                    icon:'calendar with giant blazing fire column',                        level:null  },
-]
-
-// ─── Prompt builders ─────────────────────────────────────────────────────────
-// Cada provider tem seu formato ideal de prompt.
-
-// Formato descritivo com colchetes — para HuggingFace e OpenRouter (modelos de linguagem/difusão guiados por texto)
-function buildPromptDescriptive(b) {
-  const color = RARITY_COLOR[b.rarity] || 'gray'
-  return [
-    '[pixel art badge icon]',
-    '[retro social game style like Habbo Hotel]',
-    '[thick black outline on icon]',
-    '[limited color palette]',
-    '[clean pixel grid, no blur, no anti-aliasing]',
-    '[symmetrical composition, centered icon]',
-    `[central icon: ${b.icon}]`,
-    `[color theme: ${color}]`,
-    b.level ? `[bottom banner with roman numeral ${b.level}]` : '',
-    '[solid pure white background outside the badge icon]',
-    '[high contrast, high readability]',
-    '[512x512 pixels]',
-  ].filter(Boolean).join(' ')
+// Mapa de ícone por nome do badge — descreve o objeto visual central
+const ICON_MAP = {
+  // Matches
+  'Atraente':        'glowing magnet attracting small hearts',
+  'Bunitin':         'cute smiling face with sparkle eyes and heart cheeks',
+  'Te Quiero':       'two hearts intertwined with a spark between them',
+  'Muito Quente':    'heart on fire with rising flames',
+  'Me Liga?':        'retro phone handset with heart on screen',
+  'Irresistível':    'golden crown sitting on a glowing heart',
+  // Mensagens
+  'Desenrola':       'speech bubble with waving hand inside',
+  'Sem Vergonha':    'bold speech bubble with exclamation mark',
+  'Papo Solto':      'multiple speech bubbles flowing freely',
+  'Matraca':         'exploding speech bubbles with sound waves',
+  'Dominante':       'throne made of speech bubbles with crown',
+  'Hipnotiza':       'spiral hypnosis eye with speech bubbles orbiting',
+  // Likes Recebidos
+  'Desejável':       'single heart with sparkle rays around it',
+  'Me Nota':         'eye with heart shaped pupil glowing',
+  'Tentação':        'red apple with heart bite mark',
+  'Diferente':       'diamond shaped heart shining with unique glow',
+  'Destaque':        'spotlight beam shining on a heart',
+  'Inigualável':     'golden heart with crown and laurel wreath',
+  // Vídeo
+  'Cara a Cara':     'video camera lens with smiling face reflection',
+  'Aparece':         'camera lens with eye looking through it',
+  'Olho no Olho':    'two eyes connected by a glowing beam',
+  'Ao Vivo':         'red live broadcast dot with camera icon',
+  'Presente':        'gift box opening with camera and sparkles',
+  'Reality Star':    'golden star with camera and bright spotlight',
+  // Streak
+  'Pontual':         'clock with green checkmark',
+  'Constante':       'calendar page with small steady flame',
+  'Não Falha':       'shield with fire emblem inside',
+  'Da Casa':         'cozy house with heart chimney smoke',
+  'Forever':         'infinity symbol made of golden fire',
+  'Patrimônio':      'golden trophy with eternal flame on top',
+  // Indicações
+  'Boca a Boca':     'two pixel faces whispering to each other',
+  'Cupido':          'bow and arrow with heart tipped arrow',
+  'Famoso':          'megaphone with crowd of tiny people',
+  'Influência':      'person silhouette on stage with spotlight',
+  'Celebridade':     'hollywood star on walk of fame',
+  'Lenda Urbana':    'mysterious glowing figure with question marks',
+  // Likes Enviados
+  'De Olho':         'magnifying glass with heart inside',
+  'Coração Acelerado':'beating heart with speed motion lines',
+  'Sem Freio':       'racing heart with broken brake pedal',
+  'Na Pista':        'disco ball with hearts on dance floor',
+  'Aventura ON':     'compass with heart as needle pointing forward',
+  'Uma Máquina':     'robot with heart engine and gears',
+  // Salas
+  'Visita':          'open door with welcome mat and light',
+  'Turista':         'suitcase with room key tags',
+  'Hóspede':         'golden hotel key with star keychain',
+  'Vibe Boa':        'party room with music notes and confetti',
+  'Onipresente':     'multiple doors in circle with figure in center',
+  'Ímã Social':      'magnet attracting group of tiny people',
 }
 
-// Formato SD (palavras-chave + negativo) — para AI Horde e Pollinations (Stable Diffusion)
-// O separador ### indica o início do prompt negativo no SD
-function buildPromptSD(b) {
-  const color = RARITY_COLOR[b.rarity] || 'gray'
+// ─── Prompt builder (SD style para AI Horde / Pollinations) ──────────────────
+function buildPrompt(name, rarity) {
+  const color = RARITY_COLOR[rarity] || 'gray'
+  const icon = ICON_MAP[name] || 'abstract badge icon'
   const positive = [
     'pixel art badge icon',
-    b.icon,
+    icon,
     'habbo hotel style',
     'retro game sprite',
     `${color} color theme`,
-    b.level ? `roman numeral ${b.level} banner` : '',
     'single centered icon',
     'black outline',
     'limited color palette',
@@ -136,140 +95,47 @@ function buildPromptSD(b) {
     'white background',
     'clean',
     'high contrast',
-  ].filter(Boolean).join(', ')
-
+  ].join(', ')
   const negative = 'blurry, anime, realistic, 3d, text, watermark, multiple icons, grid, collage, nsfw, ugly, distorted'
-
   return `${positive} ### ${negative}`
 }
 
-// Atalho: retorna o prompt certo para cada provider
-function buildPrompt(b, style = 'descriptive') {
-  return style === 'sd' ? buildPromptSD(b) : buildPromptDescriptive(b)
-}
-
-// ─── Remoção de fundo via flood-fill (corners → alpha) ──────────────────────
+// ─── Remoção de fundo via flood-fill ─────────────────────────────────────────
 async function makePngTransparent(buffer) {
-  const { data, info } = await sharp(buffer)
-    .ensureAlpha()
-    .raw()
-    .toBuffer({ resolveWithObject: true })
-
+  const { data, info } = await sharp(buffer).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
   const { width, height } = info
   const px = new Uint8Array(data)
   const idx = (x, y) => (y * width + x) * 4
-
-  // Cor de fundo = pixel do canto superior esquerdo
   const bgR = px[0], bgG = px[1], bgB = px[2]
   const TOLERANCE = 40
-
   const isBg = (x, y) => {
     const i = idx(x, y)
-    return (
-      Math.abs(px[i]   - bgR) <= TOLERANCE &&
-      Math.abs(px[i+1] - bgG) <= TOLERANCE &&
-      Math.abs(px[i+2] - bgB) <= TOLERANCE
-    )
+    return Math.abs(px[i]-bgR) <= TOLERANCE && Math.abs(px[i+1]-bgG) <= TOLERANCE && Math.abs(px[i+2]-bgB) <= TOLERANCE
   }
-
-  // BFS a partir dos 4 cantos
   const visited = new Uint8Array(width * height)
   const queue = []
   const enqueue = (x, y) => {
     const k = y * width + x
-    if (x < 0 || x >= width || y < 0 || y >= height) return
-    if (visited[k]) return
+    if (x < 0 || x >= width || y < 0 || y >= height || visited[k]) return
     visited[k] = 1
     queue.push(x, y)
   }
-  enqueue(0, 0); enqueue(width-1, 0)
-  enqueue(0, height-1); enqueue(width-1, height-1)
-
+  enqueue(0, 0); enqueue(width-1, 0); enqueue(0, height-1); enqueue(width-1, height-1)
   let qi = 0
   while (qi < queue.length) {
     const x = queue[qi++], y = queue[qi++]
     if (!isBg(x, y)) continue
-    px[idx(x,y)+3] = 0 // transparente
-    enqueue(x-1, y); enqueue(x+1, y)
-    enqueue(x, y-1); enqueue(x, y+1)
+    px[idx(x,y)+3] = 0
+    enqueue(x-1, y); enqueue(x+1, y); enqueue(x, y-1); enqueue(x, y+1)
   }
-
-  return sharp(Buffer.from(px), { raw: { width, height, channels: 4 } })
-    .png()
-    .toBuffer()
+  return sharp(Buffer.from(px), { raw: { width, height, channels: 4 } }).png().toBuffer()
 }
 
-// ─── Provider 1: HuggingFace pixel art model ─────────────────────────────────
-async function generateWithHFPixel(prompt) {
-  for (let attempt = 1; attempt <= 3; attempt++) {
-    const res = await fetch(HF_PIXEL_MODEL, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${HF_TOKEN}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ inputs: prompt }),
-    })
-    if (res.status === 503) {
-      const e = await res.json().catch(() => ({}))
-      const wait = Math.ceil(e.estimated_time ?? 20)
-      console.log(`    modelo carregando, aguardando ${wait}s...`)
-      await new Promise(r => setTimeout(r, (wait + 3) * 1000))
-      continue
-    }
-    if (res.status === 402) throw new Error('créditos HuggingFace esgotados')
-    if (!res.ok) throw new Error(`HF Pixel ${res.status}: ${await res.text()}`)
-    return Buffer.from(await res.arrayBuffer())
-  }
-  throw new Error('HF Pixel Art: max tentativas')
-}
-
-// ─── Provider 2: OpenRouter (google/gemini-3.1-flash-image-preview — pago) ───
-async function generateWithOpenRouter(prompt) {
-  const res = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${OPENROUTER_KEY}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'google/gemini-3.1-flash-image-preview',
-      messages: [{ role: 'user', content: prompt }],
-      modalities: ['image'],
-      max_tokens: 8192,
-    }),
-  })
-  if (!res.ok) throw new Error(`OpenRouter ${res.status}: ${await res.text()}`)
-  const json = await res.json()
-
-  // A imagem vem em message.images (campo não-padrão do OpenRouter para Gemini)
-  const images = json.choices?.[0]?.message?.images
-  if (Array.isArray(images) && images.length > 0) {
-    const imgUrl = images[0]?.image_url?.url || images[0]?.url
-    if (imgUrl?.startsWith('data:image')) {
-      return Buffer.from(imgUrl.split(',')[1], 'base64')
-    }
-    if (imgUrl) {
-      const imgRes = await fetch(imgUrl)
-      if (!imgRes.ok) throw new Error(`OpenRouter download ${imgRes.status}`)
-      return Buffer.from(await imgRes.arrayBuffer())
-    }
-  }
-
-  // Fallback: content como data URI
-  const content = json.choices?.[0]?.message?.content
-  if (typeof content === 'string' && content.startsWith('data:image')) {
-    return Buffer.from(content.split(',')[1], 'base64')
-  }
-
-  throw new Error('OpenRouter: não foi possível extrair imagem da resposta')
-}
-
-// ─── Provider 3: AI Horde (gratuito, Stable Diffusion distribuído) ───────────
-const AIHORDE_KEY = env.AIHORDE_API_KEY || '0000000000'
-
+// ─── AI Horde (gratuito, com fila) ───────────────────────────────────────────
 async function generateWithAIHorde(prompt) {
-  // Envia o job
   const submitRes = await fetch('https://stablehorde.net/api/v2/generate/async', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'apikey': AIHORDE_KEY },
+    headers: { 'Content-Type': 'application/json', 'apikey': '0000000000' },
     body: JSON.stringify({
       prompt,
       params: { width: 512, height: 512, steps: 20, cfg_scale: 7, sampler_name: 'k_euler', n: 1 },
@@ -281,21 +147,19 @@ async function generateWithAIHorde(prompt) {
   const { id } = await submitRes.json()
   if (!id) throw new Error('AI Horde: sem job id')
 
-  // Polling até concluir (máx 3 minutos)
-  for (let i = 0; i < 36; i++) {
+  for (let i = 0; i < 60; i++) {
     await new Promise(r => setTimeout(r, 5000))
     const checkRes = await fetch(`https://stablehorde.net/api/v2/generate/check/${id}`)
     const check = await checkRes.json()
     if (check.faulted) throw new Error('AI Horde: job com falha')
     if (!check.done) {
-      process.stdout.write(`(fila:${check.queue_position ?? '?'} ~${check.wait_time ?? '?'}s) `)
+      process.stdout.write(`\r    fila:${check.queue_position ?? '?'} ~${check.wait_time ?? '?'}s `)
       continue
     }
-    // Busca resultado
     const statusRes = await fetch(`https://stablehorde.net/api/v2/generate/status/${id}`)
     const data = await statusRes.json()
     const imgData = data.generations?.[0]?.img
-    if (!imgData) throw new Error('AI Horde: sem imagem no resultado')
+    if (!imgData) throw new Error('AI Horde: sem imagem')
     if (imgData.startsWith('http')) {
       const dl = await fetch(imgData)
       if (!dl.ok) throw new Error(`AI Horde download ${dl.status}`)
@@ -303,69 +167,41 @@ async function generateWithAIHorde(prompt) {
     }
     return Buffer.from(imgData, 'base64')
   }
-  throw new Error('AI Horde: timeout (3 minutos)')
+  throw new Error('AI Horde: timeout (5 minutos)')
 }
 
-// ─── Provider 4: Pollinations.ai (gratuito, sem API key) ─────────────────────
+// ─── Pollinations (fallback gratuito) ────────────────────────────────────────
 async function generateWithPollinations(prompt) {
   const encoded = encodeURIComponent(prompt)
   const url = `https://image.pollinations.ai/prompt/${encoded}?width=512&height=512&nologo=true&seed=${Date.now()}`
   for (let attempt = 1; attempt <= 3; attempt++) {
     const res = await fetch(url, { signal: AbortSignal.timeout(120000) })
     if (res.status === 429) {
-      const wait = 15 * attempt
-      console.log(`\n    rate limit, aguardando ${wait}s...`)
-      await new Promise(r => setTimeout(r, wait * 1000))
+      console.log(`\n    rate limit, aguardando ${15*attempt}s...`)
+      await new Promise(r => setTimeout(r, 15000 * attempt))
       continue
     }
     if (!res.ok) throw new Error(`Pollinations ${res.status}`)
     const ct = res.headers.get('content-type') || ''
-    if (!ct.includes('image')) throw new Error(`Pollinations retornou ${ct} (não é imagem)`)
+    if (!ct.includes('image')) throw new Error(`Pollinations retornou ${ct}`)
     return Buffer.from(await res.arrayBuffer())
   }
   throw new Error('Pollinations: max tentativas')
 }
 
-// ─── Provider 4: DeepAI (pixel-art-generator) ────────────────────────────────
-async function generateWithDeepAI(prompt) {
-  const body = new URLSearchParams({ text: prompt })
-  const res = await fetch('https://api.deepai.org/api/pixel-art-generator', {
-    method: 'POST',
-    headers: { 'api-key': DEEPAI_KEY },
-    body,
-  })
-  if (!res.ok) throw new Error(`DeepAI ${res.status}: ${await res.text()}`)
-  const json = await res.json()
-  if (!json.output_url) throw new Error('DeepAI: sem output_url')
-  const imgRes = await fetch(json.output_url)
-  if (!imgRes.ok) throw new Error(`DeepAI download ${imgRes.status}`)
-  return Buffer.from(await imgRes.arrayBuffer())
-}
-
-// ─── Orquestrador: tenta providers na ordem ──────────────────────────────────
-// Cada provider recebe o prompt no formato ideal para ele:
-//   'descriptive' → colchetes, para HuggingFace e OpenRouter
-//   'sd'          → palavras-chave + ### negativo, para AI Horde e Pollinations
-async function generateImage(badge) {
+// ─── Orquestrador ────────────────────────────────────────────────────────────
+async function generateImage(name, rarity) {
+  const prompt = buildPrompt(name, rarity)
   const providers = [
-    { name: 'HuggingFace Pixel Art', fn: generateWithHFPixel,      enabled: !!HF_TOKEN,       promptStyle: 'descriptive' },
-    { name: 'OpenRouter Gemini',      fn: generateWithOpenRouter,   enabled: !!OPENROUTER_KEY, promptStyle: 'descriptive' },
-    { name: 'AI Horde',               fn: generateWithAIHorde,      enabled: true,             promptStyle: 'sd'          },
-    { name: 'Pollinations.ai',        fn: generateWithPollinations, enabled: true,             promptStyle: 'sd'          },
-    { name: 'DeepAI',                 fn: generateWithDeepAI,       enabled: !!DEEPAI_KEY,     promptStyle: 'descriptive' },
+    { name: 'AI Horde', fn: generateWithAIHorde },
+    { name: 'Pollinations', fn: generateWithPollinations },
   ]
-
   for (const p of providers) {
-    if (!p.enabled) {
-      console.log(`  [${p.name}] sem token, pulando`)
-      continue
-    }
-    const prompt = buildPrompt(badge, p.promptStyle)
     process.stdout.write(`  [${p.name}] gerando... `)
     try {
       const raw = await p.fn(prompt)
       const transparent = await makePngTransparent(raw)
-      console.log('ok! (fundo removido)')
+      console.log('ok!')
       return transparent
     } catch (e) {
       console.log(`falhou: ${e.message}`)
@@ -377,7 +213,7 @@ async function generateImage(badge) {
 // ─── Upload para Supabase Storage ────────────────────────────────────────────
 async function uploadImage(buffer, name) {
   await supabase.storage.createBucket('badge-images', { public: true }).catch(() => {})
-  const slug = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,'-')
+  const slug = name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'')
   const filename = `badge-${slug}.png`
   const { error } = await supabase.storage.from('badge-images').upload(filename, buffer, {
     contentType: 'image/png', upsert: true,
@@ -387,51 +223,38 @@ async function uploadImage(buffer, name) {
   return publicUrl
 }
 
-// ─── Main ─────────────────────────────────────────────────────────────────────
+// ─── Main ────────────────────────────────────────────────────────────────────
 console.log('=== Gerador de Emblemas MeAndYou ===')
-console.log('Providers ativos:',
-  [HF_TOKEN && 'HuggingFace', OPENROUTER_KEY && 'OpenRouter Gemini', 'AI Horde', 'Pollinations.ai', DEEPAI_KEY && 'DeepAI'].filter(Boolean).join(' → ')
-)
-console.log()
+console.log('Providers: AI Horde (gratuito) → Pollinations (fallback)\n')
 
-const { data: existing, error: fetchErr } = await supabase.from('badges').select('id,name,rarity,icon_url')
+const { data: badges, error: fetchErr } = await supabase
+  .from('badges')
+  .select('id,name,rarity,icon_url')
+  .eq('is_active', true)
+  .is('icon_url', null)
+  .order('created_at')
+
 if (fetchErr) { console.error('Erro Supabase:', fetchErr.message); process.exit(1) }
-const dbMap = Object.fromEntries((existing ?? []).map(b => [b.name, b]))
-console.log(`Badges no banco: ${existing?.length ?? 0}\n`)
 
-let inseridos = 0, gerados = 0, pulados = 0, erros = 0
+console.log(`Badges sem imagem: ${badges.length}\n`)
+if (badges.length === 0) { console.log('Nada a fazer!'); process.exit(0) }
 
-for (const badge of BADGES) {
-  let inDb = dbMap[badge.name]
-  if (!inDb) {
-    const { data: ins, error: insErr } = await supabase.from('badges').insert({
-      id: crypto.randomUUID(), name: badge.name, type: badge.type, description: badge.description,
-      icon: '*', icon_url: null, rarity: badge.rarity, requirement_description: badge.requirement,
-      condition_type: badge.condition_type, condition_value: badge.condition_value,
-      condition_extra: badge.condition_extra ?? {}, user_cohort: 'all', is_active: true, is_published: true,
-    }).select('id').single()
-    if (insErr) { console.log(`x [INSERT] ${badge.name}: ${insErr.message}`); erros++; continue }
-    dbMap[badge.name] = { id: ins.id, name: badge.name, rarity: badge.rarity, icon_url: null }
-    inDb = dbMap[badge.name]
-    inseridos++
-    console.log(`+ [INSERT] ${badge.name} (${badge.rarity})`)
-  }
+let gerados = 0, erros = 0
 
-  if (inDb.icon_url) { console.log(`v [SKIP]   ${badge.name}`); pulados++; continue }
-
-  console.log(`\n> [GERAR]  ${badge.name} (${badge.rarity})`)
+for (const badge of badges) {
+  console.log(`\n> [${gerados+erros+1}/${badges.length}] ${badge.name} (${badge.rarity})`)
   try {
-    const buf = await generateImage(badge)
+    const buf = await generateImage(badge.name, badge.rarity)
     const url = await uploadImage(buf, badge.name)
-    await supabase.from('badges').update({ icon_url: url }).eq('id', inDb.id)
+    await supabase.from('badges').update({ icon_url: url }).eq('id', badge.id)
     console.log(`  URL: ${url}`)
     gerados++
   } catch (err) {
     console.error(`  ERRO: ${err.message}`)
     erros++
   }
-  await new Promise(r => setTimeout(r, 8000))
+  await new Promise(r => setTimeout(r, 3000))
 }
 
 console.log(`\n=== Resultado ===`)
-console.log(`Inseridos: ${inseridos} | Gerados: ${gerados} | Pulados: ${pulados} | Erros: ${erros}`)
+console.log(`Gerados: ${gerados} | Erros: ${erros}`)

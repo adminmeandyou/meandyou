@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     })
   } catch { /* silencioso */ }
 
-  // Verifica emblemas Social I-VI (salas únicas visitadas) — fire-and-forget
+  // Verifica emblemas Visita → Ímã Social (salas únicas visitadas) — fire-and-forget
   awardBadges(user.id, 'sala_unique_gte').catch(() => {})
 
   return NextResponse.json({ ok: true, nickname: res.nickname })
