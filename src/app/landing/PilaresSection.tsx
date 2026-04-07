@@ -5,7 +5,7 @@ export default function PilaresSection() {
     <section className="lp-pilares-section">
       <div className="lp-pilares-inner">
         <div className="lp-pilares-header lp-anim">
-          <h2>Aqui tudo funciona <em style={{color:'var(--accent)',fontStyle:'italic'}}>diferente.</em></h2>
+          <h2>Aqui tudo funciona diferente.</h2>
           <p>Você não entra para tentar. Você entra para escolher.</p>
         </div>
         <div className="lp-pilares-grid">

@@ -623,6 +623,7 @@
 .lp-ident-bullet:hover .lp-ident-bullet-dot{opacity:1}
 .lp-ident-closing{font-size:clamp(18px,2.2vw,22px);color:var(--text);font-weight:600;line-height:1.6;font-family:var(--font-fraunces),serif}
 .lp-ident-closing em{color:var(--accent);font-style:italic}
+.lp-ident-closing{color:var(--text)}
 @media(max-width:768px){.lp-ident-section{padding:72px 24px}}
 
 /* 4 Modos */

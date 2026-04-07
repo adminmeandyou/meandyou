@@ -62,7 +62,7 @@ export default function SegurancaSection() {
           ))}
         </div>
         <div className="lp-seg-closing lp-anim">
-          <p className="lp-seg-closing-text">Você decide <em>até onde vai.</em></p>
+          <p className="lp-seg-closing-text">Você decide até onde vai.</p>
         </div>
       </div>
     </section>

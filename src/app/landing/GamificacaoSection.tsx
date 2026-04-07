@@ -6,7 +6,7 @@ export default function GamificacaoSection() {
       <div className="lp-gamif-v2-inner">
         <div className="lp-gamif-v2-header lp-anim">
           <p className="lp-section-label">Muito mais do que curtidas</p>
-          <h2 className="lp-gamif-v2-title">Seu tempo aqui<br /><em style={{color:'#10b981',fontStyle:'italic'}}>vale algo</em>.</h2>
+          <h2 className="lp-gamif-v2-title">Seu tempo aqui<br />vale algo.</h2>
           <p className="lp-gamif-v2-sub">Enquanto você usa, você evolui dentro do app.</p>
           <p className="lp-gamif-v2-text">A cada acesso, interação ou conexão, você acumula benefícios, desbloqueia recursos e ganha destaque.</p>
         </div>

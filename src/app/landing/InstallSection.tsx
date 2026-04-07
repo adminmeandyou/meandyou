@@ -26,7 +26,7 @@ export default function InstallSection() {
       <div className="lp-install-inner">
         <div className="lp-install-left lp-anim">
           <p className="lp-section-label">App</p>
-          <h2><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>Baixe Agora.</em><br />Direto no seu celular.</h2>
+          <h2>Baixe agora.<br />Direto no seu celular.</h2>
           <p>Ícone na tela inicial, notificações em tempo real. Sem precisar de loja de apps, sem burocracia de download.</p>
 
           <div className="lp-install-os-tabs">

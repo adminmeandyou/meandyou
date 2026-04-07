@@ -19,7 +19,7 @@ export default function IdentSection() {
           ))}
         </div>
         <p className="lp-ident-closing lp-anim">
-          O problema nunca foi você.<br /><em>Era o ambiente.</em>
+          O problema nunca foi você.<br />Era o ambiente.
         </p>
       </div>
     </section>
