@@ -5,7 +5,7 @@ export default function PilaresLancamento() {
     <section className="lp-pilares-section">
       <div className="lp-pilares-inner">
         <div className="lp-pilares-header lp-anim">
-          <h2>Aqui tudo funciona <em style={{color:'var(--accent)',fontStyle:'italic'}}>diferente.</em></h2>
+          <h2>Aqui tudo funciona diferente.</h2>
           <p>E você vai descobrir isso nos próximos 2 meses, sem pagar nada.</p>
         </div>
         <div className="lp-pilares-grid">

@@ -38,7 +38,7 @@ export default function ModosLancamento() {
     <section className="lp-modos-section">
       <div className="lp-modos-inner">
         <div className="lp-modos-header lp-anim">
-          <h2>Quatro formas de se conectar.<br /><em style={{color:'var(--accent)',fontStyle:'italic'}}>Todas incluídas nos 2 meses grátis.</em></h2>
+          <h2>Quatro formas de se conectar.<br />Todas incluídas nos 2 meses grátis.</h2>
           <p>Você muda a forma de se conectar conforme o momento. E testa cada uma sem pagar nada.</p>
         </div>
         <p className="lp-modos-desc lp-anim">

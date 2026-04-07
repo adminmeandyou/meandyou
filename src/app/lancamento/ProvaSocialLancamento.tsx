@@ -79,7 +79,7 @@ export default function ProvaSocialLancamento() {
       <div className="lp-social-v2-inner">
         <div className="lp-social-v2-header lp-anim">
           <p className="lp-section-label">Quem já entrou</p>
-          <h2 className="lp-social-v2-title">Quem chegou cedo,<br /><em style={{ fontStyle: 'italic', color: 'var(--accent)' }}>não quer sair.</em></h2>
+          <h2 className="lp-social-v2-title">Quem chegou cedo,<br />não quer sair.</h2>
         </div>
 
         {/* Cards grid */}

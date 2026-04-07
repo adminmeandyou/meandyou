@@ -6,7 +6,7 @@ export default function GamificacaoLancamento() {
       <div className="lp-gamif-v2-inner">
         <div className="lp-gamif-v2-header lp-anim">
           <p className="lp-section-label">Muito mais do que curtidas</p>
-          <h2 className="lp-gamif-v2-title">Você acumula benefícios<br /><em style={{color:'#10b981',fontStyle:'italic'}}>desde o primeiro dia.</em></h2>
+          <h2 className="lp-gamif-v2-title">Você acumula benefícios<br />desde o primeiro dia.</h2>
           <p className="lp-gamif-v2-sub">Enquanto você usa nos 2 meses grátis, você já evolui dentro do app.</p>
           <p className="lp-gamif-v2-text">A cada acesso, interação ou conexão, você acumula benefícios, desbloqueia recursos e ganha destaque. Nada disso é pausado durante o período gratuito.</p>
         </div>
