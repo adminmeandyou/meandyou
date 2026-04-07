@@ -7,7 +7,7 @@ export default function OfertaLancamento() {
         <div className="lp-anim" style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center' }}>
           <p className="lp-section-label" style={{ marginBottom: 16 }}>Por dentro do lançamento</p>
           <h2 style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: 'clamp(28px,4vw,44px)', fontWeight: 700, lineHeight: 1.15, marginBottom: 20, color: 'var(--text)' }}>
-            Não é um app gratuito.<br />É uma oportunidade.
+            Não é um app gratuito.<br /><em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>É uma oportunidade.</em>
           </h2>
           <p style={{ fontSize: 'clamp(15px,2vw,17px)', color: 'rgba(248,249,250,0.60)', lineHeight: 1.8, marginBottom: 12 }}>
             O MeAndYou é uma plataforma paga — e vai continuar sendo. Quem paga, leva a experiência a sério. E isso muda o nível de todo mundo dentro do app.
