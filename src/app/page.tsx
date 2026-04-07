@@ -267,7 +267,7 @@ export default function Home() {
 
       <div className="lp">
         <NavBar navVisible={navVisible} menuAberto={menuAberto} setMenuAberto={setMenuAberto} />
-        <HeroSection userCity={userCity} notifList={notifList} />
+        <HeroSection userCity={userCity} />
         <IdentSection />
         <PilaresSection />
         <VerificacaoSection />

@@ -5,10 +5,9 @@ import { swipeCards } from './data'
 
 interface HeroProps {
   userCity: string
-  notifList: Array<{id: number, text: string, exiting: boolean}>
 }
 
-export default function HeroSection({ userCity, notifList }: HeroProps) {
+export default function HeroSection({ userCity }: HeroProps) {
   const [currentCard, setCurrentCard] = useState(0)
   const [swipeDir, setSwipeDir] = useState<null | 'left' | 'right' | 'up'>(null)
   const swipeLock = useRef(false)
@@ -120,14 +119,7 @@ export default function HeroSection({ userCity, notifList }: HeroProps) {
             </div>
           </div>
 
-          {/* Notificações animadas — abaixo do celular */}
-          <div className="lp-notif-area">
-            {notifList.map(n => (
-              <div key={n.id} className={`lp-notif-item ${n.exiting ? 'lp-notif-exit' : 'lp-notif-enter'}`}>
-                <span className="lp-fc-dot" />{n.text}
-              </div>
-            ))}
-          </div>
+          {/* Notificações removidas daqui — exibidas apenas no canto fixo (page.tsx) */}
         </div>
       </div>
     </section>

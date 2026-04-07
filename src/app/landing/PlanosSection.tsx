@@ -64,7 +64,7 @@ export default function PlanosSection() {
   ]
 
   return (
-    <section className="lp-plans-v2">
+    <section className="lp-plans-v2" id="precos">
       <div className="lp-plans-v2-inner">
         <div className="lp-plans-v2-header lp-anim">
           <p className="lp-section-label">Planos</p>

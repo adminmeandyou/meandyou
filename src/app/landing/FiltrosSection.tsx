@@ -37,7 +37,7 @@ export default function FiltrosSection() {
   }, [])
 
   return (
-    <section className="lp-filtros-v2">
+    <section className="lp-filtros-v2" id="filtros">
       <div className="lp-filtros-v2-inner">
         <div className="lp-filtros-v2-left lp-anim">
           <p className="lp-section-label">FILTROS</p>

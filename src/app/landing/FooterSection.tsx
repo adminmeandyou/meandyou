@@ -24,7 +24,7 @@ export default function FooterSection() {
         </div>
         <div className="lp-footer-col">
           <h4>Conta</h4>
-          <a href="/planos">Criar conta</a>
+          <a href="/cadastro">Criar conta</a>
           <a href="/login">Entrar</a>
           <a href="/fale-conosco">Fale Conosco</a>
           <a href="/suporte">Suporte</a>

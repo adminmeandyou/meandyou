@@ -15,7 +15,7 @@ export default function PerfilSection() {
         </div>
         <div className="lp-perf-v2-demo lp-anim">
           <div className="lp-perf-v2-toggle">
-            <div className="lp-perf-v2-pill" style={{ left: perfMode === 'ind' ? 4 : 'calc(50%)' }} />
+            <div className="lp-perf-v2-pill" style={{ left: perfMode === 'ind' ? 4 : 'calc(50% - 2px)' }} />
             <span className="lp-perf-v2-opt lp-perf-v2-opt--a" style={{ color: perfMode === 'ind' ? '#fff' : 'rgba(248,249,250,0.45)' }} onClick={() => setPerfMode('ind')}>Individual</span>
             <span className="lp-perf-v2-opt lp-perf-v2-opt--b" style={{ color: perfMode === 'cas' ? '#fff' : 'rgba(248,249,250,0.45)', display:'flex', alignItems:'center', gap:6 }} onClick={() => setPerfMode('cas')}>
               Casal

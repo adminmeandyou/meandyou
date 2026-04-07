@@ -16,7 +16,7 @@ export default function NavBar({ navVisible, menuAberto, setMenuAberto }: NavBar
           <li><a href="#filtros">Filtros</a></li>
           <li><a href="#precos">Planos</a></li>
           <li><a href="#seguranca">Segurança</a></li>
-          <li><a href="/planos" className="lp-nav-cta">Começar agora</a></li>
+          <li><a href="/cadastro" className="lp-nav-cta">Começar agora</a></li>
         </ul>
         <button
           className={`lp-hamburger${menuAberto ? ' open' : ''}`}

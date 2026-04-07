@@ -7,7 +7,7 @@ export default function VerificacaoSection() {
         <div>
           <p className="lp-section-label">Verificação rigorosa</p>
           <h2 className="lp-section-title">Só entra<br />quem é <span style={{ color: 'var(--accent)' }}>real.</span></h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '16px', marginTop: '14px', lineHeight: 1.7 }}>
+          <p style={{ color: 'var(--muted)', fontSize: '16px', marginTop: '14px', lineHeight: 1.7 }}>
             Desenvolvemos o processo de verificação mais rigoroso do mercado.
           </p>
         </div>
