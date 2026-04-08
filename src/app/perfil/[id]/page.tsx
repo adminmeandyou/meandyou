@@ -219,7 +219,7 @@ export default function VerPerfilPage() {
   const [denunciaEnviado, setDenunciaEnviado] = useState(false)
   const [userRow, setUserRow] = useState<any>(null)
   const [selectedBadge, setSelectedBadge] = useState<EmblemaDef | null>(null)
-  const [dbBadges, setDbBadges] = useState<{ badge_id: string; earned_at: string; badges: { name: string; description: string; icon: string; rarity: string } }[]>([])
+  const [dbBadges, setDbBadges] = useState<{ badge_id: string; earned_at: string; badges: { name: string; description: string; icon: string; icon_url: string | null; rarity: string } }[]>([])
   const [ratings, setRatings] = useState<{ total: number; positive: number } | null>(null)
   const [badgeShowcase, setBadgeShowcase] = useState<string[]>([])
   const [allBadgesOpen, setAllBadgesOpen] = useState(false)
@@ -298,7 +298,7 @@ export default function VerPerfilPage() {
     // Carrega badges do banco
     const { data: badgesData } = await supabase
       .from('user_badges')
-      .select('badge_id, earned_at, badges(name, description, icon, rarity)')
+      .select('badge_id, earned_at, badges(name, description, icon, icon_url, rarity)')
       .eq('user_id', profileId)
     setDbBadges((badgesData as any) ?? [])
 
@@ -686,12 +686,8 @@ export default function VerPerfilPage() {
           const showcase = isOwnProfile ? badgeShowcase : ((profile?.badge_showcase as string[]) ?? [])
 
           // Emblemas do visitado que aparecem publicamente (showcase ou todos se showcase vazio)
-          const publicStatic = showcase.length > 0
-            ? unlockedStatic.filter(e => showcase.includes(e.id))
-            : unlockedStatic.slice(0, 3)
-          const publicDb = showcase.length > 0
-            ? dbBadges.filter(ub => showcase.includes(ub.badge_id))
-            : dbBadges.slice(0, 3)
+          const publicStatic = unlockedStatic.filter(e => showcase.includes(e.id))
+          const publicDb = dbBadges.filter(ub => showcase.includes(ub.badge_id))
           const hasHidden = totalBadges > publicStatic.length + publicDb.length
 
           return (
@@ -749,8 +745,10 @@ export default function VerPerfilPage() {
                             onClick={() => toggleBadge(ub.badge_id)}
                             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
                           >
-                            <div style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '12px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.06)', border: active ? '2px solid var(--accent)' : '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}>
-                              {ub.badges?.icon}
+                            <div style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '12px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.06)', border: active ? '2px solid var(--accent)' : '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', overflow: 'hidden' }}>
+                              {ub.badges?.icon_url
+                                ? <img src={ub.badges.icon_url} alt={ub.badges.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                : ub.badges?.icon}
                               {active && (
                                 <div style={{ position: 'absolute', top: -5, right: -5, width: 16, height: 16, borderRadius: '50%', backgroundColor: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                   <Check size={9} color="#fff" strokeWidth={2.5} />
@@ -794,8 +792,10 @@ export default function VerPerfilPage() {
                       ))}
                       {publicDb.map(ub => (
                         <div key={ub.badge_id} title={ub.badges?.description} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '4px 0' }}>
-                          <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-                            {ub.badges?.icon}
+                          <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', overflow: 'hidden' }}>
+                            {ub.badges?.icon_url
+                              ? <img src={ub.badges.icon_url} alt={ub.badges.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                              : ub.badges?.icon}
                           </div>
                           <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.60)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                             {ub.badges?.name}
@@ -827,7 +827,11 @@ export default function VerPerfilPage() {
                           ))}
                           {dbBadges.filter(ub => !publicDb.find(p => p.badge_id === ub.badge_id)).map(ub => (
                             <div key={ub.badge_id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '4px 0' }}>
-                              <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>{ub.badges?.icon}</div>
+                              <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', overflow: 'hidden' }}>
+                                {ub.badges?.icon_url
+                                  ? <img src={ub.badges.icon_url} alt={ub.badges.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                                  : ub.badges?.icon}
+                              </div>
                               <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.60)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{ub.badges?.name}</span>
                             </div>
                           ))}
