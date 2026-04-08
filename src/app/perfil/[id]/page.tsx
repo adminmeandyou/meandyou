@@ -698,11 +698,19 @@ export default function VerPerfilPage() {
                   <Award size={14} color="rgba(248,249,250,0.50)" strokeWidth={1.5} />
                   <span style={{ fontSize: '12px', color: 'rgba(248,249,250,0.50)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Emblemas</span>
                 </div>
-                {isOwnProfile && (
-                  <span style={{ fontSize: '11px', color: badgeShowcase.length >= 3 ? 'var(--accent)' : 'rgba(248,249,250,0.25)', fontWeight: 600 }}>
-                    {badgeShowcase.length}/3 em exibicao
-                  </span>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  {isOwnProfile && (
+                    <span style={{ fontSize: '11px', color: badgeShowcase.length >= 3 ? 'var(--accent)' : 'rgba(248,249,250,0.25)', fontWeight: 600 }}>
+                      {badgeShowcase.length}/3 em exibicao
+                    </span>
+                  )}
+                  <button
+                    onClick={() => router.push('/emblemas')}
+                    style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', fontWeight: 600, background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 100, padding: '3px 10px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+                  >
+                    Ver todos
+                  </button>
+                </div>
               </div>
 
               {isOwnProfile ? (
