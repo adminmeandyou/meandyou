@@ -5,7 +5,7 @@ import { supabase } from '@/app/lib/supabase'
 import { useRouter, useParams } from 'next/navigation'
 import {
   ArrowLeft, Send, Users, X, Check, ChevronDown,
-  UserCircle, MessageCircle, Ban, VolumeX, Crown, AlertTriangle, UserPlus,
+  UserCircle, MessageCircle, Ban, VolumeX, Crown, AlertTriangle, UserPlus, WifiOff,
 } from 'lucide-react'
 import Link from 'next/link'
 import { moderateContent, getModerationMessage } from '@/app/lib/moderation'
@@ -193,6 +193,7 @@ export default function SalaChatPage() {
   const [pendingChatReqs, setPendingChatReqs] = useState<ChatRequest[]>([])
   const [revealedProfile, setRevealedProfile] = useState<PublicProfile | null>(null)
   const [leaving, setLeaving] = useState(false)
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'reconnecting' | 'offline'>('connected')
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const msgTimestamps = useRef<number[]>([]) // anti-flood
@@ -200,6 +201,7 @@ export default function SalaChatPage() {
   const sessionStart = useRef<string>(new Date().toISOString()) // momento de entrada nesta sessao
   const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const cleanupRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  const heartbeatFailCount = useRef(0)
 
   // ─── Scroll para o fim ────────────────────────────────────────────────────
   function scrollBottom() {
@@ -265,50 +267,70 @@ export default function SalaChatPage() {
     init()
   }, [roomId])
 
-  // ─── Heartbeat: sinaliza presenca a cada 30s ──────────────────────────────
+  // ─── Heartbeat com retry: sinaliza presenca a cada 30s ─────────────────────
   useEffect(() => {
     if (!myUserId || loading) return
 
-    // Heartbeat imediato + intervalo
-    function sendHeartbeat() {
-      supabase.rpc('room_heartbeat', { p_room_id: roomId, p_user_id: myUserId }).then()
+    async function sendHeartbeat() {
+      const maxRetries = 3
+      for (let i = 0; i < maxRetries; i++) {
+        try {
+          const { error } = await supabase.rpc('room_heartbeat', { p_room_id: roomId, p_user_id: myUserId })
+          if (!error) {
+            heartbeatFailCount.current = 0
+            if (connectionStatus !== 'connected') setConnectionStatus('connected')
+            return
+          }
+          throw error
+        } catch {
+          if (i < maxRetries - 1) {
+            await new Promise(r => setTimeout(r, Math.pow(2, i) * 1000))
+          }
+        }
+      }
+      // Todas as tentativas falharam
+      heartbeatFailCount.current++
+      if (heartbeatFailCount.current >= 2) {
+        setConnectionStatus('offline')
+      } else {
+        setConnectionStatus('reconnecting')
+      }
     }
     sendHeartbeat()
     heartbeatRef.current = setInterval(sendHeartbeat, 30_000)
 
     // Cleanup de inativos a cada 60s
     async function runCleanup() {
-      const { data } = await supabase.rpc('room_cleanup_inactive', { p_room_id: roomId })
-      if (data && Array.isArray(data) && data.length > 0) {
-        // Inserir mensagens de sistema para cada usuario removido
-        for (const removed of data) {
-          await supabase.from('room_messages').insert({
-            room_id: roomId,
-            sender_id: removed.user_id,
-            nickname: 'Sistema',
-            content: `${removed.nickname} saiu da sala`,
-            is_system: true,
-          })
+      try {
+        const { data } = await supabase.rpc('room_cleanup_inactive', { p_room_id: roomId })
+        if (data && Array.isArray(data) && data.length > 0) {
+          for (const removed of data) {
+            await supabase.from('room_messages').insert({
+              room_id: roomId,
+              sender_id: removed.user_id,
+              nickname: 'Sistema',
+              content: `${removed.nickname} saiu da sala`,
+              is_system: true,
+            })
+          }
+          loadMembers()
         }
-        loadMembers()
-      }
+      } catch { /* cleanup falhou — sera retentado no proximo ciclo */ }
     }
     cleanupRef.current = setInterval(runCleanup, 60_000)
 
     // Cleanup ao sair da pagina (fechar aba, navegar fora)
     function handleBeforeUnload() {
-      // Usar sendBeacon para garantir envio mesmo ao fechar
       const url = `${window.location.origin}/api/salas/sair`
       const body = JSON.stringify({ roomId, userId: myUserId, nickname: myNickname })
       navigator.sendBeacon(url, new Blob([body], { type: 'application/json' }))
     }
     function handleVisibilityChange() {
       if (document.visibilityState === 'hidden') {
-        // Pausar heartbeat quando a aba esta oculta (sera removido pelo cleanup)
         if (heartbeatRef.current) clearInterval(heartbeatRef.current)
         heartbeatRef.current = null
       } else {
-        // Retomar heartbeat ao voltar
+        // Retomar heartbeat ao voltar — envia imediatamente
         if (!heartbeatRef.current) {
           sendHeartbeat()
           heartbeatRef.current = setInterval(sendHeartbeat, 30_000)
@@ -316,18 +338,34 @@ export default function SalaChatPage() {
       }
     }
 
+    // Detectar online/offline do navegador
+    function handleOnline() {
+      setConnectionStatus('reconnecting')
+      sendHeartbeat()
+      if (!heartbeatRef.current) {
+        heartbeatRef.current = setInterval(sendHeartbeat, 30_000)
+      }
+    }
+    function handleOffline() {
+      setConnectionStatus('offline')
+    }
+
     window.addEventListener('beforeunload', handleBeforeUnload)
     document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
 
     return () => {
       if (heartbeatRef.current) clearInterval(heartbeatRef.current)
       if (cleanupRef.current) clearInterval(cleanupRef.current)
       window.removeEventListener('beforeunload', handleBeforeUnload)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
     }
   }, [myUserId, loading, roomId, myNickname])
 
-  // ─── Realtime: novas mensagens ────────────────────────────────────────────
+  // ─── Realtime: novas mensagens (com reconexao) ─────────────────────────────
   useEffect(() => {
     if (!myUserId || loading) return
 
@@ -358,7 +396,19 @@ export default function SalaChatPage() {
         table: 'room_members',
         filter: `room_id=eq.${roomId}`,
       }, () => loadMembers())
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          setConnectionStatus('connected')
+        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          setConnectionStatus('reconnecting')
+          // Tentar reconectar apos 3s
+          setTimeout(() => {
+            supabase.removeChannel(channel)
+          }, 3000)
+        } else if (status === 'CLOSED') {
+          setConnectionStatus('reconnecting')
+        }
+      })
 
     return () => { supabase.removeChannel(channel) }
   }, [myUserId, loading, roomId])
@@ -402,7 +452,11 @@ export default function SalaChatPage() {
           .single()
         setPendingChatReqs(prev => [...prev, { ...req, requesterNickname: memberRow?.nickname ?? 'Alguem' }])
       })
-      .subscribe()
+      .subscribe((status) => {
+        if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+          setTimeout(() => { supabase.removeChannel(channel) }, 3000)
+        }
+      })
 
     return () => { supabase.removeChannel(channel) }
   }, [myUserId, loading, roomId])
@@ -420,6 +474,12 @@ export default function SalaChatPage() {
   async function sendMessage() {
     const content = text.trim()
     if (!content || sending) return
+
+    if (connectionStatus === 'offline') {
+      setFloodWarning('Sem conexao. Tente novamente em instantes.')
+      setTimeout(() => setFloodWarning(''), 3000)
+      return
+    }
 
     // Anti-flood: max 3 mensagens em 10s
     const now = Date.now()
@@ -687,6 +747,24 @@ export default function SalaChatPage() {
           </button>
         </div>
       ))}
+
+      {/* Banner de conexao */}
+      {connectionStatus !== 'connected' && (
+        <div style={{
+          padding: '8px 14px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
+          backgroundColor: connectionStatus === 'offline' ? 'rgba(239,68,68,0.12)' : 'rgba(245,158,11,0.12)',
+          borderBottom: `1px solid ${connectionStatus === 'offline' ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)'}`,
+        }}>
+          {connectionStatus === 'offline' ? (
+            <WifiOff size={14} color="#f87171" />
+          ) : (
+            <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #F59E0B', borderTop: '2px solid transparent', animation: 'ui-spin 0.8s linear infinite' }} />
+          )}
+          <p style={{ fontSize: 12, margin: 0, color: connectionStatus === 'offline' ? '#f87171' : '#F59E0B' }}>
+            {connectionStatus === 'offline' ? 'Sem conexao. Mensagens podem nao chegar.' : 'Reconectando...'}
+          </p>
+        </div>
+      )}
 
       {/* Mensagens */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '12px 14px', display: 'flex', flexDirection: 'column', gap: 4 }}>
