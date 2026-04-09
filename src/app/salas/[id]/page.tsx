@@ -248,6 +248,9 @@ export default function SalaChatPage() {
         .order('created_at', { ascending: true })
       setMessages(msgs ?? [])
 
+      // Limpar membros inativos antes de carregar a lista
+      try { await supabase.rpc('room_cleanup_inactive', { p_room_id: roomId }) } catch { /* não crítico */ }
+
       // Carregar membros
       await loadMembers()
 
