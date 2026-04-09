@@ -61,7 +61,22 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/logo.png" />
         <meta name="theme-color" content="#E11D48" />
         <script dangerouslySetInnerHTML={{
-          __html: `if ('serviceWorker' in navigator) { window.addEventListener('load', function() { navigator.serviceWorker.register('/sw.js'); }); }`
+          __html: [
+            // Registra SW com update check automatico
+            `if('serviceWorker' in navigator){`,
+            `window.addEventListener('load',function(){`,
+            `navigator.serviceWorker.register('/sw.js').then(function(reg){`,
+            `setInterval(function(){reg.update()},60*60*1000)`,  // checa update a cada 1h
+            `})`,
+            `})`,
+            `}`,
+            // Trata erro de chunk velho do Next.js apos deploy
+            `window.addEventListener('error',function(e){`,
+            `if(e.message&&(e.message.indexOf('Loading chunk')!==-1||e.message.indexOf('Failed to fetch')!==-1||e.message.indexOf('ChunkLoadError')!==-1)){`,
+            `window.location.reload()`,
+            `}`,
+            `})`,
+          ].join('')
         }} />
       </head>
       <body className={`${fraunces.variable} ${plusJakarta.variable}`}>
