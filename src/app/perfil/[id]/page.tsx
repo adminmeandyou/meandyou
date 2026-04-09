@@ -403,17 +403,23 @@ export default function VerPerfilPage() {
         .perfil-action-bar-fixed { display: flex; }
         .perfil-content-inner { padding: 28px 20px; }
 
+        /* Tablet (768px): ainda coluna unica, padding lateral confortavel */
         @media (min-width: 768px) {
+          .perfil-layout {
+            padding: 0 20px 100px;
+          }
+        }
+
+        /* Desktop (1024px+): duas colunas — frame tem 900px */
+        @media (min-width: 1024px) {
           .perfil-layout {
             flex-direction: row;
             align-items: flex-start;
-            max-width: 1080px;
-            margin: 0 auto;
-            padding: 36px 32px 120px;
-            gap: 36px;
+            padding: 36px 32px 100px;
+            gap: 28px;
           }
           .perfil-col-foto {
-            width: 400px;
+            width: 300px;
             flex-shrink: 0;
             position: sticky;
             top: 24px;
@@ -425,26 +431,32 @@ export default function VerPerfilPage() {
           .perfil-col-info {
             padding-top: 0;
           }
-          /* Thumbnails aparecem apenas no desktop */
           .perfil-thumbs { display: grid; }
-          /* Header de nome aparece no desktop (fora da foto) */
           .perfil-desktop-header { display: flex; }
-          /* Botoes de acao inline no desktop */
           .perfil-desktop-actions { display: flex; }
-          /* Barra fixa some no desktop */
           .perfil-action-bar-fixed { display: none !important; }
-          /* Header de nome dentro da foto some no desktop */
           .perfil-hero-name-overlay { display: none; }
-          /* Content inner: sem padding no desktop (ja tem no layout) */
           .perfil-content-inner { padding: 0; }
         }
+
+        /* Desktop largo (1280px+): sidebar 220px, frame 840px */
         @media (min-width: 1280px) {
           .perfil-layout {
-            max-width: 1160px;
-            gap: 52px;
+            padding: 36px 36px 100px;
+            gap: 36px;
           }
           .perfil-col-foto {
-            width: 440px;
+            width: 320px;
+          }
+        }
+
+        /* Desktop extra largo (1536px+): frame 960px */
+        @media (min-width: 1536px) {
+          .perfil-layout {
+            gap: 44px;
+          }
+          .perfil-col-foto {
+            width: 360px;
           }
         }
       `}</style>
