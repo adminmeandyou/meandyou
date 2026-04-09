@@ -371,6 +371,7 @@ export default function VerPerfilPage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#08090E', fontFamily: 'var(--font-jakarta)', paddingBottom: '100px' }}>
+      <div style={{ maxWidth: '560px', margin: '0 auto' }}>
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes grain {
@@ -617,7 +618,7 @@ export default function VerPerfilPage() {
                       onClick={() => isOwnProfile ? toggleBadge(emblema.id) : setSelectedBadge(emblema)}
                       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', flexShrink: 0 }}
                     >
-                      <div style={{ position: 'relative', width: '52px', height: '52px', borderRadius: '12px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : '#292a2f', border: active ? '1.5px solid var(--accent)' : '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.25s' }}>
+                      <div style={{ position: 'relative', width: '68px', height: '68px', borderRadius: '14px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : '#292a2f', border: active ? '1.5px solid var(--accent)' : '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.25s' }}>
                         <EmblemaSvg id={emblema.id} desbloqueado={true} />
                         {active && (
                           <div style={{ position: 'absolute', top: -4, right: -4, width: 14, height: 14, borderRadius: '50%', backgroundColor: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -625,7 +626,7 @@ export default function VerPerfilPage() {
                           </div>
                         )}
                       </div>
-                      <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                      <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '68px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                         {emblema.name}
                       </span>
                     </button>
@@ -639,20 +640,20 @@ export default function VerPerfilPage() {
                       onClick={() => isOwnProfile ? toggleBadge(ub.badge_id) : undefined}
                       style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: isOwnProfile ? 'pointer' : 'default', padding: '4px 0', flexShrink: 0 }}
                     >
-                      <div style={{ position: 'relative', width: '52px', height: '52px', borderRadius: '12px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : '#292a2f', border: active ? '1.5px solid var(--accent)' : '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', overflow: 'hidden', transition: 'all 0.25s' }}>
+                      <div style={{ position: 'relative', width: '68px', height: '68px', borderRadius: '14px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : '#292a2f', border: active ? '1.5px solid var(--accent)' : '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', overflow: 'hidden', transition: 'all 0.25s' }}>
                         {ub.badges?.icon_url ? <img src={ub.badges.icon_url} alt={ub.badges.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : ub.badges?.icon}
                         {active && <div style={{ position: 'absolute', top: -4, right: -4, width: 14, height: 14, borderRadius: '50%', backgroundColor: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={8} color="#fff" strokeWidth={2.5} /></div>}
                       </div>
-                      <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{ub.badges?.name}</span>
+                      <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '68px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{ub.badges?.name}</span>
                     </button>
                   )
                 })}
                 {conquistas.filter(c => !publicStatic.find(e => e.name === c.label)).map((c, i) => (
                   <div key={`c-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '4px 0', flexShrink: 0 }}>
-                    <div style={{ width: '52px', height: '52px', borderRadius: '12px', backgroundColor: '#292a2f', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '68px', height: '68px', borderRadius: '14px', backgroundColor: '#292a2f', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <Award size={20} color="var(--accent)" strokeWidth={1.5} />
                     </div>
-                    <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{c.label}</span>
+                    <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '68px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{c.label}</span>
                   </div>
                 ))}
               </div>
@@ -773,18 +774,18 @@ export default function VerPerfilPage() {
                 <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
                   {unlockedStatic.filter(e => !publicStatic.find(p => p.id === e.id)).map(emblema => (
                     <button key={emblema.id} onClick={() => setSelectedBadge(emblema)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', flexShrink: 0 }}>
-                      <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: '#292a2f', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: '64px', height: '64px', borderRadius: '14px', backgroundColor: '#292a2f', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <EmblemaSvg id={emblema.id} desbloqueado={true} />
                       </div>
-                      <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{emblema.name}</span>
+                      <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '68px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{emblema.name}</span>
                     </button>
                   ))}
                   {dbBadges.filter(ub => !publicDb.find(p => p.badge_id === ub.badge_id)).map(ub => (
                     <div key={ub.badge_id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '4px 0', flexShrink: 0 }}>
-                      <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: '#292a2f', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', overflow: 'hidden' }}>
+                      <div style={{ width: '64px', height: '64px', borderRadius: '14px', backgroundColor: '#292a2f', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', overflow: 'hidden' }}>
                         {ub.badges?.icon_url ? <img src={ub.badges.icon_url} alt={ub.badges.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : ub.badges?.icon}
                       </div>
-                      <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{ub.badges?.name}</span>
+                      <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '68px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{ub.badges?.name}</span>
                     </div>
                   ))}
                 </div>
@@ -1037,6 +1038,7 @@ export default function VerPerfilPage() {
           </div>
         </div>
       )}
+      </div>{/* /maxWidth wrapper */}
     </div>
   )
 }
