@@ -851,7 +851,8 @@ function ModesHubView({ userPlan, onSelect, onCamarote }: {
   onCamarote: () => void
 }) {
   return (
-    <div style={{ padding: '20px 16px 24px', overflowY: 'auto', height: '100%' }}>
+    <div style={{ overflowY: 'auto', height: '100%', scrollbarWidth: 'none' }}>
+      <div style={{ maxWidth: 480, margin: '0 auto', padding: '20px 16px 24px' }}>
       {/* Label + título editorial */}
       <div style={{ marginBottom: 20 }}>
         <p style={{
@@ -1029,6 +1030,7 @@ function ModesHubView({ userPlan, onSelect, onCamarote }: {
           </div>
         </div>
       </button>
+      </div>{/* fim maxWidth wrapper */}
     </div>
   )
 }
@@ -1472,6 +1474,7 @@ function applyCompatFilters(
 // ─── Página principal ─────────────────────────────────────────────────────────
 
 function BuscaInner() {
+  const router = useRouter()
   // ── State (preservado da versão anterior) ─────────────────────────────────
   const [userId, setUserId] = useState<string | null>(null)
   const [userPlan, setUserPlan] = useState('essencial')
@@ -2042,7 +2045,7 @@ function BuscaInner() {
       {/* Conteúdo principal */}
       <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         {showHub ? (
-          <ModesHubView userPlan={userPlan} onSelect={(m) => { setViewMode(m); setShowHub(false) }} onCamarote={() => { if (userPlan === 'black') window.location.href = '/backstage'; else setCamaroteModal(true) }} />
+          <ModesHubView userPlan={userPlan} onSelect={(m) => { setViewMode(m); setShowHub(false) }} onCamarote={() => { if (userPlan === 'black') router.push('/backstage'); else setCamaroteModal(true) }} />
         ) : viewMode === 'rooms' ? (
           <RoomsView userPlan={userPlan} />
         ) : viewMode === 'daily' ? (
