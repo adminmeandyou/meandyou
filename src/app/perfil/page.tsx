@@ -41,18 +41,29 @@ export default function PerfilPage() {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: 'var(--bg)',
+      backgroundColor: '#08090E',
       display: 'flex',
+      flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
+      gap: 20,
     }}>
       <div style={{
-        width: 28, height: 28,
-        border: '2px solid rgba(255,255,255,0.06)',
-        borderTop: '2px solid var(--accent)',
+        width: 32, height: 32,
+        border: '1.5px solid rgba(255,255,255,0.06)',
+        borderTop: '1.5px solid #E11D48',
         borderRadius: '50%',
         animation: 'spin 0.8s linear infinite',
       }} />
+      <p style={{
+        fontFamily: 'var(--font-fraunces)',
+        fontSize: 13,
+        fontStyle: 'italic',
+        color: 'rgba(248,249,250,0.25)',
+        margin: 0,
+      }}>
+        Me&amp;You
+      </p>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   )
