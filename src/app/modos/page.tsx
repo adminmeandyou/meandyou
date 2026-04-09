@@ -815,35 +815,33 @@ const MODES_CONFIG = [
   {
     key: 'discovery' as ViewMode,
     label: 'Descobrir',
-    subtitle: 'Explore perfis ao redor',
-    icon: <Compass size={28} strokeWidth={1.5} color="#E11D48" />,
-    bg: 'linear-gradient(135deg, #1a0810 0%, #3d0821 100%)',
-    border: 'rgba(225,29,72,0.30)',
+    subtitle: 'Novos olhares, sem filtros.',
+    bg: 'linear-gradient(160deg, #0d0810 0%, #1a0418 30%, #0a0610 60%, #12080f 100%)',
+    accent: 'rgba(225,29,72,0.15)',
   },
   {
     key: 'search' as ViewMode,
     label: 'Busca Avancada',
-    subtitle: 'Filtre por preferencias',
-    icon: <SlidersHorizontal size={28} strokeWidth={1.5} color="#60a5fa" />,
-    bg: 'linear-gradient(135deg, #080e1a 0%, #0d1a35 100%)',
-    border: 'rgba(96,165,250,0.25)',
-  },
-  {
-    key: 'daily' as ViewMode,
-    label: 'Match do Dia',
-    subtitle: 'Perfis compativeis selecionados para voce',
-    icon: <Star size={28} strokeWidth={1.5} color="#F59E0B" />,
-    bg: 'linear-gradient(135deg, #1a1000 0%, #2d1c00 100%)',
-    border: 'rgba(245,158,11,0.25)',
+    subtitle: 'Encontre a peca que falta.',
+    bg: 'linear-gradient(160deg, #080a10 0%, #0a0e1a 30%, #060c18 60%, #0a0d14 100%)',
+    accent: 'rgba(96,165,250,0.10)',
+    badge: null as string | null,
   },
   {
     key: 'rooms' as ViewMode,
     label: 'Salas',
-    subtitle: 'Bate-papo em grupo',
-    icon: <Users size={28} strokeWidth={1.5} color="#2ec4a0" />,
-    bg: 'linear-gradient(135deg, #001a14 0%, #002e22 100%)',
-    border: 'rgba(46,196,160,0.25)',
-    badge: 'Plus+',
+    subtitle: 'Conversas coletivas ao vivo.',
+    bg: 'linear-gradient(160deg, #060e0a 0%, #070f0b 30%, #040a08 60%, #081009 100%)',
+    accent: 'rgba(46,196,160,0.10)',
+    badge: 'Plus+' as string | null,
+  },
+  {
+    key: 'daily' as ViewMode,
+    label: 'Match do Dia',
+    subtitle: 'A nossa recomendacao fatal.',
+    bg: 'linear-gradient(160deg, #100900 0%, #1a0e00 30%, #120a00 60%, #0e0800 100%)',
+    accent: 'rgba(245,158,11,0.12)',
+    badge: null as string | null,
   },
 ]
 
@@ -853,67 +851,183 @@ function ModesHubView({ userPlan, onSelect, onCamarote }: {
   onCamarote: () => void
 }) {
   return (
-    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '4px' }}>
-        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: 0 }}>Modos</p>
-        <a
-          href="/modos-guia"
-          style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: 12, color: 'rgba(248,249,250,0.40)', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', paddingTop: '3px' }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
-          Como funciona
-        </a>
+    <div style={{ padding: '20px 16px 24px', overflowY: 'auto', height: '100%' }}>
+      {/* Label + título editorial */}
+      <div style={{ marginBottom: 20 }}>
+        <p style={{
+          fontSize: 10, fontWeight: 700,
+          letterSpacing: '0.2em', textTransform: 'uppercase',
+          color: 'rgba(248,249,250,0.35)',
+          fontFamily: 'var(--font-jakarta)',
+          margin: '0 0 6px',
+        }}>
+          Conexoes Curadas
+        </p>
+        <h2 style={{
+          fontFamily: 'var(--font-fraunces)',
+          fontSize: 32, fontWeight: 700,
+          color: '#F8F9FA',
+          margin: 0,
+          letterSpacing: '-0.02em',
+          lineHeight: 1.15,
+        }}>
+          Escolha seu{' '}
+          <br />
+          <span style={{ color: '#E11D48' }}>ritmo</span> hoje.
+        </h2>
       </div>
-      <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 20px' }}>Selecione como quer explorar o app</p>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 12 }}>
+      {/* Grid 2x2 de modos */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
         {MODES_CONFIG.map((m) => (
           <button
             key={m.key}
             onClick={() => onSelect(m.key)}
             style={{
-              background: m.bg, border: `1px solid ${m.border}`,
-              borderRadius: 16, padding: '18px 14px',
-              display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 10,
-              cursor: 'pointer', textAlign: 'left', position: 'relative',
+              aspectRatio: '3/4',
+              borderRadius: 10, overflow: 'hidden',
+              position: 'relative', cursor: 'pointer',
+              background: m.bg,
+              border: '1px solid rgba(255,255,255,0.04)',
+              padding: 0,
+              transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
             }}
           >
-            {m.badge && (
-              <span style={{ position: 'absolute', top: 10, right: 10, fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 100, background: 'rgba(46,196,160,0.18)', color: '#2ec4a0', border: '1px solid rgba(46,196,160,0.30)' }}>
-                {m.badge}
-              </span>
-            )}
-            {m.icon}
-            <div>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>{m.label}</p>
-              <p style={{ margin: '3px 0 0', fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--font-jakarta)' }}>{m.subtitle}</p>
+            {/* Ponto de luz no topo */}
+            <div style={{
+              position: 'absolute', top: 0, left: '50%',
+              transform: 'translateX(-50%)',
+              width: '80%', height: '40%',
+              background: m.accent,
+              filter: 'blur(30px)',
+              borderRadius: '50%',
+              pointerEvents: 'none',
+            }} />
+            {/* Vinheta noir na base */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: 'linear-gradient(to bottom, rgba(8,9,14,0) 0%, rgba(8,9,14,0.85) 100%)',
+            }} />
+            {/* Conteúdo na base */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0,
+              padding: '12px 14px 14px',
+              display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0,
+            }}>
+              {m.badge && (
+                <span style={{
+                  fontSize: 9, fontWeight: 700,
+                  padding: '2px 6px', borderRadius: 100,
+                  background: 'rgba(46,196,160,0.15)',
+                  color: '#2ec4a0',
+                  border: '1px solid rgba(46,196,160,0.25)',
+                  fontFamily: 'var(--font-jakarta)',
+                  marginBottom: 6,
+                }}>
+                  {m.badge}
+                </span>
+              )}
+              <p style={{
+                margin: '0 0 3px', fontSize: 15, fontWeight: 700,
+                color: '#F8F9FA',
+                fontFamily: 'var(--font-fraunces)',
+                letterSpacing: '-0.01em',
+              }}>
+                {m.label}
+              </p>
+              <p style={{
+                margin: 0, fontSize: 11,
+                color: 'rgba(248,249,250,0.50)',
+                fontFamily: 'var(--font-jakarta)',
+                fontWeight: 400,
+                lineHeight: 1.4,
+              }}>
+                {m.subtitle}
+              </p>
             </div>
           </button>
         ))}
       </div>
 
-      {/* Camarote — card largo */}
+      {/* Camarote Black — banner editorial */}
       <button
         onClick={onCamarote}
         style={{
-          width: '100%', background: 'linear-gradient(135deg, #1a1000 0%, #2a1a00 50%, #1a0010 100%)',
-          border: '1px solid rgba(245,158,11,0.35)', borderRadius: 16, padding: '20px 18px',
-          display: 'flex', alignItems: 'center', gap: 16, cursor: 'pointer', textAlign: 'left',
+          width: '100%',
+          borderRadius: 14,
+          overflow: 'hidden',
+          position: 'relative',
+          cursor: 'pointer',
+          border: '1px solid rgba(255,255,255,0.05)',
+          boxShadow: '0 0 50px rgba(245,158,11,0.08)',
+          padding: 0,
+          background: 'linear-gradient(135deg, #0d0900 0%, #1a1000 40%, #120c00 70%, #0d0900 100%)',
         }}
       >
-        <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Crown size={26} strokeWidth={1.5} color="#F59E0B" />
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>Camarote</p>
-            <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 100, background: 'rgba(245,158,11,0.15)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.30)', flexShrink: 0 }}>
-              Exclusivo Black
+        {/* Gradiente dourado sobreposição lateral */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to right, rgba(8,9,14,0.95) 0%, rgba(8,9,14,0.75) 50%, rgba(8,9,14,0.3) 100%)',
+        }} />
+        {/* Luz dourada de fundo */}
+        <div style={{
+          position: 'absolute', right: 0, top: 0, bottom: 0,
+          width: '60%',
+          background: 'radial-gradient(ellipse at right center, rgba(245,158,11,0.12) 0%, transparent 70%)',
+        }} />
+        <div style={{
+          position: 'relative',
+          padding: '22px 20px',
+          display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
+          minHeight: 130,
+          justifyContent: 'center',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
+            <Crown size={13} strokeWidth={1.5} color="#F59E0B" />
+            <span style={{
+              fontSize: 9, fontWeight: 800,
+              letterSpacing: '0.3em', textTransform: 'uppercase',
+              color: '#F59E0B',
+              fontFamily: 'var(--font-jakarta)',
+            }}>
+              Exclusivo VIP
             </span>
           </div>
-          <p style={{ margin: 0, fontSize: 12, color: 'var(--muted)', fontFamily: 'var(--font-jakarta)' }}>Experiencias que vao além do comum</p>
+          <h3 style={{
+            fontFamily: 'var(--font-fraunces)',
+            fontSize: 26, fontWeight: 700,
+            fontStyle: 'italic',
+            color: '#F8F9FA',
+            margin: '0 0 6px',
+            letterSpacing: '-0.02em',
+          }}>
+            Camarote Black
+          </h3>
+          <p style={{
+            fontSize: 12, color: 'rgba(248,249,250,0.60)',
+            margin: '0 0 14px',
+            maxWidth: '65%',
+            fontFamily: 'var(--font-jakarta)',
+            lineHeight: 1.5,
+          }}>
+            Acesso prioritario e perfis verificados de alta relevancia.
+          </p>
+          <div style={{
+            padding: '7px 16px', borderRadius: 9999,
+            background: 'linear-gradient(135deg, #F59E0B 0%, #B47B00 100%)',
+            boxShadow: '0 4px 15px rgba(245,158,11,0.35)',
+            display: 'inline-flex',
+          }}>
+            <span style={{
+              fontSize: 10, fontWeight: 800,
+              letterSpacing: '0.12em', textTransform: 'uppercase',
+              color: '#000',
+              fontFamily: 'var(--font-jakarta)',
+            }}>
+              Entrar agora
+            </span>
+          </div>
         </div>
-        <Lock size={16} strokeWidth={1.5} color="rgba(245,158,11,0.5)" style={{ flexShrink: 0 }} />
       </button>
     </div>
   )

@@ -24,6 +24,7 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
     try { await onAddFriend(); setFriendSent(true) } catch {}
     setFriendLoading(false)
   }
+
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     if (navigator.vibrate) navigator.vibrate([80, 40, 160])
@@ -34,12 +35,12 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
     <>
       <style>{`
         @keyframes match-slide-left {
-          from { transform: translateX(-80px) scale(0.8); opacity: 0; }
-          to   { transform: translateX(0) scale(1); opacity: 1; }
+          from { transform: translateX(-80px) rotate(-4deg) scale(0.8); opacity: 0; }
+          to   { transform: translateX(0) rotate(-4deg) scale(1); opacity: 1; }
         }
         @keyframes match-slide-right {
-          from { transform: translateX(80px) scale(0.8); opacity: 0; }
-          to   { transform: translateX(0) scale(1); opacity: 1; }
+          from { transform: translateX(80px) rotate(4deg) scale(0.8); opacity: 0; }
+          to   { transform: translateX(0) rotate(4deg) scale(1); opacity: 1; }
         }
         @keyframes match-pop {
           0%  { transform: scale(0.3) rotate(-20deg); opacity: 0; }
@@ -50,10 +51,6 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
           from { transform: translateY(24px); opacity: 0; }
           to   { transform: translateY(0); opacity: 1; }
         }
-        @keyframes match-particle {
-          0%   { transform: translate(0,0) scale(1); opacity: 1; }
-          100% { transform: translate(var(--px), var(--py)) scale(0); opacity: 0; }
-        }
       `}</style>
 
       <div
@@ -62,35 +59,44 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
           padding: '32px 24px',
-          background: 'radial-gradient(ellipse at center top, rgba(225,29,72,0.22) 0%, #08090E 60%)',
+          background: '#08090E',
+          overflow: 'hidden',
         }}
       >
-        {/* Partículas decorativas */}
-        <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
-          {Array.from({ length: 18 }).map((_, i) => {
-            const angle = (i / 18) * 360
-            const dist = 80 + Math.random() * 140
-            const px = Math.cos((angle * Math.PI) / 180) * dist
-            const py = Math.sin((angle * Math.PI) / 180) * dist - 80
-            const size = 4 + Math.random() * 6
-            const colors = ['#E11D48', '#F43F5E', '#fff', '#F59E0B', '#fff']
-            const color = colors[i % colors.length]
-            return (
-              <div
-                key={i}
-                style={{
-                  position: 'absolute',
-                  top: '50%', left: '50%',
-                  width: size, height: size,
-                  borderRadius: '50%',
-                  backgroundColor: color,
-                  ['--px' as string]: `${px}px`,
-                  ['--py' as string]: `${py}px`,
-                  animation: `match-particle ${0.8 + Math.random() * 0.6}s ease-out ${0.3 + i * 0.04}s both`,
-                }}
-              />
-            )
-          })}
+        {/* Atmosfera de fundo */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to top, #121318 0%, #0d0e13 50%, #0d0e13 100%)',
+          zIndex: 0,
+        }} />
+        <div style={{
+          position: 'absolute',
+          top: '50%', left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: 500, height: 500,
+          borderRadius: '50%',
+          background: 'rgba(225,29,72,0.05)',
+          filter: 'blur(120px)',
+          zIndex: 0,
+        }} />
+
+        {/* Texto decorativo ME&YOU */}
+        <div style={{
+          position: 'absolute', bottom: 32, left: '50%',
+          transform: 'translateX(-50%)',
+          opacity: 0.04, pointerEvents: 'none', userSelect: 'none',
+          whiteSpace: 'nowrap', zIndex: 1,
+        }}>
+          <span style={{
+            fontFamily: 'var(--font-fraunces)',
+            fontSize: 110, fontWeight: 900,
+            fontStyle: 'italic',
+            color: '#F8F9FA',
+            letterSpacing: '-0.04em',
+            textTransform: 'uppercase',
+          }}>
+            ME&amp;YOU
+          </span>
         </div>
 
         {/* Fechar */}
@@ -99,143 +105,167 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
           style={{
             position: 'absolute', top: 20, right: 20,
             width: 36, height: 36, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.08)',
-            border: '1px solid rgba(255,255,255,0.12)',
+            background: 'rgba(255,255,255,0.06)',
+            border: '1px solid rgba(255,255,255,0.08)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer',
+            cursor: 'pointer', zIndex: 10,
           }}
         >
-          <X size={16} color="rgba(248,249,250,0.5)" />
+          <X size={16} color="rgba(248,249,250,0.4)" strokeWidth={1.5} />
         </button>
 
-        {/* Fotos */}
-        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginBottom: 32 }}>
+        {/* Título */}
+        <div style={{
+          textAlign: 'center', marginBottom: 48, zIndex: 2,
+          animation: 'match-rise 0.5s ease 0.1s both',
+        }}>
+          <h2 style={{
+            fontFamily: 'var(--font-fraunces)',
+            fontSize: 44, fontWeight: 900,
+            fontStyle: 'italic',
+            color: '#F8F9FA',
+            margin: '0 0 10px',
+            letterSpacing: '-0.02em',
+            textShadow: '0 0 20px rgba(225,29,72,0.4)',
+          }}>
+            Conexão Real!
+          </h2>
+          <p style={{
+            color: 'rgba(248,249,250,0.5)',
+            fontSize: 15, margin: 0,
+            fontFamily: 'var(--font-jakarta)',
+            fontWeight: 400,
+            letterSpacing: '0.01em',
+          }}>
+            O desejo é mútuo. Que tal começar com um oi?
+          </p>
+        </div>
+
+        {/* Composição de fotos */}
+        <div style={{
+          position: 'relative',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          marginBottom: 52, zIndex: 2,
+        }}>
           {/* Minha foto */}
           <div
             style={{
-              width: 112, height: 112, borderRadius: '50%',
-              overflow: 'hidden', border: '3px solid #08090E',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+              width: 160, height: 160, borderRadius: '50%',
+              overflow: 'hidden',
+              border: '4px solid #121318',
+              boxShadow: '0 0 40px rgba(0,0,0,0.8)',
               position: 'relative', zIndex: 1,
-              transform: 'translateX(20px)',
-              animation: 'match-slide-left 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.1s both',
+              transform: 'translateX(20px) rotate(-4deg)',
+              animation: 'match-slide-left 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s both',
             }}
           >
             {myPhoto ? (
-              <Image src={myPhoto} alt="Você" fill className="object-cover" sizes="112px" />
+              <Image src={myPhoto} alt="Você" fill className="object-cover" sizes="160px" />
             ) : (
-              <div style={{ width: '100%', height: '100%', background: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ color: 'var(--muted)', fontSize: 36, fontFamily: 'var(--font-fraunces)' }}>?</span>
+              <div style={{ width: '100%', height: '100%', background: '#1e1f25', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ color: 'rgba(248,249,250,0.4)', fontSize: 48, fontFamily: 'var(--font-fraunces)' }}>?</span>
               </div>
             )}
           </div>
 
-          {/* Coração */}
+          {/* Coração central */}
           <div
             style={{
               position: 'relative', zIndex: 3,
-              width: 44, height: 44, borderRadius: '50%',
+              width: 52, height: 52, borderRadius: '50%',
               background: '#E11D48',
-              boxShadow: '0 4px 20px rgba(225,29,72,0.7)',
+              boxShadow: '0 0 40px 10px rgba(225,29,72,0.25)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              animation: 'match-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.5s both',
+              animation: 'match-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.6s both',
             }}
           >
-            <Heart size={20} fill="#fff" color="#fff" />
+            <Heart size={22} fill="#fff" color="#fff" />
           </div>
 
           {/* Foto do outro */}
           <div
             style={{
-              width: 112, height: 112, borderRadius: '50%',
-              overflow: 'hidden', border: '3px solid #08090E',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+              width: 160, height: 160, borderRadius: '50%',
+              overflow: 'hidden',
+              border: '4px solid #121318',
+              boxShadow: '0 0 40px rgba(0,0,0,0.8)',
               position: 'relative', zIndex: 1,
-              transform: 'translateX(-20px)',
-              animation: 'match-slide-right 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.1s both',
+              transform: 'translateX(-20px) rotate(4deg)',
+              animation: 'match-slide-right 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s both',
             }}
           >
             {otherPhoto ? (
-              <Image src={otherPhoto} alt={otherName} fill className="object-cover" sizes="112px" />
+              <Image src={otherPhoto} alt={otherName} fill className="object-cover" sizes="160px" />
             ) : (
-              <div style={{ width: '100%', height: '100%', background: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <span style={{ color: 'var(--muted)', fontSize: 36, fontFamily: 'var(--font-fraunces)' }}>{otherName[0]}</span>
+              <div style={{ width: '100%', height: '100%', background: '#1e1f25', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ color: 'rgba(248,249,250,0.4)', fontSize: 48, fontFamily: 'var(--font-fraunces)' }}>{otherName[0]}</span>
               </div>
             )}
           </div>
-        </div>
-
-        {/* Texto */}
-        <div style={{ textAlign: 'center', animation: 'match-rise 0.5s ease 0.65s both' }}>
-          <h2 style={{
-            fontFamily: 'var(--font-fraunces)',
-            fontSize: 38, fontWeight: 700,
-            color: '#fff', margin: '0 0 8px',
-            letterSpacing: '-0.5px',
-          }}>
-            Deu Match!
-          </h2>
-          <p style={{ color: 'var(--muted)', fontSize: 15, margin: '0 0 4px', fontFamily: 'var(--font-jakarta)' }}>
-            Você e <strong style={{ color: '#fff' }}>{otherName}</strong> se curtiram
-          </p>
-          <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: 13, fontFamily: 'var(--font-jakarta)' }}>
-            Inicie a conversa antes que o match expire
-          </p>
         </div>
 
         {/* CTAs */}
         <div style={{
           width: '100%', maxWidth: 320,
           display: 'flex', flexDirection: 'column', gap: 12,
-          marginTop: 36,
-          animation: 'match-rise 0.5s ease 0.8s both',
+          zIndex: 2,
+          animation: 'match-rise 0.5s ease 0.75s both',
         }}>
           <button
             onClick={onStartChat}
             style={{
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-              padding: '16px 24px', borderRadius: 14,
-              background: '#E11D48',
+              width: '100%',
+              padding: '16px 24px', borderRadius: 9999,
+              background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
               border: 'none', cursor: 'pointer',
               color: '#fff', fontFamily: 'var(--font-jakarta)',
               fontSize: 16, fontWeight: 700,
-              boxShadow: '0 8px 32px rgba(225,29,72,0.45)',
+              letterSpacing: '0.02em',
+              boxShadow: '0 4px 25px rgba(225,29,72,0.4)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              transition: 'transform 0.15s, box-shadow 0.15s',
             }}
           >
-            <MessageCircle size={18} />
-            Enviar mensagem
+            <MessageCircle size={18} strokeWidth={1.5} />
+            Enviar Mensagem
           </button>
+
           {onAddFriend && (
             <button
               onClick={handleAddFriend}
               disabled={friendSent || friendLoading}
               style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-                padding: '13px 24px', borderRadius: 14,
-                background: friendSent ? 'rgba(16,185,129,0.12)' : 'rgba(255,255,255,0.07)',
-                border: `1px solid ${friendSent ? 'rgba(16,185,129,0.30)' : 'rgba(255,255,255,0.10)'}`,
+                width: '100%',
+                padding: '14px 24px', borderRadius: 9999,
+                background: friendSent ? 'rgba(16,185,129,0.08)' : 'rgba(255,255,255,0.05)',
+                border: `1px solid ${friendSent ? 'rgba(16,185,129,0.25)' : 'rgba(255,255,255,0.08)'}`,
                 cursor: friendSent ? 'default' : 'pointer',
-                color: friendSent ? '#10b981' : 'rgba(248,249,250,0.70)',
-                fontFamily: 'var(--font-jakarta)', fontSize: 15,
+                color: friendSent ? '#10b981' : 'rgba(248,249,250,0.65)',
+                fontFamily: 'var(--font-jakarta)', fontSize: 15, fontWeight: 600,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
               }}
             >
-              {friendSent ? <Check size={16} /> : <UserPlus size={16} />}
+              {friendSent ? <Check size={16} strokeWidth={1.5} /> : <UserPlus size={16} strokeWidth={1.5} />}
               {friendSent ? 'Pedido enviado' : 'Adicionar como amigo'}
             </button>
           )}
+
           <button
             onClick={onClose}
             style={{
-              padding: '14px 24px', borderRadius: 14,
-              background: 'transparent',
-              border: '1px solid rgba(255,255,255,0.10)',
+              width: '100%',
+              padding: '14px 24px', borderRadius: 9999,
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              backdropFilter: 'blur(4px)',
               cursor: 'pointer',
-              color: 'rgba(248,249,250,0.50)',
+              color: 'rgba(248,249,250,0.55)',
               fontFamily: 'var(--font-jakarta)',
-              fontSize: 15,
+              fontSize: 15, fontWeight: 600,
+              letterSpacing: '0.01em',
             }}
           >
-            Continuar explorando
+            Continuar Explorando
           </button>
         </div>
       </div>
