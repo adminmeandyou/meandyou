@@ -324,6 +324,7 @@ export default function VerPerfilPage() {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#08090E', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
         <div style={{ width: '32px', height: '32px', border: '2px solid rgba(255,255,255,0.08)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       </div>
     )
@@ -370,19 +371,33 @@ export default function VerPerfilPage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#08090E', fontFamily: 'var(--font-jakarta)', paddingBottom: '100px' }}>
+      <div style={{ maxWidth: '560px', margin: '0 auto' }}>
+      <style>{`
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes grain {
+          0%,100% { transform: translate(0,0) }
+          10% { transform: translate(-1%,-1%) }
+          20% { transform: translate(1%,0) }
+          30% { transform: translate(0,1%) }
+          40% { transform: translate(-1%,0) }
+          50% { transform: translate(1%,1%) }
+          60% { transform: translate(0,-1%) }
+          70% { transform: translate(-1%,1%) }
+          80% { transform: translate(1%,-1%) }
+          90% { transform: translate(0,0) }
+        }
+      `}</style>
 
       {/* Grain overlay fixo */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none',
         backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'1\'/%3E%3C/svg%3E")',
         opacity: 0.022,
-        animation: 'perfil-grain 8s steps(1) infinite',
+        animation: 'grain 8s steps(1) infinite',
       }} />
 
-      <div className="perfil-layout">
-      <div className="perfil-col-foto">
       {/* ── Hero foto — fullscreen 3/4 aspect ── */}
-      <div className="perfil-hero" style={{ position: 'relative', width: '100%', aspectRatio: '3/4', backgroundColor: '#000', maxHeight: '85vh', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '3/4', backgroundColor: '#000', maxHeight: '70vh', overflow: 'hidden' }}>
 
         {/* Imagem */}
         {photos.length > 0 ? (
@@ -478,8 +493,8 @@ export default function VerPerfilPage() {
           ) : null
         })()}
 
-        {/* Overlay nome na base da foto — some no desktop */}
-        <div className="perfil-hero-name-overlay" style={{ position: 'absolute', bottom: '20px', left: '20px', right: '20px', zIndex: 10 }}>
+        {/* Overlay nome na base da foto */}
+        <div style={{ position: 'absolute', bottom: '20px', left: '20px', right: '20px', zIndex: 10 }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
             <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 'clamp(36px, 10vw, 52px)', color: '#fff', fontWeight: 700, fontStyle: 'normal', margin: 0, lineHeight: 1, letterSpacing: '-0.02em', textShadow: '0 2px 16px rgba(0,0,0,0.5)' }}>
               {profile.name}{age ? `, ${age}` : ''}
@@ -520,218 +535,8 @@ export default function VerPerfilPage() {
         )}
       </div>
 
-      {/* ── Thumbnails (desktop only) ── */}
-      {photos.length > 1 && (
-        <div
-          className="perfil-thumbs"
-          style={{
-            gridTemplateColumns: `repeat(${Math.min(photos.length - 1, 4)}, 1fr)`,
-            gap: '6px',
-            marginTop: '8px',
-          }}
-        >
-          {photos.slice(1, 5).map((src: string, i: number) => (
-            <button
-              key={i}
-              onClick={() => setActivePhoto(i + 1)}
-              style={{
-                position: 'relative',
-                aspectRatio: '1',
-                borderRadius: '10px',
-                overflow: 'hidden',
-                border: activePhoto === i + 1 ? '2px solid var(--accent)' : '2px solid transparent',
-                padding: 0,
-                cursor: 'pointer',
-                transition: 'border-color 0.2s',
-                backgroundColor: '#0F1117',
-              }}
-            >
-              <Image
-                src={src}
-                alt=""
-                fill
-                sizes="120px"
-                style={{ objectFit: 'cover' }}
-              />
-              {photos.length > 5 && i === 3 && (
-                <div style={{
-                  position: 'absolute', inset: 0,
-                  backgroundColor: 'rgba(0,0,0,0.60)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#fff', fontSize: '16px', fontWeight: 700,
-                  fontFamily: 'var(--font-jakarta)',
-                }}>
-                  +{photos.length - 5}
-                </div>
-              )}
-            </button>
-          ))}
-        </div>
-      )}
-      </div>{/* fim perfil-col-foto */}
-
       {/* ── Conteudo ── */}
-      <div className="perfil-col-info">
-
-      {/* ── Header desktop (nome + info fora da foto) ── */}
-      <div
-        className="perfil-desktop-header"
-        style={{
-          flexDirection: 'column',
-          gap: '10px',
-          paddingBottom: '24px',
-          borderBottom: '1px solid rgba(255,255,255,0.06)',
-          marginBottom: '4px',
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          <h1 style={{
-            fontFamily: 'var(--font-fraunces)',
-            fontSize: '38px',
-            color: '#F8F9FA',
-            fontWeight: 700,
-            margin: 0,
-            lineHeight: 1.1,
-            letterSpacing: '-0.02em',
-          }}>
-            {profile.name}{age ? `, ${age}` : ''}
-          </h1>
-          {viewerIsBlack && viewedPlan === 'black' && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 12px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, border: '1px solid rgba(245,158,11,0.40)', backgroundColor: 'rgba(245,158,11,0.10)', color: '#F59E0B' }}>
-              <Crown size={11} strokeWidth={2} /> Camarote
-            </span>
-          )}
-          {userRow?.verified && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 12px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, border: '1px solid rgba(225,29,72,0.40)', backgroundColor: 'rgba(225,29,72,0.12)', color: '#F43F5E' }}>
-              Verificado
-            </span>
-          )}
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-          {(profile.city || distance !== null) && (
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: 'rgba(248,249,250,0.45)', fontSize: '13px', fontWeight: 500 }}>
-              <MapPin size={13} strokeWidth={1.5} />
-              {distance !== null ? (distance < 1 ? 'Menos de 1 km' : `${Math.round(distance)} km`) : ''}
-              {distance !== null && profile.city ? ' · ' : ''}
-              {profile.city}{profile.state ? `, ${profile.state}` : ''}
-            </span>
-          )}
-          {(() => {
-            const statusTempVivo = profile?.status_temp && profile?.status_temp_expires_at && new Date(profile.status_temp_expires_at) > new Date()
-            const now = Date.now()
-            const lastActive = userRow?.last_seen ? new Date(userRow.last_seen).getTime() : 0
-            let activeLabel = ''
-            if (lastActive && (now - lastActive) < 5 * 60 * 1000) activeLabel = 'Online agora'
-            else if (lastActive && (now - lastActive) < 24 * 60 * 60 * 1000) activeLabel = 'Ativo hoje'
-            return (
-              <>
-                {activeLabel && (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '13px', fontWeight: 600, color: activeLabel === 'Online agora' ? '#10b981' : '#F59E0B' }}>
-                    <span style={{ width: '7px', height: '7px', borderRadius: '50%', backgroundColor: 'currentColor', display: 'inline-block' }} />
-                    {activeLabel}
-                  </span>
-                )}
-                {statusTempVivo && (
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: 600, color: '#60a5fa', backgroundColor: 'rgba(96,165,250,0.10)', border: '1px solid rgba(96,165,250,0.20)', borderRadius: '100px', padding: '3px 10px' }}>
-                    {STATUS_TEMP_LABELS[profile.status_temp as string] ?? profile.status_temp}
-                  </span>
-                )}
-              </>
-            )
-          })()}
-        </div>
-      </div>
-
-      {/* ── Botoes de acao inline (desktop only) ── */}
-      {!isOwnProfile && (
-        <div
-          className="perfil-desktop-actions"
-          style={{
-            gap: '12px',
-            marginBottom: '28px',
-            alignItems: 'center',
-          }}
-        >
-          <button
-            onClick={() => handleSwipe('dislike')}
-            style={{
-              width: '52px', height: '52px', borderRadius: '50%',
-              backgroundColor: '#1a1b22',
-              border: '1px solid rgba(255,255,255,0.09)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', transition: 'all 0.2s',
-              boxShadow: '0 2px 12px rgba(0,0,0,0.25)',
-            }}
-            title="Passar"
-          >
-            <X size={22} color="rgba(248,249,250,0.65)" strokeWidth={1.5} />
-          </button>
-
-          <button
-            onClick={() => handleSwipe('like')}
-            style={{
-              flex: 1,
-              maxWidth: '200px',
-              height: '52px',
-              borderRadius: '100px',
-              background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
-              border: 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              gap: '8px',
-              cursor: 'pointer',
-              color: '#fff',
-              fontSize: '15px',
-              fontWeight: 700,
-              fontFamily: 'var(--font-jakarta)',
-              boxShadow: '0 4px 20px rgba(225,29,72,0.38)',
-              transition: 'all 0.2s',
-            }}
-          >
-            <Heart size={18} color="#fff" strokeWidth={2} />
-            Curtir
-          </button>
-
-          <button
-            onClick={() => handleSwipe('superlike')}
-            style={{
-              width: '52px', height: '52px', borderRadius: '50%',
-              background: 'linear-gradient(135deg, #F59E0B 0%, #d97706 100%)',
-              border: 'none',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', transition: 'all 0.2s',
-              boxShadow: '0 4px 16px rgba(245,158,11,0.30)',
-            }}
-            title="SuperCurtida"
-          >
-            <Star size={20} color="#fff" strokeWidth={2} />
-          </button>
-        </div>
-      )}
-
-      {/* ── Botao editar (desktop, proprio perfil) ── */}
-      {isOwnProfile && (
-        <div
-          className="perfil-desktop-actions"
-          style={{ marginBottom: '28px' }}
-        >
-          <button
-            onClick={() => router.push('/configuracoes/editar-perfil')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: '8px',
-              padding: '13px 28px', borderRadius: '100px',
-              background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
-              color: '#fff', border: 'none', cursor: 'pointer',
-              fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '14px',
-              boxShadow: '0 4px 20px rgba(225,29,72,0.30)',
-            }}
-          >
-            <Pencil size={15} strokeWidth={1.5} />
-            Editar perfil
-          </button>
-        </div>
-      )}
-
-      <div className="perfil-content-inner" style={{ display: 'flex', flexDirection: 'column', gap: '28px', position: 'relative', zIndex: 2 }}>
+      <div style={{ padding: '28px 20px', display: 'flex', flexDirection: 'column', gap: '28px', position: 'relative', zIndex: 2 }}>
 
         {/* ── Status pills (tags de topo) ── */}
         {(() => {
@@ -1002,8 +807,8 @@ export default function VerPerfilPage() {
         )}
       </div>
 
-      {/* ── Action bar fixa (glass) — mobile only ── */}
-      <div className="perfil-action-bar-fixed" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(15,17,23,0.72)', backdropFilter: 'blur(20px) saturate(1.4)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '14px 28px 20px', alignItems: 'center', justifyContent: 'center', gap: '24px', zIndex: 30 }}>
+      {/* ── Action bar fixa (glass) ── */}
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(15,17,23,0.72)', backdropFilter: 'blur(20px) saturate(1.4)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '14px 28px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', zIndex: 30 }}>
         {profileId === userId ? (
           /* Perfil proprio — botao de editar */
           <button
@@ -1021,6 +826,7 @@ export default function VerPerfilPage() {
             Editar perfil
           </button>
         ) : (
+          /* Perfil de outra pessoa — dislike / superlike / like */
           <>
             {/* X — dislike */}
             <button
@@ -1232,9 +1038,7 @@ export default function VerPerfilPage() {
           </div>
         </div>
       )}
-      </div>
-      </div>
-      </div>
+      </div>{/* /maxWidth wrapper */}
     </div>
   )
 }
