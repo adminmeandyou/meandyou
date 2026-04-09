@@ -187,12 +187,49 @@ export default function MatchesPage() {
           </div>
 
         ) : matches.length === 0 ? (
-          <EmptyState
-            icon={<Heart size={28} />}
-            title="Você não tem matches ainda"
-            description="Vá para Modos, interaja com outros perfis e quando alguém curtir de volta o match aparece aqui."
-            action={{ label: 'Ir para Modos', onClick: () => router.push('/modos') }}
-          />
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            justifyContent: 'center', minHeight: '60vh', padding: '40px 32px',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              width: 88, height: 88, borderRadius: '50%',
+              background: 'rgba(225,29,72,0.07)',
+              border: '1px solid rgba(225,29,72,0.14)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              marginBottom: 28,
+              boxShadow: '0 0 48px rgba(225,29,72,0.10)',
+            }}>
+              <Heart size={38} color="var(--accent)" strokeWidth={1.5} />
+            </div>
+            <h2 style={{
+              fontFamily: 'var(--font-fraunces)', fontSize: 28, fontWeight: 700,
+              color: 'var(--text)', margin: '0 0 12px', lineHeight: 1.2,
+              letterSpacing: '-0.02em',
+            }}>
+              Você não tem<br />matches ainda
+            </h2>
+            <p style={{
+              color: 'var(--muted)', fontSize: 14, lineHeight: 1.65,
+              margin: '0 0 32px', maxWidth: 260,
+            }}>
+              Sua jornada para encontrar conexões profundas está apenas começando. Que tal explorar novos horizontes?
+            </p>
+            <button
+              onClick={() => router.push('/modos')}
+              style={{
+                background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
+                color: '#fff', fontWeight: 700,
+                padding: '14px 32px', borderRadius: 100, border: 'none',
+                cursor: 'pointer', fontFamily: 'var(--font-jakarta)', fontSize: 13,
+                letterSpacing: '0.06em', textTransform: 'uppercase',
+                boxShadow: '0 8px 24px rgba(225,29,72,0.35)',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              Ir para Modos
+            </button>
+          </div>
 
         ) : (
           <>

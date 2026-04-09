@@ -664,16 +664,21 @@ export default function ChatPage() {
         {/* ── Header ── */}
         <header style={{
           flexShrink: 0,
-          background: 'rgba(8,9,14,0.95)', backdropFilter: 'blur(16px)',
-          borderBottom: '1px solid var(--border)',
-          padding: '12px 16px',
+          background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(24px) saturate(1.3)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          padding: '10px 16px',
           display: 'flex', alignItems: 'center', gap: 12, zIndex: 10,
         }}>
           <button
             onClick={() => router.push('/conversas')}
-            style={{ width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{
+              width: 36, height: 36, borderRadius: '50%',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)',
+              cursor: 'pointer', flexShrink: 0,
+            }}
           >
-            <ArrowLeft size={20} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
+            <ArrowLeft size={17} color="rgba(248,249,250,0.7)" strokeWidth={1.5} />
           </button>
 
           {/* Avatar clicável → perfil */}
@@ -683,13 +688,20 @@ export default function ChatPage() {
               const blurPx = otherMsgs >= 20 ? 0 : otherMsgs >= 10 ? 2 : otherMsgs >= 5 ? 5 : 10
               const revealLabel = blurPx > 0 ? `${Math.max(0, (blurPx === 10 ? 5 : blurPx === 5 ? 10 : 20) - otherMsgs)} msgs` : null
               return (
-                <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }} title={revealLabel ? `Foto revela em ${revealLabel}` : undefined}>
-                  <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '1px solid var(--border)', filter: blurPx > 0 ? `blur(${blurPx}px)` : 'none', transition: 'filter 0.4s' }}>
+                <div style={{ position: 'relative', width: 46, height: 46, flexShrink: 0 }} title={revealLabel ? `Foto revela em ${revealLabel}` : undefined}>
+                  <div style={{
+                    width: 46, height: 46, borderRadius: '50%', overflow: 'hidden',
+                    background: 'var(--bg-card2)',
+                    border: '2px solid rgba(255,255,255,0.08)',
+                    filter: blurPx > 0 ? `blur(${blurPx}px)` : 'none',
+                    transition: 'filter 0.4s',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+                  }}>
                     {otherUser?.photo_best ? (
-                      <Image src={otherUser.photo_best} alt={otherUser.name} fill className="object-cover" sizes="40px" />
+                      <Image src={otherUser.photo_best} alt={otherUser.name} fill className="object-cover" sizes="46px" />
                     ) : (
                       <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 16 }}>{otherUser?.name[0]}</span>
+                        <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 18 }}>{otherUser?.name[0]}</span>
                       </div>
                     )}
                   </div>
@@ -702,10 +714,14 @@ export default function ChatPage() {
               )
             })()}
             <div style={{ minWidth: 0 }}>
-              <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <p style={{
+                fontSize: 16, fontWeight: 700, color: 'var(--text)', margin: 0,
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                fontFamily: 'var(--font-fraunces)', letterSpacing: '-0.01em',
+              }}>
                 {otherUser?.name}
                 {otherUser?.verified && (
-                  <span style={{ marginLeft: 6, fontSize: 12, color: 'var(--accent)' }}>✓</span>
+                  <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--font-jakarta)', fontWeight: 700 }}>✓</span>
                 )}
               </p>
               <OnlineIndicator

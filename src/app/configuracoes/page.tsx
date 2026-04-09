@@ -263,24 +263,69 @@ export default function ConfiguracoesPage() {
 
       <div style={{ maxWidth: '480px', margin: '0 auto', paddingTop: '20px' }}>
 
-        {/* ── Avatar + nome ── */}
+        {/* ── Avatar + nome (editorial centrado) ── */}
         {profile && (
-          <Link href={userId ? `/perfil/${userId}` : '#'} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '16px 20px 20px', textDecoration: 'none', marginBottom: '4px' }}>
-            <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden', backgroundColor: 'rgba(255,255,255,0.08)', position: 'relative', flexShrink: 0, border: '2px solid var(--accent-border)' }}>
-              {profile.photo_best ? (
-                <Image src={profile.photo_best} alt={profile.name} fill style={{ objectFit: 'cover' }} sizes="60px" />
-              ) : (
-                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--muted)', fontSize: '24px' }}>?</div>
-              )}
+          <Link href={userId ? `/perfil/${userId}` : '#'} style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center',
+            padding: '28px 20px 24px', textDecoration: 'none', marginBottom: '8px',
+          }}>
+            {/* Avatar com badge do plano */}
+            <div style={{ position: 'relative', marginBottom: 16 }}>
+              <div style={{
+                width: 84, height: 84, borderRadius: '50%', overflow: 'hidden',
+                position: 'relative', flexShrink: 0,
+                border: profile.plan === 'black' ? '2px solid #F59E0B' : '2px solid var(--accent-border)',
+                boxShadow: profile.plan === 'black'
+                  ? '0 0 28px rgba(245,158,11,0.25)'
+                  : '0 0 28px rgba(225,29,72,0.15)',
+              }}>
+                {profile.photo_best ? (
+                  <Image src={profile.photo_best} alt={profile.name} fill style={{ objectFit: 'cover' }} sizes="84px" />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.06)' }}>
+                    <User size={32} color="var(--muted)" />
+                  </div>
+                )}
+              </div>
+              {/* Badge do plano na base do avatar */}
+              <div style={{
+                position: 'absolute', bottom: -8, left: '50%', transform: 'translateX(-50%)',
+                fontSize: 9, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase',
+                color: profile.plan === 'black' ? '#000' : '#fff',
+                background: profile.plan === 'black'
+                  ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)'
+                  : profile.plan === 'plus'
+                  ? 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)'
+                  : 'rgba(255,255,255,0.18)',
+                borderRadius: 100, padding: '3px 9px', whiteSpace: 'nowrap',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                border: '1.5px solid rgba(0,0,0,0.15)',
+              }}>
+                {planLabel}
+              </div>
             </div>
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ color: 'var(--text)', fontWeight: 700, margin: 0, fontSize: '17px', fontFamily: 'var(--font-fraunces)' }}>{profile.name}</p>
-              <p style={{ color: 'var(--muted)', fontSize: '13px', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{email}</p>
-              <span style={{ fontSize: '11px', fontWeight: 700, color: planCor, backgroundColor: `${planCor}18`, border: `1px solid ${planCor}30`, borderRadius: '100px', padding: '2px 8px', display: 'inline-block', marginTop: '5px' }}>
-                Plano {planLabel}
-              </span>
+
+            {/* Nome */}
+            <p style={{
+              color: 'var(--text)', fontWeight: 700, margin: '8px 0 0',
+              fontSize: 22, fontFamily: 'var(--font-fraunces)', letterSpacing: '-0.02em',
+              textAlign: 'center',
+            }}>{profile.name}</p>
+
+            {/* Email */}
+            <p style={{
+              color: 'var(--muted)', fontSize: 13, margin: '5px 0 0',
+              textAlign: 'center',
+            }}>{email}</p>
+
+            {/* Ver perfil */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 4, marginTop: 12,
+              fontSize: 12, fontWeight: 600, color: 'var(--accent)',
+            }}>
+              <span>Ver perfil</span>
+              <ChevronRight size={13} />
             </div>
-            <ChevronRight size={16} color="rgba(255,255,255,0.18)" />
           </Link>
         )}
 

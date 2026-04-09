@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Users, Compass, Zap, Gift, User } from 'lucide-react'
+import { Users, Compass, Heart, Gift, User } from 'lucide-react'
 import { useHaptics } from '@/hooks/useHaptics'
 
 interface NavItem {
@@ -15,7 +15,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { href: '/matches',   label: 'Matches',    icon: Users },
   { href: '/modos',     label: 'Modos',      icon: Compass },
-  { href: '/roleta',    label: 'Roleta',     icon: Zap, center: true },
+  { href: '/roleta',    label: 'Roleta',     icon: Heart, center: true },
   { href: '/recompensas', label: 'Prêmios',   icon: Gift },
   { href: '/perfil',    label: 'Perfil',     icon: User },
 ]
