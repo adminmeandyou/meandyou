@@ -1323,9 +1323,9 @@ export default function VerPerfilPage() {
           </div>
         </div>
       )}
-      </div>{/* /padding wrapper */}
-      </div>{/* /perfil-col-info */}
-      </div>{/* /perfil-layout */}
+      </div>
+      </div>
+      </div>
     </div>
   )
 }
