@@ -111,21 +111,31 @@ export default function StreakPage() {
   function canClaim(entry: CalendarEntry) { return entry.day_number <= currentDay && !entry.claimed }
   const phase = getPhaseInfo(currentDay)
 
+  const monthName = new Date().toLocaleDateString('pt-BR', { month: 'long' })
+  const monthLabel = monthName.charAt(0).toUpperCase() + monthName.slice(1)
+  // Progress bar: show last 7 days or currentDay, max 7
+  const progressDays = Math.min(currentDay, 30)
+  const progressTotal = Math.max(7, Math.ceil(currentDay / 7) * 7)
+
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
-      {/* Header */}
-      <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+      {/* Header minimalista */}
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 30,
+        backgroundColor: 'rgba(8,9,14,0.70)', backdropFilter: 'blur(16px)',
+        padding: '14px 20px',
+        display: 'flex', alignItems: 'center', gap: '12px',
+      }}>
         <button onClick={() => router.back()} style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
           <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>Prêmios diários</h1>
-          <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>Entre todo dia e ganhe prêmios</p>
+          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '18px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>Premios Diarios</h1>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '100px', backgroundColor: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.25)', flexShrink: 0 }}>
-          <Flame size={13} color="#f97316" strokeWidth={1.5} />
-          <span style={{ fontSize: '13px', color: '#f97316', fontWeight: 700 }}>{loading ? '…' : currentDay} dias</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 11px', borderRadius: '100px', backgroundColor: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', flexShrink: 0 }}>
+          <Flame size={12} color="#E11D48" strokeWidth={1.5} />
+          <span style={{ fontSize: '12px', color: '#E11D48', fontWeight: 700 }}>{loading ? '…' : currentDay}d</span>
         </div>
       </header>
 
@@ -134,32 +144,48 @@ export default function StreakPage() {
           <Loader2 size={28} color="rgba(255,255,255,0.20)" strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} />
         </div>
       ) : (
-        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <div style={{ padding: '24px 20px 20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
 
-          {/* Card de streak */}
-          <div style={{ borderRadius: '16px', padding: '20px', backgroundColor: 'rgba(249,115,22,0.05)', border: '1px solid rgba(249,115,22,0.20)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{ width: '64px', height: '64px', borderRadius: '16px', backgroundColor: 'rgba(249,115,22,0.10)', border: '1px solid rgba(249,115,22,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <Flame size={32} color="#f97316" strokeWidth={1.5} />
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '4px' }}>
-                  <span style={{ color: phase.color }}>{phase.icon}</span>
-                  <span style={{ fontSize: '12px', fontWeight: 600, color: phase.color }}>{phase.label}</span>
-                </div>
-                <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>
-                  {currentDay} <span style={{ fontSize: '14px', color: 'var(--muted)', fontFamily: 'var(--font-jakarta)', fontWeight: 400 }}>dias seguidos</span>
-                </p>
-                <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '4px 0 0' }}>Recorde pessoal: {streak?.longest_streak ?? 0} dias</p>
+          {/* Hero: contador gigante */}
+          <section style={{ textAlign: 'center', paddingBottom: '8px' }}>
+            <p style={{
+              fontSize: 10, fontWeight: 700,
+              letterSpacing: '0.3em', textTransform: 'uppercase',
+              color: 'rgba(248,249,250,0.40)',
+              fontFamily: 'var(--font-jakarta)',
+              marginBottom: 12,
+            }}>
+              Sua Jornada
+            </p>
+            <h1 style={{
+              fontFamily: 'var(--font-fraunces)',
+              fontSize: 72, fontWeight: 900,
+              fontStyle: 'italic',
+              color: '#F8F9FA',
+              margin: '0 0 4px',
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+            }}>
+              {currentDay} Dias
+            </h1>
+            <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.55)', marginTop: 12, letterSpacing: '0.02em', fontFamily: 'var(--font-jakarta)' }}>
+              Continue a chama acesa para premios exclusivos.
+            </p>
+            {/* Barra de progresso linear */}
+            <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', gap: 4, height: 6, width: '100%', maxWidth: 280 }}>
+                {Array.from({ length: 7 }).map((_, i) => (
+                  <div key={i} style={{
+                    flex: 1, borderRadius: 9999,
+                    backgroundColor: i < currentDay % 7 || (currentDay >= 7 && i < 7)
+                      ? '#E11D48'
+                      : 'rgba(255,255,255,0.08)',
+                    transition: 'background-color 0.3s',
+                  }} />
+                ))}
               </div>
             </div>
-            {currentDay > 0 && (
-              <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid rgba(249,115,22,0.10)', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}>
-                <AlertTriangle size={12} color="rgba(248,249,250,0.30)" strokeWidth={1.5} />
-                <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0 }}>Fique 30 dias sem entrar e o streak reseta para 0</p>
-              </div>
-            )}
-          </div>
+          </section>
 
           {/* Mensagem de feedback */}
           {claimMsg && (
@@ -168,13 +194,25 @@ export default function StreakPage() {
             </div>
           )}
 
-          {/* Calendário */}
+          {/* Secao: Premios */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <p style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', margin: 0 }}>
-                Ciclo {cycleNumber} — dias {cycleStart} a {cycleEnd}
-              </p>
-              <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.25)' }}>Premios mudam a cada ciclo</span>
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
+              <h2 style={{
+                fontFamily: 'var(--font-fraunces)',
+                fontSize: 22, fontWeight: 700,
+                color: '#F8F9FA', margin: 0,
+                letterSpacing: '-0.01em',
+              }}>
+                Premios Diarios
+              </h2>
+              <span style={{
+                fontSize: 9, fontWeight: 800,
+                letterSpacing: '0.12em', textTransform: 'uppercase',
+                color: '#E11D48',
+                fontFamily: 'var(--font-jakarta)',
+              }}>
+                {monthLabel}
+              </span>
             </div>
 
             {cycleCalendar.length === 0 ? (
@@ -190,40 +228,73 @@ export default function StreakPage() {
                   const reached = entry.day_number <= currentDay
                   const claimable = canClaim(entry)
                   const isClaiming = claiming === entry.day_number
+                  const dayInCycle = entry.day_number - cycleStart + 1
+                  const isToday = entry.day_number === currentDay
+                  // Premium milestone (day 8, 15, 30)
+                  const isMilestone = dayInCycle === 8 || dayInCycle === 15 || dayInCycle === 30
+
+                  const cardBg = isToday
+                    ? '#E11D48'
+                    : isMilestone && !entry.claimed
+                      ? 'linear-gradient(135deg, #ee9800 0%, #B45309 100%)'
+                      : entry.claimed
+                        ? 'rgba(255,255,255,0.02)'
+                        : reached
+                          ? cfg.bg
+                          : '#0F1117'
+
+                  const cardBorder = isToday
+                    ? '1px solid rgba(255,255,255,0.20)'
+                    : isMilestone && !entry.claimed
+                      ? '1px solid rgba(245,158,11,0.40)'
+                      : claimable
+                        ? `1px solid ${cfg.border}`
+                        : reached
+                          ? '1px solid rgba(255,255,255,0.10)'
+                          : '1px solid rgba(255,255,255,0.05)'
 
                   return (
                     <div
                       key={entry.day_number}
                       onClick={() => claimable && !isClaiming && handleClaim(entry.day_number)}
                       style={{
-                        position: 'relative', borderRadius: '14px', padding: '12px 8px',
-                        border: `1px solid ${claimable ? cfg.border : reached ? 'rgba(255,255,255,0.10)' : 'rgba(255,255,255,0.05)'}`,
-                        backgroundColor: entry.claimed ? 'rgba(255,255,255,0.03)' : claimable ? cfg.bg : reached ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px',
+                        position: 'relative',
+                        aspectRatio: '1/1',
+                        borderRadius: '10px', padding: '10px 8px',
+                        border: cardBorder,
+                        background: cardBg,
+                        display: 'flex', flexDirection: 'column',
+                        alignItems: 'center', justifyContent: 'space-between',
                         opacity: entry.claimed ? 0.5 : (!reached && !claimable) ? 0.4 : 1,
-                        cursor: claimable ? 'pointer' : 'default', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+                        cursor: claimable ? 'pointer' : 'default',
+                        transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+                        boxShadow: isToday ? '0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)' : 'none',
                       }}
                     >
-                      <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--muted)' }}>Dia {entry.day_number - cycleStart + 1}</span>
+                      <span style={{ fontSize: '9px', fontWeight: 700, color: isToday || (isMilestone && !entry.claimed) ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.40)', textTransform: 'uppercase', alignSelf: 'flex-start' }}>
+                        {isToday ? 'HOJE' : `${String(dayInCycle).padStart(2, '0')}`}
+                      </span>
 
-                      {entry.claimed ? (
-                        <CheckCircle size={20} color="rgba(255,255,255,0.30)" strokeWidth={1.5} />
-                      ) : reached ? (
-                        <div style={{ color: cfg.color, display: 'flex' }}>{cfg.icon}</div>
-                      ) : (
-                        <Lock size={16} color="rgba(255,255,255,0.20)" strokeWidth={1.5} />
-                      )}
+                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+                        {entry.claimed ? (
+                          <CheckCircle size={isToday ? 24 : 18} color="rgba(255,255,255,0.30)" strokeWidth={1.5} />
+                        ) : reached ? (
+                          <div style={{ color: isToday || (isMilestone && !entry.claimed) ? '#fff' : cfg.color, display: 'flex' }}>
+                            {cfg.icon}
+                          </div>
+                        ) : (
+                          <Lock size={14} color="rgba(255,255,255,0.20)" strokeWidth={1.5} />
+                        )}
+                      </div>
 
                       {!entry.claimed && (
-                        <span style={{ fontSize: '11px', fontWeight: 700, color: reached ? cfg.color : 'rgba(255,255,255,0.20)' }}>{entry.reward_amount}x</span>
-                      )}
-
-                      {claimable && !isClaiming && (
-                        <span style={{ fontSize: '10px', fontWeight: 700, color: cfg.color }}>Resgatar</span>
+                        <span style={{ fontSize: '9px', fontWeight: 700, color: isToday || (isMilestone && !entry.claimed) ? 'rgba(255,255,255,0.9)' : reached ? cfg.color : 'rgba(255,255,255,0.20)', textTransform: 'uppercase' }}>
+                          {claimable ? 'Coletar' : !reached ? cfg.label : cfg.label}
+                        </span>
                       )}
 
                       {isClaiming && (
-                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '14px', backgroundColor: 'rgba(0,0,0,0.50)' }}>
+                        <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '10px', backgroundColor: 'rgba(0,0,0,0.50)' }}>
                           <Loader2 size={16} color="#fff" strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} />
                         </div>
                       )}
@@ -232,6 +303,44 @@ export default function StreakPage() {
                 })}
               </div>
             )}
+          </div>
+
+          {/* CTA: Noir Curator */}
+          <div style={{
+            borderRadius: '16px', padding: '24px',
+            backgroundColor: '#13161F',
+            border: '1px solid rgba(255,255,255,0.05)',
+            boxShadow: '0 20px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.05)',
+            position: 'relative', overflow: 'hidden',
+          }}>
+            {/* Luz de fundo vermelha */}
+            <div style={{ position: 'absolute', top: 0, right: 0, width: '60%', height: '100%', background: 'radial-gradient(ellipse at top right, rgba(225,29,72,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
+            <div style={{ position: 'relative' }}>
+              <h3 style={{
+                fontFamily: 'var(--font-fraunces)',
+                fontSize: 20, fontWeight: 700,
+                color: '#F8F9FA', margin: '0 0 8px',
+                letterSpacing: '-0.01em',
+              }}>
+                Desbloqueie o Noir Curator
+              </h3>
+              <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.55)', lineHeight: 1.6, margin: '0 0 20px', fontFamily: 'var(--font-jakarta)' }}>
+                Mantenha sua sequencia por 30 dias para receber o selo vitalicio de Curador e acessos antecipados.
+              </p>
+              <button style={{
+                width: '100%', padding: '14px',
+                borderRadius: 9999,
+                background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
+                border: 'none', cursor: 'pointer',
+                color: '#fff', fontFamily: 'var(--font-jakarta)',
+                fontSize: 12, fontWeight: 800,
+                letterSpacing: '0.1em', textTransform: 'uppercase',
+                boxShadow: '0 4px 15px rgba(225,29,72,0.30)',
+                transition: 'transform 0.15s',
+              }}>
+                Ativar Lembrete Noturno
+              </button>
+            </div>
           </div>
 
           {/* Motivacao diaria */}
@@ -248,19 +357,19 @@ export default function StreakPage() {
             ]
             const msg = msgs.find(m => currentDay >= m.min && currentDay <= m.max) ?? msgs[0]
             return (
-              <div style={{ borderRadius: '16px', padding: '16px 18px', backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: msg.color, flexShrink: 0, marginTop: '5px' }} />
-                <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>{msg.text}</p>
+              <div style={{ borderRadius: '14px', padding: '14px 16px', backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                <div style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: msg.color, flexShrink: 0, marginTop: '6px' }} />
+                <p style={{ fontSize: '13px', color: 'rgba(248,249,250,0.45)', margin: 0, lineHeight: 1.6 }}>{msg.text}</p>
               </div>
             )
           })()}
 
           {/* CTA roleta */}
-          <div style={{ borderRadius: '16px', padding: '16px', backgroundColor: 'rgba(234,179,8,0.05)', border: '1px solid rgba(234,179,8,0.20)', display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <Ticket size={24} color="#eab308" strokeWidth={1.5} style={{ flexShrink: 0 }} />
-            <p style={{ fontSize: '13px', color: 'var(--muted)', flex: 1, margin: 0 }}>Use seus tickets na roleta para ganhar ainda mais prêmios!</p>
-            <a href="/roleta" style={{ padding: '8px 14px', borderRadius: '12px', backgroundColor: 'rgba(234,179,8,0.20)', color: '#eab308', fontSize: '12px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', fontFamily: 'var(--font-jakarta)' }}>
-              Ir à roleta
+          <div style={{ borderRadius: '14px', padding: '14px 16px', backgroundColor: 'rgba(234,179,8,0.04)', border: '1px solid rgba(234,179,8,0.15)', display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <Ticket size={22} color="#eab308" strokeWidth={1.5} style={{ flexShrink: 0 }} />
+            <p style={{ fontSize: '13px', color: 'rgba(248,249,250,0.50)', flex: 1, margin: 0 }}>Use seus tickets na roleta para ganhar ainda mais premios!</p>
+            <a href="/roleta" style={{ padding: '7px 12px', borderRadius: '9999px', backgroundColor: 'rgba(234,179,8,0.15)', color: '#eab308', fontSize: '11px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', fontFamily: 'var(--font-jakarta)' }}>
+              Roleta
             </a>
           </div>
 
