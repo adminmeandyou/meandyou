@@ -555,8 +555,8 @@ export default function VerPerfilPage() {
 
         {/* Overlay nome na foto */}
         <div style={{ position: 'absolute', bottom: '24px', left: '20px', right: '20px', zIndex: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
-            <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', color: '#fff', fontWeight: 700, margin: 0, lineHeight: 1.1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
+            <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '42px', color: '#fff', fontWeight: 900, fontStyle: 'italic', margin: 0, lineHeight: 1, letterSpacing: '-0.02em' }}>
               {profile.name}{age ? `, ${age}` : ''}
             </h1>
             {/* Badge Camarote — so Black ve, so aparece se o visitado tambem for Black */}
@@ -568,13 +568,21 @@ export default function VerPerfilPage() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
             {distance !== null && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'rgba(255,255,255,0.65)', fontSize: '13px' }}>
-                <MapPin size={12} strokeWidth={1.5} />
-                {distance < 1 ? 'menos de 1 km' : `${distance.toFixed(1)} km`}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.60)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                <MapPin size={10} strokeWidth={1.5} />
+                {distance < 1 ? 'Menos de 1 km' : `${distance.toFixed(1)} km`}
               </span>
             )}
             {profile.city && (
-              <span style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px' }}>{profile.city}, {profile.state}</span>
+              <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+                <MapPin size={10} strokeWidth={1.5} style={{ display: distance !== null ? 'none' : 'inline-block', verticalAlign: 'middle', marginRight: 4 }} />
+                {profile.city}{profile.state ? `, ${profile.state}` : ''}
+              </span>
+            )}
+            {userRow?.verified && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '100px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid rgba(225,29,72,0.35)', backgroundColor: 'rgba(225,29,72,0.12)', color: '#F43F5E' }}>
+                Verificado
+              </span>
             )}
           </div>
         </div>
@@ -616,7 +624,7 @@ export default function VerPerfilPage() {
               </div>
             )}
             {profile.bio ? (
-              <p style={{ color: 'rgba(248,249,250,0.80)', fontSize: '14px', lineHeight: '1.75', margin: 0 }}>{profile.bio}</p>
+              <p style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', color: 'rgba(248,249,250,0.85)', fontSize: '18px', lineHeight: '1.65', margin: 0, fontWeight: 400 }}>{profile.bio}</p>
             ) : (
               <p style={{ color: 'rgba(248,249,250,0.25)', fontSize: '14px', margin: 0, fontStyle: 'italic' }}>Adicione uma bio para se apresentar...</p>
             )}
