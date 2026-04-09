@@ -1021,7 +1021,6 @@ export default function VerPerfilPage() {
             Editar perfil
           </button>
         ) : (
-          /* Perfil de outra pessoa — dislike / superlike / like */
           <>
             {/* X — dislike */}
             <button
