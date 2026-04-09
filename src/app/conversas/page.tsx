@@ -138,7 +138,7 @@ export default function MatchesHubPage() {
         const convs: Conversation[] = convsResult.data.map((row: any) => ({
           matchId: row.match_id,
           otherUserId: row.other_user_id,
-          otherName: row.other_name ?? 'Usuario',
+          otherName: row.other_name ?? 'Usuário',
           otherPhoto: row.other_photo ?? null,
           lastMessage: row.last_message ?? null,
           lastMessageAt: row.last_message_at ?? null,
@@ -207,7 +207,7 @@ export default function MatchesHubPage() {
               )
               return {
                 userId: p.id,
-                name: p.name ?? 'Usuario',
+                name: p.name ?? 'Usuário',
                 photo: p.photo_best ?? null,
                 lastSeen: p.last_seen ?? null,
                 matchId: m?.id ?? null,

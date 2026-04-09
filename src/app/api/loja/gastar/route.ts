@@ -23,8 +23,17 @@ const ITEM_CONFIG: Record<string, { fichasPorUnidade: number; label: string }> =
 
 async function incrementarSaldo(tabela: string, userId: string, amount: number): Promise<void> {
   // Operação atômica via RPC — evita race condition em compras simultâneas
-  await supabaseAdmin.rpc('increment_user_balance', {
+  const { error } = await supabaseAdmin.rpc('increment_user_balance', {
     p_table:   tabela,
+    p_user_id: userId,
+    p_amount:  amount,
+  })
+  if (error) throw new Error(`increment_user_balance falhou para ${tabela}: ${error.message}`)
+}
+
+async function estornarFichas(userId: string, amount: number): Promise<void> {
+  await supabaseAdmin.rpc('increment_user_balance', {
+    p_table:   'user_fichas',
     p_user_id: userId,
     p_amount:  amount,
   })
@@ -83,7 +92,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Fichas insuficientes' }, { status: 402 })
     }
 
-    // Credita o item comprado
+    // Credita o item comprado — em caso de falha, estorna as fichas automaticamente
+    try {
     if (item_key === 'superlike') {
       await incrementarSaldo('user_superlikes', user.id, qty)
 
@@ -177,6 +187,12 @@ export async function POST(req: NextRequest) {
         .upsert({ user_id: user.id, badge_id: badge.id }, { onConflict: 'user_id,badge_id', ignoreDuplicates: true })
 
       return NextResponse.json({ success: true, caixa_lendaria: { type: 'badge', badge_id: badge.id, badge_name: badge.name, badge_icon: badge.icon_url } })
+    }
+    } catch (creditErr) {
+      // Crédito do item falhou — estorna as fichas automaticamente
+      console.error('[loja/gastar] falha ao creditar item, estornando fichas. user:', user.id, 'item:', item_key, creditErr)
+      await estornarFichas(user.id, totalFichas)
+      return NextResponse.json({ error: 'Erro ao processar item. Fichas estornadas.' }, { status: 500 })
     }
 
     // Conceder XP pela compra (fire-and-forget)

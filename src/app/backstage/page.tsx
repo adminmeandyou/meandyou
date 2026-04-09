@@ -197,7 +197,7 @@ function CamaroteTerms({ onAccept, onBack }: { onAccept: () => void; onBack: () 
               transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
             }}
           >
-            {accepted && <Check size={13} color="#000" strokeWidth={2.5} />}
+            {accepted && <Check size={13} color="#fff" strokeWidth={2.5} />}
           </div>
           <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.50)', lineHeight: 1.55 }}>
             Li e compreendo as recomendacoes de seguranca. Estou ciente de que o Camarote e um ambiente para adultos maiores de 18 anos.
@@ -213,7 +213,7 @@ function CamaroteTerms({ onAccept, onBack }: { onAccept: () => void; onBack: () 
             fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 15,
             cursor: accepted ? 'pointer' : 'not-allowed',
             background: accepted ? `linear-gradient(135deg, #c9a84c, ${G}, #fbbf24)` : 'rgba(255,255,255,0.05)',
-            color: accepted ? '#000' : 'rgba(255,255,255,0.20)',
+            color: accepted ? '#fff' : 'rgba(255,255,255,0.20)',
             border: 'none', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
           }}
         >
@@ -303,7 +303,7 @@ function CamaroteCategories({
                 <span>{label}</span>
                 {active && (
                   <div style={{ width: 18, height: 18, borderRadius: '50%', background: G, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                    <Check size={11} color="#000" strokeWidth={2.5} />
+                    <Check size={11} color="#fff" strokeWidth={2.5} />
                   </div>
                 )}
               </button>
@@ -327,7 +327,7 @@ function CamaroteCategories({
             fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 15,
             cursor: selected.length > 0 ? 'pointer' : 'not-allowed',
             background: selected.length > 0 ? `linear-gradient(135deg, #c9a84c, ${G}, #fbbf24)` : 'rgba(255,255,255,0.05)',
-            color: selected.length > 0 ? '#000' : 'rgba(255,255,255,0.20)',
+            color: selected.length > 0 ? '#fff' : 'rgba(255,255,255,0.20)',
             border: 'none', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           }}
@@ -664,7 +664,7 @@ function CamaroteVitrine({
                     cursor: 'pointer', boxShadow: `0 6px 24px rgba(245,158,11,0.30)`,
                   }}
                 >
-                  <Heart size={28} color="#000" strokeWidth={2} fill="#000" />
+                  <Heart size={28} color="#fff" strokeWidth={2} fill="#fff" />
                 </button>
               </div>
 
@@ -753,7 +753,7 @@ function CamaroteVitrine({
               </button>
               <button
                 onClick={applyFilters}
-                style={{ flex: 2, padding: '13px', borderRadius: 14, border: 'none', background: `linear-gradient(135deg, #c9a84c, ${G})`, color: '#000', fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
+                style={{ flex: 2, padding: '13px', borderRadius: 14, border: 'none', background: `linear-gradient(135deg, #c9a84c, ${G})`, color: '#fff', fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}
               >
                 Aplicar filtros
               </button>
@@ -811,8 +811,8 @@ function VitrinCard({
             transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
           }}
         >
-          <Heart size={13} color={liked ? G : '#000'} strokeWidth={liked ? 1.5 : 2} fill={liked ? 'none' : '#000'} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: liked ? G : '#000' }}>
+          <Heart size={13} color={liked ? G : '#fff'} strokeWidth={liked ? 1.5 : 2} fill={liked ? 'none' : '#fff'} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: liked ? G : '#fff' }}>
             {liked ? 'Curtido' : 'Curtir'}
           </span>
         </button>
@@ -1014,7 +1014,7 @@ function ResgatesSection() {
                   borderRadius: 12,
                   border: 'none',
                   background: `linear-gradient(135deg, #c9a84c, ${G})`,
-                  color: '#000',
+                  color: '#fff',
                   fontFamily: 'var(--font-jakarta)',
                   fontWeight: 700,
                   fontSize: 11,
@@ -1075,7 +1075,7 @@ function ResgatesSection() {
                     href={`/backstage/chat/${r.id}`}
                     style={{ flexShrink: 0, width: 36, height: 36, borderRadius: '50%', background: `linear-gradient(135deg, #c9a84c, ${G})`, display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}
                   >
-                    <MessageCircle size={16} color="#000" strokeWidth={2} />
+                    <MessageCircle size={16} color="#fff" strokeWidth={2} />
                   </a>
                 </div>
               </div>
@@ -1303,7 +1303,7 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
         <div style={{ width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: 10 }}>
           <a
             href="/planos"
-            style={{ display: 'block', width: '100%', padding: '15px', borderRadius: 16, textAlign: 'center', fontWeight: 700, fontSize: 15, fontFamily: 'var(--font-jakarta)', textDecoration: 'none', background: `linear-gradient(135deg, #c9a84c, ${G}, #fbbf24)`, color: '#000', boxSizing: 'border-box' }}
+            style={{ display: 'block', width: '100%', padding: '15px', borderRadius: 16, textAlign: 'center', fontWeight: 700, fontSize: 15, fontFamily: 'var(--font-jakarta)', textDecoration: 'none', background: `linear-gradient(135deg, #c9a84c, ${G}, #fbbf24)`, color: '#fff', boxSizing: 'border-box' }}
           >
             Assinar Black — R$ 99,97/mes
           </a>
@@ -1506,7 +1506,7 @@ function CamaroteAccessModal({
                     display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
                   }}
                 >
-                  {accepted && <Check size={12} color="#000" strokeWidth={2.5} />}
+                  {accepted && <Check size={12} color="#fff" strokeWidth={2.5} />}
                 </div>
                 <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.40)', lineHeight: 1.55 }}>
                   Entendo que isso nao e uma compra de servico e que o resultado depende da troca entre nos dois.
@@ -1519,7 +1519,7 @@ function CamaroteAccessModal({
                 style={{
                   width: '100%', padding: '14px', borderRadius: 16, border: 'none', cursor: selectedCat && accepted ? 'pointer' : 'not-allowed',
                   background: selectedCat && accepted ? `linear-gradient(135deg, #c9a84c, ${G})` : 'rgba(255,255,255,0.05)',
-                  color: selectedCat && accepted ? '#000' : 'rgba(255,255,255,0.20)',
+                  color: selectedCat && accepted ? '#fff' : 'rgba(255,255,255,0.20)',
                   fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: 15,
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
                 }}

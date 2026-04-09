@@ -103,7 +103,7 @@ export default function CriarSalaPage() {
 
         {/* Descricao */}
         <div>
-          <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>Descricao (opcional)</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>Descrição (opcional)</p>
           <textarea
             value={descricao}
             onChange={e => setDescricao(e.target.value)}

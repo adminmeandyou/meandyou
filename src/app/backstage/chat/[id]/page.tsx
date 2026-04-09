@@ -342,7 +342,7 @@ export default function CamaroteChatPage() {
 
         <button
           onClick={() => router.push('/backstage')}
-          style={{ padding: '13px 28px', borderRadius: 14, background: `linear-gradient(135deg, #c9a84c, ${G})`, color: '#000', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+          style={{ padding: '13px 28px', borderRadius: 14, background: `linear-gradient(135deg, #c9a84c, ${G})`, color: '#fff', fontWeight: 700, fontSize: 14, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
         >
           Voltar ao Camarote
         </button>
@@ -428,7 +428,7 @@ export default function CamaroteChatPage() {
           </span>
           <button
             onClick={() => setShowRating(true)}
-            style={{ padding: '5px 14px', borderRadius: 100, background: `linear-gradient(135deg, #c9a84c, ${G})`, color: '#000', fontSize: 11, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', flexShrink: 0 }}
+            style={{ padding: '5px 14px', borderRadius: 100, background: `linear-gradient(135deg, #c9a84c, ${G})`, color: '#fff', fontSize: 11, fontWeight: 700, border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', flexShrink: 0 }}
           >
             Avaliar
           </button>
@@ -507,10 +507,10 @@ export default function CamaroteChatPage() {
                 background: isMine ? 'linear-gradient(135deg, #c9a84c, #F59E0B)' : BG_CARD,
                 border: isMine ? 'none' : '1px solid rgba(255,255,255,0.07)',
               }}>
-                <p style={{ fontSize: 14, color: isMine ? '#000' : '#fff', margin: '0 0 3px', lineHeight: 1.5, wordBreak: 'break-word' }}>
+                <p style={{ fontSize: 14, color: '#fff', margin: '0 0 3px', lineHeight: 1.5, wordBreak: 'break-word' }}>
                   {msg.content}
                 </p>
-                <p style={{ fontSize: 10, color: isMine ? 'rgba(0,0,0,0.40)' : 'rgba(255,255,255,0.30)', margin: 0, textAlign: 'right' }}>
+                <p style={{ fontSize: 10, color: isMine ? 'rgba(255,255,255,0.60)' : 'rgba(255,255,255,0.30)', margin: 0, textAlign: 'right' }}>
                   {formatTime(msg.created_at)}
                 </p>
               </div>
@@ -543,7 +543,7 @@ export default function CamaroteChatPage() {
             <button
               onClick={sendInvite}
               disabled={!inviteText.trim()}
-              style={{ padding: '9px 20px', borderRadius: 12, background: inviteText.trim() ? `linear-gradient(135deg, #c9a84c, ${G})` : 'rgba(255,255,255,0.06)', color: inviteText.trim() ? '#000' : 'rgba(255,255,255,0.30)', fontWeight: 700, fontSize: 13, border: 'none', cursor: inviteText.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-jakarta)' }}
+              style={{ padding: '9px 20px', borderRadius: 12, background: inviteText.trim() ? `linear-gradient(135deg, #c9a84c, ${G})` : 'rgba(255,255,255,0.06)', color: inviteText.trim() ? '#fff' : 'rgba(255,255,255,0.30)', fontWeight: 700, fontSize: 13, border: 'none', cursor: inviteText.trim() ? 'pointer' : 'default', fontFamily: 'var(--font-jakarta)' }}
             >
               Enviar convite
             </button>
@@ -606,8 +606,8 @@ export default function CamaroteChatPage() {
           }}
         >
           {sending
-            ? <Loader2 size={17} className="animate-spin" style={{ color: input.trim() ? '#000' : 'rgba(255,255,255,0.30)' }} />
-            : <Send size={17} color={input.trim() ? '#000' : 'rgba(255,255,255,0.30)'} strokeWidth={2} />
+            ? <Loader2 size={17} className="animate-spin" style={{ color: input.trim() ? '#fff' : 'rgba(255,255,255,0.30)' }} />
+            : <Send size={17} color={input.trim() ? '#fff' : 'rgba(255,255,255,0.30)'} strokeWidth={2} />
           }
         </button>
       </div>
@@ -678,7 +678,7 @@ export default function CamaroteChatPage() {
               <button
                 onClick={saveMeeting}
                 disabled={!meetingForm.local || !meetingForm.date || !meetingForm.time}
-                style={{ width: '100%', padding: '13px', borderRadius: 14, background: meetingForm.local && meetingForm.date && meetingForm.time ? `linear-gradient(135deg, #c9a84c, ${G})` : 'rgba(255,255,255,0.06)', color: meetingForm.local && meetingForm.date && meetingForm.time ? '#000' : 'rgba(255,255,255,0.30)', fontWeight: 700, fontSize: 14, border: 'none', cursor: meetingForm.local && meetingForm.date && meetingForm.time ? 'pointer' : 'default', fontFamily: 'var(--font-jakarta)' }}
+                style={{ width: '100%', padding: '13px', borderRadius: 14, background: meetingForm.local && meetingForm.date && meetingForm.time ? `linear-gradient(135deg, #c9a84c, ${G})` : 'rgba(255,255,255,0.06)', color: meetingForm.local && meetingForm.date && meetingForm.time ? '#fff' : 'rgba(255,255,255,0.30)', fontWeight: 700, fontSize: 14, border: 'none', cursor: meetingForm.local && meetingForm.date && meetingForm.time ? 'pointer' : 'default', fontFamily: 'var(--font-jakarta)' }}
               >
                 Salvar registro
               </button>

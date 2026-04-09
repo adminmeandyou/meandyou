@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    const customerName = profile?.display_name ?? 'Usuario'
+    const customerName = profile?.display_name ?? 'Usuário'
 
     let gatewayId: string
     let responseData: Record<string, unknown>

@@ -219,7 +219,7 @@ export default function IndicarPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
               {referrals.map((r, i) => (
                 <div key={r.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < referrals.length - 1 ? '1px solid var(--border-soft)' : 'none' }}>
-                  <span style={{ fontSize: '14px', color: 'var(--text)' }}>{r.referred?.name ?? 'Usuario'}</span>
+                  <span style={{ fontSize: '14px', color: 'var(--text)' }}>{r.referred?.name ?? 'Usuário'}</span>
                   <span style={{
                     fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '100px',
                     backgroundColor: r.status === 'rewarded' ? 'var(--accent-light)' : 'rgba(255,255,255,0.05)',

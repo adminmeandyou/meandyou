@@ -25,7 +25,7 @@ export default function SuportePage() {
 
   async function handleSubmit() {
     if (!form.categoria || !form.descricao.trim()) {
-      setError('Preencha a categoria e a descricao.')
+      setError('Preencha a categoria e a descrição.')
       return
     }
     if (form.descricao.trim().length < 20) {
@@ -58,7 +58,7 @@ export default function SuportePage() {
       body: JSON.stringify({
         user_id: user.id,
         email: user.email,
-        nome: profile?.name ?? 'Usuario',
+        nome: profile?.name ?? 'Usuário',
         plano,
         prioridade,
         categoria: form.categoria,
@@ -173,7 +173,7 @@ export default function SuportePage() {
         {/* Descricao */}
         <div>
           <label style={{ display: 'block', color: 'rgba(248,249,250,0.30)', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '10px' }}>
-            Descricao * <span style={{ color: 'rgba(248,249,250,0.20)', textTransform: 'none', fontWeight: 400 }}>({form.descricao.length}/1000)</span>
+            Descrição * <span style={{ color: 'rgba(248,249,250,0.20)', textTransform: 'none', fontWeight: 400 }}>({form.descricao.length}/1000)</span>
           </label>
           <textarea
             value={form.descricao}

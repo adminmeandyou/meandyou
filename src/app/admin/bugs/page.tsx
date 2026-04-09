@@ -66,7 +66,7 @@ export default function AdminBugs() {
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-              {['Data', 'Usuario', 'Descricao', 'Print', 'Status', 'Acoes'].map(h => (
+              {['Data', 'Usuário', 'Descrição', 'Print', 'Status', 'Ações'].map(h => (
                 <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: 'rgba(248,249,250,0.40)', fontWeight: '600', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
               ))}
             </tr>
@@ -130,13 +130,13 @@ export default function AdminBugs() {
           <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '20px', padding: '28px', width: '100%', maxWidth: '600px', maxHeight: '80vh', overflow: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
               <div>
-                <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '18px', margin: 0 }}>{selectedBug.user?.name ?? 'Usuario'}</h3>
+                <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '18px', margin: 0 }}>{selectedBug.user?.name ?? 'Usuário'}</h3>
                 <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '13px', margin: '4px 0 0' }}>{selectedBug.user?.email} · {selectedBug.user?.plan ?? 'sem plano'}</p>
               </div>
               <button onClick={() => setSelectedBug(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(248,249,250,0.40)', fontSize: '24px', lineHeight: 1 }}>x</button>
             </div>
 
-            <p style={{ color: 'rgba(248,249,250,0.50)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>Descricao</p>
+            <p style={{ color: 'rgba(248,249,250,0.50)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>Descrição</p>
             <p style={{ color: '#ddd', fontSize: '14px', lineHeight: 1.6, marginBottom: '20px', whiteSpace: 'pre-wrap' }}>{selectedBug.descricao}</p>
 
             {selectedBug.screenshot_url && (

@@ -145,7 +145,7 @@ export default function ChatPage() {
 
     setOtherUser({
       id: otherId,
-      name: profile?.name ?? 'Usuario',
+      name: profile?.name ?? 'Usuário',
       photo_best: profile?.photo_best ?? null,
       verified: profile?.verified ?? false,
       last_seen: profile?.last_seen ?? null,

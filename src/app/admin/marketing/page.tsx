@@ -15,7 +15,7 @@ const EVENTOS = [
   { key: 'new_user', label: 'Novo cadastro' },
   { key: 'payment_approved', label: 'Pagamento aprovado' },
   { key: 'plan_cancelled', label: 'Plano cancelado' },
-  { key: 'user_inactive', label: 'Usuario inativo' },
+  { key: 'user_inactive', label: 'Usuário inativo' },
   { key: 'new_match', label: 'Novo match' },
 ]
 

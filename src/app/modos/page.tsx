@@ -1035,9 +1035,9 @@ function RoomsView({ userPlan }: { userPlan: string }) {
 
   if (!canJoin) {
     const fakeRooms = [
-      { emoji: '🔥', name: 'Paquera Livre', members: 12, max: 20 },
-      { emoji: '🎵', name: 'Musica e Conversa', members: 8, max: 15 },
-      { emoji: '🌙', name: 'Noturno(a)s', members: 5, max: 10 },
+      { name: 'Paquera Livre', members: 12, max: 20 },
+      { name: 'Musica e Conversa', members: 8, max: 15 },
+      { name: 'Noturno(a)s', members: 5, max: 10 },
     ]
     return (
       <div style={{ padding: '0 16px 20px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>

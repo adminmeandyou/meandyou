@@ -34,7 +34,7 @@ export default function NavBar({ navVisible, menuAberto, setMenuAberto }: NavBar
           <a href="#filtros" onClick={() => setMenuAberto(false)}>Filtros</a>
           <a href="#precos" onClick={() => setMenuAberto(false)}>Planos</a>
           <a href="#seguranca" onClick={() => setMenuAberto(false)}>Segurança</a>
-          <a href="/planos" className="lp-nav-cta" onClick={() => setMenuAberto(false)}>Começar agora</a>
+          <a href="/cadastro" className="lp-nav-cta" onClick={() => setMenuAberto(false)}>Começar agora</a>
         </div>
       </div>
     </>
