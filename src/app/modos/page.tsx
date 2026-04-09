@@ -816,14 +816,16 @@ const MODES_CONFIG = [
     key: 'discovery' as ViewMode,
     label: 'Descobrir',
     subtitle: 'Novos olhares, sem filtros.',
-    bg: 'linear-gradient(160deg, #0d0810 0%, #1a0418 30%, #0a0610 60%, #12080f 100%)',
+    bg: '#0d0810',
+    img: '/images/modos/descobrir.jpg',
     accent: 'rgba(225,29,72,0.15)',
   },
   {
     key: 'search' as ViewMode,
     label: 'Busca Avancada',
     subtitle: 'Encontre a peca que falta.',
-    bg: 'linear-gradient(160deg, #080a10 0%, #0a0e1a 30%, #060c18 60%, #0a0d14 100%)',
+    bg: '#080a10',
+    img: '/images/modos/busca.jpg',
     accent: 'rgba(96,165,250,0.10)',
     badge: null as string | null,
   },
@@ -831,7 +833,8 @@ const MODES_CONFIG = [
     key: 'rooms' as ViewMode,
     label: 'Salas',
     subtitle: 'Conversas coletivas ao vivo.',
-    bg: 'linear-gradient(160deg, #060e0a 0%, #070f0b 30%, #040a08 60%, #081009 100%)',
+    bg: '#060e0a',
+    img: '/images/modos/salas.jpg',
     accent: 'rgba(46,196,160,0.10)',
     badge: 'Plus+' as string | null,
   },
@@ -839,7 +842,8 @@ const MODES_CONFIG = [
     key: 'daily' as ViewMode,
     label: 'Match do Dia',
     subtitle: 'A nossa recomendacao fatal.',
-    bg: 'linear-gradient(160deg, #100900 0%, #1a0e00 30%, #120a00 60%, #0e0800 100%)',
+    bg: '#100900',
+    img: '/images/modos/match-dia.jpg',
     accent: 'rgba(245,158,11,0.12)',
     badge: null as string | null,
   },
@@ -894,20 +898,16 @@ function ModesHubView({ userPlan, onSelect, onCamarote }: {
               transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
             }}
           >
-            {/* Ponto de luz no topo */}
-            <div style={{
-              position: 'absolute', top: 0, left: '50%',
-              transform: 'translateX(-50%)',
-              width: '80%', height: '40%',
-              background: m.accent,
-              filter: 'blur(30px)',
-              borderRadius: '50%',
-              pointerEvents: 'none',
-            }} />
+            {/* Foto de fundo */}
+            <img
+              src={m.img}
+              alt={m.label}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.2)' }}
+            />
             {/* Vinheta noir na base */}
             <div style={{
               position: 'absolute', inset: 0,
-              background: 'linear-gradient(to bottom, rgba(8,9,14,0) 0%, rgba(8,9,14,0.85) 100%)',
+              background: 'linear-gradient(to bottom, rgba(8,9,14,0.15) 0%, rgba(8,9,14,0.92) 100%)',
             }} />
             {/* Conteúdo na base */}
             <div style={{
