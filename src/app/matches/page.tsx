@@ -5,9 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
-import { MessageCircle, Heart, Clock, Loader2, UserPlus, Check } from 'lucide-react'
+import { MessageCircle, Heart, Loader2, UserPlus, Check } from 'lucide-react'
 import { SkeletonList } from '@/components/Skeleton'
-import { EmptyState } from '@/components/ui/EmptyState'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
@@ -131,99 +130,116 @@ export default function MatchesPage() {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(225,29,72,0.06) 0%, transparent 60%), var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: 96 }}>
+    <div style={{
+      minHeight: '100vh',
+      background: '#08090E',
+      fontFamily: 'var(--font-jakarta)',
+      paddingBottom: 96,
+    }}>
 
       {/* Header */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 30,
-        background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(16px)',
-        borderBottom: '1px solid rgba(255,255,255,0.06)',
-        padding: '16px 20px',
+        background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        padding: '18px 20px',
+        textAlign: 'center',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 26, color: 'var(--text)', margin: 0 }}>
-              Matches
-            </h1>
-            {totalUnread > 0 && (
-              <span style={{
-                minWidth: 22, height: 22, borderRadius: 100,
-                background: 'var(--accent)', color: '#fff',
-                fontSize: 11, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px',
-              }}>
-                {totalUnread > 9 ? '9+' : totalUnread}
-              </span>
-            )}
-          </div>
-          {loading && <Loader2 size={18} color="rgba(248,249,250,0.3)" className="animate-spin" />}
-        </div>
-
-        {/* Tabs Ativos / Arquivados */}
-        <div style={{ display: 'flex', gap: 8 }}>
-          {matches.length > 0 && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            padding: '7px 16px', borderRadius: 100,
-            border: '1px solid var(--accent)',
-            background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
-            color: '#fff',
-            fontFamily: 'var(--font-jakarta)', fontSize: 13, fontWeight: 700,
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, position: 'relative' }}>
+          <h1 style={{
+            fontFamily: 'var(--font-fraunces)',
+            fontSize: 22,
+            fontWeight: 700,
+            color: '#F8F9FA',
+            margin: 0,
+            letterSpacing: '-0.02em',
           }}>
-            <Heart size={13} />
-            Ativos
-            <span style={{ fontSize: 11, fontWeight: 700, padding: '1px 6px', borderRadius: 100, background: 'rgba(0,0,0,0.2)', color: '#fff' }}>
-              {matches.length}
+            ME&amp;YOU
+          </h1>
+          {totalUnread > 0 && (
+            <span style={{
+              minWidth: 20, height: 20, borderRadius: 100,
+              background: '#E11D48', color: '#fff',
+              fontSize: 10, fontWeight: 700,
+              display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 5px',
+            }}>
+              {totalUnread > 9 ? '9+' : totalUnread}
             </span>
-          </div>
-        )}
+          )}
+          {loading && (
+            <span style={{ position: 'absolute', right: 0 }}>
+              <Loader2 size={16} color="rgba(248,249,250,0.3)" className="animate-spin" />
+            </span>
+          )}
         </div>
       </header>
 
-      <main style={{ padding: '20px 0 0' }}>
+      <main style={{ padding: '24px 0 0' }}>
         {loading ? (
-          <div style={{ padding: '16px 20px' }}>
+          <div style={{ padding: '0 20px' }}>
             <SkeletonList rows={5} />
           </div>
 
         ) : matches.length === 0 ? (
+          /* ── Empty state ── */
           <div style={{
             display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', minHeight: '60vh', padding: '40px 32px',
+            justifyContent: 'center', minHeight: '72vh', padding: '40px 32px',
             textAlign: 'center',
           }}>
+            {/* Coração grande */}
             <div style={{
-              width: 88, height: 88, borderRadius: '50%',
-              background: 'rgba(225,29,72,0.07)',
-              border: '1px solid rgba(225,29,72,0.14)',
+              width: 96, height: 96, borderRadius: '50%',
+              background: 'linear-gradient(135deg, rgba(225,29,72,0.12) 0%, rgba(225,29,72,0.04) 100%)',
+              border: '1.5px solid rgba(225,29,72,0.18)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              marginBottom: 28,
-              boxShadow: '0 0 48px rgba(225,29,72,0.10)',
+              marginBottom: 32,
+              boxShadow: '0 0 60px rgba(225,29,72,0.10), 0 0 0 24px rgba(225,29,72,0.03)',
             }}>
-              <Heart size={38} color="var(--accent)" strokeWidth={1.5} />
+              <Heart
+                size={40}
+                color="#E11D48"
+                fill="#E11D48"
+                strokeWidth={0}
+              />
             </div>
+
             <h2 style={{
-              fontFamily: 'var(--font-fraunces)', fontSize: 28, fontWeight: 700,
-              color: 'var(--text)', margin: '0 0 12px', lineHeight: 1.2,
-              letterSpacing: '-0.02em',
+              fontFamily: 'var(--font-fraunces)',
+              fontSize: 28,
+              fontWeight: 700,
+              color: '#F8F9FA',
+              margin: '0 0 14px',
+              lineHeight: 1.2,
+              letterSpacing: '-0.03em',
             }}>
-              Você não tem<br />matches ainda
+              Voce nao tem<br />matches ainda
             </h2>
             <p style={{
-              color: 'var(--muted)', fontSize: 14, lineHeight: 1.65,
-              margin: '0 0 32px', maxWidth: 260,
+              color: 'rgba(248,249,250,0.50)',
+              fontSize: 14,
+              lineHeight: 1.7,
+              margin: '0 0 36px',
+              maxWidth: 260,
             }}>
-              Sua jornada para encontrar conexões profundas está apenas começando. Que tal explorar novos horizontes?
+              Sua jornada para encontrar conexoes profundas esta apenas comecando. Que tal explorar novos horizontes?
             </p>
             <button
               onClick={() => router.push('/modos')}
               style={{
                 background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
-                color: '#fff', fontWeight: 700,
-                padding: '14px 32px', borderRadius: 100, border: 'none',
-                cursor: 'pointer', fontFamily: 'var(--font-jakarta)', fontSize: 13,
-                letterSpacing: '0.06em', textTransform: 'uppercase',
-                boxShadow: '0 8px 24px rgba(225,29,72,0.35)',
+                color: '#fff',
+                fontWeight: 700,
+                padding: '14px 36px',
+                borderRadius: 100,
+                border: 'none',
+                cursor: 'pointer',
+                fontFamily: 'var(--font-jakarta)',
+                fontSize: 12,
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                boxShadow: '0 8px 28px rgba(225,29,72,0.30)',
                 transition: 'all 0.2s ease',
               }}
             >
@@ -235,18 +251,35 @@ export default function MatchesPage() {
           <>
             {/* Carrossel de novos matches */}
             {matchesNovos.length > 0 && (
-              <div style={{ marginBottom: 28 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 20px', marginBottom: 14 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Heart size={14} color="var(--accent)" fill="var(--accent)" />
-                    <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(248,249,250,0.50)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+              <div style={{ marginBottom: 32 }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                  padding: '0 20px', marginBottom: 16,
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                    <Heart size={13} color="#E11D48" fill="#E11D48" strokeWidth={0} />
+                    <span style={{
+                      fontSize: 11, fontWeight: 700,
+                      color: 'rgba(248,249,250,0.40)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.10em',
+                    }}>
                       Novos matches
                     </span>
                   </div>
-                  <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>{matchesNovos.length}</span>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700,
+                    color: '#E11D48',
+                    background: 'rgba(225,29,72,0.10)',
+                    border: '1px solid rgba(225,29,72,0.18)',
+                    borderRadius: 100,
+                    padding: '2px 8px',
+                  }}>
+                    {matchesNovos.length}
+                  </span>
                 </div>
                 <div style={{
-                  display: 'flex', gap: 16,
+                  display: 'flex', gap: 20,
                   overflowX: 'auto', paddingLeft: 20, paddingRight: 20, paddingBottom: 4,
                   scrollSnapType: 'x mandatory',
                   WebkitOverflowScrolling: 'touch',
@@ -268,22 +301,44 @@ export default function MatchesPage() {
             {/* Lista de conversas */}
             {matchesComConversa.length > 0 && (
               <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '0 20px', marginBottom: 12 }}>
-                  <MessageCircle size={14} color="rgba(248,249,250,0.4)" />
-                  <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(248,249,250,0.40)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 7,
+                  padding: '0 20px', marginBottom: 14,
+                }}>
+                  <MessageCircle size={13} color="rgba(248,249,250,0.30)" strokeWidth={1.5} />
+                  <span style={{
+                    fontSize: 11, fontWeight: 700,
+                    color: 'rgba(248,249,250,0.30)',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.10em',
+                  }}>
                     Conversas
                   </span>
                 </div>
-                {matchesComConversa.map(match => (
-                  <ConversaItem key={match.match_id} match={match} formatTempo={formatTempo} />
-                ))}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '0 12px' }}>
+                  {matchesComConversa.map(match => (
+                    <ConversaItem key={match.match_id} match={match} formatTempo={formatTempo} />
+                  ))}
+                </div>
               </div>
             )}
 
             {matchesNovos.length === 0 && matchesComConversa.length === 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px 20px', gap: 12 }}>
-                <Heart size={32} color="rgba(248,249,250,0.12)" />
-                <p style={{ fontSize: 14, textAlign: 'center', maxWidth: 200, color: 'rgba(248,249,250,0.3)' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '72px 20px', gap: 14 }}>
+                <div style={{
+                  width: 56, height: 56, borderRadius: '50%',
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Heart size={24} color="rgba(248,249,250,0.12)" strokeWidth={1.5} />
+                </div>
+                <p style={{
+                  fontSize: 14, textAlign: 'center', maxWidth: 220,
+                  color: 'rgba(248,249,250,0.25)',
+                  lineHeight: 1.5,
+                  margin: 0,
+                }}>
                   Todos os matches expiraram. Continue curtindo!
                 </p>
               </div>
@@ -331,7 +386,7 @@ function NovoMatchCard({
       onClick={onIniciarConversa}
       style={{
         scrollSnapAlign: 'start', flexShrink: 0, width: 80,
-        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
         cursor: 'pointer', userSelect: 'none',
       }}
     >
@@ -340,14 +395,20 @@ function NovoMatchCard({
         <div style={{
           width: 72, height: 72, borderRadius: '50%',
           overflow: 'hidden', position: 'relative',
-          border: '2.5px solid var(--accent)',
-          boxShadow: '0 0 0 2px rgba(225,29,72,0.15)',
+          border: '2px solid #E11D48',
+          boxShadow: '0 0 0 3px rgba(225,29,72,0.12), 0 4px 16px rgba(0,0,0,0.4)',
         }}>
           {match.photo_best ? (
             <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="72px" />
           ) : (
-            <div style={{ width: '100%', height: '100%', background: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{match.name[0]}</span>
+            <div style={{
+              width: '100%', height: '100%',
+              background: 'linear-gradient(135deg, #1a0a14 0%, #3d1530 100%)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{ color: 'rgba(248,249,250,0.7)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>
+                {match.name[0]}
+              </span>
             </div>
           )}
         </div>
@@ -358,11 +419,12 @@ function NovoMatchCard({
           style={{
             position: 'absolute', bottom: 0, right: -2,
             width: 22, height: 22, borderRadius: '50%',
-            background: friendSent ? '#10b981' : 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
-            border: `2px solid var(--bg)`,
+            background: friendSent ? '#10b981' : 'rgba(15,17,23,0.95)',
+            border: `2px solid #08090E`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             cursor: friendSent ? 'default' : 'pointer',
             transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
           }}
         >
           {friendSent
@@ -374,17 +436,26 @@ function NovoMatchCard({
         {/* Badge de expiracao */}
         {expiry && (
           <span style={{
-            position: 'absolute', top: -2, left: -2,
+            position: 'absolute', top: -3, left: -3,
             fontSize: 8, fontWeight: 700, padding: '2px 5px', borderRadius: 100,
-            background: expiry.urgent ? 'rgba(225,29,72,0.90)' : 'rgba(225,29,72,0.75)',
+            background: expiry.urgent ? '#E11D48' : 'rgba(225,29,72,0.80)',
             color: '#fff',
+            boxShadow: '0 2px 8px rgba(225,29,72,0.30)',
           }}>
             {expiry.label}
           </span>
         )}
       </div>
 
-      <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', margin: 0, maxWidth: 76, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', textAlign: 'center' }}>
+      <p style={{
+        fontSize: 12, fontWeight: 600,
+        color: 'rgba(248,249,250,0.85)',
+        margin: 0,
+        maxWidth: 76,
+        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+        textAlign: 'center',
+        fontFamily: 'var(--font-fraunces)',
+      }}>
         {match.name}
       </p>
     </div>
@@ -396,8 +467,8 @@ function NovoMatchCard({
 function getNivel(matchedAt: string, lastMessageAt: string | null): { label: string; color: string } | null {
   if (!lastMessageAt) return null
   const daysSinceMatch = (Date.now() - new Date(matchedAt).getTime()) / 86400000
-  if (daysSinceMatch > 30) return { label: 'História', color: '#F59E0B' }
-  if (daysSinceMatch > 7)  return { label: 'Conexão',  color: '#10b981' }
+  if (daysSinceMatch > 30) return { label: 'Historia', color: '#F59E0B' }
+  if (daysSinceMatch > 7)  return { label: 'Conexao',  color: '#10b981' }
   return { label: 'Sintonia', color: '#60a5fa' }
 }
 
@@ -411,21 +482,29 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
       href={`/conversas/${match.match_id}`}
       style={{
         display: 'flex', alignItems: 'center', gap: 14,
-        padding: '12px 20px', borderBottom: '1px solid var(--border-soft)',
+        padding: '14px 16px',
+        borderRadius: 12,
+        background: 'rgba(15,17,23,0.60)',
+        border: '1px solid rgba(255,255,255,0.04)',
         textDecoration: 'none',
+        transition: 'background 0.15s ease',
       }}
     >
       <div style={{ position: 'relative', flexShrink: 0 }}>
         <div style={{
           width: 56, height: 56, borderRadius: '50%',
           overflow: 'hidden', position: 'relative',
-          background: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)',
+          background: 'linear-gradient(135deg, #13161F 0%, #0F1117 100%)',
+          border: '1px solid rgba(255,255,255,0.06)',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
         }}>
           {match.photo_best ? (
             <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="56px" />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{match.name[0]}</span>
+              <span style={{ color: 'rgba(248,249,250,0.5)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>
+                {match.name[0]}
+              </span>
             </div>
           )}
         </div>
@@ -443,8 +522,9 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
           <div style={{
             position: 'absolute', top: -2, right: -2,
             minWidth: 18, height: 18, borderRadius: 100,
-            background: 'var(--accent)', border: '2px solid var(--bg)',
+            background: '#E11D48', border: '2px solid #08090E',
             display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px',
+            boxShadow: '0 2px 8px rgba(225,29,72,0.40)',
           }}>
             <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>
               {match.unread_count > 9 ? '9+' : match.unread_count}
@@ -454,12 +534,19 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
       </div>
 
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginBottom: 4,
+        }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
             <p style={{
-              fontSize: 14, fontWeight: match.unread_count > 0 ? 700 : 500,
-              color: match.unread_count > 0 ? 'var(--text)' : 'rgba(248,249,250,0.80)',
-              margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              fontFamily: 'var(--font-fraunces)',
+              fontSize: 15,
+              fontWeight: match.unread_count > 0 ? 700 : 600,
+              color: match.unread_count > 0 ? '#F8F9FA' : 'rgba(248,249,250,0.80)',
+              margin: 0,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              letterSpacing: '-0.01em',
             }}>
               {match.name}
             </p>
@@ -467,8 +554,8 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
               <span style={{
                 fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 100, flexShrink: 0,
                 background: expiry.urgent ? 'rgba(225,29,72,0.15)' : 'rgba(225,29,72,0.08)',
-                color: expiry.urgent ? '#F43F5E' : 'var(--accent)',
-                border: `1px solid ${expiry.urgent ? 'rgba(225,29,72,0.30)' : 'var(--accent-border)'}`,
+                color: expiry.urgent ? '#F43F5E' : '#E11D48',
+                border: `1px solid ${expiry.urgent ? 'rgba(225,29,72,0.30)' : 'rgba(225,29,72,0.15)'}`,
               }}>
                 {expiry.label}
               </span>
@@ -484,16 +571,20 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
               </span>
             )}
           </div>
-          <span style={{ fontSize: 12, color: 'rgba(248,249,250,0.30)', flexShrink: 0, marginLeft: 8 }}>
+          <span style={{
+            fontSize: 11,
+            color: 'rgba(248,249,250,0.25)',
+            flexShrink: 0, marginLeft: 8,
+          }}>
             {formatTempo(match.last_message_at || match.matched_at)}
           </span>
         </div>
         <p style={{
           fontSize: 13, margin: 0,
-          color: match.unread_count > 0 ? 'rgba(248,249,250,0.65)' : 'rgba(248,249,250,0.35)',
+          color: match.unread_count > 0 ? 'rgba(248,249,250,0.60)' : 'rgba(248,249,250,0.30)',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
-          {match.last_message || 'Iniciar conversa…'}
+          {match.last_message || 'Iniciar conversa...'}
         </p>
       </div>
     </Link>
