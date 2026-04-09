@@ -682,3 +682,5 @@ a:focus-visible {
     width: 360px;
   }
 }
+
+@keyframes spin { to { transform: rotate(360deg) } }
