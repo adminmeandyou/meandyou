@@ -599,15 +599,28 @@ export default function ChatPage() {
       )
     }
 
-    // Mensagem normal — usa ChatBubble da Fase 2
+    // Mensagem normal — estilo editorial
     return (
-      <ChatBubble
-        key={msg.id}
-        message={msg.content}
-        direction={isMe ? 'sent' : 'received'}
-        time={formatMsgTime(msg.created_at)}
-        status={isMe ? (msg.read_at ? 'read' : 'delivered') : undefined}
-      />
+      <div key={msg.id} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
+        <div style={{
+          maxWidth: '78%',
+          background: isMe
+            ? 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)'
+            : '#1e1f25',
+          color: '#fff',
+          borderRadius: isMe ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+          padding: '10px 14px',
+          boxShadow: isMe ? '0 2px 12px rgba(225,29,72,0.22)' : 'none',
+        }}>
+          <p style={{ fontSize: 14, margin: '0 0 4px', lineHeight: 1.5, fontFamily: 'var(--font-jakarta)', wordBreak: 'break-word' }}>{msg.content}</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 4 }}>
+            <span style={{ fontSize: 10, color: isMe ? 'rgba(255,255,255,0.55)' : 'rgba(248,249,250,0.35)' }}>{formatMsgTime(msg.created_at)}</span>
+            {isMe && msg.read_at && (
+              <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.55)' }}>✓✓</span>
+            )}
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -661,11 +674,11 @@ export default function ChatPage() {
 
       <div style={{ height: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', position: 'relative' }}>
 
-        {/* ── Header ── */}
+        {/* ── Header glass ── */}
         <header style={{
           flexShrink: 0,
-          background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(24px) saturate(1.3)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
+          background: 'rgba(8,9,14,0.85)', backdropFilter: 'blur(16px) saturate(1.2)',
+          borderBottom: '1px solid rgba(255,255,255,0.04)',
           padding: '10px 16px',
           display: 'flex', alignItems: 'center', gap: 12, zIndex: 10,
         }}>
@@ -674,37 +687,44 @@ export default function ChatPage() {
             style={{
               width: 36, height: 36, borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)',
+              background: 'transparent', border: 'none',
               cursor: 'pointer', flexShrink: 0,
             }}
           >
-            <ArrowLeft size={17} color="rgba(248,249,250,0.7)" strokeWidth={1.5} />
+            <ArrowLeft size={20} color="rgba(248,249,250,0.75)" strokeWidth={1.5} />
           </button>
 
-          {/* Avatar clicável → perfil */}
-          <Link href={`/perfil/${otherUser?.id}`} style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0, textDecoration: 'none' }}>
+          {/* Avatar + nome clicavel */}
+          <Link href={`/perfil/${otherUser?.id}`} style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0, textDecoration: 'none' }}>
             {(() => {
               const otherMsgs = messages.filter(m => m.sender_id !== userId).length
               const blurPx = otherMsgs >= 20 ? 0 : otherMsgs >= 10 ? 2 : otherMsgs >= 5 ? 5 : 10
               const revealLabel = blurPx > 0 ? `${Math.max(0, (blurPx === 10 ? 5 : blurPx === 5 ? 10 : 20) - otherMsgs)} msgs` : null
+
+              /* Detecta online (< 5min) */
+              const isOnlineNow = otherUser?.last_seen && (Date.now() - new Date(otherUser.last_seen).getTime()) < 5 * 60 * 1000
+
               return (
-                <div style={{ position: 'relative', width: 46, height: 46, flexShrink: 0 }} title={revealLabel ? `Foto revela em ${revealLabel}` : undefined}>
+                <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }} title={revealLabel ? `Foto revela em ${revealLabel}` : undefined}>
                   <div style={{
-                    width: 46, height: 46, borderRadius: '50%', overflow: 'hidden',
+                    width: 40, height: 40, borderRadius: '50%', overflow: 'hidden',
                     background: 'var(--bg-card2)',
-                    border: '2px solid rgba(255,255,255,0.08)',
+                    border: '2px solid rgba(255,255,255,0.07)',
                     filter: blurPx > 0 ? `blur(${blurPx}px)` : 'none',
                     transition: 'filter 0.4s',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
                   }}>
                     {otherUser?.photo_best ? (
-                      <Image src={otherUser.photo_best} alt={otherUser.name} fill className="object-cover" sizes="46px" />
+                      <Image src={otherUser.photo_best} alt={otherUser.name} fill className="object-cover" sizes="40px" />
                     ) : (
                       <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 18 }}>{otherUser?.name[0]}</span>
+                        <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 16 }}>{otherUser?.name[0]}</span>
                       </div>
                     )}
                   </div>
+                  {/* Bolinha verde online */}
+                  {isOnlineNow && !revealLabel && (
+                    <div style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: '50%', backgroundColor: '#10b981', border: '2px solid #08090E' }} />
+                  )}
                   {revealLabel && (
                     <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,9,14,0.45)' }}>
                       <span style={{ fontSize: 8, fontWeight: 700, color: '#fff', textAlign: 'center', lineHeight: 1.2 }}>{revealLabel}</span>
@@ -715,50 +735,123 @@ export default function ChatPage() {
             })()}
             <div style={{ minWidth: 0 }}>
               <p style={{
-                fontSize: 16, fontWeight: 700, color: 'var(--text)', margin: 0,
+                fontSize: 15, fontWeight: 700, color: 'var(--text)', margin: 0,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                 fontFamily: 'var(--font-fraunces)', letterSpacing: '-0.01em',
               }}>
                 {otherUser?.name}
                 {otherUser?.verified && (
-                  <span style={{ marginLeft: 6, fontSize: 11, color: 'var(--accent)', fontFamily: 'var(--font-jakarta)', fontWeight: 700 }}>✓</span>
+                  <span style={{ marginLeft: 5, fontSize: 10, color: 'var(--accent)', fontFamily: 'var(--font-jakarta)', fontWeight: 700 }}>✓</span>
                 )}
               </p>
-              <OnlineIndicator
-                lastActiveAt={otherUser?.last_seen}
-                showLastActive={otherUser?.show_last_active}
-                mode="text"
-                size={7}
-              />
+              {/* "Ativo agora" em vermelho ou status normal */}
+              {(() => {
+                const isOnline = otherUser?.last_seen && (Date.now() - new Date(otherUser.last_seen).getTime()) < 5 * 60 * 1000
+                if (isOnline) {
+                  return <p style={{ fontSize: 10, color: 'var(--accent)', margin: 0, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Ativo agora</p>
+                }
+                return (
+                  <OnlineIndicator
+                    lastActiveAt={otherUser?.last_seen}
+                    showLastActive={otherUser?.show_last_active}
+                    mode="text"
+                    size={7}
+                  />
+                )
+              })()}
             </div>
           </Link>
 
-          {/* Botão de videochamada */}
+          {/* Ícone de vídeo */}
           <button
             onClick={() => router.push(`/videochamada/${matchId}`)}
-            style={{
-              width: 36, height: 36, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-            }}
+            style={{ width: 36, height: 36, borderRadius: '50%', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
             title="Videochamada"
           >
-            <Video size={15} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
+            <Video size={18} color="rgba(248,249,250,0.4)" strokeWidth={1.5} />
           </button>
 
-          {/* Central de Segurança */}
+          {/* Ícone info / Central de Segurança */}
           <button
             onClick={() => setShowSecuritySheet(true)}
-            style={{
-              width: 36, height: 36, borderRadius: '50%',
-              background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-            }}
+            style={{ width: 36, height: 36, borderRadius: '50%', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
             title="Seguranca"
           >
-            <Shield size={15} color="rgba(248,249,250,0.25)" strokeWidth={1.5} />
+            <Shield size={18} color="rgba(248,249,250,0.25)" strokeWidth={1.5} />
           </button>
         </header>
+
+        {/* ── Action menu (pills) ── */}
+        <div style={{
+          flexShrink: 0,
+          display: 'flex', gap: 8, overflowX: 'auto', padding: '8px 16px',
+          borderBottom: '1px solid rgba(255,255,255,0.03)',
+        }}>
+          <button
+            onClick={() => { setShowIcebreakers(false); setShowConvite(v => !v) }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '6px 14px', borderRadius: 100, flexShrink: 0,
+              background: showConvite ? 'rgba(225,29,72,0.10)' : '#0F1117',
+              border: showConvite ? '1px solid rgba(225,29,72,0.30)' : '1px solid rgba(255,255,255,0.05)',
+              color: showConvite ? 'var(--accent)' : 'rgba(248,249,250,0.50)',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+              cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.2s',
+            }}
+          >
+            <CalendarPlus size={12} strokeWidth={1.5} />
+            Chamar para Encontro
+          </button>
+          <button
+            onClick={() => setShowMeetingModal(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '6px 14px', borderRadius: 100, flexShrink: 0,
+              background: '#0F1117',
+              border: '1px solid rgba(255,255,255,0.05)',
+              color: 'rgba(248,249,250,0.50)',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+              cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.2s',
+            }}
+          >
+            <MapPin size={12} strokeWidth={1.5} />
+            Registrar Encontro
+          </button>
+          {messages.length >= 5 && !ratingDone && (
+            <button
+              onClick={() => setShowRatingModal(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 14px', borderRadius: 100, flexShrink: 0,
+                background: '#0F1117',
+                border: '1px solid rgba(255,255,255,0.05)',
+                color: 'rgba(248,249,250,0.50)',
+                fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.2s',
+              }}
+            >
+              <Star size={12} strokeWidth={1.5} />
+              Avaliar
+            </button>
+          )}
+          {boloOportunidade && !boloDone && (
+            <button
+              onClick={() => setShowBoloModal(true)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 14px', borderRadius: 100, flexShrink: 0,
+                background: 'rgba(225,29,72,0.08)',
+                border: '1px solid rgba(225,29,72,0.25)',
+                color: 'var(--accent)',
+                fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+                cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.2s',
+              }}
+            >
+              <Coffee size={12} strokeWidth={1.5} />
+              O encontro?
+            </button>
+          )}
+        </div>
 
         {/* ── Banner convite pendente ── */}
         {pendingConvite && (
@@ -766,27 +859,20 @@ export default function ChatPage() {
             flexShrink: 0,
             display: 'flex', alignItems: 'center', gap: 10,
             padding: '10px 16px',
-            background: 'rgba(225,29,72,0.10)',
-            borderBottom: '1px solid var(--accent-border)',
+            background: 'rgba(225,29,72,0.08)',
+            borderBottom: '1px solid rgba(225,29,72,0.15)',
           }}>
-            <CalendarCheck size={15} color="var(--accent)" strokeWidth={1.5} />
-            <p style={{ flex: 1, fontSize: 13, color: 'var(--accent)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              Convite: {pendingConvite}
+            <CalendarCheck size={14} color="var(--accent)" strokeWidth={1.5} />
+            <p style={{ flex: 1, fontSize: 13, color: 'var(--accent)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontFamily: 'var(--font-fraunces)', fontStyle: 'italic' }}>
+              {pendingConvite}
             </p>
             <button
               onClick={() => sendMessage('Aceito!')}
-              style={{
-                padding: '4px 12px', borderRadius: 100,
-                background: 'var(--accent)', border: 'none',
-                fontSize: 12, fontWeight: 700, color: '#fff', cursor: 'pointer',
-              }}
+              style={{ padding: '4px 14px', borderRadius: 100, background: 'var(--accent)', border: 'none', fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer', letterSpacing: '0.05em' }}
             >
               Aceito!
             </button>
-            <button
-              onClick={() => setPendingConvite(null)}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-            >
+            <button onClick={() => setPendingConvite(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               <X size={14} color="var(--muted)" />
             </button>
           </div>
@@ -795,30 +881,32 @@ export default function ChatPage() {
         {/* ── Aviso de privacidade ── */}
         <div style={{
           flexShrink: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-          padding: '6px 0',
-          color: 'var(--muted-2)', fontSize: 11,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+          padding: '5px 0',
+          color: 'rgba(248,249,250,0.18)', fontSize: 10,
         }}>
-          <Lock size={9} strokeWidth={1.5} />
-          Conversa privada — respeite os limites
+          <Lock size={8} strokeWidth={1.5} />
+          Conversa privada
         </div>
 
         {/* ── Mensagens ── */}
         <div
           className={shake ? 'chat-shake' : ''}
-          style={{ flex: 1, overflowY: 'auto', padding: '4px 16px 8px' }}
+          style={{ flex: 1, overflowY: 'auto', padding: '4px 14px 8px' }}
         >
           {messages.length === 0 ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, color: 'var(--muted-2)' }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', position: 'relative' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 14, color: 'var(--muted-2)' }}>
+              <div style={{ width: 72, height: 72, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', position: 'relative', border: '2px solid rgba(255,255,255,0.06)' }}>
                 {otherUser?.photo_best && (
-                  <Image src={otherUser.photo_best} alt="" fill className="object-cover" sizes="64px" />
+                  <Image src={otherUser.photo_best} alt="" fill className="object-cover" sizes="72px" />
                 )}
               </div>
-              <p style={{ fontSize: 14, textAlign: 'center', margin: 0 }}>
-                Voces fizeram um match!<br />
-                <span style={{ fontSize: 12, color: 'var(--muted-2)' }}>Seja o(a) primeiro(a) a dizer ola.</span>
-              </p>
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)', margin: '0 0 6px' }}>
+                  Voces fizeram um match!
+                </p>
+                <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: 0 }}>Seja o(a) primeiro(a) a dizer ola.</p>
+              </div>
             </div>
           ) : (
             <>
@@ -843,35 +931,32 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* ── Painel Quebra-gelo ── */}
+        {/* ── Painel Quebra-gelo (editorial) ── */}
         {showIcebreakers && (
           <div style={{
-            flexShrink: 0, margin: '0 16px 8px',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderRadius: 16, padding: '14px 12px',
+            flexShrink: 0, margin: '0 14px 8px',
+            background: 'rgba(15,17,23,0.96)',
+            border: '1px solid rgba(255,255,255,0.05)',
+            borderRadius: 16, padding: '14px 14px',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Sparkles size={14} color="var(--accent)" strokeWidth={1.5} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Quebra-gelo</span>
-              </div>
-              <button onClick={() => setShowIcebreakers(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                <X size={14} color="var(--muted)" />
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Puxando Assunto</span>
+              <button onClick={() => setShowIcebreakers(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+                <X size={13} color="var(--muted)" />
               </button>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {ICEBREAKERS.map((q, i) => (
                 <button
                   key={i}
                   onClick={() => { setInput(q); setShowIcebreakers(false); inputRef.current?.focus() }}
                   style={{
-                    padding: '7px 12px', borderRadius: 100,
-                    border: '1px solid var(--border)',
-                    background: 'rgba(255,255,255,0.04)',
-                    color: 'var(--muted)', fontSize: 12,
+                    padding: '9px 12px', borderRadius: 10,
+                    border: '1px solid rgba(255,255,255,0.05)',
+                    background: 'rgba(255,255,255,0.03)',
+                    color: 'rgba(248,249,250,0.65)', fontSize: 13,
                     cursor: 'pointer', textAlign: 'left',
-                    fontFamily: 'var(--font-jakarta)',
+                    fontFamily: 'var(--font-fraunces)', fontStyle: 'italic',
                   }}
                 >
                   {q}
@@ -972,72 +1057,42 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* ── Barra de entrada ── */}
+        {/* ── Barra de entrada glass ── */}
         <div style={{
           flexShrink: 0,
-          background: 'rgba(8,9,14,0.95)', backdropFilter: 'blur(16px)',
-          borderTop: '1px solid var(--border)',
-          padding: '10px 16px',
+          background: 'rgba(8,9,14,0.88)', backdropFilter: 'blur(20px) saturate(1.2)',
+          borderTop: '1px solid rgba(255,255,255,0.04)',
+          padding: '10px 14px 14px',
         }}>
-          {/* Botões de ações rápidas */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-            {/* Mic */}
-            <ActionBtn
-              icon={<Mic size={14} strokeWidth={1.5} />}
-              label="Audio"
-              onClick={() => setError('Audio em breve')}
-            />
+          {/* Botões secundários compactos */}
+          <div style={{ display: 'flex', gap: 6, marginBottom: 10, overflowX: 'auto' }}>
             {/* Quebra-gelo */}
             <ActionBtn
-              icon={<Sparkles size={14} strokeWidth={1.5} />}
+              icon={<Sparkles size={13} strokeWidth={1.5} />}
               label="Quebra-gelo"
               onClick={() => { setShowConvite(false); setShowIcebreakers(v => !v) }}
               active={showIcebreakers}
             />
-            {/* Convite */}
-            <ActionBtn
-              icon={<CalendarPlus size={14} strokeWidth={1.5} />}
-              label="Encontro"
-              onClick={() => { setShowIcebreakers(false); setShowConvite(v => !v) }}
-              active={showConvite}
-            />
-            {/* Registrar encontro */}
-            <ActionBtn
-              icon={<MapPin size={14} strokeWidth={1.5} />}
-              label="Registrar"
-              onClick={() => setShowMeetingModal(true)}
-            />
             {/* Nudge */}
             <ActionBtn
-              icon={<Zap size={14} strokeWidth={1.5} />}
+              icon={<Zap size={13} strokeWidth={1.5} />}
               label="Nudge"
               onClick={handleNudge}
               accent
             />
             {/* Adicionar como amigo */}
             <ActionBtn
-              icon={friendSent ? <Check size={14} strokeWidth={1.5} /> : <UserPlus size={14} strokeWidth={1.5} />}
+              icon={friendSent ? <Check size={13} strokeWidth={1.5} /> : <UserPlus size={13} strokeWidth={1.5} />}
               label={friendSent ? 'Enviado' : 'Amigo'}
               onClick={handleAddFriend}
               success={friendSent}
             />
-            {/* Avaliar — so aparece apos 5+ msgs e nao avaliou ainda */}
-            {messages.length >= 5 && !ratingDone && (
-              <ActionBtn
-                icon={<Star size={14} strokeWidth={1.5} />}
-                label="Avaliar"
-                onClick={() => setShowRatingModal(true)}
-              />
-            )}
-            {/* Bolo — so aparece se aceitou encontro */}
-            {boloOportunidade && !boloDone && (
-              <ActionBtn
-                icon={<Coffee size={14} strokeWidth={1.5} />}
-                label="O encontro?"
-                onClick={() => setShowBoloModal(true)}
-                active
-              />
-            )}
+            {/* Mic placeholder */}
+            <ActionBtn
+              icon={<Mic size={13} strokeWidth={1.5} />}
+              label="Audio"
+              onClick={() => setError('Audio em breve')}
+            />
           </div>
 
           {/* Emoji picker */}
@@ -1055,9 +1110,9 @@ export default function ChatPage() {
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 10 }}>
             <button
               onClick={() => setShowEmojis(v => !v)}
-              style={{ width: 36, height: 36, borderRadius: 10, border: 'none', background: showEmojis ? 'var(--accent-soft)' : 'transparent', color: showEmojis ? 'var(--accent)' : 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+              style={{ width: 34, height: 34, borderRadius: 8, border: 'none', background: showEmojis ? 'rgba(225,29,72,0.10)' : 'transparent', color: showEmojis ? 'var(--accent)' : 'rgba(248,249,250,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
             >
-              <Smile size={18} strokeWidth={1.5} />
+              <Smile size={17} strokeWidth={1.5} />
             </button>
             <div style={{ flex: 1, position: 'relative' }}>
               <textarea
@@ -1074,10 +1129,12 @@ export default function ChatPage() {
                 rows={1}
                 style={{
                   width: '100%',
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 14, padding: '11px 14px',
-                  fontSize: 14, color: 'var(--text)',
+                  background: 'transparent',
+                  border: 'none',
+                  borderBottom: '1px solid rgba(255,255,255,0.04)',
+                  borderRadius: 0,
+                  padding: '10px 0',
+                  fontSize: 15, color: 'var(--text)',
                   outline: 'none', resize: 'none', overflow: 'hidden',
                   maxHeight: 120, boxSizing: 'border-box',
                   fontFamily: 'var(--font-jakarta)',
@@ -1089,11 +1146,7 @@ export default function ChatPage() {
                 }}
               />
               {input.length > MAX_CHARS * 0.8 && (
-                <span style={{
-                  position: 'absolute', bottom: 8, right: 12,
-                  fontSize: 10,
-                  color: input.length >= MAX_CHARS ? '#F43F5E' : 'var(--muted-2)',
-                }}>
+                <span style={{ position: 'absolute', bottom: 6, right: 0, fontSize: 10, color: input.length >= MAX_CHARS ? '#F43F5E' : 'var(--muted-2)' }}>
                   {input.length}/{MAX_CHARS}
                 </span>
               )}
@@ -1102,8 +1155,8 @@ export default function ChatPage() {
               onClick={handleSend}
               disabled={!input.trim() || sending || input.length > MAX_CHARS}
               style={{
-                width: 44, height: 44, borderRadius: '50%',
-                background: input.trim() ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
+                width: 42, height: 42, borderRadius: '50%',
+                background: input.trim() ? 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)' : 'rgba(255,255,255,0.06)',
                 border: 'none', cursor: input.trim() ? 'pointer' : 'default',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0, transition: 'background 0.2s',
@@ -1111,8 +1164,8 @@ export default function ChatPage() {
               }}
             >
               {sending
-                ? <Loader2 size={18} color="#fff" className="animate-spin" />
-                : <Send size={18} color={input.trim() ? '#fff' : 'var(--muted)'} strokeWidth={1.5} />
+                ? <Loader2 size={17} color="#fff" className="animate-spin" />
+                : <Send size={17} color={input.trim() ? '#fff' : 'rgba(248,249,250,0.25)'} strokeWidth={1.5} />
               }
             </button>
           </div>

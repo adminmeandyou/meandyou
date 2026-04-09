@@ -447,10 +447,32 @@ export default function VerPerfilPage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#08090E', fontFamily: 'var(--font-jakarta)', paddingBottom: '100px' }}>
-      <style>{`@keyframes spin{to{transform:rotate(360deg)}}`}</style>
+      <style>{`
+        @keyframes spin{to{transform:rotate(360deg)}}
+        @keyframes grain {
+          0%,100% { transform: translate(0,0) }
+          10% { transform: translate(-1%,-1%) }
+          20% { transform: translate(1%,0) }
+          30% { transform: translate(0,1%) }
+          40% { transform: translate(-1%,0) }
+          50% { transform: translate(1%,1%) }
+          60% { transform: translate(0,-1%) }
+          70% { transform: translate(-1%,1%) }
+          80% { transform: translate(1%,-1%) }
+          90% { transform: translate(0,0) }
+        }
+      `}</style>
 
-      {/* ── Hero foto ── */}
-      <div style={{ position: 'relative', height: '65vh', backgroundColor: '#000' }}>
+      {/* Grain overlay fixo */}
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none',
+        backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'1\'/%3E%3C/svg%3E")',
+        opacity: 0.022,
+        animation: 'grain 8s steps(1) infinite',
+      }} />
+
+      {/* ── Hero foto — fullscreen 3/4 aspect ── */}
+      <div style={{ position: 'relative', width: '100%', aspectRatio: '3/4', backgroundColor: '#000', maxHeight: '70vh', overflow: 'hidden' }}>
 
         {/* Imagem */}
         {photos.length > 0 ? (
@@ -460,32 +482,25 @@ export default function VerPerfilPage() {
             fill
             priority
             sizes="100vw"
-            style={{
-              objectFit: 'cover',
-            }}
+            style={{ objectFit: 'cover' }}
           />
         ) : (
           <div style={{ position: 'absolute', inset: 0, backgroundColor: '#0F1117', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(248,249,250,0.15)', fontSize: '64px' }}>?</div>
         )}
 
-        {/* Gradiente escuro na base */}
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #08090E 0%, rgba(8,9,14,0.4) 40%, transparent 70%)' }} />
+        {/* Vinheta dark na base */}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #08090E 0%, rgba(8,9,14,0.65) 35%, transparent 65%)' }} />
 
-        {/* Barra de progresso de fotos */}
+        {/* Barra de progresso de fotos no topo */}
         {photos.length > 1 && (
-          <div style={{ position: 'absolute', top: '12px', left: '16px', right: '16px', zIndex: 10, display: 'flex', gap: '4px' }}>
+          <div style={{ position: 'absolute', top: '10px', left: '14px', right: '14px', zIndex: 10, display: 'flex', gap: '3px' }}>
             {photos.map((_: any, i: number) => (
               <button
                 key={i}
                 onClick={() => setActivePhoto(i)}
                 style={{
-                  flex: 1,
-                  height: '3px',
-                  borderRadius: '100px',
-                  border: 'none',
-                  cursor: 'pointer',
-                  backgroundColor: i === activePhoto ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.30)',
-                  padding: 0,
+                  flex: 1, height: '2px', borderRadius: '100px', border: 'none', cursor: 'pointer', padding: 0,
+                  backgroundColor: i === activePhoto ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.28)',
                   transition: 'background-color 0.2s',
                 }}
               />
@@ -496,16 +511,16 @@ export default function VerPerfilPage() {
         {/* Botao voltar */}
         <button
           onClick={() => router.back()}
-          style={{ position: 'absolute', top: '28px', left: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}
+          style={{ position: 'absolute', top: '26px', left: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}
         >
           <ArrowLeft size={18} color="#fff" strokeWidth={1.5} />
         </button>
 
-        {/* Botao emergencia / editar fotos (proprio perfil) */}
+        {/* Botao emergencia / editar fotos */}
         {isOwnProfile ? (
           <button
             onClick={() => router.push('/configuracoes/editar-perfil')}
-            style={{ position: 'absolute', top: '28px', right: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.18)', cursor: 'pointer' }}
+            style={{ position: 'absolute', top: '26px', right: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.18)', cursor: 'pointer' }}
             title="Editar fotos"
           >
             <Pencil size={16} color="#fff" strokeWidth={1.5} />
@@ -513,7 +528,7 @@ export default function VerPerfilPage() {
         ) : (
           <button
             onClick={() => setEmergencyModal(true)}
-            style={{ position: 'absolute', top: '28px', right: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}
+            style={{ position: 'absolute', top: '26px', right: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}
             title="Emergencia"
           >
             <ShieldAlert size={17} color="rgba(248,249,250,0.75)" strokeWidth={1.5} />
@@ -537,7 +552,7 @@ export default function VerPerfilPage() {
             new Date(profile.status_temp_expires_at) > new Date()
           const todasPills = [...statusPills]
           return (statusPills.length > 0 || statusTempVivo) ? (
-            <div style={{ position: 'absolute', bottom: '106px', left: '16px', zIndex: 10, display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+            <div style={{ position: 'absolute', bottom: '120px', left: '16px', zIndex: 10, display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
               {todasPills.map((pill, i) => (
                 <span key={i} style={{ display: 'inline-flex', alignItems: 'center', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, backgroundColor: pill.bg, color: pill.color, backdropFilter: 'blur(8px)', border: `1px solid ${pill.color}33`, letterSpacing: '0.01em', fontFamily: 'var(--font-jakarta)' }}>
                   {pill.label === 'Online agora' && <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: pill.color, marginRight: '5px', display: 'inline-block' }} />}
@@ -553,35 +568,31 @@ export default function VerPerfilPage() {
           ) : null
         })()}
 
-        {/* Overlay nome na foto */}
-        <div style={{ position: 'absolute', bottom: '24px', left: '20px', right: '20px', zIndex: 10 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
-            <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '42px', color: '#fff', fontWeight: 900, fontStyle: 'italic', margin: 0, lineHeight: 1, letterSpacing: '-0.02em' }}>
+        {/* Overlay nome na base da foto */}
+        <div style={{ position: 'absolute', bottom: '20px', left: '20px', right: '20px', zIndex: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: '10px', flexWrap: 'wrap', marginBottom: '6px' }}>
+            <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 'clamp(36px, 10vw, 52px)', color: '#fff', fontWeight: 700, fontStyle: 'normal', margin: 0, lineHeight: 1, letterSpacing: '-0.02em', textShadow: '0 2px 16px rgba(0,0,0,0.5)' }}>
               {profile.name}{age ? `, ${age}` : ''}
             </h1>
-            {/* Badge Camarote — so Black ve, so aparece se o visitado tambem for Black */}
+            {/* Badge Camarote */}
             {viewerIsBlack && viewedPlan === 'black' && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, border: '1px solid rgba(245,158,11,0.40)', backgroundColor: 'rgba(245,158,11,0.10)', color: '#F59E0B' }}>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, border: '1px solid rgba(245,158,11,0.40)', backgroundColor: 'rgba(245,158,11,0.10)', color: '#F59E0B', backdropFilter: 'blur(8px)' }}>
                 <Crown size={10} strokeWidth={2} /> Camarote
               </span>
             )}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
-            {distance !== null && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', color: 'rgba(255,255,255,0.60)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-                <MapPin size={10} strokeWidth={1.5} />
-                {distance < 1 ? 'Menos de 1 km' : `${distance.toFixed(1)} km`}
-              </span>
-            )}
-            {profile.city && (
-              <span style={{ color: 'rgba(255,255,255,0.45)', fontSize: '11px', fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-                <MapPin size={10} strokeWidth={1.5} style={{ display: distance !== null ? 'none' : 'inline-block', verticalAlign: 'middle', marginRight: 4 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+            {(profile.city || distance !== null) && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'rgba(255,255,255,0.55)', fontSize: '10px', fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+                <MapPin size={9} strokeWidth={2} />
+                {distance !== null ? (distance < 1 ? 'Menos de 1 km' : `${distance.toFixed(1)} km`) : ''}
+                {distance !== null && profile.city ? ' · ' : ''}
                 {profile.city}{profile.state ? `, ${profile.state}` : ''}
               </span>
             )}
             {userRow?.verified && (
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 8px', borderRadius: '100px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', border: '1px solid rgba(225,29,72,0.35)', backgroundColor: 'rgba(225,29,72,0.12)', color: '#F43F5E' }}>
-                Verificado
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '100px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', border: '1px solid rgba(225,29,72,0.45)', backgroundColor: 'rgba(225,29,72,0.18)', color: '#F43F5E', backdropFilter: 'blur(8px)' }}>
+                Perfil Verificado
               </span>
             )}
           </div>
@@ -600,23 +611,34 @@ export default function VerPerfilPage() {
       </div>
 
       {/* ── Conteudo ── */}
-      <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      <div style={{ padding: '28px 20px', display: 'flex', flexDirection: 'column', gap: '28px', position: 'relative', zIndex: 2 }}>
 
-        {/* Banner de revelação gradual */}
-        {/* Pergunta do perfil */}
-        {profile.profile_question && profile.profile_question_answer && (
-          <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '16px 18px' }}>
-            <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', margin: '0 0 8px' }}>{profile.profile_question}</p>
-            <p style={{ color: '#F8F9FA', fontSize: '15px', lineHeight: '1.65', margin: 0 }}>{profile.profile_question_answer}</p>
-          </div>
-        )}
+        {/* ── Status pills (tags de topo) ── */}
+        {(() => {
+          const chips = []
+          if (userRow?.verified) chips.push({ label: 'Verificada', bg: 'rgba(225,29,72,0.18)', color: '#F43F5E', border: 'rgba(225,29,72,0.35)' })
+          if (userRow?.verified_plus) chips.push({ label: 'Verificada Plus', bg: 'rgba(245,158,11,0.14)', color: '#F59E0B', border: 'rgba(245,158,11,0.30)' })
+          if (viewerIsBlack && viewedPlan === 'black') chips.push({ label: 'Black', bg: 'rgba(245,158,11,0.10)', color: '#F59E0B', border: 'rgba(245,158,11,0.25)' })
+          const statusTempVivo = profile?.status_temp && profile?.status_temp_expires_at && new Date(profile.status_temp_expires_at) > new Date()
+          if (statusTempVivo) chips.push({ label: STATUS_TEMP_LABELS[profile.status_temp as string] ?? profile.status_temp, bg: 'rgba(96,165,250,0.12)', color: '#60a5fa', border: 'rgba(96,165,250,0.25)' })
+          if (chips.length === 0) return null
+          return (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+              {chips.map((c, i) => (
+                <span key={i} style={{ display: 'inline-flex', alignItems: 'center', padding: '5px 12px', borderRadius: '100px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', backgroundColor: c.bg, color: c.color, border: `1px solid ${c.border}` }}>
+                  {c.label}
+                </span>
+              ))}
+            </div>
+          )
+        })()}
 
-        {/* Bio */}
+        {/* ── Bio section ── */}
         {(profile.bio || isOwnProfile) && (
           <div>
             {isOwnProfile && (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(248,249,250,0.30)' }}>Sobre mim</span>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(248,249,250,0.30)' }}>Sobre mim</span>
                 <button onClick={() => router.push('/configuracoes/editar-perfil')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 100, padding: '3px 10px', color: 'rgba(248,249,250,0.45)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>
                   <Pencil size={10} strokeWidth={1.5} />
                   Editar
@@ -624,49 +646,161 @@ export default function VerPerfilPage() {
               </div>
             )}
             {profile.bio ? (
-              <p style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', color: 'rgba(248,249,250,0.85)', fontSize: '18px', lineHeight: '1.65', margin: 0, fontWeight: 400 }}>{profile.bio}</p>
+              <p style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', color: 'var(--accent)', fontSize: 'clamp(20px,5.5vw,26px)', lineHeight: '1.55', margin: 0, fontWeight: 400 }}>{profile.bio}</p>
             ) : (
               <p style={{ color: 'rgba(248,249,250,0.25)', fontSize: '14px', margin: 0, fontStyle: 'italic' }}>Adicione uma bio para se apresentar...</p>
             )}
           </div>
         )}
 
-        {/* Conquistas */}
-        {conquistas.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-            {conquistas.map((c, i) => (
-              <span
-                key={i}
-                style={{
-                  fontSize: '12px', fontWeight: 600,
-                  color: 'var(--accent)', background: 'var(--accent-light)',
-                  border: '1px solid var(--accent-border)',
-                  borderRadius: '100px', padding: '4px 12px',
-                }}
-              >
-                {c.label}
-              </span>
-            ))}
+        {/* ── Pergunta do perfil ── */}
+        {profile.profile_question && profile.profile_question_answer && (
+          <div style={{ backgroundColor: 'rgba(19,22,31,0.95)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '18px 20px' }}>
+            <p style={{ color: 'rgba(248,249,250,0.35)', fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', margin: '0 0 10px' }}>{profile.profile_question}</p>
+            <p style={{ color: '#F8F9FA', fontSize: '15px', lineHeight: '1.65', margin: 0, fontFamily: 'var(--font-jakarta)', fontWeight: 400 }}>{profile.profile_question_answer}</p>
           </div>
         )}
 
-        {/* Trust Score */}
-        <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '16px 18px' }}>
+        {/* ── Conquistas & Legado ── */}
+        {(() => {
+          const unlockedStatic = emblemas.filter(e => e.desbloqueado)
+          const showcase = isOwnProfile ? badgeShowcase : ((profile?.badge_showcase as string[]) ?? [])
+          const publicStatic = isOwnProfile ? unlockedStatic : unlockedStatic.filter(e => showcase.includes(e.id))
+          const publicDb = isOwnProfile ? dbBadges : dbBadges.filter(ub => showcase.includes(ub.badge_id))
+          const allBadges = [...publicStatic, ...publicDb]
+          if (allBadges.length === 0 && conquistas.length === 0) return null
+          return (
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(248,249,250,0.30)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <Award size={12} strokeWidth={2} />
+                  Conquistas &amp; Legado
+                </span>
+                <button
+                  onClick={() => router.push('/emblemas')}
+                  style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700, background: 'none', border: 'none', borderRadius: 100, padding: '3px 0', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+                >
+                  Ver todas
+                </button>
+              </div>
+              {/* Grid horizontal de badges */}
+              <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
+                {publicStatic.map(emblema => {
+                  const active = isOwnProfile && badgeShowcase.includes(emblema.id)
+                  return (
+                    <button
+                      key={emblema.id}
+                      onClick={() => isOwnProfile ? toggleBadge(emblema.id) : setSelectedBadge(emblema)}
+                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', flexShrink: 0 }}
+                    >
+                      <div style={{ position: 'relative', width: '52px', height: '52px', borderRadius: '12px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : '#292a2f', border: active ? '1.5px solid var(--accent)' : '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.25s' }}>
+                        <EmblemaSvg id={emblema.id} desbloqueado={true} />
+                        {active && (
+                          <div style={{ position: 'absolute', top: -4, right: -4, width: 14, height: 14, borderRadius: '50%', backgroundColor: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Check size={8} color="#fff" strokeWidth={2.5} />
+                          </div>
+                        )}
+                      </div>
+                      <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                        {emblema.name}
+                      </span>
+                    </button>
+                  )
+                })}
+                {publicDb.map(ub => {
+                  const active = isOwnProfile && badgeShowcase.includes(ub.badge_id)
+                  return (
+                    <button
+                      key={ub.badge_id}
+                      onClick={() => isOwnProfile ? toggleBadge(ub.badge_id) : undefined}
+                      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: isOwnProfile ? 'pointer' : 'default', padding: '4px 0', flexShrink: 0 }}
+                    >
+                      <div style={{ position: 'relative', width: '52px', height: '52px', borderRadius: '12px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : '#292a2f', border: active ? '1.5px solid var(--accent)' : '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', overflow: 'hidden', transition: 'all 0.25s' }}>
+                        {ub.badges?.icon_url ? <img src={ub.badges.icon_url} alt={ub.badges.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : ub.badges?.icon}
+                        {active && <div style={{ position: 'absolute', top: -4, right: -4, width: 14, height: 14, borderRadius: '50%', backgroundColor: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Check size={8} color="#fff" strokeWidth={2.5} /></div>}
+                      </div>
+                      <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{ub.badges?.name}</span>
+                    </button>
+                  )
+                })}
+                {conquistas.filter(c => !publicStatic.find(e => e.name === c.label)).map((c, i) => (
+                  <div key={`c-${i}`} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '4px 0', flexShrink: 0 }}>
+                    <div style={{ width: '52px', height: '52px', borderRadius: '12px', backgroundColor: '#292a2f', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <Award size={20} color="var(--accent)" strokeWidth={1.5} />
+                    </div>
+                    <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{c.label}</span>
+                  </div>
+                ))}
+              </div>
+              {isOwnProfile && (
+                <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)', margin: '12px 0 0', lineHeight: 1.5 }}>
+                  Toque para escolher quais aparecem no seu perfil
+                </p>
+              )}
+            </div>
+          )
+        })()}
+
+        {/* ── Grid de interesses (bento) ── */}
+        {profile.highlight_tags?.length > 0 && (
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(248,249,250,0.30)' }}>Interesses</span>
+              {isOwnProfile && (
+                <button onClick={() => router.push('/configuracoes/editar-perfil')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 100, padding: '3px 10px', color: 'rgba(248,249,250,0.45)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>
+                  <Pencil size={10} strokeWidth={1.5} />
+                  Editar
+                </button>
+              )}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+              {profile.highlight_tags.slice(0, 4).map((tag: string, i: number) => (
+                <div key={i} style={{ backgroundColor: '#1a1b21', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '16px' }}>
+                  <Heart size={22} color="var(--accent)" strokeWidth={1.5} />
+                  <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: '14px', color: '#F8F9FA', fontWeight: 700, textAlign: 'center', lineHeight: 1.3 }}>{tag}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ── Info basica (grid 2 colunas) ── */}
+        <div>
+          {isOwnProfile && (
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(248,249,250,0.30)' }}>Caracteristicas</span>
+              <button onClick={() => router.push('/configuracoes/editar-perfil')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 100, padding: '3px 10px', color: 'rgba(248,249,250,0.45)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>
+                <Pencil size={10} strokeWidth={1.5} />
+                Editar
+              </button>
+            </div>
+          )}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            {age && <StatCard icon={<Calendar size={14} strokeWidth={1.5} />} label="Idade" value={`${age} anos`} />}
+            {profile.city && <StatCard icon={<MapPin size={14} strokeWidth={1.5} />} label="Cidade" value={`${profile.city}${profile.state ? `, ${profile.state}` : ''}`} />}
+            {profile.gender && <StatCard icon={<Eye size={14} strokeWidth={1.5} />} label="Genero" value={profile.gender} />}
+            {filters?.height_cm && <StatCard icon={<Ruler size={14} strokeWidth={1.5} />} label="Altura" value={`${filters.height_cm} cm`} />}
+            {filters?.weight_kg && <StatCard icon={<Weight size={14} strokeWidth={1.5} />} label="Peso" value={`${filters.weight_kg} kg`} />}
+          </div>
+        </div>
+
+        {/* ── Trust Score ── */}
+        <div style={{ backgroundColor: 'rgba(19,22,31,0.95)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px 18px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-            <span style={{ fontSize: '12px', color: 'rgba(248,249,250,0.50)', fontWeight: 500, letterSpacing: '0.02em' }}>Confianca do perfil</span>
+            <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.45)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Confianca do perfil</span>
             <span style={{ fontSize: '13px', fontWeight: 700, color: '#F8F9FA' }}>{trustScore}%</span>
           </div>
-          <div style={{ height: '4px', borderRadius: '100px', backgroundColor: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
+          <div style={{ height: '3px', borderRadius: '100px', backgroundColor: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
             <div style={{ height: '100%', width: `${trustScore}%`, borderRadius: '100px', backgroundColor: 'var(--accent)', transition: 'width 0.6s ease' }} />
           </div>
         </div>
 
-        {/* Avaliações anônimas */}
+        {/* ── Avaliações anônimas ── */}
         {ratings && (
-          <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '16px 18px' }}>
+          <div style={{ backgroundColor: 'rgba(19,22,31,0.95)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px 18px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <span style={{ fontSize: '12px', color: 'rgba(248,249,250,0.50)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Avaliações dos matches</span>
-              <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>{ratings.total} {ratings.total === 1 ? 'avaliação' : 'avaliações'}</span>
+              <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.45)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Avaliacoes dos matches</span>
+              <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>{ratings.total} {ratings.total === 1 ? 'avaliacao' : 'avaliacoes'}</span>
             </div>
             <div style={{ display: 'flex', gap: '10px' }}>
               <div style={{ flex: 1, backgroundColor: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
@@ -675,215 +809,16 @@ export default function VerPerfilPage() {
                 </p>
                 <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>boas conversas</p>
               </div>
-              <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
-                <p style={{ fontSize: '18px', fontWeight: 700, color: '#F8F9FA', margin: '0 0 2px' }}>
-                  {ratings.total}
-                </p>
-                <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>avaliações</p>
+              <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
+                <p style={{ fontSize: '18px', fontWeight: 700, color: '#F8F9FA', margin: '0 0 2px' }}>{ratings.total}</p>
+                <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>avaliacoes</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* Emblemas */}
-        {(() => {
-          const unlockedStatic = emblemas.filter(e => e.desbloqueado)
-          const totalBadges = unlockedStatic.length + dbBadges.length
-
-          // IDs em showcase (proprios ou do visitado)
-          const showcase = isOwnProfile ? badgeShowcase : ((profile?.badge_showcase as string[]) ?? [])
-
-          // Emblemas do visitado que aparecem publicamente (showcase ou todos se showcase vazio)
-          const publicStatic = unlockedStatic.filter(e => showcase.includes(e.id))
-          const publicDb = dbBadges.filter(ub => showcase.includes(ub.badge_id))
-          const hasHidden = totalBadges > publicStatic.length + publicDb.length
-
-          return (
-            <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '16px 18px' }}>
-              {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Award size={14} color="rgba(248,249,250,0.50)" strokeWidth={1.5} />
-                  <span style={{ fontSize: '12px', color: 'rgba(248,249,250,0.50)', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Emblemas</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  {isOwnProfile && (
-                    <span style={{ fontSize: '11px', color: badgeShowcase.length >= 3 ? 'var(--accent)' : 'rgba(248,249,250,0.25)', fontWeight: 600 }}>
-                      {badgeShowcase.length}/3 em exibicao
-                    </span>
-                  )}
-                  <button
-                    onClick={() => router.push('/emblemas')}
-                    style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', fontWeight: 600, background: 'none', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 100, padding: '3px 10px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
-                  >
-                    Ver todos
-                  </button>
-                </div>
-              </div>
-
-              {isOwnProfile ? (
-                /* ── Modo gerenciamento (proprio perfil) ── */
-                <>
-                  {totalBadges === 0 ? (
-                    <div style={{ padding: '16px 0 4px', textAlign: 'center' }}>
-                      <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '13px', margin: '0 0 4px', lineHeight: 1.5 }}>Nenhum emblema desbloqueado ainda.</p>
-                      <p style={{ color: 'rgba(248,249,250,0.25)', fontSize: '12px', margin: 0, lineHeight: 1.5 }}>Continue usando o app para desbloquear conquistas.</p>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-                      {unlockedStatic.map(emblema => {
-                        const active = badgeShowcase.includes(emblema.id)
-                        return (
-                          <button
-                            key={emblema.id}
-                            onClick={() => toggleBadge(emblema.id)}
-                            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
-                          >
-                            <div style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '12px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.06)', border: active ? '2px solid var(--accent)' : '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}>
-                              <EmblemaSvg id={emblema.id} desbloqueado={true} />
-                              {active && (
-                                <div style={{ position: 'absolute', top: -5, right: -5, width: 16, height: 16, borderRadius: '50%', backgroundColor: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <Check size={9} color="#fff" strokeWidth={2.5} />
-                                </div>
-                              )}
-                            </div>
-                            <span style={{ fontSize: '9px', color: active ? 'rgba(248,249,250,0.80)' : 'rgba(248,249,250,0.50)', fontWeight: active ? 600 : 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                              {emblema.name}
-                            </span>
-                          </button>
-                        )
-                      })}
-                      {dbBadges.map(ub => {
-                        const active = badgeShowcase.includes(ub.badge_id)
-                        return (
-                          <button
-                            key={ub.badge_id}
-                            onClick={() => toggleBadge(ub.badge_id)}
-                            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
-                          >
-                            <div style={{ position: 'relative', width: '48px', height: '48px', borderRadius: '12px', backgroundColor: active ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.06)', border: active ? '2px solid var(--accent)' : '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', overflow: 'hidden' }}>
-                              {ub.badges?.icon_url
-                                ? <img src={ub.badges.icon_url} alt={ub.badges.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                : ub.badges?.icon}
-                              {active && (
-                                <div style={{ position: 'absolute', top: -5, right: -5, width: 16, height: 16, borderRadius: '50%', backgroundColor: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                  <Check size={9} color="#fff" strokeWidth={2.5} />
-                                </div>
-                              )}
-                            </div>
-                            <span style={{ fontSize: '9px', color: active ? 'rgba(248,249,250,0.80)' : 'rgba(248,249,250,0.50)', fontWeight: active ? 600 : 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                              {ub.badges?.name}
-                            </span>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  )}
-                  {totalBadges > 0 && (
-                    <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)', textAlign: 'center', margin: '12px 0 0', lineHeight: 1.5 }}>
-                      Toque para escolher quais aparecem no seu perfil publico
-                    </p>
-                  )}
-                </>
-              ) : (
-                /* ── Modo publico (perfil de outra pessoa) ── */
-                <>
-                  {publicStatic.length === 0 && publicDb.length === 0 ? (
-                    <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '13px', margin: 0, textAlign: 'center', padding: '10px 0' }}>Nenhum emblema em exibicao.</p>
-                  ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
-                      {publicStatic.map(emblema => (
-                        <button
-                          key={emblema.id}
-                          onClick={() => setSelectedBadge(emblema)}
-                          style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}
-                        >
-                          <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <EmblemaSvg id={emblema.id} desbloqueado={true} />
-                          </div>
-                          <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.60)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                            {emblema.name}
-                          </span>
-                        </button>
-                      ))}
-                      {publicDb.map(ub => (
-                        <div key={ub.badge_id} title={ub.badges?.description} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '4px 0' }}>
-                          <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', overflow: 'hidden' }}>
-                            {ub.badges?.icon_url
-                              ? <img src={ub.badges.icon_url} alt={ub.badges.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                              : ub.badges?.icon}
-                          </div>
-                          <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.60)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-                            {ub.badges?.name}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Ver todos os emblemas */}
-                  {hasHidden && (
-                    <>
-                      <button
-                        onClick={() => setAllBadgesOpen(v => !v)}
-                        style={{ display: 'flex', alignItems: 'center', gap: 5, margin: '14px auto 0', background: 'none', border: 'none', color: 'rgba(248,249,250,0.40)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
-                      >
-                        {allBadgesOpen ? <ChevronUp size={14} strokeWidth={1.5} /> : <ChevronDown size={14} strokeWidth={1.5} />}
-                        {allBadgesOpen ? 'Ocultar' : `Ver todos os emblemas (${totalBadges})`}
-                      </button>
-                      {allBadgesOpen && (
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginTop: 14, paddingTop: 14, borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                          {unlockedStatic.filter(e => !publicStatic.find(p => p.id === e.id)).map(emblema => (
-                            <button key={emblema.id} onClick={() => setSelectedBadge(emblema)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0' }}>
-                              <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <EmblemaSvg id={emblema.id} desbloqueado={true} />
-                              </div>
-                              <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.60)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{emblema.name}</span>
-                            </button>
-                          ))}
-                          {dbBadges.filter(ub => !publicDb.find(p => p.badge_id === ub.badge_id)).map(ub => (
-                            <div key={ub.badge_id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '4px 0' }}>
-                              <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', overflow: 'hidden' }}>
-                                {ub.badges?.icon_url
-                                  ? <img src={ub.badges.icon_url} alt={ub.badges.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-                                  : ub.badges?.icon}
-                              </div>
-                              <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.60)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{ub.badges?.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
-            </div>
-          )
-        })()}
-
-        {/* Stats rapidos */}
-        <div>
-          {isOwnProfile && (
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-              <span style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'rgba(248,249,250,0.30)' }}>Caracteristicas</span>
-              <button onClick={() => router.push('/configuracoes/editar-perfil')} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: '1px solid rgba(255,255,255,0.10)', borderRadius: 100, padding: '3px 10px', color: 'rgba(248,249,250,0.45)', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>
-                <Pencil size={10} strokeWidth={1.5} />
-                Editar
-              </button>
-            </div>
-          )}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-            {filters?.height_cm && <StatCard icon={<Ruler size={14} strokeWidth={1.5} />} label="Altura" value={`${filters.height_cm} cm`} />}
-            {filters?.weight_kg && <StatCard icon={<Weight size={14} strokeWidth={1.5} />} label="Peso" value={`${filters.weight_kg} kg`} />}
-            {profile.gender && <StatCard icon={<Eye size={14} strokeWidth={1.5} />} label="Genero" value={profile.gender} />}
-            {age && <StatCard icon={<Calendar size={14} strokeWidth={1.5} />} label="Idade" value={`${age} anos`} />}
-          </div>
-        </div>
-
-        {/* Tags do perfil */}
-        {profile.highlight_tags?.length > 0 ? (
-          <TagSection title="Destaques" tags={profile.highlight_tags} onEdit={isOwnProfile ? () => router.push('/configuracoes/editar-perfil') : undefined} />
-        ) : filters && (
+        {/* ── Tags de filtros (quando nao tem highlight_tags) ── */}
+        {!profile.highlight_tags?.length && filters && (
           <>
             <TagSection title="Aparencia" tags={getAparenciaTags(filters)} onEdit={isOwnProfile ? () => router.push('/configuracoes/editar-perfil') : undefined} />
             <TagSection title="Estilo de vida" tags={getEstiloTags(filters)} />
@@ -891,6 +826,48 @@ export default function VerPerfilPage() {
             <TagSection title="O que busca" tags={getObjetivosTags(filters)} />
           </>
         )}
+
+        {/* ── Ver todos os emblemas (collapse para perfil alheio) ── */}
+        {!isOwnProfile && (() => {
+          const unlockedStatic = emblemas.filter(e => e.desbloqueado)
+          const showcase = (profile?.badge_showcase as string[]) ?? []
+          const publicStatic = unlockedStatic.filter(e => showcase.includes(e.id))
+          const publicDb = dbBadges.filter(ub => showcase.includes(ub.badge_id))
+          const totalBadges = unlockedStatic.length + dbBadges.length
+          const hasHidden = totalBadges > publicStatic.length + publicDb.length
+          if (!hasHidden) return null
+          return (
+            <>
+              <button
+                onClick={() => setAllBadgesOpen(v => !v)}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, background: 'none', border: 'none', color: 'rgba(248,249,250,0.40)', fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)', padding: 0 }}
+              >
+                {allBadgesOpen ? <ChevronUp size={14} strokeWidth={1.5} /> : <ChevronDown size={14} strokeWidth={1.5} />}
+                {allBadgesOpen ? 'Ocultar emblemas' : `Ver todos os emblemas (${totalBadges})`}
+              </button>
+              {allBadgesOpen && (
+                <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>
+                  {unlockedStatic.filter(e => !publicStatic.find(p => p.id === e.id)).map(emblema => (
+                    <button key={emblema.id} onClick={() => setSelectedBadge(emblema)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', background: 'none', border: 'none', cursor: 'pointer', padding: '4px 0', flexShrink: 0 }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: '#292a2f', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <EmblemaSvg id={emblema.id} desbloqueado={true} />
+                      </div>
+                      <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{emblema.name}</span>
+                    </button>
+                  ))}
+                  {dbBadges.filter(ub => !publicDb.find(p => p.badge_id === ub.badge_id)).map(ub => (
+                    <div key={ub.badge_id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', padding: '4px 0', flexShrink: 0 }}>
+                      <div style={{ width: '48px', height: '48px', borderRadius: '12px', backgroundColor: '#292a2f', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px', overflow: 'hidden' }}>
+                        {ub.badges?.icon_url ? <img src={ub.badges.icon_url} alt={ub.badges.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} /> : ub.badges?.icon}
+                      </div>
+                      <span style={{ fontSize: '9px', color: 'rgba(248,249,250,0.55)', fontWeight: 500, textAlign: 'center', lineHeight: 1.3, maxWidth: '52px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>{ub.badges?.name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )
+        })()}
 
         {/* Denunciar — oculto no proprio perfil */}
         {profileId !== userId && (
@@ -905,15 +882,15 @@ export default function VerPerfilPage() {
         )}
       </div>
 
-      {/* ── Action bar fixa (sticky FABs) ── */}
-      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(255,255,255,0.07)', padding: '16px 24px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '20px', zIndex: 30 }}>
+      {/* ── Action bar fixa (glass) ── */}
+      <div style={{ position: 'fixed', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(15,17,23,0.72)', backdropFilter: 'blur(20px) saturate(1.4)', borderTop: '1px solid rgba(255,255,255,0.05)', padding: '14px 28px 20px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '24px', zIndex: 30 }}>
         {profileId === userId ? (
           /* Perfil proprio — botao de editar */
           <button
             onClick={() => router.push('/configuracoes/editar-perfil')}
             style={{
               display: 'flex', alignItems: 'center', gap: '10px',
-              padding: '14px 32px', borderRadius: '100px',
+              padding: '14px 36px', borderRadius: '100px',
               background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff',
               border: 'none', cursor: 'pointer',
               fontFamily: 'var(--font-jakarta)', fontWeight: 700, fontSize: '15px',
@@ -924,11 +901,29 @@ export default function VerPerfilPage() {
             Editar perfil
           </button>
         ) : (
-          /* Perfil de outra pessoa — like/dislike/superlike */
+          /* Perfil de outra pessoa — dislike / superlike / like */
           <>
-            <SwipeButton variant="danger" size="lg" onClick={() => handleSwipe('dislike')} icon={<X size={26} strokeWidth={1.5} />} />
-            <SwipeButton variant="info" size="md" onClick={() => handleSwipe('superlike')} icon={<Star size={20} strokeWidth={1.5} />} />
-            <SwipeButton variant="primary" size="lg" onClick={() => handleSwipe('like')} icon={<Heart size={26} strokeWidth={1.5} />} />
+            {/* X — dislike */}
+            <button
+              onClick={() => handleSwipe('dislike')}
+              style={{ width: '60px', height: '60px', borderRadius: '50%', backgroundColor: '#292a2f', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.15s', boxShadow: '0 4px 16px rgba(0,0,0,0.3)' }}
+            >
+              <X size={26} color="rgba(248,249,250,0.75)" strokeWidth={1.5} />
+            </button>
+            {/* Superlike — gold */}
+            <button
+              onClick={() => handleSwipe('superlike')}
+              style={{ width: '54px', height: '54px', borderRadius: '50%', background: 'linear-gradient(135deg, #F59E0B 0%, #d97706 100%)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.15s', boxShadow: '0 4px 20px rgba(245,158,11,0.30)' }}
+            >
+              <Star size={22} color="#fff" strokeWidth={2} />
+            </button>
+            {/* Heart — like grande */}
+            <button
+              onClick={() => handleSwipe('like')}
+              style={{ width: '68px', height: '68px', borderRadius: '50%', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'transform 0.15s', boxShadow: '0 6px 28px rgba(225,29,72,0.42)' }}
+            >
+              <Heart size={28} color="#fff" strokeWidth={2} />
+            </button>
           </>
         )}
       </div>
@@ -1126,11 +1121,11 @@ export default function VerPerfilPage() {
 
 function StatCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div style={{ backgroundColor: '#0F1117', borderRadius: '16px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid rgba(255,255,255,0.07)' }}>
-      <span style={{ color: 'rgba(248,249,250,0.50)', flexShrink: 0 }}>{icon}</span>
+    <div style={{ backgroundColor: 'rgba(19,22,31,0.95)', borderRadius: '14px', padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+      <span style={{ color: 'var(--accent)', flexShrink: 0 }}>{icon}</span>
       <div>
-        <p style={{ color: 'rgba(248,249,250,0.50)', fontSize: '11px', margin: '0 0 2px', fontWeight: 500 }}>{label}</p>
-        <p style={{ color: '#F8F9FA', fontSize: '14px', fontWeight: 500, margin: 0 }}>{value}</p>
+        <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '10px', margin: '0 0 2px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{label}</p>
+        <p style={{ color: '#F8F9FA', fontSize: '13px', fontWeight: 600, margin: 0 }}>{value}</p>
       </div>
     </div>
   )
