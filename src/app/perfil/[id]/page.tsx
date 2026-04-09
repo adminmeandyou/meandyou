@@ -568,7 +568,7 @@ export default function VerPerfilPage() {
           ))}
         </div>
       )}
-      </div>{/* /perfil-col-foto */}
+      </div>{/* fim perfil-col-foto */}
 
       {/* ── Conteudo ── */}
       <div className="perfil-col-info">
