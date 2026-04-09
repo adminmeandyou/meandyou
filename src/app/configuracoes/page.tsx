@@ -239,6 +239,7 @@ export default function ConfiguracoesPage() {
   }
 
   const planLabel = profile?.plan === 'black' ? 'Black' : profile?.plan === 'plus' ? 'Plus' : 'Essencial'
+  const planLabelFull = profile?.plan === 'black' ? 'PLANO BLACK' : profile?.plan === 'plus' ? 'PLANO PLUS' : 'PLANO ESSENCIAL'
   const planCor = profile?.plan === 'black' ? '#F59E0B' : profile?.plan === 'plus' ? 'var(--accent)' : 'rgba(255,255,255,0.4)'
 
   if (loading) {
@@ -289,19 +290,19 @@ export default function ConfiguracoesPage() {
               </div>
               {/* Badge do plano na base do avatar */}
               <div style={{
-                position: 'absolute', bottom: -8, left: '50%', transform: 'translateX(-50%)',
-                fontSize: 9, fontWeight: 800, letterSpacing: '0.10em', textTransform: 'uppercase',
+                position: 'absolute', bottom: -10, left: '50%', transform: 'translateX(-50%)',
+                fontSize: 8, fontWeight: 800, letterSpacing: '0.12em', textTransform: 'uppercase',
                 color: profile.plan === 'black' ? '#000' : '#fff',
                 background: profile.plan === 'black'
                   ? 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)'
                   : profile.plan === 'plus'
                   ? 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)'
                   : 'rgba(255,255,255,0.18)',
-                borderRadius: 100, padding: '3px 9px', whiteSpace: 'nowrap',
+                borderRadius: 100, padding: '3px 10px', whiteSpace: 'nowrap',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
                 border: '1.5px solid rgba(0,0,0,0.15)',
               }}>
-                {planLabel}
+                {planLabelFull}
               </div>
             </div>
 
@@ -436,17 +437,30 @@ export default function ConfiguracoesPage() {
 
         {/* ── ZONA DE RISCO ── */}
         <CardSection titulo="Zona de risco">
-          <LinkRow href="/deletar-conta" icon={<Trash2 size={17} />} label="Excluir conta" sub="Remove todos os dados permanentemente" perigo />
+          <LinkRow href="/deletar-conta" icon={<Trash2 size={17} />} label="Excluir conta" sub="Remove todos os dados permanentemente" perigo last />
+        </CardSection>
+
+        {/* ── BOTAO SAIR — pill vermelho centralizado ── */}
+        <div style={{ padding: '8px 32px 32px', display: 'flex', justifyContent: 'center' }}>
           <button
             onClick={handleLogout}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', backgroundColor: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              padding: '14px 40px',
+              borderRadius: '100px',
+              background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
+              border: 'none', cursor: 'pointer',
+              color: '#fff', fontFamily: 'var(--font-jakarta)',
+              fontSize: '14px', fontWeight: 700,
+              letterSpacing: '0.08em', textTransform: 'uppercase',
+              boxShadow: '0 4px 20px rgba(225,29,72,0.30)',
+              transition: 'transform 0.15s, box-shadow 0.15s',
+            }}
           >
-            <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: 'rgba(239,68,68,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-              <LogOut size={17} color="#f87171" />
-            </div>
-            <span style={{ color: '#f87171', fontSize: '15px', fontWeight: 500, flex: 1 }}>Sair da conta</span>
+            <LogOut size={15} strokeWidth={2} />
+            SAIR DA CONTA
           </button>
-        </CardSection>
+        </div>
 
       </div>
 

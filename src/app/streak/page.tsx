@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import {
   ArrowLeft, Flame, Ticket, Star, Zap, Search, RotateCcw, Ghost,
-  Lock, CheckCircle, Loader2, Crown, AlertTriangle, TrendingUp, Sprout, Dumbbell,
+  Lock, CheckCircle, Loader2, Crown, AlertTriangle, TrendingUp, Sprout, Dumbbell, Heart,
 } from 'lucide-react'
 
 const REWARD_CONFIG: Record<string, {
@@ -120,18 +120,33 @@ export default function StreakPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
-      {/* Header minimalista */}
+      {/* Header */}
       <header style={{
         position: 'sticky', top: 0, zIndex: 30,
-        backgroundColor: 'rgba(8,9,14,0.70)', backdropFilter: 'blur(16px)',
+        backgroundColor: 'rgba(8,9,14,0.80)', backdropFilter: 'blur(20px)',
         padding: '14px 20px',
         display: 'flex', alignItems: 'center', gap: '12px',
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
       }}>
         <button onClick={() => router.back()} style={{ width: '36px', height: '36px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
           <ArrowLeft size={17} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
         </button>
-        <div style={{ flex: 1 }}>
-          <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '18px', color: 'var(--text)', margin: 0, lineHeight: 1 }}>Premios Diarios</h1>
+        {/* Logo ME&YOU + ícone loyalty */}
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div style={{
+            width: '28px', height: '28px', borderRadius: '50%',
+            background: 'rgba(225,29,72,0.12)',
+            border: '1px solid rgba(225,29,72,0.25)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+          }}>
+            <Heart size={13} color="#E11D48" strokeWidth={2} fill="rgba(225,29,72,0.3)" />
+          </div>
+          <span style={{
+            fontFamily: 'var(--font-fraunces)', fontSize: '17px', fontWeight: 700,
+            color: '#F8F9FA', letterSpacing: '-0.01em', lineHeight: 1,
+          }}>
+            <span style={{ color: '#F8F9FA' }}>ME&amp;</span><span style={{ color: '#E11D48' }}>YOU</span>
+          </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 11px', borderRadius: '100px', backgroundColor: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', flexShrink: 0 }}>
           <Flame size={12} color="#E11D48" strokeWidth={1.5} />
@@ -171,18 +186,19 @@ export default function StreakPage() {
             <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.55)', marginTop: 12, letterSpacing: '0.02em', fontFamily: 'var(--font-jakarta)' }}>
               Continue a chama acesa para premios exclusivos.
             </p>
-            {/* Barra de progresso linear */}
+            {/* Barra de progresso — segmentos thin */}
             <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center' }}>
-              <div style={{ display: 'flex', gap: 4, height: 6, width: '100%', maxWidth: 280 }}>
-                {Array.from({ length: 7 }).map((_, i) => (
-                  <div key={i} style={{
-                    flex: 1, borderRadius: 9999,
-                    backgroundColor: i < currentDay % 7 || (currentDay >= 7 && i < 7)
-                      ? '#E11D48'
-                      : 'rgba(255,255,255,0.08)',
-                    transition: 'background-color 0.3s',
-                  }} />
-                ))}
+              <div style={{ display: 'flex', gap: 3, height: 3, width: '100%', maxWidth: 300 }}>
+                {Array.from({ length: 30 }).map((_, i) => {
+                  const filled = i < currentDay
+                  return (
+                    <div key={i} style={{
+                      flex: 1, borderRadius: 9999,
+                      backgroundColor: filled ? '#E11D48' : 'rgba(255,255,255,0.10)',
+                      transition: 'background-color 0.3s cubic-bezier(0.4,0,0.2,1)',
+                    }} />
+                  )
+                })}
               </div>
             </div>
           </section>
@@ -196,7 +212,7 @@ export default function StreakPage() {
 
           {/* Secao: Premios */}
           <div>
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
               <h2 style={{
                 fontFamily: 'var(--font-fraunces)',
                 fontSize: 22, fontWeight: 700,
@@ -207,11 +223,15 @@ export default function StreakPage() {
               </h2>
               <span style={{
                 fontSize: 9, fontWeight: 800,
-                letterSpacing: '0.12em', textTransform: 'uppercase',
-                color: '#E11D48',
+                letterSpacing: '0.14em', textTransform: 'uppercase',
+                color: '#F59E0B',
                 fontFamily: 'var(--font-jakarta)',
+                padding: '3px 8px',
+                borderRadius: '100px',
+                backgroundColor: 'rgba(245,158,11,0.08)',
+                border: '1px solid rgba(245,158,11,0.20)',
               }}>
-                {monthLabel}
+                MES DE {monthLabel.toUpperCase()}
               </span>
             </div>
 

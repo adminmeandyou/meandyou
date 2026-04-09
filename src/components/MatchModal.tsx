@@ -35,21 +35,25 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
     <>
       <style>{`
         @keyframes match-slide-left {
-          from { transform: translateX(-80px) rotate(-4deg) scale(0.8); opacity: 0; }
-          to   { transform: translateX(0) rotate(-4deg) scale(1); opacity: 1; }
+          from { transform: translateX(-60px) rotate(-4deg) scale(0.72); opacity: 0; }
+          to   { transform: translateX(20px) rotate(-4deg) scale(1); opacity: 1; }
         }
         @keyframes match-slide-right {
-          from { transform: translateX(80px) rotate(4deg) scale(0.8); opacity: 0; }
-          to   { transform: translateX(0) rotate(4deg) scale(1); opacity: 1; }
+          from { transform: translateX(60px) rotate(4deg) scale(0.72); opacity: 0; }
+          to   { transform: translateX(-20px) rotate(4deg) scale(1); opacity: 1; }
         }
         @keyframes match-pop {
           0%  { transform: scale(0.3) rotate(-20deg); opacity: 0; }
-          60% { transform: scale(1.15) rotate(5deg); opacity: 1; }
+          60% { transform: scale(1.18) rotate(5deg); opacity: 1; }
           100%{ transform: scale(1) rotate(0deg); opacity: 1; }
         }
         @keyframes match-rise {
-          from { transform: translateY(24px); opacity: 0; }
+          from { transform: translateY(28px); opacity: 0; }
           to   { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes match-fade-in {
+          from { opacity: 0; transform: scale(0.96); }
+          to   { opacity: 1; transform: scale(1); }
         }
       `}</style>
 
@@ -59,14 +63,16 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
           padding: '32px 24px',
-          background: '#08090E',
+          background: 'rgba(8,9,14,0.97)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
           overflow: 'hidden',
         }}
       >
         {/* Atmosfera de fundo */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(to top, #121318 0%, #0d0e13 50%, #0d0e13 100%)',
+          background: 'linear-gradient(to top, #0d0e13 0%, #08090E 60%, #08090E 100%)',
           zIndex: 0,
         }} />
         <div style={{
@@ -150,13 +156,12 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
           {/* Minha foto */}
           <div
             style={{
-              width: 160, height: 160, borderRadius: '50%',
+              width: 140, height: 140, borderRadius: '50%',
               overflow: 'hidden',
-              border: '4px solid #121318',
-              boxShadow: '0 0 40px rgba(0,0,0,0.8)',
+              border: '4px solid rgba(8,9,14,0.9)',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05)',
               position: 'relative', zIndex: 1,
-              transform: 'translateX(20px) rotate(-4deg)',
-              animation: 'match-slide-left 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s both',
+              animation: 'match-slide-left 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.2s both',
             }}
           >
             {myPhoto ? (
@@ -172,26 +177,25 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
           <div
             style={{
               position: 'relative', zIndex: 3,
-              width: 52, height: 52, borderRadius: '50%',
-              background: '#E11D48',
-              boxShadow: '0 0 40px 10px rgba(225,29,72,0.25)',
+              width: 56, height: 56, borderRadius: '50%',
+              background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
+              boxShadow: '0 0 0 4px rgba(8,9,14,0.95), 0 0 30px 8px rgba(225,29,72,0.35)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              animation: 'match-pop 0.5s cubic-bezier(0.34,1.56,0.64,1) 0.6s both',
+              animation: 'match-pop 0.55s cubic-bezier(0.34,1.56,0.64,1) 0.65s both',
             }}
           >
-            <Heart size={22} fill="#fff" color="#fff" />
+            <Heart size={24} fill="#fff" color="#fff" />
           </div>
 
           {/* Foto do outro */}
           <div
             style={{
-              width: 160, height: 160, borderRadius: '50%',
+              width: 140, height: 140, borderRadius: '50%',
               overflow: 'hidden',
-              border: '4px solid #121318',
-              boxShadow: '0 0 40px rgba(0,0,0,0.8)',
+              border: '4px solid rgba(8,9,14,0.9)',
+              boxShadow: '0 8px 40px rgba(0,0,0,0.8), 0 0 0 1px rgba(255,255,255,0.05)',
               position: 'relative', zIndex: 1,
-              transform: 'translateX(-20px) rotate(4deg)',
-              animation: 'match-slide-right 0.6s cubic-bezier(0.34,1.56,0.64,1) 0.2s both',
+              animation: 'match-slide-right 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.2s both',
             }}
           >
             {otherPhoto ? (
