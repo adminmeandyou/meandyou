@@ -371,102 +371,13 @@ export default function VerPerfilPage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#08090E', fontFamily: 'var(--font-jakarta)', paddingBottom: '100px' }}>
-      <style>{`
-        @keyframes spin{to{transform:rotate(360deg)}}
-        @keyframes grain {
-          0%,100% { transform: translate(0,0) }
-          10% { transform: translate(-1%,-1%) }
-          20% { transform: translate(1%,0) }
-          30% { transform: translate(0,1%) }
-          40% { transform: translate(-1%,0) }
-          50% { transform: translate(1%,1%) }
-          60% { transform: translate(0,-1%) }
-          70% { transform: translate(-1%,1%) }
-          80% { transform: translate(1%,-1%) }
-          90% { transform: translate(0,0) }
-        }
-        .perfil-layout {
-          display: flex;
-          flex-direction: column;
-        }
-        .perfil-col-foto {
-          width: 100%;
-          flex-shrink: 0;
-        }
-        .perfil-col-info {
-          flex: 1;
-          min-width: 0;
-        }
-        .perfil-thumbs { display: none; }
-        .perfil-desktop-header { display: none; }
-        .perfil-desktop-actions { display: none; }
-        .perfil-action-bar-fixed { display: flex; }
-        .perfil-content-inner { padding: 28px 20px; }
-
-        /* Tablet (768px): ainda coluna unica, padding lateral confortavel */
-        @media (min-width: 768px) {
-          .perfil-layout {
-            padding: 0 20px 100px;
-          }
-        }
-
-        /* Desktop (1024px+): duas colunas — frame tem 900px */
-        @media (min-width: 1024px) {
-          .perfil-layout {
-            flex-direction: row;
-            align-items: flex-start;
-            padding: 36px 32px 100px;
-            gap: 28px;
-          }
-          .perfil-col-foto {
-            width: 300px;
-            flex-shrink: 0;
-            position: sticky;
-            top: 24px;
-          }
-          .perfil-col-foto .perfil-hero {
-            border-radius: 20px;
-            overflow: hidden;
-          }
-          .perfil-col-info {
-            padding-top: 0;
-          }
-          .perfil-thumbs { display: grid; }
-          .perfil-desktop-header { display: flex; }
-          .perfil-desktop-actions { display: flex; }
-          .perfil-action-bar-fixed { display: none !important; }
-          .perfil-hero-name-overlay { display: none; }
-          .perfil-content-inner { padding: 0; }
-        }
-
-        /* Desktop largo (1280px+): sidebar 220px, frame 840px */
-        @media (min-width: 1280px) {
-          .perfil-layout {
-            padding: 36px 36px 100px;
-            gap: 36px;
-          }
-          .perfil-col-foto {
-            width: 320px;
-          }
-        }
-
-        /* Desktop extra largo (1536px+): frame 960px */
-        @media (min-width: 1536px) {
-          .perfil-layout {
-            gap: 44px;
-          }
-          .perfil-col-foto {
-            width: 360px;
-          }
-        }
-      `}</style>
 
       {/* Grain overlay fixo */}
       <div style={{
         position: 'fixed', inset: 0, zIndex: 1, pointerEvents: 'none',
         backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 256 256\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\' opacity=\'1\'/%3E%3C/svg%3E")',
         opacity: 0.022,
-        animation: 'grain 8s steps(1) infinite',
+        animation: 'perfil-grain 8s steps(1) infinite',
       }} />
 
       <div className="perfil-layout">
