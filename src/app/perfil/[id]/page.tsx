@@ -371,7 +371,6 @@ export default function VerPerfilPage() {
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#08090E', fontFamily: 'var(--font-jakarta)', paddingBottom: '100px' }}>
-      <div style={{ maxWidth: '560px', margin: '0 auto' }}>
       <style>{`
         @keyframes spin{to{transform:rotate(360deg)}}
         @keyframes grain {
@@ -386,6 +385,50 @@ export default function VerPerfilPage() {
           80% { transform: translate(1%,-1%) }
           90% { transform: translate(0,0) }
         }
+        .perfil-layout {
+          display: flex;
+          flex-direction: column;
+        }
+        .perfil-col-foto {
+          width: 100%;
+          flex-shrink: 0;
+        }
+        .perfil-col-info {
+          flex: 1;
+          min-width: 0;
+        }
+        @media (min-width: 768px) {
+          .perfil-layout {
+            flex-direction: row;
+            align-items: flex-start;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 32px;
+            gap: 40px;
+          }
+          .perfil-col-foto {
+            width: 420px;
+            flex-shrink: 0;
+            position: sticky;
+            top: 32px;
+          }
+          .perfil-col-foto .perfil-hero {
+            border-radius: 20px;
+            overflow: hidden;
+          }
+          .perfil-col-info {
+            padding-top: 8px;
+          }
+        }
+        @media (min-width: 1280px) {
+          .perfil-layout {
+            max-width: 1200px;
+            gap: 56px;
+          }
+          .perfil-col-foto {
+            width: 480px;
+          }
+        }
       `}</style>
 
       {/* Grain overlay fixo */}
@@ -396,8 +439,10 @@ export default function VerPerfilPage() {
         animation: 'grain 8s steps(1) infinite',
       }} />
 
+      <div className="perfil-layout">
+      <div className="perfil-col-foto">
       {/* ── Hero foto — fullscreen 3/4 aspect ── */}
-      <div style={{ position: 'relative', width: '100%', aspectRatio: '3/4', backgroundColor: '#000', maxHeight: '70vh', overflow: 'hidden' }}>
+      <div className="perfil-hero" style={{ position: 'relative', width: '100%', aspectRatio: '3/4', backgroundColor: '#000', maxHeight: '85vh', overflow: 'hidden' }}>
 
         {/* Imagem */}
         {photos.length > 0 ? (
@@ -534,8 +579,10 @@ export default function VerPerfilPage() {
           </div>
         )}
       </div>
+      </div>{/* /perfil-col-foto */}
 
       {/* ── Conteudo ── */}
+      <div className="perfil-col-info">
       <div style={{ padding: '28px 20px', display: 'flex', flexDirection: 'column', gap: '28px', position: 'relative', zIndex: 2 }}>
 
         {/* ── Status pills (tags de topo) ── */}
@@ -1038,7 +1085,9 @@ export default function VerPerfilPage() {
           </div>
         </div>
       )}
-      </div>{/* /maxWidth wrapper */}
+      </div>{/* /padding wrapper */}
+      </div>{/* /perfil-col-info */}
+      </div>{/* /perfil-layout */}
     </div>
   )
 }
