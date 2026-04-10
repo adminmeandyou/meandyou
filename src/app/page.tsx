@@ -61,7 +61,7 @@ export default function Home() {
   // Auth check
   useEffect(() => {
     supabase.auth.getUser()
-      .then(({ data: { user } }) => { if (user) { router.push('/dashboard') } else { setChecking(false) } })
+      .then(({ data: { user } }) => { if (user) { router.push('/modos') } else { setChecking(false) } })
       .catch(() => setChecking(false))
   }, [router])
 

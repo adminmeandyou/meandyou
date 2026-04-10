@@ -272,7 +272,7 @@ function Verificacao() {
     const { data } = await supabase.from('users').select('verified, email').eq('id', user.id).single()
     if (data?.verified) {
       const { data: profile } = await supabase.from('profiles').select('onboarding_completed').eq('id', user.id).single()
-      window.location.href = profile?.onboarding_completed ? '/dashboard' : '/onboarding'
+      window.location.href = profile?.onboarding_completed ? '/modos' : '/onboarding'
       return
     }
     setStatus('aguardando')

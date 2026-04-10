@@ -59,7 +59,7 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
         </button>
       ) : (
         <Link
-          href="/dashboard"
+          href="/modos"
           style={{
             fontFamily: 'var(--font-fraunces)',
             fontSize: 18,

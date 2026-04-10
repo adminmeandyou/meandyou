@@ -150,7 +150,7 @@ function CasalAceitarContent() {
             </button>
 
             <button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push('/modos')}
               style={{
                 marginTop: 14, background: 'none', border: 'none',
                 color: 'rgba(248,249,250,0.35)', fontSize: 13,

@@ -122,7 +122,7 @@ export async function middleware(req: NextRequest) {
 
     if (profile?.onboarding_completed) {
       if (pathname.startsWith('/onboarding')) {
-        return NextResponse.redirect(new URL('/dashboard', req.url))
+        return NextResponse.redirect(new URL('/modos', req.url))
       }
       return res
     }

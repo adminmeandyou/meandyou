@@ -29,7 +29,7 @@ export default function Termos() {
           MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
         </Link>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <Link href="/dashboard" style={{ fontSize: '14px', color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
+          <Link href="/modos" style={{ fontSize: '14px', color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>
             ← Voltar ao app
           </Link>
           <Link href="/" style={{ fontSize: '14px', color: 'var(--muted)', textDecoration: 'none' }}>

@@ -96,7 +96,7 @@ export function AppSidebar() {
     >
       {/* Logo */}
       <Link
-        href="/dashboard"
+        href="/modos"
         title="MeAndYou"
         className="sidebar-logo"
       >

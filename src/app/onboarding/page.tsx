@@ -29,7 +29,7 @@ export default function OnboardingPage() {
         .eq('id', user.id)
         .single()
 
-      if (profile?.onboarding_completed) { window.location.href = '/dashboard'; return }
+      if (profile?.onboarding_completed) { window.location.href = '/modos'; return }
       if (profile?.name) setNome(profile.name)
       setCarregando(false)
     }).catch(() => {

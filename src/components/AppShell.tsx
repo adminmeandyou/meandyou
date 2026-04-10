@@ -15,7 +15,7 @@ import { BadgeWatcher } from './BadgeWatcher'
  * Rotas públicas, de auth, onboarding e admin ficam sem o shell.
  */
 const SHELL_PREFIXES = [
-  '/dashboard',
+  '/dashboard', // redirect para /modos
   '/modos',
   '/busca',
   '/match',
@@ -121,7 +121,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           }}
         >
           {/* Logo */}
-          <Link href="/dashboard" style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, fontWeight: 700, color: 'var(--text)', textDecoration: 'none', letterSpacing: '-0.02em' }}>
+          <Link href="/modos" style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, fontWeight: 700, color: 'var(--text)', textDecoration: 'none', letterSpacing: '-0.02em' }}>
             MeAnd<span style={{ color: 'var(--accent)' }}>You</span>
           </Link>
 

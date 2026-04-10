@@ -158,7 +158,7 @@ function ObrigadoContent() {
         {/* Botões */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
           <Link
-            href="/dashboard"
+            href="/modos"
             style={{
               display: 'block',
               textAlign: 'center',

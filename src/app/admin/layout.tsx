@@ -25,7 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     .eq('active', true)
     .single()
 
-  if (!staff?.role) redirect('/dashboard')
+  if (!staff?.role) redirect('/modos')
 
   return <AdminLayoutClient role={staff.role}>{children}</AdminLayoutClient>
 }

@@ -116,7 +116,7 @@ export default function RoletaPage() {
   const toast = useToast()
 
   useEffect(() => {
-    setBackHref('/dashboard')
+    setBackHref('/modos')
     return () => setBackHref(null)
   }, [setBackHref])
 
