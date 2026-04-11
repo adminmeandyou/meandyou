@@ -841,7 +841,7 @@ const MODES_CONFIG = [
   {
     key: 'daily' as ViewMode,
     label: 'Match do Dia',
-    subtitle: 'A nossa recomendacao fatal.',
+    subtitle: 'A nossa recomendação fatal.',
     bg: '#100900',
     img: '/images/modos/match-dia.jpg',
     accent: 'rgba(245,158,11,0.12)',
@@ -1167,7 +1167,7 @@ function RoomsView({ userPlan }: { userPlan: string }) {
           </div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 24, color: 'var(--text)', margin: '0 0 8px' }}>Salas de Bate-papo</h2>
           <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.6, maxWidth: 280, marginLeft: 'auto', marginRight: 'auto' }}>
-            Converse anonimamente em salas tematicas com pessoas que compartilham seus interesses.
+            Converse anonimamente em salas temáticas com pessoas que compartilham seus interesses.
           </p>
         </div>
 

@@ -1120,7 +1120,7 @@ function ResgatesSection() {
               </button>
             </div>
             <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '0 0 16px' }}>
-              Sua avaliacao e anonima.
+              Sua avaliação é anônima.
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {BACKSTAGE_RATING_OPTIONS.map((opt) => {
@@ -1336,7 +1336,7 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
                 <X size={14} color="rgba(255,255,255,0.50)" strokeWidth={1.5} />
               </button>
             </div>
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '0 0 16px' }}>Sua avaliacao e anonima.</p>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '0 0 16px' }}>Sua avaliação é anônima.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {BACKSTAGE_RATING_OPTIONS.map((opt) => {
                 const Icon = opt.icon
@@ -1420,7 +1420,7 @@ function CamaroteAccessModal({
               <CheckCircle size={48} color={G} strokeWidth={1.5} style={{ marginBottom: 16 }} />
               <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: '#fff', margin: '0 0 8px' }}>Pedido enviado!</p>
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.40)', lineHeight: 1.6, margin: 0 }}>
-                Assinantes Black da categoria <strong style={{ color: G }}>{CATEGORIAS.find(c => c.key === selectedCat)?.label}</strong> foram notificados. Se alguem pagar, voce recebera uma notificacao para iniciar a conversa.
+                Assinantes Black da categoria <strong style={{ color: G }}>{CATEGORIAS.find(c => c.key === selectedCat)?.label}</strong> foram notificados. Se alguém pagar, você receberá uma notificação para iniciar a conversa.
               </p>
             </div>
           ) : (
@@ -1449,7 +1449,7 @@ function CamaroteAccessModal({
                 <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 10px' }}>Com o plano Black voce teria</p>
                 {[
                   'Acesso completo a vitrine do Camarote',
-                  'Interacao com todos os Black disponiveis',
+                  'Interação com todos os Black disponíveis',
                   'Categorias de fetiche e Sugar desbloqueadas',
                   'Chat exclusivo preto e dourado',
                   'Curtidas ilimitadas, SuperCurtidas, Boosts e muito mais',
@@ -1460,7 +1460,7 @@ function CamaroteAccessModal({
                   </div>
                 ))}
                 <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', margin: '12px 0 0', fontStyle: 'italic' }}>
-                  Ser resgatado e apenas um gostinho. Nao tem comparacao com ser assinante Black.
+                  Ser resgatado é apenas um gostinho. Não tem comparação com ser assinante Black.
                 </p>
               </div>
 
