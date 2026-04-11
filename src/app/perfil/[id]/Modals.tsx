@@ -150,7 +150,7 @@ export function DenunciaModal({ profileId, userId, supabase, toast, onClose }: D
                   })
                   setEnviado(true)
                 } catch {
-                  toast.show('Falha ao enviar denuncia. Tente novamente.', 'error')
+                  toast.show('Falha ao enviar denúncia. Tente novamente.', 'error')
                 } finally {
                   setEnviando(false)
                 }
@@ -174,6 +174,6 @@ const DENUNCIA_CATS = [
   { id: 'inappropriate', label: 'Conteúdo inapropriado' },
   { id: 'harassment', label: 'Assédio ou comportamento abusivo' },
   { id: 'spam', label: 'Spam ou golpe' },
-  { id: 'minor', label: 'Possivel menor de idade' },
+  { id: 'minor', label: 'Possível menor de idade' },
   { id: 'other', label: 'Outro motivo' },
 ]
