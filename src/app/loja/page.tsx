@@ -117,7 +117,7 @@ const STORE_ITEMS: StoreItem[] = [
     new: true,
   },
   {
-    key: 'caixa_lendaria', label: 'Caixa Super Lendária', description: 'Recompensas exclusivas e raras — itens que nao existem em outro lugar',
+    key: 'caixa_lendaria', label: 'Caixa Super Lendária', description: 'Recompensas exclusivas e raras — itens que não existem em outro lugar',
     unit: 'caixa',
     icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 2250, maxQty: 1,
     accentColor: '#F59E0B', accentBg: 'rgba(139,92,246,0.15)', accentBorder: 'rgba(245,158,11,0.50)',
@@ -745,7 +745,7 @@ export default function LojaPage() {
         </div>}
 
         <p style={{ textAlign: 'center', fontSize: '11px', color: 'rgba(248,249,250,0.20)', paddingBottom: '8px' }}>
-          {lojaTab === 'recargas' ? 'Fichas adquiridas via pagamento unico, sem reembolso.' : 'Itens debitados do saldo de fichas da conta.'}
+          {lojaTab === 'recargas' ? 'Fichas adquiridas via pagamento único, sem reembolso.' : 'Itens debitados do saldo de fichas da conta.'}
         </p>
         </>}
 
@@ -807,7 +807,7 @@ export default function LojaPage() {
                     {SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.icon ?? <Gift size={44} color="#fff" strokeWidth={1.5} />}
                   </div>
                   <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(248,249,250,0.45)', margin: '0 0 8px' }}>CAIXA SURPRESA</p>
-                  <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 34, color: '#fff', margin: '0 0 8px', lineHeight: 1 }}>Voce ganhou!</p>
+                  <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 34, color: '#fff', margin: '0 0 8px', lineHeight: 1 }}>Você ganhou!</p>
                   <p style={{ fontSize: 24, fontWeight: 800, color: SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.color ?? '#E11D48', margin: '0 0 4px' }}>
                     {(boxReveal.payload?.reward_amount ?? 1)}x {SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.label ?? (boxReveal.payload?.reward_type ? boxReveal.payload.reward_type.charAt(0).toUpperCase() + boxReveal.payload.reward_type.slice(1) : 'Premio')}
                   </p>
@@ -822,7 +822,7 @@ export default function LojaPage() {
                     </div>
                   )}
                   <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#F59E0B', margin: '0 0 8px' }}>EMBLEMA SUPER LENDARIO</p>
-                  <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 34, color: '#fff', margin: '0 0 8px', lineHeight: 1 }}>Voce ganhou!</p>
+                  <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 34, color: '#fff', margin: '0 0 8px', lineHeight: 1 }}>Você ganhou!</p>
                   <p style={{ fontSize: 22, fontWeight: 800, color: '#F59E0B', margin: '0 0 4px' }}>{boxReveal.payload?.badge_name ?? 'Emblema Exclusivo'}</p>
                   {boxReveal.payload?.type === 'badge_pending' && (
                     <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.40)', marginTop: 6 }}>Em breve disponivel no seu perfil</p>

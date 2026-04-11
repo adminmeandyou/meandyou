@@ -455,7 +455,7 @@ function AbaConversas({
                 </div>
                 <p style={{ fontSize: 13, margin: 0, color: conv.unreadCount > 0 ? 'rgba(248,249,250,0.65)' : 'rgba(248,249,250,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {conv.lastMessage
-                    ? `${isMyMessage ? 'Voce: ' : ''}${conv.lastMessage}`
+                    ? `${isMyMessage ? 'Você: ' : ''}${conv.lastMessage}`
                     : 'Nenhuma mensagem ainda'}
                 </p>
               </div>
@@ -622,8 +622,8 @@ function AbaOnline({ friends, myShowOnline, onEmpty, searchTerm }: {
       <EmptyState
         icon={<Zap size={28} />}
         title="Status online ocultado"
-        description="Voce ocultou seu status online. Ative nas configuracoes para ver amigos online."
-        action={{ label: 'Ir para configuracoes', onClick: () => router.push('/configuracoes') }}
+        description="Você ocultou seu status online. Ative nas configurações para ver amigos online."
+        action={{ label: 'Ir para configurações', onClick: () => router.push('/configuracoes') }}
       />
     )
   }
@@ -633,7 +633,7 @@ function AbaOnline({ friends, myShowOnline, onEmpty, searchTerm }: {
       <EmptyState
         icon={<Zap size={28} />}
         title={searchTerm ? 'Nenhum amigo encontrado' : 'Nenhum amigo online agora'}
-        description={searchTerm ? undefined : 'Quando um amigo estiver ativo nos ultimos 5 minutos, aparece aqui.'}
+        description={searchTerm ? undefined : 'Quando um amigo estiver ativo nos últimos 5 minutos, aparece aqui.'}
         action={!searchTerm ? { label: 'Explorar perfis', onClick: onEmpty } : undefined}
       />
     )

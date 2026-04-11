@@ -446,7 +446,7 @@ function BoostActiveBanner({ until }: { until: Date }) {
   return (
     <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, padding: '8px 14px', flexShrink: 0 }}>
       <Zap size={13} strokeWidth={1.5} style={{ color: '#F59E0B' }} />
-      <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600 }}>Boost ativo — voce esta em destaque</span>
+      <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600 }}>Boost ativo — você está em destaque</span>
       <span style={{ fontSize: 11, color: 'rgba(245,158,11,0.70)', marginLeft: 4 }}>{timeLeft}</span>
     </div>
   )
@@ -705,7 +705,7 @@ function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | n
         <p style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'capitalize', marginBottom: 4 }}>{todayLabel}</p>
         <p style={{ fontSize: 12, color: 'var(--muted-2)' }}>
           {allActed
-            ? 'Voce ja agiu em todas as sugestoes de hoje!'
+            ? 'Você já agiu em todas as sugestões de hoje!'
             : 'Escolha uma carta na sorte e descubra quem pode ser seu match'}
         </p>
       </div>
@@ -1058,7 +1058,7 @@ function CamaroteModal({ onClose }: { onClose: () => void }) {
         </div>
 
         <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 20px' }}>
-          Um ambiente reservado para quem busca experiencias além do convencional. Dentro do Camarote voce encontra perfis e filtros que nao existem em nenhum outro lugar do app.
+          Um ambiente reservado para quem busca experiências além do convencional. Dentro do Camarote você encontra perfis e filtros que não existem em nenhum outro lugar do app.
         </p>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
@@ -1200,7 +1200,7 @@ function RoomsView({ userPlan }: { userPlan: string }) {
         {/* Beneficios */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
           {[
-            { icon: <Users size={16} strokeWidth={1.5} />, text: 'Salas tematicas com ate 20 pessoas' },
+            { icon: <Users size={16} strokeWidth={1.5} />, text: 'Salas temáticas com até 20 pessoas' },
             { icon: <Lock size={16} strokeWidth={1.5} />, text: 'Identidade protegida com apelidos' },
             { icon: <Crown size={16} strokeWidth={1.5} />, text: 'Salas exclusivas Black com categorias VIP' },
           ].map((item, i) => (
@@ -1943,7 +1943,7 @@ function BuscaInner() {
 
   async function handleBoost() {
     if (boostUntil && boostUntil > new Date()) {
-      toast.info('Voce ja tem um Boost ativo!')
+      toast.info('Você já tem um Boost ativo!')
       return
     }
     if (boostAmount <= 0) {
@@ -1959,11 +1959,11 @@ function BuscaInner() {
       const data = await res.json()
       if (data?.success) {
         haptics.success()
-        toast.success('Boost ativado! Voce esta em destaque por 30 minutos.')
+        toast.success('Boost ativado! Você está em destaque por 30 minutos.')
         setBoostUntil(new Date(data.active_until))
         setBoostAmount(b => b - 1)
       } else if (data?.reason === 'already_active') {
-        toast.info('Voce ja tem um Boost ativo!')
+        toast.info('Você já tem um Boost ativo!')
       } else if (data?.reason === 'no_boosts') {
         window.location.href = '/loja'
       } else {
@@ -2066,7 +2066,7 @@ function BuscaInner() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 24px', gap: 16 }}>
             <PaywallCard
               title="Curtidas esgotadas"
-              description={`Voce usou todas as ${likeLimit} curtidas de hoje. Volte amanha ou faca upgrade para curtir mais.`}
+              description={`Você usou todas as ${likeLimit} curtidas de hoje. Volte amanhã ou faça upgrade para curtir mais.`}
               resetAt={(() => { const d = new Date(); d.setHours(24, 0, 0, 0); return d })()}
               ctaLabel="Ver planos"
             />
@@ -2833,7 +2833,7 @@ function BuscaInner() {
               E um Match!
             </h3>
             <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 24px', lineHeight: 1.5 }}>
-              Voce e <strong style={{ color: 'var(--text)' }}>{matchResult.name}</strong> se curtiram mutuamente.
+              Você e <strong style={{ color: 'var(--text)' }}>{matchResult.name}</strong> se curtiram mutuamente.
             </p>
             <Link
               href="/matches"
@@ -2949,8 +2949,8 @@ function BuscaInner() {
               {upgradeReason === 'superlike'
                 ? userPlan === 'essencial'
                   ? 'Você esgotou suas SuperCurtidas. Faça upgrade ou compre mais na loja.'
-                  : 'Voce esgotou suas SuperCurtidas de hoje e seu saldo avulso. Compre mais na loja ou aguarde amanha.'
-                : 'Filtros de Fetiche, BDSM e Sugar sao exclusivos do plano Black.'}
+                  : 'Você esgotou suas SuperCurtidas de hoje e seu saldo avulso. Compre mais na loja ou aguarde amanhã.'
+                : 'Filtros de Fetiche, BDSM e Sugar são exclusivos do plano Black.'}
             </p>
             <Link
               href={upgradeReason === 'superlike' && userPlan !== 'essencial' ? '/loja' : '/planos'}
@@ -2973,7 +2973,7 @@ function BuscaInner() {
               onClick={() => setShowUpgradeModal(false)}
               style={{ background: 'none', border: 'none', color: 'var(--muted-2)', fontSize: 13, cursor: 'pointer' }}
             >
-              Agora nao
+              Agora não
             </button>
           </div>
         </div>

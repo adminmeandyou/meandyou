@@ -323,7 +323,7 @@ export default function EditarPerfilPage() {
           <div style={{ margin: '8px 0', padding: '16px 20px', borderRadius: '14px', backgroundColor: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
             <div>
               <p style={{ color: 'var(--text)', fontSize: '14px', fontWeight: 600, margin: '0 0 2px' }}>Perfil salvo!</p>
-              <p style={{ color: 'var(--muted)', fontSize: '13px', margin: 0 }}>Proximo passo: verificacao de identidade</p>
+              <p style={{ color: 'var(--muted)', fontSize: '13px', margin: 0 }}>Próximo passo: verificação de identidade</p>
             </div>
             <button
               onClick={() => { window.location.href = '/verificacao' }}
@@ -519,7 +519,7 @@ function FotosBioSection({ userId, profileData, onSaved }: {
       {/* Instrucao de fotos */}
       <div style={{ marginBottom: '12px', padding: '10px 12px', backgroundColor: 'rgba(225,29,72,0.06)', border: '1px solid rgba(225,29,72,0.15)', borderRadius: '12px' }}>
         <p style={{ color: 'rgba(248,249,250,0.65)', fontSize: '12px', lineHeight: '1.5', margin: 0 }}>
-          <strong style={{ color: '#F8F9FA' }}>Adicione ate 6 fotos.</strong> As 3 primeiras sao sugeridas: rosto, corpo inteiro de frente e corpo inteiro de lado. As demais sao opcionais.
+          <strong style={{ color: '#F8F9FA' }}>Adicione até 6 fotos.</strong> As 3 primeiras são sugeridas: rosto, corpo inteiro de frente e corpo inteiro de lado. As demais são opcionais.
         </p>
       </div>
 

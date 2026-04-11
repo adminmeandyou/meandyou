@@ -168,7 +168,7 @@ export default function DestaquesPage() {
           ) : profiles.length === 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: '12px', color: 'var(--muted)' }}>
               <Flame size={32} strokeWidth={1.5} />
-              <p style={{ fontSize: '14px', textAlign: 'center', margin: 0 }}>Nenhum destaque nesse periodo ainda.</p>
+              <p style={{ fontSize: '14px', textAlign: 'center', margin: 0 }}>Nenhum destaque nesse período ainda.</p>
             </div>
           ) : (
             <>
