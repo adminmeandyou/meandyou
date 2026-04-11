@@ -651,9 +651,9 @@ export default function RoletaPage() {
             {spinning ? (
               <><Loader2 size={18} strokeWidth={1.5} style={{ animation: 'spin-anim 0.8s linear infinite' }} />Girando...</>
             ) : tickets === 0 ? (
-              <><Ticket size={16} strokeWidth={1.5} />Proximo giro em {countdown}</>
+              <><Ticket size={16} strokeWidth={1.5} />Próximo giro em {countdown}</>
             ) : spinsLeft === 0 ? (
-              <><Ticket size={16} strokeWidth={1.5} />Limite diario — renova em {countdown}</>
+              <><Ticket size={16} strokeWidth={1.5} />Limite diário — renova em {countdown}</>
             ) : (
               <><Zap size={16} strokeWidth={2} />Girar (1 ficha)</>
             )}

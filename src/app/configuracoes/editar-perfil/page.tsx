@@ -641,7 +641,7 @@ function FotosBioSection({ userId, profileData, onSaved }: {
           value={pergunta}
           onChange={e => setPergunta(e.target.value)}
           maxLength={120}
-          placeholder="Ou escreva sua propria pergunta..."
+          placeholder="Ou escreva sua própria pergunta..."
           style={{ width: '100%', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '10px 12px', color: '#F8F9FA', fontSize: '14px', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box', outline: 'none', marginBottom: '8px' }}
         />
 

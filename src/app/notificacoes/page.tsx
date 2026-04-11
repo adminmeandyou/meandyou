@@ -167,7 +167,7 @@ export default function NotificacoesPage() {
         <EmptyState
           icon={<Bell size={28} />}
           title="Nenhuma notificação ainda"
-          description="Matches, mensagens e SuperLikes aparecem aqui."
+          description="Matches, mensagens e SuperCurtidas aparecem aqui."
         />
       ) : (
         <div style={{ borderTop: '1px solid var(--border-soft)' }}>

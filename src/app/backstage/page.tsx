@@ -699,7 +699,7 @@ function CamaroteVitrine({
               <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>Cidade</label>
               <input
                 type="text"
-                placeholder="Ex: Sao Paulo"
+                placeholder="Ex: São Paulo"
                 value={localFilters.city}
                 onChange={e => setLocalFilters(f => ({ ...f, city: e.target.value }))}
                 style={{ width: '100%', padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}

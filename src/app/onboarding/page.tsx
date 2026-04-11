@@ -5,7 +5,7 @@ import { supabase } from '../lib/supabase'
 import { saveUserLocation } from '../lib/location'
 import { Heart, Search, Star, Zap, Shield, ChevronRight, Check, MapPin, Bell } from 'lucide-react'
 
-const PASSOS = ['Bem-vindo', 'Como funciona', 'Permissoes', 'Pronto']
+const PASSOS = ['Bem-vindo', 'Como funciona', 'Permissões', 'Pronto']
 
 export default function OnboardingPage() {
   const [passo, setPasso] = useState(0)
@@ -153,7 +153,7 @@ export default function OnboardingPage() {
               { icon: <Shield size={22} color="var(--accent)" />, titulo: '1. Complete seu perfil', desc: 'Preencha suas informações reais — aparência, personalidade, valores e o que busca. Isso define quem vai aparecer para você.' },
               { icon: <Search size={22} color="var(--accent)" />, titulo: '2. Explore e filtre', desc: 'Use filtros avançados para encontrar pessoas compatíveis na sua região. Curta, passe ou dê uma SuperCurtida.' },
               { icon: <Heart size={22} color="var(--accent)" />, titulo: '3. É um match!', desc: 'Quando dois se curtem mutuamente, vira match. A partir daí vocês podem conversar.' },
-              { icon: <Zap size={22} color="var(--accent)" />, titulo: '4. Videochamada integrada', desc: 'Antes de marcar um encontro, converse por video dentro do app. Seguro e sem precisar trocar contato.' },
+              { icon: <Zap size={22} color="var(--accent)" />, titulo: '4. Videochamada integrada', desc: 'Antes de marcar um encontro, converse por vídeo dentro do app. Seguro e sem precisar trocar contato.' },
             ].map((item, i) => (
               <div key={i} style={{ display: 'flex', gap: '16px', marginBottom: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
                 <div style={{ width: '44px', height: '44px', borderRadius: '12px', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>

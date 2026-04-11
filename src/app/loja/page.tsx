@@ -140,7 +140,7 @@ const SURPRESA_CONFIG: Record<string, { label: string; color: string; bg: string
   boost:         { label: 'Boost',            color: '#E11D48', bg: 'rgba(225,29,72,0.15)',  icon: <Zap  size={44} color="#E11D48" strokeWidth={1.5} /> },
   lupa:          { label: 'Lupa',             color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: <Search size={44} color="#3b82f6" strokeWidth={1.5} /> },
   rewind:        { label: 'Desfazer',         color: '#a855f7', bg: 'rgba(168,85,247,0.15)', icon: <RotateCcw size={44} color="#a855f7" strokeWidth={1.5} /> },
-  invisivel_1d:  { label: '1 dia Invisivel',  color: '#9ca3af', bg: 'rgba(107,114,128,0.15)',icon: <Ghost size={44} color="#9ca3af" strokeWidth={1.5} /> },
+  invisivel_1d:  { label: '1 dia Invisível',  color: '#9ca3af', bg: 'rgba(107,114,128,0.15)',icon: <Ghost size={44} color="#9ca3af" strokeWidth={1.5} /> },
   plan_plus_1d:  { label: '1 dia Plus',       color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: <BadgeCheck size={44} color="#10b981" strokeWidth={1.5} /> },
   plan_black_1d: { label: '1 dia Black',      color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <BadgeCheck size={44} color="#F59E0B" strokeWidth={1.5} /> },
 }

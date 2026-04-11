@@ -643,7 +643,7 @@ export default function CamaroteChatPage() {
                 <input
                   value={meetingForm.local}
                   onChange={e => setMeetingForm(f => ({ ...f, local: e.target.value }))}
-                  placeholder="Ex: Cafe do Centro"
+                  placeholder="Ex: Café do Centro"
                   style={{ width: '100%', padding: '10px 12px', borderRadius: 10, background: BG, border: `1px solid ${meetingForm.local ? G_BORDER : 'rgba(255,255,255,0.07)'}`, color: '#fff', fontSize: 13, fontFamily: 'var(--font-jakarta)', outline: 'none', boxSizing: 'border-box' }}
                 />
               </div>

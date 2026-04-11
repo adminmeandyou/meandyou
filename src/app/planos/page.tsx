@@ -274,7 +274,7 @@ export default function PlanosPage() {
             { label: 'SuperCurtidas', values: ['1/dia', '4/dia', '10/dia'] },
             { label: 'Lupas',         values: ['1/dia', '1/dia', '2/dia'] },
             { label: 'Tickets',       values: ['1/dia', '2/dia', '3/dia'] },
-            { label: 'Video',         values: ['1h/dia', '5h/dia', '10h/dia'] },
+            { label: 'Vídeo',         values: ['1h/dia', '5h/dia', '10h/dia'] },
             { label: 'Quem curtiu',   values: ['—', 'Sim', 'Sim'] },
             { label: 'Backstage',     values: ['—', '—', 'Sim'] },
           ].map((row, i) => (

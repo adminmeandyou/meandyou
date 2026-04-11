@@ -988,7 +988,7 @@ export default function ChatPage() {
               type="text"
               value={conviteLocal}
               onChange={e => setConviteLocal(e.target.value)}
-              placeholder="Local (ex: Cafe do Centro, Praia do Gonzaga)"
+              placeholder="Local (ex: Café do Centro, Praia do Gonzaga)"
               maxLength={100}
               autoFocus
               style={{
@@ -1274,7 +1274,7 @@ export default function ChatPage() {
                   </div>
                   <div>
                     <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Local *</label>
-                    <input value={meetingLocal} onChange={e => setMeetingLocal(e.target.value)} placeholder="Ex: Cafe Central, Shopping Norte..." autoFocus style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
+                    <input value={meetingLocal} onChange={e => setMeetingLocal(e.target.value)} placeholder="Ex: Café Central, Shopping Norte..." autoFocus style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
                   </div>
                   <div style={{ display:'flex',gap:10 }}>
                     <div style={{ flex:1 }}>
@@ -1363,10 +1363,10 @@ export default function ChatPage() {
                 <button onClick={() => { setShowSecuritySheet(false); router.push('/loja') }} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'14px 16px',borderRadius:16,background:'rgba(255,255,255,0.04)',border:'1px solid var(--border)',cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>
                   <div style={{ width:40,height:40,borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><Ghost size={18} color="rgba(248,249,250,0.45)" strokeWidth={1.5} /></div>
                   <div style={{ textAlign:'left',flex:1 }}>
-                    <p style={{ fontSize:14,fontWeight:600,color:'var(--text)',margin:0 }}>Modo Invisivel</p>
+                    <p style={{ fontSize:14,fontWeight:600,color:'var(--text)',margin:0 }}>Modo Invisível</p>
                     <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>
                       {ghostModeUntil && new Date(ghostModeUntil) > new Date()
-                        ? `Ativo ate ${new Date(ghostModeUntil).toLocaleDateString('pt-BR')}`
+                        ? `Ativo até ${new Date(ghostModeUntil).toLocaleDateString('pt-BR')}`
                         : 'Some das buscas temporariamente'}
                     </p>
                   </div>
