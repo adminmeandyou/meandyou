@@ -145,7 +145,7 @@ export default function VerPerfilPage() {
       next = badgeShowcase.filter(id => id !== badgeId)
     } else {
       if (badgeShowcase.length >= 3) {
-        toast.show('Maximo de 3 emblemas em exibicao. Remova um antes de adicionar outro.', 'error')
+        toast.show('Máximo de 3 emblemas em exibição. Remova um antes de adicionar outro.', 'error')
         return
       }
       next = [...badgeShowcase, badgeId]
@@ -173,7 +173,7 @@ export default function VerPerfilPage() {
         p_user_id: userId, p_target_id: profileId, p_is_superlike: action === 'superlike',
       })
       if (swipeErr) {
-        toast.show('Nao foi possivel registrar a acao. Tente novamente.', 'error')
+        toast.show('Não foi possível registrar a ação. Tente novamente.', 'error')
         setSwipeAction(null)
         return
       }
@@ -196,7 +196,7 @@ export default function VerPerfilPage() {
     if (profileId === userId) { router.replace('/configuracoes/editar-perfil'); return null }
     return (
       <div style={{ minHeight: '100vh', backgroundColor: '#08090E', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
-        <p style={{ color: 'rgba(248,249,250,0.30)', fontFamily: 'var(--font-jakarta)' }}>Perfil nao encontrado.</p>
+        <p style={{ color: 'rgba(248,249,250,0.30)', fontFamily: 'var(--font-jakarta)' }}>Perfil não encontrado.</p>
         <button onClick={() => router.back()} style={{ color: 'var(--accent)', background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', textDecoration: 'underline', fontFamily: 'var(--font-jakarta)' }}>Voltar</button>
       </div>
     )
