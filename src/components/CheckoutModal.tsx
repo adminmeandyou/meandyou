@@ -417,7 +417,7 @@ export default function CheckoutModal({
       }
       setStep(3)
     } catch {
-      setError('Erro de conexao. Tente novamente.')
+      setError('Erro de conexão. Tente novamente.')
     } finally {
       setLoading(false)
     }

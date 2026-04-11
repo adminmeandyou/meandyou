@@ -141,7 +141,7 @@ export default function EmblemasPage() {
                   textTransform: 'capitalize',
                 }}
               >
-                {r === 'lendario' ? 'Lendário' : r.charAt(0).toUpperCase() + r.slice(1)}
+                {r === 'todos' ? 'Todos' : (RARITY_CONFIG[r as keyof typeof RARITY_CONFIG]?.label ?? r)}
               </button>
             )
           })}
