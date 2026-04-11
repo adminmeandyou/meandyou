@@ -150,7 +150,7 @@ export default function IndicarPage() {
 
         {/* Seu codigo */}
         <div style={{ borderRadius: '16px', padding: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
-          <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px' }}>Seu codigo de convite</p>
+          <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px' }}>Seu código de convite</p>
 
           <div style={{ backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '12px', padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', border: '1px solid var(--border-soft)' }}>
             <span style={{ fontSize: '22px', fontWeight: 800, letterSpacing: '0.15em', fontFamily: 'var(--font-fraunces)', color: 'var(--accent)' }}>
@@ -214,7 +214,7 @@ export default function IndicarPage() {
           <div style={{ borderRadius: '16px', padding: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
             <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <Users size={12} strokeWidth={1.5} />
-              Suas indicacoes ({referrals.length})
+              Suas indicações ({referrals.length})
             </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0' }}>
               {referrals.map((r, i) => (

@@ -20,19 +20,19 @@ export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
     const token = authHeader.split(' ')[1]
     const supabase = await createClient()
 
     const { data: { user }, error: authError } = await supabase.auth.getUser(token)
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
     const { event_type } = await req.json()
     if (!event_type || !XP_TABLE[event_type]) {
-      return NextResponse.json({ error: 'Invalid event_type' }, { status: 400 })
+      return NextResponse.json({ error: 'event_type inválido' }, { status: 400 })
     }
 
     const baseXp = XP_TABLE[event_type]
@@ -71,6 +71,6 @@ export async function POST(req: NextRequest) {
     })
   } catch (e) {
     console.error('[XP Award]', e)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }

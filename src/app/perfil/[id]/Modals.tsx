@@ -66,9 +66,9 @@ export function EmergencyModal({ onClose }: { onClose: () => void }) {
         <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(225,29,72,0.12)', border: '1px solid rgba(225,29,72,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
           <ShieldAlert size={26} color="#E11D48" strokeWidth={1.5} />
         </div>
-        <h3 style={{ color: '#F8F9FA', fontFamily: 'var(--font-fraunces)', fontSize: '20px', fontWeight: 700, marginBottom: '8px', marginTop: 0 }}>Voce esta em perigo?</h3>
+        <h3 style={{ color: '#F8F9FA', fontFamily: 'var(--font-fraunces)', fontSize: '20px', fontWeight: 700, marginBottom: '8px', marginTop: 0 }}>Você está em perigo?</h3>
         <p style={{ color: 'rgba(248,249,250,0.45)', fontSize: '14px', lineHeight: 1.65, marginBottom: '24px' }}>
-          Esta acao ligara imediatamente para a <strong style={{ color: 'rgba(248,249,250,0.70)' }}>Policia Militar (190)</strong>. Use apenas em situacoes de risco real.
+          Esta ação ligará imediatamente para a <strong style={{ color: 'rgba(248,249,250,0.70)' }}>Polícia Militar (190)</strong>. Use apenas em situações de risco real.
         </p>
         <a href="tel:190" style={{ display: 'block', width: '100%', padding: '14px', borderRadius: '12px', backgroundColor: '#dc2626', color: '#fff', fontWeight: 700, fontSize: '16px', textDecoration: 'none', marginBottom: '12px', boxSizing: 'border-box', fontFamily: 'var(--font-jakarta)' }}>Ligar 190 agora</a>
         <button onClick={onClose} style={{ display: 'block', width: '100%', padding: '12px', background: 'none', border: 'none', color: 'rgba(248,249,250,0.30)', fontSize: '14px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>Cancelar</button>
@@ -104,8 +104,8 @@ export function DenunciaModal({ profileId, userId, supabase, toast, onClose }: D
             <div style={{ width: '52px', height: '52px', borderRadius: '50%', backgroundColor: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px' }}>
               <span style={{ fontSize: '22px' }}>&#10003;</span>
             </div>
-            <h3 style={{ color: '#F8F9FA', fontFamily: 'var(--font-fraunces)', fontSize: '20px', fontWeight: 700, marginBottom: '8px', marginTop: 0 }}>Denuncia enviada</h3>
-            <p style={{ color: 'rgba(248,249,250,0.45)', fontSize: '14px', lineHeight: 1.65, marginBottom: '24px' }}>Nossa equipe vai analisar e tomar as medidas necessarias. Obrigado por ajudar a manter a comunidade segura.</p>
+            <h3 style={{ color: '#F8F9FA', fontFamily: 'var(--font-fraunces)', fontSize: '20px', fontWeight: 700, marginBottom: '8px', marginTop: 0 }}>Denúncia enviada</h3>
+            <p style={{ color: 'rgba(248,249,250,0.45)', fontSize: '14px', lineHeight: 1.65, marginBottom: '24px' }}>Nossa equipe vai analisar e tomar as medidas necessárias. Obrigado por ajudar a manter a comunidade segura.</p>
             <button onClick={onClose} style={{ width: '100%', padding: '14px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.07)', color: '#fff', fontWeight: 600, fontSize: '15px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>Fechar</button>
           </div>
         ) : (
@@ -116,7 +116,7 @@ export function DenunciaModal({ profileId, userId, supabase, toast, onClose }: D
                 <X size={20} color="rgba(248,249,250,0.35)" strokeWidth={1.5} />
               </button>
             </div>
-            <p style={{ color: 'rgba(248,249,250,0.45)', fontSize: '13px', marginBottom: '14px', marginTop: 0 }}>Por que voce esta denunciando este perfil?</p>
+            <p style={{ color: 'rgba(248,249,250,0.45)', fontSize: '13px', marginBottom: '14px', marginTop: 0 }}>Por que você está denunciando este perfil?</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
               {DENUNCIA_CATS.map(cat => (
                 <button
@@ -157,7 +157,7 @@ export function DenunciaModal({ profileId, userId, supabase, toast, onClose }: D
               }}
               style={{ width: '100%', padding: '14px', borderRadius: '12px', background: !categoria ? 'rgba(255,255,255,0.05)' : 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', border: 'none', color: !categoria ? 'rgba(248,249,250,0.25)' : '#fff', fontWeight: 700, fontSize: '15px', cursor: !categoria ? 'not-allowed' : 'pointer', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)', fontFamily: 'var(--font-jakarta)' }}
             >
-              {enviando ? 'Enviando...' : 'Enviar denuncia'}
+              {enviando ? 'Enviando...' : 'Enviar denúncia'}
             </button>
           </>
         )}
@@ -171,8 +171,8 @@ import { useState as __import_useState } from 'react'
 
 const DENUNCIA_CATS = [
   { id: 'fake', label: 'Perfil falso ou fotos enganosas' },
-  { id: 'inappropriate', label: 'Conteudo inapropriado' },
-  { id: 'harassment', label: 'Assedio ou comportamento abusivo' },
+  { id: 'inappropriate', label: 'Conteúdo inapropriado' },
+  { id: 'harassment', label: 'Assédio ou comportamento abusivo' },
   { id: 'spam', label: 'Spam ou golpe' },
   { id: 'minor', label: 'Possivel menor de idade' },
   { id: 'other', label: 'Outro motivo' },

@@ -266,12 +266,12 @@ function UpgradeSheet({
           </div>
           <div>
             <p style={{ fontSize: 14, fontWeight: 700, color: isBlackOnly ? '#F59E0B' : 'var(--accent)', margin: 0 }}>
-              {isBlackOnly ? 'Exclusivo para assinantes Black' : 'Disponivel no plano Plus ou Black'}
+              {isBlackOnly ? 'Exclusivo para assinantes Black' : 'Disponível no plano Plus ou Black'}
             </p>
             <p style={{ fontSize: 12, color: 'var(--muted)', margin: '4px 0 0', lineHeight: 1.5 }}>
               {isBlackOnly
-                ? 'Faca upgrade para o plano Black e acesse salas exclusivas com perfis selecionados.'
-                : 'Faca upgrade e entre em salas para conhecer pessoas com os mesmos interesses que voce.'}
+                ? 'Faça upgrade para o plano Black e acesse salas exclusivas com perfis selecionados.'
+                : 'Faça upgrade e entre em salas para conhecer pessoas com os mesmos interesses que você.'}
             </p>
           </div>
         </div>
@@ -279,8 +279,8 @@ function UpgradeSheet({
         {/* Beneficios rapidos */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
           {(isBlackOnly
-            ? ['Salas Black exclusivas', 'Acesso ilimitado a todas as salas', 'Beneficios VIP completos']
-            : ['Acesso a todas as salas publicas e privadas', 'Crie suas proprias salas', 'Converse sem limites']
+            ? ['Salas Black exclusivas', 'Acesso ilimitado a todas as salas', 'Benefícios VIP completos']
+            : ['Acesso a todas as salas públicas e privadas', 'Crie suas próprias salas', 'Converse sem limites']
           ).map((item, i) => (
             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Sparkles size={13} color={isBlackOnly ? '#F59E0B' : 'var(--accent)'} />
@@ -312,7 +312,7 @@ function UpgradeSheet({
             border: '1px solid rgba(255,255,255,0.06)', fontFamily: 'var(--font-jakarta)',
           }}
         >
-          Agora nao
+          Agora não
         </button>
       </div>
     </>
@@ -393,7 +393,7 @@ export default function SalasPage() {
       }
       router.push(`/salas/${joiningRoom.id}`)
     } catch {
-      setJoinError('Erro de conexao. Tente novamente.')
+      setJoinError('Erro de conexão. Tente novamente.')
       setJoining(false)
     }
   }
@@ -417,7 +417,7 @@ export default function SalasPage() {
   })
 
   const TABS = [
-    { key: 'public' as const,  label: 'Publicas',  icon: <Users size={14} />, accessible: canJoin },
+    { key: 'public' as const,  label: 'Públicas',  icon: <Users size={14} />, accessible: canJoin },
     { key: 'private' as const, label: 'Privadas',  icon: <Lock size={14} />,  accessible: canJoin },
     { key: 'black' as const,   label: 'Black',     icon: <Crown size={14} />, accessible: canJoinBlack },
   ]

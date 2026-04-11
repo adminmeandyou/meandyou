@@ -11,91 +11,91 @@ const FAQS: FAQ[] = [
   // Conta
   {
     categoria: 'Conta',
-    pergunta: 'Como faco para verificar minha identidade?',
-    resposta: 'Apos o cadastro, acesse a tela de verificacao e siga o processo de liveness detection com sua camera. Apos enviar, nossa equipe aprova em ate 24h. A verificacao e obrigatoria para usar o app.',
+    pergunta: 'Como faço para verificar minha identidade?',
+    resposta: 'Após o cadastro, acesse a tela de verificação e siga o processo de liveness detection com sua câmera. Após enviar, nossa equipe aprova em até 24h. A verificação é obrigatória para usar o app.',
   },
   {
     categoria: 'Conta',
     pergunta: 'Posso ter mais de uma conta?',
-    resposta: 'Nao. Cada CPF so pode estar vinculado a uma conta. Contas duplicadas sao removidas automaticamente.',
+    resposta: 'Não. Cada CPF só pode estar vinculado a uma conta. Contas duplicadas são removidas automaticamente.',
   },
   {
     categoria: 'Conta',
     pergunta: 'Como altero minha senha?',
-    resposta: 'Na tela de login, clique em "Esqueci minha senha". Voce recebera um email com o link para redefinir. O link expira em 30 minutos.',
+    resposta: 'Na tela de login, clique em "Esqueci minha senha". Você receberá um email com o link para redefinir. O link expira em 30 minutos.',
   },
   {
     categoria: 'Conta',
     pergunta: 'Como excluo minha conta?',
-    resposta: 'Acesse Configuracoes > Excluir conta. Voce precisara confirmar sua senha. Todos os seus dados serao removidos permanentemente em conformidade com a LGPD. Esta acao nao pode ser desfeita.',
+    resposta: 'Acesse Configurações > Excluir conta. Você precisará confirmar sua senha. Todos os seus dados serão removidos permanentemente em conformidade com a LGPD. Esta ação não pode ser desfeita.',
   },
   // Planos
   {
     categoria: 'Planos',
-    pergunta: 'Qual a diferenca entre os planos?',
-    resposta: 'Essencial: 5 curtidas/dia, 1 ticket de roleta. Plus: 30 curtidas/dia, ver quem curtiu, area de destaques, 2 tickets/dia. Black: curtidas ilimitadas, Backstage exclusivo, 10 SuperCurtidas/dia, suporte prioritario 24h, 3 tickets/dia.',
+    pergunta: 'Qual a diferença entre os planos?',
+    resposta: 'Essencial: 5 curtidas/dia, 1 ticket de roleta. Plus: 30 curtidas/dia, ver quem curtiu, área de destaques, 2 tickets/dia. Black: curtidas ilimitadas, Backstage exclusivo, 10 SuperCurtidas/dia, suporte prioritário 24h, 3 tickets/dia.',
   },
   {
     categoria: 'Planos',
     pergunta: 'Como cancelo minha assinatura?',
-    resposta: 'O cancelamento pode ser solicitado pelo app em "Minha assinatura". Apos o cancelamento, o plano fica ativo ate o fim do periodo pago.',
+    resposta: 'O cancelamento pode ser solicitado pelo app em "Minha assinatura". Após o cancelamento, o plano fica ativo até o fim do período pago.',
   },
   {
     categoria: 'Planos',
     pergunta: 'Posso pedir reembolso?',
-    resposta: 'Assinaturas nao sao reembolsaveis apos ativacao. Compras avulsas (fichas, SuperLikes, Boosts etc.) tambem nao tem reembolso. Em caso de cobranca indevida, entre em contato pelo suporte.',
+    resposta: 'Assinaturas não são reembolsáveis após ativação. Compras avulsas (fichas, SuperLikes, Boosts etc.) também não têm reembolso. Em caso de cobrança indevida, entre em contato pelo suporte.',
   },
   // Funcionalidades
   {
     categoria: 'Funcionalidades',
-    pergunta: 'O que e o Boost?',
-    resposta: 'O Boost coloca seu perfil em destaque por 30 minutos na busca da sua regiao, aumentando sua visibilidade. Plano Black pode ter ate 2 Boosts ativos ao mesmo tempo.',
+    pergunta: 'O que é o Boost?',
+    resposta: 'O Boost coloca seu perfil em destaque por 30 minutos na busca da sua região, aumentando sua visibilidade. Plano Black pode ter até 2 Boosts ativos ao mesmo tempo.',
   },
   {
     categoria: 'Funcionalidades',
-    pergunta: 'O que e a Lupa?',
-    resposta: 'A Lupa revela um perfil borrado na area de Destaques, permitindo ver quem e a pessoa antes de curtir. Voce ganha lupas pelo calendario de streak, roleta ou comprando na loja.',
+    pergunta: 'O que é a Lupa?',
+    resposta: 'A Lupa revela um perfil borrado na área de Destaques, permitindo ver quem é a pessoa antes de curtir. Você ganha lupas pelo calendário de streak, roleta ou comprando na loja.',
   },
   {
     categoria: 'Funcionalidades',
     pergunta: 'Como funciona o streak?',
-    resposta: 'Entre no app todo dia para manter sua sequencia. A cada dia voce ganha um premio do calendario mensal. Se ficar mais de 7 dias sem entrar, o streak reseta para zero.',
+    resposta: 'Entre no app todo dia para manter sua sequência. A cada dia você ganha um prêmio do calendário mensal. Se ficar mais de 7 dias sem entrar, o streak reseta para zero.',
   },
   {
     categoria: 'Funcionalidades',
     pergunta: 'Como funciona a roleta?',
-    resposta: 'Use tickets para girar a roleta e ganhar premios (SuperLikes, Boosts, Lupas e mais). Voce ganha tickets todo dia so por entrar no app, pelo calendario de streak e ao indicar amigos.',
+    resposta: 'Use tickets para girar a roleta e ganhar prêmios (SuperLikes, Boosts, Lupas e mais). Você ganha tickets todo dia só por entrar no app, pelo calendário de streak e ao indicar amigos.',
   },
   {
     categoria: 'Funcionalidades',
-    pergunta: 'O que e o Backstage?',
-    resposta: 'Area exclusiva para assinantes Black. Nela voce ve perfis de usuarios Essencial e Plus que fizeram um pedido de conexao especial. Ao pagar R$ 15, voce acessa o chat com essa pessoa por 30 dias.',
+    pergunta: 'O que é o Backstage?',
+    resposta: 'Área exclusiva para assinantes Black. Nela você vê perfis de usuários Essencial e Plus que fizeram um pedido de conexão especial. Ao pagar R$ 15, você acessa o chat com essa pessoa por 30 dias.',
   },
   {
     categoria: 'Funcionalidades',
     pergunta: 'Como funciona a videochamada?',
-    resposta: 'Disponivel para matches confirmados. Plano Essencial: 60min/dia. Plus: 300min/dia. Black: 600min/dia. Os minutos sao descontados automaticamente ao encerrar a chamada.',
+    resposta: 'Disponível para matches confirmados. Plano Essencial: 60min/dia. Plus: 300min/dia. Black: 600min/dia. Os minutos são descontados automaticamente ao encerrar a chamada.',
   },
   {
     categoria: 'Funcionalidades',
-    pergunta: 'O que sao fichas?',
-    resposta: 'Fichas sao a moeda do MeAndYou. Voce compra pacotes de fichas e usa para adquirir itens na loja, como SuperLikes, Boosts, Lupas e outros recursos especiais.',
+    pergunta: 'O que são fichas?',
+    resposta: 'Fichas são a moeda do MeAndYou. Você compra pacotes de fichas e usa para adquirir itens na loja, como SuperLikes, Boosts, Lupas e outros recursos especiais.',
   },
   // Seguranca
   {
-    categoria: 'Seguranca',
-    pergunta: 'Como denuncio um usuario?',
-    resposta: 'Acesse o perfil da pessoa, role ate o final e toque em "Denunciar". Nossa equipe analisa todas as denuncias e pode banir o usuario permanentemente.',
+    categoria: 'Segurança',
+    pergunta: 'Como denuncio um usuário?',
+    resposta: 'Acesse o perfil da pessoa, role até o final e toque em "Denunciar". Nossa equipe analisa todas as denúncias e pode banir o usuário permanentemente.',
   },
   {
-    categoria: 'Seguranca',
-    pergunta: 'Como bloqueio alguem?',
-    resposta: 'No perfil da pessoa ou na conversa, toque no menu e selecione "Bloquear". O usuario nao sera notificado e nao podera mais ver seu perfil ou enviar mensagens.',
+    categoria: 'Segurança',
+    pergunta: 'Como bloqueio alguém?',
+    resposta: 'No perfil da pessoa ou na conversa, toque no menu e selecione "Bloquear". O usuário não será notificado e não poderá mais ver seu perfil ou enviar mensagens.',
   },
   {
-    categoria: 'Seguranca',
-    pergunta: 'Meus dados sao seguros?',
-    resposta: 'Sim. Usamos verificacao biometrica para garantir que cada conta pertence a uma pessoa real. Seus dados sao armazenados com seguranca e nunca vendidos a terceiros. Para mais informacoes, consulte nossa Politica de Privacidade.',
+    categoria: 'Segurança',
+    pergunta: 'Meus dados são seguros?',
+    resposta: 'Sim. Usamos verificação biométrica para garantir que cada conta pertence a uma pessoa real. Seus dados são armazenados com segurança e nunca vendidos a terceiros. Para mais informações, consulte nossa Política de Privacidade.',
   },
 ]
 
@@ -139,7 +139,7 @@ export default function AjudaPage() {
             type="text"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar duvida..."
+            placeholder="Buscar dúvida..."
             style={{
               width: '100%', boxSizing: 'border-box',
               backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)',
@@ -173,7 +173,7 @@ export default function AjudaPage() {
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '64px 0', gap: '12px', color: 'var(--muted)' }}>
             <HelpCircle size={32} strokeWidth={1.5} color="rgba(248,249,250,0.20)" />
             <p style={{ fontSize: '14px', textAlign: 'center', color: 'rgba(248,249,250,0.30)', margin: 0 }}>
-              Nenhuma duvida encontrada.<br />Tente outros termos ou fale com o suporte.
+              Nenhuma dúvida encontrada.<br />Tente outros termos ou fale com o suporte.
             </p>
           </div>
         ) : (
@@ -212,8 +212,8 @@ export default function AjudaPage() {
             <MessageCircle size={18} color="var(--accent)" strokeWidth={1.5} />
           </div>
           <div style={{ flex: 1 }}>
-            <p style={{ color: 'var(--text)', fontSize: '14px', fontWeight: 600, margin: 0 }}>Nao encontrou o que precisava?</p>
-            <p style={{ color: 'var(--muted)', fontSize: '12px', margin: '2px 0 0' }}>Nossa equipe responde em ate 24h</p>
+            <p style={{ color: 'var(--text)', fontSize: '14px', fontWeight: 600, margin: 0 }}>Não encontrou o que precisava?</p>
+            <p style={{ color: 'var(--muted)', fontSize: '12px', margin: '2px 0 0' }}>Nossa equipe responde em até 24h</p>
           </div>
           <a
             href="/suporte"

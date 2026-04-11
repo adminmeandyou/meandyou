@@ -12,10 +12,10 @@ export async function GET(
 ) {
   try {
     const token = req.headers.get('authorization')?.replace('Bearer ', '')
-    if (!token) return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 })
+    if (!token) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
     const { data: { user }, error: authErr } = await supabase.auth.getUser(token)
-    if (authErr || !user) return NextResponse.json({ error: 'Sessao invalida' }, { status: 401 })
+    if (authErr || !user) return NextResponse.json({ error: 'Sessão inválida' }, { status: 401 })
 
     // Busca pagamento (valida que pertence ao usuario)
     const { data: payment } = await supabase
@@ -25,7 +25,7 @@ export async function GET(
       .eq('user_id', user.id)
       .single()
 
-    if (!payment) return NextResponse.json({ error: 'Pagamento nao encontrado' }, { status: 404 })
+    if (!payment) return NextResponse.json({ error: 'Pagamento não encontrado' }, { status: 404 })
 
     // Se ja confirmado no banco, retorna direto
     if (payment.status === 'paid') {

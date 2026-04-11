@@ -55,13 +55,13 @@ export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get('Authorization')
     if (!authHeader?.startsWith('Bearer ')) {
-      return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
     const token = authHeader.slice(7)
 
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token)
     if (authError || !user) {
-      return NextResponse.json({ error: 'Token invalido' }, { status: 401 })
+      return NextResponse.json({ error: 'Token inválido' }, { status: 401 })
     }
 
     const body = await req.json()
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
       // Premio aleatorio da caixa — NAO usa spin_roleta (sem deducao de ticket)
       const { data: prizes } = await supabaseAdmin.from('roleta_prizes').select('reward_type, reward_amount, weight').eq('active', true)
       const pool = prizes ?? []
-      if (pool.length === 0) return NextResponse.json({ error: 'Sem premios configurados' }, { status: 500 })
+      if (pool.length === 0) return NextResponse.json({ error: 'Sem prêmios configurados' }, { status: 500 })
       const totalWeight = pool.reduce((s: number, p: any) => s + p.weight, 0)
       let rng = Math.random() * totalWeight
       const chosen = pool.find((p: any) => { rng -= p.weight; return rng <= 0 }) ?? pool[0]

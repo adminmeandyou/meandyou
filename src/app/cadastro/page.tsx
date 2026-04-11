@@ -281,7 +281,7 @@ function CadastroInner() {
           </div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', marginBottom: '12px', color: 'var(--text)', letterSpacing: '-0.01em' }}>Conta criada!</h2>
           <p style={{ color: 'var(--muted)', lineHeight: '1.6', marginBottom: '24px' }}>
-            Bem-vindo(a) ao MeAndYou, <strong style={{ color: 'var(--text)' }}>{nomeExibicao}</strong>!<br /><br />Faca login para continuar.
+            Bem-vindo(a) ao MeAndYou, <strong style={{ color: 'var(--text)' }}>{nomeExibicao}</strong>!<br /><br />Faça login para continuar.
           </p>
           <Link href="/login" className="btn-primary" style={{ display: 'block', textDecoration: 'none', textAlign: 'center' }}>
             Fazer login
@@ -429,7 +429,7 @@ function CadastroInner() {
                 />
                 {refCode && (
                   <p style={{ fontSize: '13px', color: 'var(--accent)', marginTop: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Check size={14} /> Voce vai ganhar tickets de boas-vindas!
+                    <Check size={14} /> Você vai ganhar fichas de boas-vindas!
                   </p>
                 )}
               </div>
@@ -482,7 +482,7 @@ function CadastroInner() {
           )
         ) : (
           <button
-            onClick={temCodigo === null ? () => setErro('Escolha uma das opcoes acima para continuar') : handleCadastro}
+            onClick={temCodigo === null ? () => setErro('Escolha uma das opções acima para continuar') : handleCadastro}
             disabled={loading || (!!TURNSTILE_SITE_KEY && !cfToken && temCodigo !== null)}
             className="btn-primary"
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -492,7 +492,7 @@ function CadastroInner() {
 
         {step === 0 && (
           <p style={{ textAlign: 'center', color: 'var(--muted)', fontSize: '14px', marginTop: '20px' }}>
-            Ja tem conta?{' '}
+            Já tem conta?{' '}
             <Link href="/login" style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: '600' }}>Entrar</Link>
           </p>
         )}

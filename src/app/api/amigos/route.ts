@@ -20,11 +20,11 @@ export async function POST(req: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const { receiverId } = await req.json()
-  if (!receiverId) return NextResponse.json({ error: 'receiverId obrigatorio' }, { status: 400 })
-  if (receiverId === user.id) return NextResponse.json({ error: 'Voce nao pode se adicionar' }, { status: 400 })
+  if (!receiverId) return NextResponse.json({ error: 'receiverId obrigatório' }, { status: 400 })
+  if (receiverId === user.id) return NextResponse.json({ error: 'Você não pode se adicionar' }, { status: 400 })
 
   // Verificar se ja existe pedido (em qualquer direcao)
   const { data: existing } = await supabaseAdmin
@@ -35,10 +35,10 @@ export async function POST(req: NextRequest) {
 
   if (existing) {
     if (existing.status === 'accepted') {
-      return NextResponse.json({ error: 'Voces ja sao amigos' }, { status: 409 })
+      return NextResponse.json({ error: 'Vocês já são amigos' }, { status: 409 })
     }
     if (existing.status === 'pending') {
-      return NextResponse.json({ error: 'Pedido ja enviado' }, { status: 409 })
+      return NextResponse.json({ error: 'Pedido já enviado' }, { status: 409 })
     }
   }
 
@@ -61,10 +61,10 @@ export async function PATCH(req: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const { friendshipId, action } = await req.json()
-  if (!friendshipId || !action) return NextResponse.json({ error: 'Params obrigatorios' }, { status: 400 })
+  if (!friendshipId || !action) return NextResponse.json({ error: 'Parâmetros obrigatórios' }, { status: 400 })
 
   const { data: friendship } = await supabaseAdmin
     .from('friendships')
@@ -72,11 +72,11 @@ export async function PATCH(req: NextRequest) {
     .eq('id', friendshipId)
     .single()
 
-  if (!friendship) return NextResponse.json({ error: 'Amizade nao encontrada' }, { status: 404 })
+  if (!friendship) return NextResponse.json({ error: 'Amizade não encontrada' }, { status: 404 })
 
   if (action === 'accept') {
     if (friendship.receiver_id !== user.id) {
-      return NextResponse.json({ error: 'Sem permissao' }, { status: 403 })
+      return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
     }
     await supabaseAdmin.from('friendships').update({ status: 'accepted', updated_at: new Date().toISOString() }).eq('id', friendshipId)
     return NextResponse.json({ ok: true })
@@ -84,7 +84,7 @@ export async function PATCH(req: NextRequest) {
 
   if (action === 'decline') {
     if (friendship.receiver_id !== user.id) {
-      return NextResponse.json({ error: 'Sem permissao' }, { status: 403 })
+      return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
     }
     await supabaseAdmin.from('friendships').update({ status: 'declined', updated_at: new Date().toISOString() }).eq('id', friendshipId)
     return NextResponse.json({ ok: true })
@@ -92,13 +92,13 @@ export async function PATCH(req: NextRequest) {
 
   if (action === 'remove') {
     if (friendship.requester_id !== user.id && friendship.receiver_id !== user.id) {
-      return NextResponse.json({ error: 'Sem permissao' }, { status: 403 })
+      return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
     }
     await supabaseAdmin.from('friendships').delete().eq('id', friendshipId)
     return NextResponse.json({ ok: true })
   }
 
-  return NextResponse.json({ error: 'Acao invalida' }, { status: 400 })
+  return NextResponse.json({ error: 'Ação inválida' }, { status: 400 })
 }
 
 // GET /api/amigos — listar amigos e pedidos pendentes
@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const { data: friendships } = await supabaseAdmin
     .from('friendships')

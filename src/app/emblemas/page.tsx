@@ -51,11 +51,11 @@ const CONDITION_LABELS: Record<string, (val: number) => string> = {
   plan_black:           () => 'Ter plano Black ativo',
   store_purchase:       () => 'Fazer pelo menos 1 compra na loja',
   store_spent_gte:      (v) => `Gastar ${v}+ fichas na loja`,
-  store_item:           () => 'Comprar item especifico na loja',
-  early_adopter:        () => 'Pioneiro — entrou cedo no app',
+  store_item:           () => 'Comprar item específico na loja',
+  early_adopter:        () => 'Pioneiro: entrou cedo no app',
   profile_complete:     () => 'Completar 100% do perfil',
   took_bolo:            () => 'Relatar um bolo recebido',
-  caixa_lendaria:       () => 'Exclusivo da Caixa Super Lendaria',
+  caixa_lendaria:       () => 'Exclusivo da Caixa Super Lendária',
 }
 
 function getConditionLabel(condition_type: string, condition_value: any): string {
@@ -141,7 +141,7 @@ export default function EmblemasPage() {
                   textTransform: 'capitalize',
                 }}
               >
-                {r === 'lendario' ? 'Lendario' : r.charAt(0).toUpperCase() + r.slice(1)}
+                {r === 'lendario' ? 'Lendário' : r.charAt(0).toUpperCase() + r.slice(1)}
               </button>
             )
           })}
@@ -255,7 +255,7 @@ export default function EmblemasPage() {
             </div>
             {userBadgeIds.has(selected.id) && (
               <p style={{ textAlign: 'center', fontSize: 12, color: '#10b981', marginTop: 16 }}>
-                Voce ja possui este emblema!
+                Você já possui este emblema!
               </p>
             )}
           </div>

@@ -186,7 +186,7 @@ export default function RecompensasPage() {
       }}>
         <Gift size={16} strokeWidth={1.5} color="var(--accent)" style={{ flexShrink: 0, marginTop: 1 }} />
         <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.75)', margin: 0, lineHeight: 1.6 }}>
-          Indique amigos e ganhe tickets de roleta bonus. Quanto mais amigos, mais premios!
+          Indique amigos e ganhe tickets de roleta bônus. Quanto mais amigos, mais prêmios!
         </p>
       </div>
     </div>

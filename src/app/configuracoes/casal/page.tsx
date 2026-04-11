@@ -68,13 +68,13 @@ export default function CasalPage() {
       if (!res.ok) { setError(data.error ?? 'Erro ao criar convite'); return }
       setInviteUrl(data.inviteUrl)
       await loadData()
-    } catch { setError('Erro de conexao') }
+    } catch { setError('Erro de conexão') }
     setCreating(false)
   }
 
   async function dissolver() {
     if (!couple || dissolving) return
-    if (!confirm('Tem certeza? O perfil de casal sera desativado para os dois.')) return
+    if (!confirm('Tem certeza? O perfil de casal será desativado para os dois.')) return
     setDissolving(true)
     try {
       const res = await fetch('/api/casal', {
@@ -130,7 +130,7 @@ export default function CasalPage() {
             <Crown size={40} color="#F59E0B" strokeWidth={1} style={{ marginBottom: 12 }} />
             <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, margin: '0 0 8px' }}>Exclusivo Black</p>
             <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 20px', lineHeight: 1.5 }}>
-              O perfil de casal e exclusivo para assinantes do plano Black. Faca upgrade para ativar.
+              O perfil de casal é exclusivo para assinantes do plano Black. Faça upgrade para ativar.
             </p>
             <button
               onClick={() => router.push('/planos')}
@@ -179,7 +179,7 @@ export default function CasalPage() {
                 <div style={{ padding: '16px', borderRadius: 14, backgroundColor: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.18)', marginBottom: 16 }}>
                   <p style={{ fontSize: 13, color: '#10b981', margin: '0 0 4px', fontWeight: 600 }}>Beneficios ativos</p>
                   <p style={{ fontSize: 12, color: 'rgba(16,185,129,0.7)', margin: 0, lineHeight: 1.5 }}>
-                    Seu parceiro tem 50% de desconto enquanto o casal estiver ativo. O card de casal aparece no feed de busca dos outros usuarios.
+                    Seu parceiro tem 50% de desconto enquanto o casal estiver ativo. O card de casal aparece no feed de busca dos outros usuários.
                   </p>
                 </div>
 
@@ -200,7 +200,7 @@ export default function CasalPage() {
                   <Heart size={40} color="#F59E0B" strokeWidth={1} style={{ marginBottom: 12 }} />
                   <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, margin: '0 0 8px' }}>Convite enviado</p>
                   <p style={{ fontSize: 13, color: 'var(--muted)', margin: '0 0 20px', lineHeight: 1.5 }}>
-                    Compartilhe o link abaixo com seu parceiro(a). Assim que ele(a) aceitar, o perfil de casal sera ativado.
+                    Compartilhe o link abaixo com seu parceiro(a). Assim que ele(a) aceitar, o perfil de casal será ativado.
                   </p>
                   <button
                     onClick={copiarLink}
@@ -232,12 +232,12 @@ export default function CasalPage() {
                   </div>
                   <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, textAlign: 'center', margin: '0 0 10px' }}>Perfil de Casal</p>
                   <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center', lineHeight: 1.6, margin: 0 }}>
-                    Apareca no feed como casal. Seu parceiro(a) recebe 50% de desconto na assinatura enquanto o casal estiver ativo.
+                    Apareça no feed como casal. Seu parceiro(a) recebe 50% de desconto na assinatura enquanto o casal estiver ativo.
                   </p>
                 </div>
 
                 {[
-                  'Card duplo no feed de outros usuarios',
+                  'Card duplo no feed de outros usuários',
                   '50% de desconto para seu parceiro(a)',
                   'Ver perfis um do outro no mesmo card',
                 ].map((item, i) => (

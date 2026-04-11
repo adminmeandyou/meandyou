@@ -86,14 +86,14 @@ export function InfoGrid({ age, city, state, gender, heightCm, weightKg, isOwnPr
     <div>
       {isOwnProfile && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-          <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(248,249,250,0.30)' }}>Caracteristicas</span>
+          <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(248,249,250,0.30)' }}>Características</span>
           <EditButton onClick={onEdit} />
         </div>
       )}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
         {age && <StatCard icon={<Calendar size={14} strokeWidth={1.5} />} label="Idade" value={`${age} anos`} />}
         {city && <StatCard icon={<MapPin size={14} strokeWidth={1.5} />} label="Cidade" value={`${city}${state ? `, ${state}` : ''}`} />}
-        {gender && <StatCard icon={<Eye size={14} strokeWidth={1.5} />} label="Genero" value={gender} />}
+        {gender && <StatCard icon={<Eye size={14} strokeWidth={1.5} />} label="Gênero" value={gender} />}
         {heightCm && <StatCard icon={<Ruler size={14} strokeWidth={1.5} />} label="Altura" value={`${heightCm} cm`} />}
         {weightKg && <StatCard icon={<Weight size={14} strokeWidth={1.5} />} label="Peso" value={`${weightKg} kg`} />}
       </div>
@@ -107,7 +107,7 @@ export function TrustScore({ score }: { score: number }) {
   return (
     <div style={{ backgroundColor: 'rgba(19,22,31,0.95)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px 18px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-        <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.45)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Confianca do perfil</span>
+        <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.45)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Confiança do perfil</span>
         <span style={{ fontSize: '13px', fontWeight: 700, color: '#F8F9FA' }}>{score}%</span>
       </div>
       <div style={{ height: '3px', borderRadius: '100px', backgroundColor: 'rgba(255,255,255,0.06)', overflow: 'hidden' }}>
@@ -123,8 +123,8 @@ export function RatingsCard({ ratings }: { ratings: { total: number; positive: n
   return (
     <div style={{ backgroundColor: 'rgba(19,22,31,0.95)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', padding: '16px 18px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
-        <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.45)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Avaliacoes dos matches</span>
-        <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>{ratings.total} {ratings.total === 1 ? 'avaliacao' : 'avaliacoes'}</span>
+        <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.45)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Avaliações dos matches</span>
+        <span style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)' }}>{ratings.total} {ratings.total === 1 ? 'avaliação' : 'avaliações'}</span>
       </div>
       <div style={{ display: 'flex', gap: '10px' }}>
         <div style={{ flex: 1, backgroundColor: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
@@ -135,7 +135,7 @@ export function RatingsCard({ ratings }: { ratings: { total: number; positive: n
         </div>
         <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
           <p style={{ fontSize: '18px', fontWeight: 700, color: '#F8F9FA', margin: '0 0 2px' }}>{ratings.total}</p>
-          <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>avaliacoes</p>
+          <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>avaliações</p>
         </div>
       </div>
     </div>
@@ -147,7 +147,7 @@ export function RatingsCard({ ratings }: { ratings: { total: number; positive: n
 export function FilterTags({ filters, isOwnProfile, onEdit }: { filters: any; isOwnProfile: boolean; onEdit: () => void }) {
   return (
     <>
-      <TagSection title="Aparencia" tags={getAparenciaTags(filters)} onEdit={isOwnProfile ? onEdit : undefined} />
+      <TagSection title="Aparência" tags={getAparenciaTags(filters)} onEdit={isOwnProfile ? onEdit : undefined} />
       <TagSection title="Estilo de vida" tags={getEstiloTags(filters)} />
       <TagSection title="Personalidade" tags={getPersonalidadeTags(filters)} />
       <TagSection title="O que busca" tags={getObjetivosTags(filters)} />

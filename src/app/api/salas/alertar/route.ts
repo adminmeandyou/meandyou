@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const { roomId, roomName, content, matchedWords, context } = await req.json()
 

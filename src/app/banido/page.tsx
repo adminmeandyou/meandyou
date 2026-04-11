@@ -11,7 +11,7 @@ export default function BanidoPage() {
         </div>
         <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', color: 'var(--text)', margin: '0 0 12px' }}>Conta suspensa</h1>
         <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: 1.6, margin: '0 0 24px' }}>
-          Sua conta foi suspensa por violar os termos de uso do MeAndYou. Se acredita que isso e um erro, entre em contato com o suporte.
+          Sua conta foi suspensa por violar os termos de uso do MeAndYou. Se acredita que isso é um erro, entre em contato com o suporte.
         </p>
         <a
           href="mailto:suporte@meandyou.com.br"

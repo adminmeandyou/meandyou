@@ -6,12 +6,12 @@ export async function POST(req: NextRequest) {
     const sessionClient = await createServerClient()
     const { data: { user }, error: authError } = await sessionClient.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
     const { day_number } = await req.json()
     if (typeof day_number !== 'number') {
-      return NextResponse.json({ error: 'day_number invalido' }, { status: 400 })
+      return NextResponse.json({ error: 'day_number inválido' }, { status: 400 })
     }
 
     const supabaseAdmin = createAdminClient()

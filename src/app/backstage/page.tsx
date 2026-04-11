@@ -133,13 +133,13 @@ function CamaroteApp({ onBack }: { onBack: () => void }) {
 // ─── Termos de segurança ───────────────────────────────────────────────────────
 
 const SAFETY_ITEMS = [
-  { icon: Shield, text: 'Mantenha toda comunicacao pelo app. Suas conversas ficam salvas e protegidas.' },
-  { icon: CheckCircle, text: 'Use a videochamada para verificar que a pessoa e real antes de marcar um encontro.' },
-  { icon: MapPin, text: 'Marque encontros em locais publicos e seguros na primeira vez.' },
-  { icon: Users, text: 'Avise alguem de confianca: onde vai, com quem e em que horario.' },
+  { icon: Shield, text: 'Mantenha toda comunicação pelo app. Suas conversas ficam salvas e protegidas.' },
+  { icon: CheckCircle, text: 'Use a videochamada para verificar que a pessoa é real antes de marcar um encontro.' },
+  { icon: MapPin, text: 'Marque encontros em locais públicos e seguros na primeira vez.' },
+  { icon: Users, text: 'Avise alguém de confiança: onde vai, com quem e em que horário.' },
   { icon: Heart, text: 'Leve seu telefone carregado e comunique-se durante o encontro.' },
-  { icon: AlertTriangle, text: 'Nao compartilhe dados pessoais (endereco, trabalho) antes de ter confianca.' },
-  { icon: Flame, text: 'Use o botao de denuncia se algo parecer errado. Estamos aqui para proteger voce.' },
+  { icon: AlertTriangle, text: 'Não compartilhe dados pessoais (endereço, trabalho) antes de ter confiança.' },
+  { icon: Flame, text: 'Use o botão de denúncia se algo parecer errado. Estamos aqui para proteger você.' },
 ]
 
 function CamaroteTerms({ onAccept, onBack }: { onAccept: () => void; onBack: () => void }) {
@@ -167,7 +167,7 @@ function CamaroteTerms({ onAccept, onBack }: { onAccept: () => void; onBack: () 
             Antes de entrar
           </h2>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', lineHeight: 1.6, margin: 0 }}>
-            O Camarote e um ambiente adulto e privado. Leia com atencao antes de continuar.
+            O Camarote é um ambiente adulto e privado. Leia com atenção antes de continuar.
           </p>
         </div>
 
@@ -200,7 +200,7 @@ function CamaroteTerms({ onAccept, onBack }: { onAccept: () => void; onBack: () 
             {accepted && <Check size={13} color="#fff" strokeWidth={2.5} />}
           </div>
           <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.50)', lineHeight: 1.55 }}>
-            Li e compreendo as recomendacoes de seguranca. Estou ciente de que o Camarote e um ambiente para adultos maiores de 18 anos.
+            Li e compreendo as recomendações de segurança. Estou ciente de que o Camarote é um ambiente para adultos maiores de 18 anos.
           </span>
         </label>
 
@@ -268,10 +268,10 @@ function CamaroteCategories({
         {/* Titulo */}
         <div style={{ marginBottom: 28 }}>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 26, color: '#fff', margin: '0 0 8px', lineHeight: 1.2 }}>
-            No que voce tem interesse?
+            No que você tem interesse?
           </h2>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.40)', lineHeight: 1.6, margin: 0 }}>
-            Selecione tudo que voce esta aberto(a) a explorar. Voce aparecera na vitrine apenas para quem compartilha seus interesses.
+            Selecione tudo que você está aberto(a) a explorar. Você aparecerá na vitrine apenas para quem compartilha seus interesses.
           </p>
         </div>
 
@@ -314,7 +314,7 @@ function CamaroteCategories({
         {/* Nota */}
         <div style={{ padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 24 }}>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', lineHeight: 1.55, margin: 0 }}>
-            Voce pode alterar seus interesses a qualquer momento voltando aqui. Quanto mais categorias, mais perfis voce vera na vitrine.
+            Você pode alterar seus interesses a qualquer momento voltando aqui. Quanto mais categorias, mais perfis você verá na vitrine.
           </p>
         </div>
 

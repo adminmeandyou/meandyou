@@ -160,7 +160,7 @@ export default function AguardandoEmailPage() {
           onClick={verificarAgora}
           style={{ width: '100%', padding: '14px', borderRadius: '12px', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: '15px', fontWeight: 700, border: 'none', cursor: 'pointer' }}
         >
-          Ja verifiquei meu email
+          Já verifiquei meu email
         </button>
 
         {/* Reenviar */}

@@ -125,7 +125,7 @@ function MembersSheet({
                 <div>
                   <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--text)', margin: 0 }}>
                     {m.nickname}
-                    {m.user_id === myUserId && <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 6 }}>(voce)</span>}
+                    {m.user_id === myUserId && <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 6 }}>(você)</span>}
                   </p>
                 </div>
                 {blocked.has(m.user_id) && <VolumeX size={12} color="var(--muted)" style={{ marginLeft: 'auto' }} />}
@@ -437,7 +437,7 @@ export default function SalaChatPage() {
           .eq('room_id', roomId)
           .eq('user_id', req.requester_id)
           .single()
-        setPendingProfileReqs(prev => [...prev, { ...req, requesterNickname: memberRow?.nickname ?? 'Alguem' }])
+        setPendingProfileReqs(prev => [...prev, { ...req, requesterNickname: memberRow?.nickname ?? 'Alguém' }])
       })
       .on('postgres_changes', {
         event: 'INSERT',
@@ -453,7 +453,7 @@ export default function SalaChatPage() {
           .eq('room_id', roomId)
           .eq('user_id', req.requester_id)
           .single()
-        setPendingChatReqs(prev => [...prev, { ...req, requesterNickname: memberRow?.nickname ?? 'Alguem' }])
+        setPendingChatReqs(prev => [...prev, { ...req, requesterNickname: memberRow?.nickname ?? 'Alguém' }])
       })
       .subscribe((status) => {
         if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
@@ -479,7 +479,7 @@ export default function SalaChatPage() {
     if (!content || sending) return
 
     if (connectionStatus === 'offline') {
-      setFloodWarning('Sem conexao. Tente novamente em instantes.')
+      setFloodWarning('Sem conexão. Tente novamente em instantes.')
       setTimeout(() => setFloodWarning(''), 3000)
       return
     }
@@ -598,9 +598,9 @@ export default function SalaChatPage() {
           target_id: member.user_id,
           status: 'pending',
         })
-        setModError('Solicitacao enviada. Aguarde a resposta.')
+        setModError('Solicitação enviada. Aguarde a resposta.')
         setTimeout(() => setModError(''), 3000)
-      } catch { setModError('Erro ao enviar solicitacao') }
+      } catch { setModError('Erro ao enviar solicitação') }
       return
     }
 
@@ -612,9 +612,9 @@ export default function SalaChatPage() {
           target_id: member.user_id,
           status: 'pending',
         })
-        setModError('Solicitacao de chat enviada.')
+        setModError('Solicitação de chat enviada.')
         setTimeout(() => setModError(''), 3000)
-      } catch { setModError('Erro ao enviar solicitacao') }
+      } catch { setModError('Erro ao enviar solicitação') }
       return
     }
 
@@ -764,7 +764,7 @@ export default function SalaChatPage() {
             <div style={{ width: 14, height: 14, borderRadius: '50%', border: '2px solid #F59E0B', borderTop: '2px solid transparent', animation: 'ui-spin 0.8s linear infinite' }} />
           )}
           <p style={{ fontSize: 12, margin: 0, color: connectionStatus === 'offline' ? '#f87171' : '#F59E0B' }}>
-            {connectionStatus === 'offline' ? 'Sem conexao. Mensagens podem nao chegar.' : 'Reconectando...'}
+            {connectionStatus === 'offline' ? 'Sem conexão. Mensagens podem não chegar.' : 'Reconectando...'}
           </p>
         </div>
       )}
@@ -802,9 +802,9 @@ export default function SalaChatPage() {
 
       {/* Avisos */}
       {(modError || floodWarning) && (
-        <div style={{ padding: '8px 14px', backgroundColor: modError.startsWith('Solicitacao') ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', borderTop: '1px solid rgba(239,68,68,0.15)', flexShrink: 0 }}>
-          <p style={{ fontSize: 12, color: modError.startsWith('Solicitacao') ? '#10b981' : '#f87171', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
-            {!modError.startsWith('Solicitacao') && <AlertTriangle size={13} />}
+        <div style={{ padding: '8px 14px', backgroundColor: modError.startsWith('Solicitação') ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', borderTop: '1px solid rgba(239,68,68,0.15)', flexShrink: 0 }}>
+          <p style={{ fontSize: 12, color: modError.startsWith('Solicitação') ? '#10b981' : '#f87171', margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}>
+            {!modError.startsWith('Solicitação') && <AlertTriangle size={13} />}
             {modError || floodWarning}
           </p>
         </div>
@@ -813,7 +813,7 @@ export default function SalaChatPage() {
       {/* Input */}
       <div style={{ padding: '10px 14px 16px', borderTop: '1px solid var(--border)', backgroundColor: 'var(--bg)', flexShrink: 0 }}>
         <p style={{ fontSize: 11, color: 'var(--muted-2)', margin: '0 0 6px' }}>
-          Voce e <strong style={{ color: 'var(--accent)' }}>{myNickname}</strong> nesta sala
+          Você é <strong style={{ color: 'var(--accent)' }}>{myNickname}</strong> nesta sala
         </p>
         <div style={{ display: 'flex', gap: 8, alignItems: 'flex-end' }}>
           <textarea

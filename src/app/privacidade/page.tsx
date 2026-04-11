@@ -64,7 +64,7 @@ export default function Privacidade() {
           marginBottom: '48px',
         }}>
           <p style={{ fontSize: '14px', color: 'var(--accent)', fontWeight: 700, marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <FileText size={14} /> Resumo rapido
+            <FileText size={14} /> Resumo rápido
           </p>
           <p style={{ fontSize: '14px', color: 'var(--text)', lineHeight: 1.7, margin: 0 }}>
             Coletamos apenas os dados necessários para o funcionamento da plataforma. Não vendemos seus dados.

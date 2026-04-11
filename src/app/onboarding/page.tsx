@@ -122,7 +122,7 @@ export default function OnboardingPage() {
               <Heart size={36} color="var(--accent)" fill="var(--accent)" />
             </div>
             <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '32px', color: 'var(--text)', marginBottom: '12px' }}>
-              {nome ? `Ola, ${nome.split(' ')[0]}!` : 'Bem-vindo(a)!'}
+              {nome ? `Olá, ${nome.split(' ')[0]}!` : 'Bem-vindo(a)!'}
             </h1>
             <p style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: '1.7', marginBottom: '32px' }}>
               Você acaba de entrar no <strong style={{ color: 'var(--text)' }}>MeAnd<span style={{ color: 'var(--accent)' }}>You</span></strong> — onde conexões reais acontecem. Diferente dos outros apps, aqui a compatibilidade vai muito além de uma foto.

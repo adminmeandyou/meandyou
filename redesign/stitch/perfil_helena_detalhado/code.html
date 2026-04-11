@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&amp;family=Plus+Jakarta+Sans:wght@200..800&amp;family=Noto+Serif:ital,wght@0,100..900;1,100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary-fixed-dim": "#ffb95f",
+                    "on-surface-variant": "#e5bdbe",
+                    "inverse-primary": "#be0037",
+                    "surface-container-high": "#292a2f",
+                    "on-primary-fixed-variant": "#920028",
+                    "on-tertiary-fixed-variant": "#005142",
+                    "tertiary-fixed-dim": "#74d8bd",
+                    "outline": "#ac8889",
+                    "surface-container-lowest": "#0d0e13",
+                    "surface-container-highest": "#34343a",
+                    "primary-fixed-dim": "#ffb3b6",
+                    "on-primary": "#68001a",
+                    "surface": "#121318",
+                    "on-primary-container": "#fffaf9",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary-fixed": "#2a1700",
+                    "inverse-surface": "#e3e1e9",
+                    "primary-fixed": "#ffdada",
+                    "tertiary-fixed": "#90f5d9",
+                    "on-secondary-container": "#5b3800",
+                    "on-surface": "#e3e1e9",
+                    "surface-variant": "#34343a",
+                    "surface-tint": "#ffb3b6",
+                    "on-tertiary-fixed": "#002019",
+                    "secondary-fixed": "#ffddb8",
+                    "surface-container-low": "#1a1b21",
+                    "background": "#121318",
+                    "surface-container": "#1e1f25",
+                    "on-tertiary": "#00382d",
+                    "error-container": "#93000a",
+                    "on-primary-fixed": "#40000c",
+                    "secondary": "#ffb95f",
+                    "outline-variant": "#5c3f40",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "tertiary-container": "#00836c",
+                    "primary": "#ffb3b6",
+                    "tertiary": "#74d8bd",
+                    "secondary-container": "#ee9800",
+                    "surface-bright": "#38393f",
+                    "surface-dim": "#121318",
+                    "on-error": "#690005",
+                    "error": "#ffb4ab",
+                    "on-tertiary-container": "#eefff7",
+                    "on-secondary": "#472a00",
+                    "on-background": "#e3e1e9",
+                    "inverse-on-surface": "#2f3036",
+                    "primary-container": "#e11d48"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Fraunces", "serif"],
+                    "body": ["Plus Jakarta Sans", "sans-serif"],
+                    "label": ["Plus Jakarta Sans", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+      body {
+        background-color: #08090E
+      }
+      .grain-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 9999;
+        opacity: 0.02;
+        background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBibrQeI_TpKHTdT1-QfG_DcLc0FWlrP0VAOCjO4DJagCzc-VGudrDw9JhN7VeI_yqFI3qUiJIM7KXbM1cEv2LuLWqPP7MPtWdsyHxQ9TgghBkCbRxAw8tTYhIdsSmjBwm4uYquqyoAY2fjI8wzPjbuoidD8VPaZ6vVlndrvksHnZW4bWOhnFuCMzcnDfvqQ6pVdD5ATHxFBGy01RfeXbeF5FmcwG1mWs5FGaXlEa7ENS2CxqhNFfUhmkSH9QpUqNAO4uNP_6V--Lh7)
+      }
+      .editorial-shadow {
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05)
+      }
+      .glass-nav {
+        background: rgba(15, 17, 23, 0.7);
+        backdrop-filter: blur(12px)
+      }
+      .pixel-art {
+        image-rendering: pixelated
+      }
+    </style>
+<style>
+      body {
+        min-height: max(884px, 100dvh);
+      }
+    </style>
+</head>
+<body class="font-body text-on-surface selection:bg-primary-container selection:text-white">
+<div class="grain-overlay"></div>
+<!-- Top Navigation -->
+<header class="fixed top-0 w-full z-50 bg-transparent backdrop-blur-xl flex justify-between items-center px-6 h-20">
+<button class="text-rose-600 dark:text-rose-500 scale-95 active:duration-150">
+<span class="material-symbols-outlined text-3xl">arrow_back</span>
+</button>
+<h1 class="font-headline italic font-black text-rose-600 dark:text-rose-500 text-2xl tracking-tighter">The Midnight Editorial</h1>
+<button class="text-rose-600 dark:text-rose-500 scale-95 active:duration-150">
+<span class="material-symbols-outlined text-3xl">settings</span>
+</button>
+</header>
+<main class="pb-32 pt-20">
+<!-- Photo Carousel Section -->
+<section class="relative w-full aspect-[3/4] md:max-w-md md:mx-auto md:rounded-xl overflow-hidden group">
+<img class="w-full h-full object-cover" data-alt="striking portrait of Helena, a young woman with dark hair in a moody, dimly lit jazz bar setting, cinematic soft red lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA9qC-375Mx1R5tPjk9BQvWL8ypUOtoyhVD2MlCLFbgJHV6MQt8tYMmRW668qTPqidBi-X0TTA5XqpJaLDIbLYUqLYGvosidXC9d-XO5lgtZyG0KWjqmTvgvacZQL4-9Y1JSzcCjbWdjdEbRebTuSnSLWGO11TN2B-h8sbpNCfOKX_AA9prtgZCIzhzY2t2dpWYldV2q21DapUqgySEHzjmDRHvhO3FhbSyKu5MeFcaXTRil_1bpObNSNJFOyzikSXbZfG6QCda7vED"/>
+<!-- Indicators -->
+<div class="absolute top-4 left-0 right-0 px-4 flex gap-1.5 z-10">
+<div class="h-1 flex-1 bg-white rounded-full"></div>
+<div class="h-1 flex-1 bg-white/30 rounded-full"></div>
+<div class="h-1 flex-1 bg-white/30 rounded-full"></div>
+</div>
+<!-- Gradient Overlay for Legibility -->
+<div class="absolute inset-0 bg-gradient-to-t from-[#08090E] via-transparent to-transparent opacity-80"></div>
+<!-- Floating Details Anchor -->
+<div class="absolute bottom-8 left-8 right-8">
+<div class="flex items-baseline gap-3 mb-1">
+<h2 class="font-headline text-5xl font-black tracking-tighter text-white">Helena, 26</h2>
+</div>
+<div class="flex flex-col gap-2">
+<div class="flex items-center gap-2 text-white/70">
+<span class="material-symbols-outlined text-lg">location_on</span>
+<span class="text-sm tracking-widest uppercase font-bold">São Paulo, Brazil</span>
+</div>
+<div class="flex items-center gap-1.5 text-rose-500 bg-rose-500/10 w-fit px-3 py-1 rounded-full border border-rose-500/20">
+<span class="material-symbols-outlined text-base" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-[10px] font-bold uppercase tracking-widest">Perfil Verificado</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Profile Content -->
+<div class="px-6 space-y-10 mt-10 md:max-w-2xl md:mx-auto">
+<!-- Badge Showcase (Pixel Art Style) -->
+<section>
+<div class="flex justify-between items-center mb-4">
+<h3 class="text-xs uppercase tracking-[0.2em] text-white/40 font-bold">Conquistas &amp; Legado</h3>
+<button class="text-[10px] uppercase tracking-wider text-rose-500 font-bold hover:underline">Ver todas conquistas</button>
+</div>
+<div class="flex flex-wrap gap-4 items-center">
+<div class="w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center p-2 editorial-shadow border border-white/5">
+<img class="pixel-art w-full h-full grayscale-0" data-alt="pixel art collectible icon of a red heart with a crown, habbo hotel style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDlSYybYAiAIOHrHY3ZoXB4rj4z1AlNgwx5P35hcN3FdfNycTYaDmnNDbgDwr_autjxju5tyB7hmGAZcZD3bt4a0lrxPsFveOxQt5WP1tUVmvfO26Jrgw_AjE2L7EloEptmGmWw-o9Xf1vwKKbODTug9kaaDsyVqEhe4rN3hHBjafnYkW3TS4uAArW-dZ30nk99b2gX0BDGYN0IP7k0XnHsxbfZ8pg_RqA9p1ETbLVNrb9euxJRFdo8XpZECAzwIkTQBKa_Qug7VOXY"/>
+</div>
+<div class="w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center p-2 editorial-shadow border border-white/5">
+<img class="pixel-art w-full h-full" data-alt="pixel art collectible icon of a neon purple record player, retro aesthetic" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCDcyQ6ijTWZilc95Vf8viYiC6jePHYnuBpbu0dpnL6qyQFw03AfYb35x3xKrHwzDzzeMhMPc7FoTQJh2BeQ_Iphj5cxENEPVZwHyXN3gAMYqM88_cyp5P_t9FA9o4bMNlAcpvqJIZX7pmZR4wrU_vGQJwdGJc60YcFEFJeg4zhLdrU1fCpc0DnfPATBH56yDNeQPaUKbWMV2OsCUpIXxhWmJDHm_T8nIWyruebRI9lC96q0KAG-MkFLMQ5n7alFxXi5PiiNKW9fO33"/>
+</div>
+<div class="w-12 h-12 bg-surface-container-high rounded-lg flex items-center justify-center p-2 editorial-shadow border border-white/5">
+<img class="pixel-art w-full h-full" data-alt="pixel art icon of a glowing gold star with wings, premium member badge" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDtAY6z3tJZuncbA1v8vLHvYQmbQUnJo5SKR6549y3BmnnNFfP2gJhDvteGrKBGpFkuurdVocfe8fwF2lr_ne_-yIyrL9U9Gze7szu07FP_bBgKe4ADRDuK0q2VE0HCy3loJEHiGJwDuWyj93XncLiUH74i2SJyJddcp9g-3alny9GKAL9rvUuXtBhU-f_ilxPsARNRTxVKDti5p3PsHOQDVyP2Tnur53_E_G8N4tG_kYcWFx9kjAw17-nypVvBR-gYAl5V3yXLEgi6"/>
+</div>
+</div>
+</section>
+<!-- Lifestyle Tags -->
+<section class="flex flex-wrap gap-2">
+<span class="px-4 py-1.5 rounded-full bg-primary-container text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">verified</span>
+                    Verificada
+                </span>
+<span class="px-4 py-1.5 rounded-full bg-secondary-container text-on-secondary-container text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+                    Premium
+                </span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-white/80 text-[10px] font-bold uppercase tracking-widest border border-white/5">Fundadora</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-white/80 text-[10px] font-bold uppercase tracking-widest border border-white/5">Gamer</span>
+<span class="px-4 py-1.5 rounded-full bg-surface-container-high text-white/80 text-[10px] font-bold uppercase tracking-widest border border-white/5">Não fuma</span>
+</section>
+<!-- Bio Section -->
+<section>
+<h3 class="font-headline text-3xl text-primary leading-tight mb-4 max-w-[80%] italic">
+                    Curadora de experiências e apreciadora do silêncio compartilhado...
+                </h3>
+<p class="text-on-surface-variant leading-relaxed font-light text-lg">
+                    Procuro alguém que entenda que a melhor conversa muitas vezes acontece entre as notas de um Jazz ou no meio de um set de Techno pesado. Design, arquitetura e um bom vinho tinto são as bases da minha rotina em São Paulo.
+                </p>
+</section>
+<!-- Interests Bento-ish Grid -->
+<section>
+<h3 class="text-xs uppercase tracking-[0.2em] text-white/40 mb-6 font-bold">Interesses</h3>
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container-low p-4 rounded-xl border border-white/5 flex flex-col justify-between aspect-square group hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-rose-500 text-3xl">architecture</span>
+<span class="font-headline text-xl text-white">Arquitetura</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-white/5 flex flex-col justify-between aspect-square group hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-rose-500 text-3xl">wine_bar</span>
+<span class="font-headline text-xl text-white">Vinho Tinto</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-white/5 flex flex-col justify-between aspect-square group hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-rose-500 text-3xl">music_note</span>
+<span class="font-headline text-xl text-white">Jazz</span>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-white/5 flex flex-col justify-between aspect-square group hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-rose-500 text-3xl">album</span>
+<span class="font-headline text-xl text-white">Techno</span>
+</div>
+</div>
+</section>
+</div>
+</main>
+<!-- Bottom Action Floating Buttons -->
+<div class="fixed bottom-0 left-0 right-0 flex justify-center items-center gap-8 z-50 py-8 glass-nav border-t border-white/5">
+<button class="w-14 h-14 rounded-full bg-surface-container-high flex items-center justify-center text-white/60 editorial-shadow border border-white/10 active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-3xl">close</span>
+</button>
+<button class="w-16 h-16 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shadow-[0_4px_20px_rgba(238,152,0,0.4)] active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">bolt</span>
+</button>
+<button class="w-20 h-20 rounded-full bg-gradient-to-br from-rose-500 to-rose-700 flex items-center justify-center text-white shadow-[0_10px_30px_rgba(225,29,72,0.4)] active:scale-90 transition-transform">
+<span class="material-symbols-outlined text-5xl" style="font-variation-settings: 'FILL' 1;">favorite</span>
+</button>
+</div>
+</body></html>

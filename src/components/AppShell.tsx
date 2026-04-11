@@ -128,20 +128,20 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {/* Tagline */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <p style={{ fontSize: 13, color: 'var(--muted)', lineHeight: 1.6, margin: 0 }}>
-              Conexoes reais com pessoas verificadas. Encontre alguem especial perto de voce.
+              Conexões reais com pessoas verificadas. Encontre alguém especial perto de você.
             </p>
           </div>
 
           {/* Links rapidos */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-2)', letterSpacing: '0.08em', textTransform: 'uppercase', margin: '0 0 8px' }}>Acesso rapido</p>
+            <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--muted-2)', letterSpacing: '0.08em', textTransform: 'uppercase', margin: '0 0 8px' }}>Acesso rápido</p>
             {[
               { href: '/modos',          label: 'Descobrir perfis' },
               { href: '/conversas',      label: 'Matches' },
               { href: '/streak',         label: 'Prêmios diários' },
               { href: '/loja',           label: 'Loja' },
               { href: '/planos',         label: 'Planos' },
-              { href: '/configuracoes',  label: 'Configuracoes' },
+              { href: '/configuracoes',  label: 'Configurações' },
             ].map(({ href, label }) => (
               <Link
                 key={href}

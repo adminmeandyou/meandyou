@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&amp;family=Plus+Jakarta+Sans:wght@200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>body {
+    background-color: #08090E;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    color: #F8F9FA;
+    overflow-x: hidden
+    }
+.font-fraunces {
+    font-family: "Fraunces", serif
+    }
+.grain-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.02;
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuCQzmUhIwSdm7r5VGH-AdYrTvuIewkyNCgz2WR90ULNObqSgINob1mPpnS_AJRwJ51K1Smt7DyIhm38vFmIXQ2VOraFQD_0mYc1u7ehONOa9xUe3PV6Px_jGqH1je-1qSniTchKrPCjqZ-zHCC3-W2jf_Oo2nB5cT52Rm6MSOo7P_5vzClAnAD4rXb86aJ_TTXwm8PCsXNttau7qwM8J1sdy625JplOZl720_ueozMGmZd8BhJ4C2RstqucenNY5Or9aJHpeo87L-zL)
+    }
+.noir-vignette {
+    background: linear-gradient(to bottom, rgba(8, 9, 14, 0) 0%, rgba(8, 9, 14, 0.9) 100%)
+    }
+.gold-gradient {
+    background: linear-gradient(135deg, #F59E0B 0%, #B47B00 100%)
+    }
+.button-gradient {
+    background: linear-gradient(135deg, #E11D48 0%, #be123c 100%)
+    }
+.glass-card {
+    background: rgba(15, 17, 23, 0.7);
+    backdrop-filter: blur(12px)
+    }</style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "surface": "#08090E",
+                        "surface-container-low": "#0F1117",
+                        "surface-container": "#13161F",
+                        "primary-container": "#E11D48",
+                        "secondary-container": "#F59E0B",
+                        "on-surface": "#e3e1e9",
+                        "on-background": "#e3e1e9",
+                        "outline-variant": "rgba(255, 255, 255, 0.05)"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    fontFamily: {
+                        "headline": ["Fraunces"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface text-on-surface antialiased">
+<div class="grain-overlay"></div>
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-20 w-full bg-[#08090E]/70 backdrop-blur-xl bg-gradient-to-b from-[#0F1117] to-transparent shadow-[0_20px_40px_rgba(0,0,0,0.6)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-white/10">
+<img alt="User profile portrait" class="w-full h-full object-cover" data-alt="close-up portrait of a stylish man in a dark studio setting with soft cinematic lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBeRjaxsJlLkiBiDTUnn3AeoKFkbqzh5MUIxLxGTppiTpF83aSt6cJSIisBhj5C1lx8iVtAiO7IVnjBoSmG6aWaYDSnIoeC0YKz93MwaqjQCPMZiBHP5MlMvkB9lIm6sH-X_2gv1mWrhJu7E2VyzkwLlUJdm9VMW8OqJw47Vo5oQ5g0m4acjNr1A5Tl6CjPRI4rC-D6G565zTh0R026FzTR6hFRArlwUlkAQ9vJ5Kj-lSthNtgnfR7rH6k0DEIOVyx201WaxpX24OVN"/>
+</div>
+</div>
+<h1 class="font-['Fraunces'] text-2xl italic font-black text-[#E11D48] tracking-tighter">Me&amp;You</h1>
+<button class="text-gray-400 hover:opacity-80 transition-opacity duration-300 transform active:scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</header>
+<main class="pt-28 pb-32 px-6 max-w-5xl mx-auto">
+<!-- Header Section -->
+<div class="mb-10">
+<p class="text-[10px] uppercase tracking-[0.2em] text-gray-500 font-bold mb-2">Conexões Curadas</p>
+<h2 class="font-fraunces text-4xl font-bold tracking-tight text-white leading-tight">Escolha seu <br/><span class="text-[#E11D48]">ritmo</span> hoje.</h2>
+</div>
+<!-- Connection Modes Grid -->
+<div class="grid grid-cols-2 gap-4 mb-8">
+<!-- Descobrir -->
+<div class="relative aspect-[3/4] rounded-lg overflow-hidden group cursor-pointer transition-transform duration-500 hover:scale-[1.02]">
+<img alt="Descobrir mode background" class="absolute inset-0 w-full h-full object-cover grayscale-[0.2]" data-alt="blurry city lights at night through a rainy window with deep shadows and cinematic noir mood" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA54jN5n3k2dI6hns6sFSyIUEA-X2x86aOPf8BuYKGjZROMRB-3IgBKewMFRMrkHxxW_zGMm2_Ycd1sAaOF_1hbxfvDmDJOz2fHwXeHui9Uk-Mx3Be2-NjwRSm2kXDzs0A4TRAZTYjuIXDp1O-Lfr8yOjbAsKcjEmbdeRNAJveO_L0BoTE4EgseQFlnAfMe1l61bnqthsd3Hv49y9VX1BkwjUvpBqfYhMJSVbO8X7WcYv97GI3tRT9c3egRbME7t7mLgJph3Jes-UTm"/>
+<div class="absolute inset-0 noir-vignette"></div>
+<div class="absolute inset-0 p-5 flex flex-col justify-end">
+<h3 class="font-fraunces text-xl text-white mb-1">Descobrir</h3>
+<p class="text-xs text-gray-400 font-light leading-relaxed">Novos olhares, sem filtros.</p>
+</div>
+</div>
+<!-- Busca Avançada -->
+<div class="relative aspect-[3/4] rounded-lg overflow-hidden group cursor-pointer transition-transform duration-500 hover:scale-[1.02]">
+<img alt="Busca Avançada mode background" class="absolute inset-0 w-full h-full object-cover grayscale-[0.3]" data-alt="vintage library with dark wood and warm desk lamp lighting creating deep shadows and intellectual atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuASPz53GHQ0fTscIMBGUmFqDepAbJu0q-IQ4be-Nxq81C2iS5-_lk1-iveRl51EgDcEV2LpkWxzFbYtm7zaEc_yW7nYubXDlXUunv87hW8xVCtymhZ_jvS3tVgmTwLI2q6jIISTPdjIQtXWssofNNx3ltV9yiw6UCyU-r6xEpICn_Uy-2Rzcr-BOfeyQEhxZOOU_4xZwdGLHWns3oCpErxel4aAetbQECYjepCiRGNseB9pNCizSaSbJrpyza-qdSjq4ovQmXh5omkT"/>
+<div class="absolute inset-0 noir-vignette"></div>
+<div class="absolute inset-0 p-5 flex flex-col justify-end">
+<h3 class="font-fraunces text-xl text-white mb-1">Busca Avançada</h3>
+<p class="text-xs text-gray-400 font-light leading-relaxed">Encontre a peça que falta.</p>
+</div>
+</div>
+<!-- Salas -->
+<div class="relative aspect-[3/4] rounded-lg overflow-hidden group cursor-pointer transition-transform duration-500 hover:scale-[1.02]">
+<img alt="Salas mode background" class="absolute inset-0 w-full h-full object-cover opacity-80" data-alt="dark lounge with red neon accents and silhouetted figures in a sophisticated atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB7nJRe0IEiT9Y38pIIn3xPptc88ihVzZK7GHR5Huv8_g0fM15vnDJ6shlfSbJI5XgkaMVp1uSdRyGERfz6Dwdd_-Rqt3xcYjcOrAONZxr80ixOoMFAu_ReIuEyGnFRrnwmzzGSaSLKrESdUo8xbtKGjtTgUg_mcw5QZgZteTZDSGSAmwJl2_NKsu3vGhNRxQBDzGtMrNrQIRAhHaVapiJzaXp7dRuOhzrk-JqvV4E8zPzVsX8lUt2-NxW9WKWlo4uw8r3LHMGRhI4q"/>
+<div class="absolute inset-0 noir-vignette"></div>
+<div class="absolute inset-0 p-5 flex flex-col justify-end">
+<h3 class="font-fraunces text-xl text-white mb-1">Salas</h3>
+<p class="text-xs text-gray-400 font-light leading-relaxed">Conversas coletivas em tempo real.</p>
+</div>
+</div>
+<!-- Match do Dia -->
+<div class="relative aspect-[3/4] rounded-lg overflow-hidden group cursor-pointer transition-transform duration-500 hover:scale-[1.02]">
+<img alt="Match do Dia mode background" class="absolute inset-0 w-full h-full object-cover" data-alt="a single red rose on a dark reflective surface with dramatic spotlighting and deep black background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBqWw9QI3XNnoXhYocvW-GpEKev8qil7_GSYDXbaFq8IoChi5i7Ig9j7QVElEZtpEZzbyJeBCK-6yCtU1E6H5bTwl87gpDnovhOgoMFNFaikQFU3yJ2Ngtu5_gEXVrDHI10MOkr5HLahQCOpwSTYuanyu0WA1rQJwgYs4-QXLx22zcWJ0HnZkiRhSlV2NkZPcyEr6l_0brkBqV_XogYM4cXtbigsjCnjjs_pjzkmVVoWHtKWaFLWkVkh1dpdFJMHV0HMv-j3c6yFJq6"/>
+<div class="absolute inset-0 noir-vignette"></div>
+<div class="absolute inset-0 p-5 flex flex-col justify-end">
+<h3 class="font-fraunces text-xl text-white mb-1">Match do Dia</h3>
+<p class="text-xs text-gray-400 font-light leading-relaxed">A nossa recomendação fatal.</p>
+</div>
+</div>
+</div>
+<!-- Camarote Black (Special Feature) -->
+<div class="relative w-full rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(245,158,11,0.15)] group cursor-pointer border border-white/5">
+<img alt="Camarote Black background" class="absolute inset-0 w-full h-full object-cover" data-alt="high-end luxury bar with gold details and amber lighting with premium cinematic textures" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDSyMKKbTN6D7OVWS-uMOiXRmIsKWmU3CzbZtTlSo52UmTYpogLb6fIe5mEBrtDbZ5OPCNW11vmV42F8WQY6SwxB5TXneRUseX62-hRbE610osATILM5cMn7MzwYjD9SA9qNs8IjncOc_JVXVO139Ppfl-ZEV0KqAl3iL01eszQHIbdM76YuzcfJG82eXgTTjN9j-MzLB_mIMPPToprvp6MBw1burr4gLe6ft1gqlIf7teU3Ez0RNnaoYV0m-r7aL3GCj7URr9zTpj9"/>
+<div class="absolute inset-0 bg-gradient-to-r from-[#08090E] via-[#08090E]/80 to-transparent"></div>
+<div class="relative p-8 flex flex-col items-start min-h-[180px] justify-center">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-[#F59E0B] text-sm" data-icon="workspace_premium" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+<span class="text-[10px] uppercase tracking-[0.3em] text-[#F59E0B] font-black">Exclusivo VIP</span>
+</div>
+<h3 class="font-fraunces text-3xl font-bold text-white mb-2 italic">Camarote Black</h3>
+<p class="text-sm text-gray-300 max-w-[60%] mb-4">Acesso prioritário e perfis verificados de alta relevância.</p>
+<button class="gold-gradient text-black font-bold px-6 py-2 rounded-full text-xs uppercase tracking-widest hover:scale-105 transition-transform duration-300 shadow-[0_4px_15px_rgba(245,158,11,0.4)]">
+                    Entrar agora
+                </button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full h-24 flex justify-around items-center px-8 pb-4 bg-[#0F1117]/80 backdrop-blur-md z-50 rounded-t-3xl border-t border-white/5 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+<a class="flex flex-col items-center justify-center text-[#E11D48] bg-white/5 rounded-full p-3 shadow-[0_0_15px_rgba(225,29,72,0.2)] hover:scale-110 transition-all duration-300 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="explore" style="font-variation-settings: 'FILL' 1;">explore</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-500 hover:text-gray-300 hover:scale-110 transition-all duration-300 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-500 hover:text-gray-300 hover:scale-110 transition-all duration-300 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+</a>
+<a class="flex flex-col items-center justify-center text-gray-500 hover:text-gray-300 hover:scale-110 transition-all duration-300 active:scale-90 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</a>
+</nav>
+</body></html>

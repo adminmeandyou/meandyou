@@ -8,7 +8,7 @@ export async function POST(req: Request) {
 
   const { data: { user }, error: authErr } = await supabase.auth.getUser()
   if (authErr || !user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
   }
 
   const body = await req.json()

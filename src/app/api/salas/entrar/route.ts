@@ -33,10 +33,10 @@ export async function POST(req: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const { roomId, nickname: customNickname } = await req.json()
-  if (!roomId) return NextResponse.json({ error: 'roomId obrigatorio' }, { status: 400 })
+  if (!roomId) return NextResponse.json({ error: 'roomId obrigatório' }, { status: 400 })
 
   // Verificar acesso por tipo de sala
   const { data: room, error: roomErr } = await supabaseAdmin
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     .eq('id', roomId)
     .single()
 
-  if (roomErr || !room) return NextResponse.json({ error: 'Sala nao encontrada' }, { status: 404 })
+  if (roomErr || !room) return NextResponse.json({ error: 'Sala não encontrada' }, { status: 404 })
   if (!room.is_active) return NextResponse.json({ error: 'Sala inativa' }, { status: 400 })
 
   const { data: profile } = await supabaseAdmin
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Sala exclusiva para plano Black' }, { status: 403 })
   }
   if ((room.type === 'public' || room.type === 'private') && plan === 'essencial') {
-    return NextResponse.json({ error: 'Salas disponiveis a partir do plano Plus' }, { status: 403 })
+    return NextResponse.json({ error: 'Salas disponíveis a partir do plano Plus' }, { status: 403 })
   }
 
   const nickname = customNickname?.trim() || generateNickname()
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
   const res = result as { status: string; nickname?: string }
 
   if (res.status === 'sala_nao_encontrada') {
-    return NextResponse.json({ error: 'Sala nao encontrada' }, { status: 404 })
+    return NextResponse.json({ error: 'Sala não encontrada' }, { status: 404 })
   }
   if (res.status === 'sala_cheia') {
     return NextResponse.json({ error: 'Sala cheia' }, { status: 409 })

@@ -162,7 +162,7 @@ export default function Page2FA() {
             <div style={{ backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
               <p style={{ color: '#f59e0b', fontWeight: 600, fontSize: '14px', margin: '0 0 6px' }}>Salve seus códigos de backup</p>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', margin: 0, lineHeight: 1.6 }}>
-                Guarde estes códigos em um local seguro. Cada um pode ser usado uma vez se voce perder acesso ao app autenticador.
+                Guarde estes códigos em um local seguro. Cada um pode ser usado uma vez se você perder acesso ao app autenticador.
               </p>
             </div>
             <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
@@ -182,7 +182,7 @@ export default function Page2FA() {
               onClick={() => setEtapa('ativo')}
               style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '15px', cursor: 'pointer' }}
             >
-              Ja salvei, continuar
+              Já salvei, continuar
             </button>
           </div>
         )}
@@ -194,7 +194,7 @@ export default function Page2FA() {
               <ShieldCheck size={40} color="#22c55e" style={{ marginBottom: '16px' }} />
               <p style={{ color: '#fff', fontWeight: 600, fontSize: '16px', margin: '0 0 8px' }}>2FA ativado</p>
               <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', lineHeight: 1.6, margin: 0 }}>
-                Sua conta esta protegida com verificacao em dois fatores.
+                Sua conta está protegida com verificação em dois fatores.
               </p>
             </div>
             <button
@@ -225,7 +225,7 @@ export default function Page2FA() {
               disabled={carregando || codigo.length < 6}
               style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: '#ef4444', color: '#fff', fontWeight: 700, fontSize: '15px', cursor: 'pointer', opacity: (carregando || codigo.length < 6) ? 0.6 : 1, marginBottom: '12px' }}
             >
-              {carregando ? 'Processando...' : 'Confirmar desativacao'}
+              {carregando ? 'Processando...' : 'Confirmar desativação'}
             </button>
             <button
               onClick={() => { setEtapa('ativo'); setErro(''); setCodigo('') }}

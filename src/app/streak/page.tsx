@@ -184,7 +184,7 @@ export default function StreakPage() {
               {currentDay} Dias
             </h1>
             <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.55)', marginTop: 12, letterSpacing: '0.02em', fontFamily: 'var(--font-jakarta)' }}>
-              Continue a chama acesa para premios exclusivos.
+              Continue a chama acesa para prêmios exclusivos.
             </p>
             {/* Barra de progresso — segmentos thin */}
             <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center' }}>
@@ -219,7 +219,7 @@ export default function StreakPage() {
                 color: '#F8F9FA', margin: 0,
                 letterSpacing: '-0.01em',
               }}>
-                Premios Diarios
+                Prêmios Diários
               </h2>
               <span style={{
                 fontSize: 9, fontWeight: 800,
@@ -231,7 +231,7 @@ export default function StreakPage() {
                 backgroundColor: 'rgba(245,158,11,0.08)',
                 border: '1px solid rgba(245,158,11,0.20)',
               }}>
-                MES DE {monthLabel.toUpperCase()}
+                MÊS DE {monthLabel.toUpperCase()}
               </span>
             </div>
 
@@ -239,7 +239,7 @@ export default function StreakPage() {
               <div style={{ textAlign: 'center', padding: '40px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
                 <Lock size={28} color="rgba(255,255,255,0.15)" strokeWidth={1.5} />
                 <p style={{ color: 'var(--muted)', fontSize: '14px', margin: 0 }}>Continue entrando no app todo dia</p>
-                <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '12px', margin: 0 }}>Seu calendario sera gerado automaticamente</p>
+                <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '12px', margin: 0 }}>Seu calendário será gerado automaticamente</p>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
@@ -345,7 +345,7 @@ export default function StreakPage() {
                 Desbloqueie o Noir Curator
               </h3>
               <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.55)', lineHeight: 1.6, margin: '0 0 20px', fontFamily: 'var(--font-jakarta)' }}>
-                Mantenha sua sequencia por 30 dias para receber o selo vitalicio de Curador e acessos antecipados.
+                Mantenha sua sequência por 30 dias para receber o selo vitalício de Curador e acessos antecipados.
               </p>
               <button style={{
                 width: '100%', padding: '14px',
@@ -366,14 +366,14 @@ export default function StreakPage() {
           {/* Motivacao diaria */}
           {(() => {
             const msgs = [
-              { min: 0,  max: 1,  text: 'Primeiro passo dado! Volte amanha para manter sua sequencia.', color: 'rgba(248,249,250,0.40)' },
-              { min: 2,  max: 3,  text: 'Voce esta construindo um habito! Continue assim.', color: '#3b82f6' },
-              { min: 4,  max: 6,  text: 'Quase uma semana! Sua dedicacao esta rendendo frutos.', color: '#3b82f6' },
-              { min: 7,  max: 13, text: 'Uma semana completa! Voce esta entrando no ritmo.', color: '#ec4899' },
-              { min: 14, max: 20, text: 'Duas semanas! Voce e um usuario dedicado — os melhores premios estao chegando.', color: '#b8f542' },
-              { min: 21, max: 29, text: 'Tres semanas seguidas! Poucos chegam ate aqui. Continue!', color: '#8b5cf6' },
-              { min: 30, max: 60, text: 'Um mes ou mais! Voce e lendario no MeAndYou. Os premios refletem isso.', color: '#f97316' },
-              { min: 61, max: 999, text: 'Nivel maximo desbloqueado. Voce e parte do grupo mais dedicado do app!', color: '#F59E0B' },
+              { min: 0,  max: 1,  text: 'Primeiro passo dado! Volte amanhã para manter sua sequência.', color: 'rgba(248,249,250,0.40)' },
+              { min: 2,  max: 3,  text: 'Você está construindo um hábito! Continue assim.', color: '#3b82f6' },
+              { min: 4,  max: 6,  text: 'Quase uma semana! Sua dedicação está rendendo frutos.', color: '#3b82f6' },
+              { min: 7,  max: 13, text: 'Uma semana completa! Você está entrando no ritmo.', color: '#ec4899' },
+              { min: 14, max: 20, text: 'Duas semanas! Você é um usuário dedicado, os melhores prêmios estão chegando.', color: '#b8f542' },
+              { min: 21, max: 29, text: 'Três semanas seguidas! Poucos chegam até aqui. Continue!', color: '#8b5cf6' },
+              { min: 30, max: 60, text: 'Um mês ou mais! Você é lendário no MeAndYou. Os prêmios refletem isso.', color: '#f97316' },
+              { min: 61, max: 999, text: 'Nível máximo desbloqueado. Você é parte do grupo mais dedicado do app!', color: '#F59E0B' },
             ]
             const msg = msgs.find(m => currentDay >= m.min && currentDay <= m.max) ?? msgs[0]
             return (
@@ -387,7 +387,7 @@ export default function StreakPage() {
           {/* CTA roleta */}
           <div style={{ borderRadius: '14px', padding: '14px 16px', backgroundColor: 'rgba(234,179,8,0.04)', border: '1px solid rgba(234,179,8,0.15)', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Ticket size={22} color="#eab308" strokeWidth={1.5} style={{ flexShrink: 0 }} />
-            <p style={{ fontSize: '13px', color: 'rgba(248,249,250,0.50)', flex: 1, margin: 0 }}>Use seus tickets na roleta para ganhar ainda mais premios!</p>
+            <p style={{ fontSize: '13px', color: 'rgba(248,249,250,0.50)', flex: 1, margin: 0 }}>Use seus tickets na roleta para ganhar ainda mais prêmios!</p>
             <a href="/roleta" style={{ padding: '7px 12px', borderRadius: '9999px', backgroundColor: 'rgba(234,179,8,0.15)', color: '#eab308', fontSize: '11px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', fontFamily: 'var(--font-jakarta)' }}>
               Roleta
             </a>

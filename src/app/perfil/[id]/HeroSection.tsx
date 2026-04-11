@@ -92,7 +92,7 @@ export function HeroSection({
         <button
           onClick={onEmergency}
           style={{ position: 'absolute', top: '26px', right: '16px', zIndex: 10, width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }}
-          title="Emergencia"
+          title="Emergência"
         >
           <ShieldAlert size={17} color="rgba(248,249,250,0.75)" strokeWidth={1.5} />
         </button>

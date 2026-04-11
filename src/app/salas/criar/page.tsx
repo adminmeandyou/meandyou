@@ -46,7 +46,7 @@ export default function CriarSalaPage() {
         router.push('/salas')
       }
     } catch {
-      setError('Erro de conexao. Tente novamente.')
+      setError('Erro de conexão. Tente novamente.')
       setLoading(false)
     }
   }
@@ -65,7 +65,7 @@ export default function CriarSalaPage() {
 
         {/* Emoji */}
         <div>
-          <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 10 }}>Icone da sala</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 10 }}>Ícone da sala</p>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
             {EMOJIS.map(e => (
               <button
@@ -140,7 +140,7 @@ export default function CriarSalaPage() {
         <div style={{ padding: '12px 14px', borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid var(--border)', display: 'flex', gap: 10 }}>
           <Lock size={14} color="var(--muted)" strokeWidth={2} style={{ flexShrink: 0, marginTop: 1 }} />
           <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, lineHeight: 1.5 }}>
-            Sala privada: apenas quem tiver o link pode entrar. Voce como criador pode sair e a sala continuara ativa.
+            Sala privada: apenas quem tiver o link pode entrar. Você como criador pode sair e a sala continuará ativa.
           </p>
         </div>
 

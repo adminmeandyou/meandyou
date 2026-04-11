@@ -41,33 +41,33 @@ export async function POST(req: NextRequest) {
   try {
     // Autenticacao
     const token = req.headers.get('authorization')?.replace('Bearer ', '')
-    if (!token) return NextResponse.json({ error: 'Nao autenticado' }, { status: 401 })
+    if (!token) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
     const { data: { user }, error: authErr } = await supabase.auth.getUser(token)
-    if (authErr || !user) return NextResponse.json({ error: 'Sessao invalida' }, { status: 401 })
+    if (authErr || !user) return NextResponse.json({ error: 'Sessão inválida' }, { status: 401 })
 
     const body = await req.json()
     const { type, method, plan, cycle = 'monthly', package_id, resgatado_id } = body
 
     // Valida inputs basicos
-    if (!type || !method) return NextResponse.json({ error: 'type e method sao obrigatorios' }, { status: 400 })
-    if (!['subscription', 'fichas', 'camarote'].includes(type)) return NextResponse.json({ error: 'type invalido' }, { status: 400 })
-    if (!['pix', 'credit_card'].includes(method)) return NextResponse.json({ error: 'method invalido' }, { status: 400 })
+    if (!type || !method) return NextResponse.json({ error: 'type e method são obrigatórios' }, { status: 400 })
+    if (!['subscription', 'fichas', 'camarote'].includes(type)) return NextResponse.json({ error: 'type inválido' }, { status: 400 })
+    if (!['pix', 'credit_card'].includes(method)) return NextResponse.json({ error: 'method inválido' }, { status: 400 })
 
     // Calcula valor
     let amountCents: number
     if (type === 'subscription') {
       amountCents = PRICES[plan]?.[cycle]
-      if (!amountCents) return NextResponse.json({ error: 'Plano/ciclo invalido' }, { status: 400 })
+      if (!amountCents) return NextResponse.json({ error: 'Plano/ciclo inválido' }, { status: 400 })
     } else if (type === 'fichas') {
       if (!package_id || !FICHAS_PACKAGES[package_id]) {
-        return NextResponse.json({ error: 'package_id invalido' }, { status: 400 })
+        return NextResponse.json({ error: 'package_id inválido' }, { status: 400 })
       }
       amountCents = FICHAS_PACKAGES[package_id].cents
     } else if (type === 'camarote') {
       amountCents = CAMAROTE_PRICE_CENTS
     } else {
-      return NextResponse.json({ error: 'type invalido' }, { status: 400 })
+      return NextResponse.json({ error: 'type inválido' }, { status: 400 })
     }
 
     // Busca dados do usuario para AbacatePay
@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
       const billingData = await billingResp.json()
       if (!billingData.data?.id) {
         console.error('AbacatePay billing error:', billingData?.error ?? billingData?.message ?? 'unknown')
-        return NextResponse.json({ error: 'Erro ao criar cobranca' }, { status: 502 })
+        return NextResponse.json({ error: 'Erro ao criar cobrança' }, { status: 502 })
       }
 
       gatewayId = billingData.data.id

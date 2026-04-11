@@ -153,7 +153,7 @@ export default function NotificacoesPage() {
             }}
           >
             <CheckCheck size={14} />
-            Marcar lidas
+            Marcar todas como lidas
           </button>
         )}
       </header>

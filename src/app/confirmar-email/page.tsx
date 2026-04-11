@@ -134,7 +134,7 @@ function ConfirmarEmailConteudo() {
                 fontSize: '15px',
               }}
             >
-              Ir para configuracoes
+              Ir para configurações
             </Link>
           </>
         )}

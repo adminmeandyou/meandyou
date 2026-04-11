@@ -461,7 +461,7 @@ export default function RoletaPage() {
           ? cfg.label
           : `${prize.reward_amount}x ${cfg.label}`)
         : `${prize.reward_amount}x ${prize.reward_type}`
-      toast.success(`Voce ganhou ${prizeLabel}!`)
+      toast.success(`Você ganhou ${prizeLabel}!`)
 
       setShowCelebration(true)
       spawnParticles()
@@ -689,7 +689,7 @@ export default function RoletaPage() {
                   </span>
                 )}
                 <p style={{ color: 'var(--text)', fontFamily: 'var(--font-fraunces)', fontSize: '18px', margin: 0, lineHeight: 1.2 }}>
-                  Voce ganhou {formatPrize(result.reward_type, result.reward_amount)}!
+                  Você ganhou {formatPrize(result.reward_type, result.reward_amount)}!
                 </p>
                 <p style={{ fontSize: '12px', color: 'var(--muted)', margin: '5px 0 0' }}>Adicionado ao seu saldo automaticamente</p>
               </div>

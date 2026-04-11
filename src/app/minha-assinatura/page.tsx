@@ -221,7 +221,7 @@ export default function MinhaAssinaturaPage() {
         {/* Historico */}
         {history.length > 0 && (
           <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', overflow: 'hidden' }}>
-            <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', padding: '16px 20px 8px', margin: 0 }}>Historico de assinaturas</p>
+            <p style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text)', padding: '16px 20px 8px', margin: 0 }}>Histórico de assinaturas</p>
             <div>
               {history.map((s, i) => {
                 const statusColor = s.status === 'cancelled' ? '#f87171' : s.status === 'expired' ? 'var(--muted)' : '#F59E0B'
@@ -231,7 +231,7 @@ export default function MinhaAssinaturaPage() {
                   <div key={s.id} style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: i === 0 ? '1px solid var(--border)' : '1px solid var(--border-soft)' }}>
                     <div>
                       <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text)', margin: '0 0 2px' }}>{PLAN_LABELS[s.plan] ?? s.plan}</p>
-                      <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '0 0 2px' }}>{formatDate(s.starts_at)} ate {formatDate(s.ends_at)}</p>
+                      <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '0 0 2px' }}>{formatDate(s.starts_at)} até {formatDate(s.ends_at)}</p>
                       <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.25)', fontFamily: 'monospace', margin: 0 }}>{s.gateway_order_id}</p>
                     </div>
                     <span style={{ fontSize: '11px', fontWeight: 700, padding: '3px 10px', borderRadius: '100px', backgroundColor: statusBg, color: statusColor, flexShrink: 0, marginLeft: '12px' }}>
@@ -248,7 +248,7 @@ export default function MinhaAssinaturaPage() {
         <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', padding: '20px' }}>
           <h3 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', margin: '0 0 8px' }}>Precisa de ajuda?</h3>
           <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 14px', lineHeight: 1.5 }}>
-            Para contestar cobranças, reembolsos ou duvidas sobre sua assinatura, entre em contato com o suporte. Respondemos em ate 24h uteis.
+            Para contestar cobranças, reembolsos ou dúvidas sobre sua assinatura, entre em contato com o suporte. Respondemos em até 24h úteis.
           </p>
           <button
             onClick={() => router.push('/suporte')}
@@ -270,7 +270,7 @@ export default function MinhaAssinaturaPage() {
             </div>
             <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', textAlign: 'center', color: 'var(--text)', margin: '0 0 8px' }}>Cancelar assinatura?</h3>
             <p style={{ fontSize: '14px', color: 'var(--muted)', textAlign: 'center', margin: '0 0 8px', lineHeight: 1.5 }}>
-              Voce continuara com acesso ao plano <strong style={{ color: 'var(--text)' }}>{PLAN_LABELS[active?.plan ?? '']}</strong> ate{' '}
+              Você continuará com acesso ao plano <strong style={{ color: 'var(--text)' }}>{PLAN_LABELS[active?.plan ?? '']}</strong> até{' '}
               <strong style={{ color: 'var(--text)' }}>{active ? formatDate(active.ends_at) : ''}</strong>.
             </p>
             <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.30)', textAlign: 'center', margin: '0 0 24px' }}>Após essa data, você perderá o acesso às funcionalidades do plano. Para voltar a usá-las, será necessário assinar novamente.</p>

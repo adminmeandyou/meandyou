@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   // Verificar plano (Plus/Black para criar salas privadas)
   const { data: profile } = await supabaseAdmin
@@ -35,13 +35,13 @@ export async function POST(req: NextRequest) {
 
   const { name, description, emoji, maxMembers } = await req.json()
 
-  if (!name?.trim()) return NextResponse.json({ error: 'Nome obrigatorio' }, { status: 400 })
-  if (name.trim().length > 40) return NextResponse.json({ error: 'Nome muito longo (max 40 chars)' }, { status: 400 })
+  if (!name?.trim()) return NextResponse.json({ error: 'Nome obrigatório' }, { status: 400 })
+  if (name.trim().length > 40) return NextResponse.json({ error: 'Nome muito longo (máx. 40 caracteres)' }, { status: 400 })
 
   // Moderar nome
   const mod = moderateRoomName(name)
   if (mod.blocked) {
-    return NextResponse.json({ error: 'Nome da sala contem conteudo nao permitido' }, { status: 422 })
+    return NextResponse.json({ error: 'Nome da sala contém conteúdo não permitido' }, { status: 422 })
   }
 
   const max = Math.min(Math.max(2, maxMembers ?? 10), 10) // 2-10 para salas privadas

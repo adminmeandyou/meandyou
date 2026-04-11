@@ -30,7 +30,7 @@ export default function PlanosLancamento() {
     {
       badge: 'Mais escolhido', badgeCls: 'featured', ctaCls: 'featured', featured: true,
       nome: 'Plus',
-      area: 'Area VIP',
+      area: 'Área VIP',
       preco: '39,97',
       desc: 'A experiência completa de filtragem. Para quem quer controle total desde o início.',
       ctaText: 'Assinar o Plus',

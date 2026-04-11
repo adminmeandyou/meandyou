@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-BR"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,100..900;1,9..144,100..900&amp;family=Plus+Jakarta+Sans:wght@200;300;400;500;600;700;800&amp;family=Noto+Serif:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container-lowest": "#0d0e13",
+                    "on-secondary-container": "#5b3800",
+                    "on-secondary-fixed": "#2a1700",
+                    "on-primary-fixed": "#40000c",
+                    "surface-bright": "#38393f",
+                    "surface-variant": "#34343a",
+                    "on-error": "#690005",
+                    "primary-container": "#e11d48",
+                    "on-background": "#e3e1e9",
+                    "inverse-on-surface": "#2f3036",
+                    "secondary-fixed": "#ffddb8",
+                    "primary-fixed": "#ffdada",
+                    "surface-container-highest": "#34343a",
+                    "on-surface": "#e3e1e9",
+                    "outline": "#ac8889",
+                    "on-secondary-fixed-variant": "#653e00",
+                    "on-error-container": "#ffdad6",
+                    "on-tertiary-container": "#eefff7",
+                    "error-container": "#93000a",
+                    "tertiary-container": "#00836c",
+                    "inverse-surface": "#e3e1e9",
+                    "tertiary-fixed": "#90f5d9",
+                    "on-tertiary-fixed": "#002019",
+                    "tertiary-fixed-dim": "#74d8bd",
+                    "surface-tint": "#ffb3b6",
+                    "on-tertiary": "#00382d",
+                    "surface-dim": "#121318",
+                    "secondary-container": "#ee9800",
+                    "secondary-fixed-dim": "#ffb95f",
+                    "on-primary": "#68001a",
+                    "error": "#ffb4ab",
+                    "primary": "#ffb3b6",
+                    "on-primary-fixed-variant": "#920028",
+                    "on-surface-variant": "#e5bdbe",
+                    "surface": "#121318",
+                    "on-tertiary-fixed-variant": "#005142",
+                    "on-secondary": "#472a00",
+                    "surface-container-high": "#292a2f",
+                    "outline-variant": "#5c3f40",
+                    "primary-fixed-dim": "#ffb3b6",
+                    "surface-container-low": "#1a1b21",
+                    "inverse-primary": "#be0037",
+                    "surface-container": "#1e1f25",
+                    "secondary": "#ffb95f",
+                    "on-primary-container": "#fffaf9",
+                    "background": "#121318",
+                    "tertiary": "#74d8bd"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Fraunces", "serif"],
+                    "body": ["Plus Jakarta Sans", "sans-serif"],
+                    "label": ["Plus Jakarta Sans", "sans-serif"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #08090E;
+            color: #F8F9FA;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            position: relative;
+        }
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://www.transparenttextures.com/patterns/stardust.png');
+            opacity: 0.02;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .editorial-shadow {
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+        .glass-nav {
+            background: rgba(15, 17, 23, 0.7);
+            backdrop-filter: blur(12px);
+        }
+        .vignette-overlay {
+            background: linear-gradient(to top, rgba(8, 9, 14, 0.9) 0%, transparent 40%);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-6 h-20 w-full bg-[#08090E]/70 backdrop-blur-xl bg-gradient-to-b from-[#0F1117] to-transparent shadow-[0_20px_40px_rgba(0,0,0,0.6)]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border border-primary-container overflow-hidden">
+<img alt="Dominic" class="w-full h-full object-cover" data-alt="close-up portrait of a handsome man with brooding expression in low key cinematic lighting dark atmosphere" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBYYHZvkGSTxYowlZTpDzmHqZPryk3K1uF0AKRjDHrkBD9ZwTs6d4KPu-R8ujq03GNp9fIIRiRA20JInhALtWGhyJaxluDg_56YiRjLr9vdTbofqgtezOher0gggfVFAOagQoyybVXarmezTjDVN5sTEjJxmUMkLwVzh09O2vGUhmQ8NFbOmd3AhnwNws9xQyIDum_0nYyhD43NqKm9JFOXe18d_5TKyahN1CeFA-dFGcgau_WoEm6RUg4Pz8Vba_guk5ZTa8KuzwxL"/>
+</div>
+<span class="font-['Fraunces'] text-2xl italic font-black text-[#E11D48] tracking-tighter">Me&amp;You</span>
+</div>
+<button class="text-gray-400 hover:opacity-80 transition-opacity duration-300 scale-95 transition-transform duration-200">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+</header>
+<main class="pt-24 px-6 max-w-2xl mx-auto">
+<!-- Hero Profile Section -->
+<section class="relative mb-12">
+<div class="aspect-[4/5] w-full rounded-lg overflow-hidden editorial-shadow relative group">
+<img alt="Dominic Profile" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" data-alt="full body portrait of a stylish man in a dark suit leaning against a classic stone wall in moonlight cinematic shadows" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtRYWoyTUF8LO7uv8IdKs9e4fzSvpZKWdGN_12SSyk-_G1rokrZES0X3HZ2tJtWUrNnWFK8K6iyFMStn2kFhdATHXXfBZrVCMmtvO8BUHMG71qI7g0rO5QPM3F7fWYyVpRZDEj6d4l9FPIESpNXUKlUv-M3PfWlk_BEAqVreYDKpbAPNoEebqnxiiBBhHVNjDoFSuRN68JJLFBxvSgH0wpda_hVOvxxz1BZS23uQqGlP-8KgnqpxCXb8pcSEBrVOYAkIHyByOA5yVL"/>
+<div class="absolute inset-0 vignette-overlay flex flex-col justify-end p-8">
+<h1 class="font-['Fraunces'] text-5xl font-bold tracking-tight text-white mb-2">Dominic</h1>
+<div class="flex items-center gap-3 mt-3"><div class="flex items-center gap-1 bg-white/5 backdrop-blur-sm px-2 py-1 rounded-full border border-white/10"><span class="material-symbols-outlined text-[14px] text-amber-400" style="font-variation-settings: 'FILL' 1;">verified</span><span class="text-[10px] uppercase tracking-wider text-gray-300 font-bold">Verificado</span></div></div>
+</div>
+</div><div class="flex justify-center mt-6">
+<button class="bg-gradient-to-tr from-[#E11D48] to-[#be123c] text-white px-10 py-3 rounded-full font-bold shadow-[0_4px_15px_rgba(225,29,72,0.3)] hover:scale-105 transition-transform flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="edit">edit</span>
+    EDITAR PERFIL
+  </button>
+</div>
+</section>
+<!-- Stats Bento Grid -->
+<section class="grid gap-4 mb-12 flex justify-center">
+<div class="bg-surface-container-low p-6 rounded-xl border border-white/5 flex flex-col items-center">
+<span class="text-3xl font-['Fraunces'] font-black text-[#E11D48]">1.2k</span>
+<span class="text-[10px] uppercase tracking-widest text-gray-500 font-bold mt-1">Visualizações</span>
+</div>
+</section>
+<!-- Bio Section -->
+<section class="mb-12">
+<div class="flex justify-between items-center mb-6"><h2 class="text-xs uppercase tracking-[0.25em] text-gray-500 font-extrabold">Conquistas Colecionáveis</h2><button class="text-[10px] uppercase tracking-widest text-primary font-bold hover:opacity-80 transition-opacity">Ver tudo</button></div>
+<div class="grid grid-cols-3 gap-4">
+<!-- Badge 1: Nocturne Founder -->
+<div class="aspect-square bg-[#0c0d12] rounded-xl border border-white/10 flex flex-col items-center justify-center relative overflow-hidden group hover:border-primary/50 transition-colors duration-300 shadow-inner">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-4xl text-amber-400 drop-shadow-[0_0_8px_rgba(251,191,36,0.5)] mb-1" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+<span class="text-[8px] uppercase tracking-tighter text-gray-500 font-black">Original</span>
+</div>
+<!-- Badge 2: Night Owl Elite -->
+<div class="aspect-square bg-[#0c0d12] rounded-xl border border-white/10 flex flex-col items-center justify-center relative overflow-hidden group hover:border-primary/50 transition-colors duration-300 shadow-inner">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-4xl text-primary drop-shadow-[0_0_8px_rgba(225,29,72,0.5)] mb-1" style="font-variation-settings: 'FILL' 1;">token</span>
+<span class="text-[8px] uppercase tracking-tighter text-gray-500 font-black">Nocturne</span>
+</div>
+<!-- Badge 3: Social Monarch -->
+<div class="aspect-square bg-[#0c0d12] rounded-xl border border-white/10 flex flex-col items-center justify-center relative overflow-hidden group hover:border-primary/50 transition-colors duration-300 shadow-inner">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+<span class="material-symbols-outlined text-4xl text-purple-400 drop-shadow-[0_0_8px_rgba(192,132,252,0.5)] mb-1" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+<span class="text-[8px] uppercase tracking-tighter text-gray-500 font-black">Elite</span>
+</div>
+</div>
+</section><section class="mb-12">
+<h2 class="text-xs uppercase tracking-[0.25em] text-gray-500 font-extrabold mb-6">Minha Bio</h2>
+<p class="font-['Plus_Jakarta_Sans'] text-lg leading-relaxed text-gray-300 font-light italic">
+                "Curador de momentos e apreciador de silêncios profundos. Busco conexões que transcendam o óbvio e mergulhem no extraordinário. Se você prefere o jazz de madrugada ao pop da tarde, já começamos bem."
+            </p>
+</section><section class="mb-12">
+<h2 class="text-xs uppercase tracking-[0.25em] text-gray-500 font-extrabold mb-4">Informações Básicas</h2>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container-low border border-white/5 text-gray-300 px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">smoke_free</span>
+      Não fuma
+    </span>
+<span class="bg-surface-container-low border border-white/5 text-gray-300 px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">pets</span>
+      Gosta de animais
+    </span>
+<span class="bg-surface-container-low border border-white/5 text-gray-300 px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">sports_esports</span>
+      Gamer
+    </span>
+<span class="bg-surface-container-low border border-white/5 text-gray-300 px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">nightlight</span>
+      Notívago
+    </span>
+</div>
+</section>
+<!-- Intentions & Interests -->
+<section class="space-y-12 mb-12">
+<div>
+<h2 class="text-xs uppercase tracking-[0.25em] text-gray-500 font-extrabold mb-4">Minhas Intenções</h2>
+<div class="flex flex-wrap gap-3">
+<span class="bg-primary-container text-white px-5 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-base" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+                        Relacionamento
+                    </span>
+<span class="bg-primary-container text-white px-5 py-2 rounded-full text-sm font-medium flex items-center gap-2">
+<span class="material-symbols-outlined text-base" data-icon="diamond" style="font-variation-settings: 'FILL' 1;">diamond</span>
+                        Fetiche
+                    </span>
+</div>
+</div>
+<div>
+<h2 class="text-xs uppercase tracking-[0.25em] text-gray-500 font-extrabold mb-4">Interesses</h2>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container-high text-gray-300 px-4 py-2 rounded-full text-xs font-semibold">Artes</span>
+<span class="bg-surface-container-high text-gray-300 px-4 py-2 rounded-full text-xs font-semibold">Jazz</span>
+<span class="bg-surface-container-high text-gray-300 px-4 py-2 rounded-full text-xs font-semibold">Vinhos Tintos</span>
+<span class="bg-surface-container-high text-gray-300 px-4 py-2 rounded-full text-xs font-semibold">Arquitetura Noir</span>
+<span class="bg-surface-container-high text-gray-300 px-4 py-2 rounded-full text-xs font-semibold">Viagens Noturnas</span>
+</div>
+</div>
+</section>
+<!-- Photo Gallery -->
+<section class="mb-12">
+<div class="flex justify-between items-end mb-6">
+<h2 class="text-xs uppercase tracking-[0.25em] text-gray-500 font-extrabold">Galeria de Fotos</h2>
+</div>
+<div class="grid gap-2 grid-cols-2">
+<div class="aspect-square rounded-lg overflow-hidden bg-surface-container">
+<img alt="Gallery 1" class="w-full h-full object-cover" data-alt="moody close up of a record player spinning a vinyl in a dimly lit room with red accent light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB6ZKHMCdfUsR-41rqV4jL2tVv-nOJXyOlFHpgdtENbsGWTbjb9iPHkYRZaB1lFgzVk6eX2pJfGSREQ42XugDLGLrDKOPBN5sHT2pRaoFrLj1YSe8NireGml1aIIGatiMPGnvQcwhB13JVrv02SaLYYBhFqkNiebghK-Qi-Sdj2wPADdKyNGh6VIx7S_rQ3oANyp0afVwbHGbv70AZh_CRd71RXjed-iyn8c8B1jFzRWek1Ht0NvJagQffxCPUA_st7bC3sgQkqRIe8"/>
+</div>
+<div class="aspect-square rounded-lg overflow-hidden bg-surface-container">
+<img alt="Gallery 2" class="w-full h-full object-cover" data-alt="a glass of deep red wine on a dark wooden table with soft candle light reflection and bokeh background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpp3ug7RSqs7WYr7U1yRsN5GxJLN1aBWikPv6uQv4SZ78c4GUslxfrMeiH0lO8PQ5Qeyd0B4c1yCUFNUXNU2qOsLifqLFYaiLzFrLjCdB_lIIEvcaHHFick2qvK42A1J_L2zNpby8x-LEuRlV7-VgI-XQNjDTkochFw8WLz2V2Alx9qGCUWWLNeUaD05A9ApnaB8bWsCw5JJmh8qgczmYR_EpJgq0b6ey0DxP3T3HmDPP5H5Si9oI6TReAqtbxpZtu5QBTtXoRaRfh"/>
+</div>
+</div>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full h-24 flex justify-around items-center px-8 pb-4 bg-[#0F1117]/80 backdrop-blur-md z-50 rounded-t-3xl border-t border-white/5 shadow-[0_-10px_30px_rgba(0,0,0,0.8)]">
+<button class="flex flex-col items-center justify-center text-gray-500 hover:text-gray-300 hover:scale-110 transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="explore">explore</span>
+</button>
+<button class="flex flex-col items-center justify-center text-gray-500 hover:text-gray-300 hover:scale-110 transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="groups">groups</span>
+</button>
+<button class="flex flex-col items-center justify-center text-gray-500 hover:text-gray-300 hover:scale-110 transition-all duration-300">
+<span class="material-symbols-outlined" data-icon="chat_bubble">chat_bubble</span>
+</button>
+<!-- Active Tab: Profile (Person) -->
+<button class="flex flex-col items-center justify-center text-[#E11D48] bg-white/5 rounded-full p-3 shadow-[0_0_15px_rgba(225,29,72,0.2)] scale-90 transition-all duration-150">
+<span class="material-symbols-outlined" data-icon="person" style="font-variation-settings: 'FILL' 1;">person</span>
+</button>
+</nav>
+</body></html>

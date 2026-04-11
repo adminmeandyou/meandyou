@@ -80,9 +80,9 @@ export default function AlterarEmailPage() {
         {sucesso ? (
           <div style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '16px', padding: '28px', textAlign: 'center' }}>
             <div style={{ fontSize: '40px', marginBottom: '16px' }}>📧</div>
-            <p style={{ color: '#fff', fontWeight: 600, fontSize: '16px', margin: '0 0 10px' }}>Email de confirmacao enviado</p>
+            <p style={{ color: '#fff', fontWeight: 600, fontSize: '16px', margin: '0 0 10px' }}>Email de confirmação enviado</p>
             <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '14px', lineHeight: 1.7, margin: 0 }}>
-              Enviamos um link de confirmacao para <strong style={{ color: '#fff' }}>{novoEmail}</strong>. Clique no link para confirmar a alteracao. O link expira em 30 minutos.
+              Enviamos um link de confirmação para <strong style={{ color: '#fff' }}>{novoEmail}</strong>. Clique no link para confirmar a alteração. O link expira em 30 minutos.
             </p>
           </div>
         ) : (
@@ -123,11 +123,11 @@ export default function AlterarEmailPage() {
               disabled={enviando}
               style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '15px', cursor: 'pointer', opacity: enviando ? 0.6 : 1 }}
             >
-              {enviando ? 'Enviando...' : 'Enviar link de confirmacao'}
+              {enviando ? 'Enviando...' : 'Enviar link de confirmação'}
             </button>
 
             <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '12px', textAlign: 'center', marginTop: '16px', lineHeight: 1.6 }}>
-              Um email de confirmacao sera enviado para o novo endereco. O email atual continuara ativo ate a confirmacao.
+              Um email de confirmação será enviado para o novo endereço. O email atual continuará ativo até a confirmação.
             </p>
           </form>
         )}

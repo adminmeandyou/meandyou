@@ -167,7 +167,7 @@ function StepMethod({ loading, error, amount, onSelect }: {
           <Smartphone size={20} strokeWidth={1.5} color="#10b981" />
           <div style={{ textAlign: 'left' }}>
             <p style={{ margin: 0, fontSize: 14, color: '#F8F9FA', fontWeight: 600, fontFamily: 'var(--font-jakarta)' }}>PIX</p>
-            <p style={{ margin: 0, fontSize: 12, color: 'rgba(248,249,250,0.5)', fontFamily: 'var(--font-jakarta)' }}>Aprovacao imediata</p>
+            <p style={{ margin: 0, fontSize: 12, color: 'rgba(248,249,250,0.5)', fontFamily: 'var(--font-jakarta)' }}>Aprovação imediata</p>
           </div>
         </button>
         <button
@@ -181,7 +181,7 @@ function StepMethod({ loading, error, amount, onSelect }: {
         >
           <CreditCard size={20} strokeWidth={1.5} color="#F8F9FA" />
           <div style={{ textAlign: 'left' }}>
-            <p style={{ margin: 0, fontSize: 14, color: '#F8F9FA', fontWeight: 600, fontFamily: 'var(--font-jakarta)' }}>Cartao de credito</p>
+            <p style={{ margin: 0, fontSize: 14, color: '#F8F9FA', fontWeight: 600, fontFamily: 'var(--font-jakarta)' }}>Cartão de crédito</p>
             <p style={{ margin: 0, fontSize: 12, color: 'rgba(248,249,250,0.5)', fontFamily: 'var(--font-jakarta)' }}>Visa, Mastercard e outros</p>
           </div>
         </button>
@@ -204,7 +204,7 @@ function StepPix({ pixData, timeLeft, copied, onCopy }: {
   return (
     <div style={{ textAlign: 'center' }}>
       <p style={{ margin: '0 0 16px', fontSize: 14, color: 'rgba(248,249,250,0.7)', fontFamily: 'var(--font-jakarta)' }}>
-        Escaneie o QR code ou copie o codigo
+        Escaneie o QR code ou copie o código
       </p>
       {pixData.brCodeBase64 && (
         <img
@@ -254,12 +254,12 @@ function StepCard({ billingUrl }: { billingUrl: string }) {
   return (
     <div>
       <p style={{ margin: '0 0 12px', fontSize: 14, color: 'rgba(248,249,250,0.7)', fontFamily: 'var(--font-jakarta)' }}>
-        Insira os dados do seu cartao
+        Insira os dados do seu cartão
       </p>
       <iframe
         src={billingUrl}
         style={{ width: '100%', height: 420, border: 'none', borderRadius: 12 }}
-        title="Pagamento com cartao"
+        title="Pagamento com cartão"
       />
     </div>
   )
@@ -272,7 +272,7 @@ function StepSuccess({ type, plan, cycle, onClose }: {
     ? `Plano ${plan ? plan.charAt(0).toUpperCase() + plan.slice(1) : ''} ativado!`
     : type === 'fichas' ? 'Fichas creditadas!' : 'Acesso ao Camarote ativado!'
   const cycleMap: Record<string, string> = {
-    monthly: 'Renovacao mensal automatica.',
+    monthly: 'Renovação mensal automática.',
     quarterly: 'Acesso por 3 meses.',
     semiannual: 'Acesso por 6 meses.',
     annual: 'Acesso por 12 meses.',

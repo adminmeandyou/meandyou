@@ -7,12 +7,12 @@ export async function POST(req: NextRequest) {
     const sessionClient = await createServerClient()
     const { data: { user }, error: authError } = await sessionClient.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
     const { action } = await req.json()
     if (action !== 'generate' && action !== 'extend') {
-      return NextResponse.json({ error: 'action invalido' }, { status: 400 })
+      return NextResponse.json({ error: 'action inválido' }, { status: 400 })
     }
 
     const supabaseAdmin = createAdminClient()

@@ -11,10 +11,10 @@ import {
 type Step = 'aviso' | 'pausar' | 'motivo' | 'confirmar'
 
 const MOTIVOS = [
-  'Encontrei alguem',
+  'Encontrei alguém',
   'Poucas curtidas ou matches',
   'App muito caro',
-  'Problemas tecnicos',
+  'Problemas técnicos',
   'Privacidade',
   'Outro motivo',
 ]
@@ -163,7 +163,7 @@ export default function DeletarContaPage() {
               display: 'flex', flexDirection: 'column', gap: '8px',
             }}>
               <p style={{ color: '#f87171', fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1.4px', margin: '0 0 4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <ShieldAlert size={12} /> O que sera excluido permanentemente
+                <ShieldAlert size={12} /> O que será excluído permanentemente
               </p>
               {[
                 'Perfil e fotos',
@@ -302,7 +302,7 @@ export default function DeletarContaPage() {
               </div>
               <div>
                 <h2 style={{ fontFamily: 'var(--font-fraunces)', color: 'var(--text)', fontSize: '20px', margin: '0 0 6px' }}>
-                  Por que voce esta saindo?
+                  Por que você está saindo?
                 </h2>
                 <p style={{ color: 'rgba(255,255,255,0.30)', fontSize: '13px', margin: 0 }}>
                   Seu feedback nos ajuda a melhorar.
@@ -352,7 +352,7 @@ export default function DeletarContaPage() {
                 Confirme sua senha
               </h2>
               <p style={{ color: 'rgba(255,255,255,0.40)', fontSize: '13px', lineHeight: '1.5', margin: 0 }}>
-                Digite sua senha para confirmar a exclusao definitiva da conta.
+                Digite sua senha para confirmar a exclusão definitiva da conta.
               </p>
             </div>
 

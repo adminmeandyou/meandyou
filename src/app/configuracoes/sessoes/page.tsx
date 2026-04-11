@@ -120,7 +120,7 @@ export default function SessoesPage() {
         >
           <ArrowLeft size={20} color="#fff" />
         </button>
-        <h1 style={{ fontFamily: 'var(--font-fraunces)', color: '#fff', fontSize: '20px', margin: 0 }}>Sessoes ativas</h1>
+        <h1 style={{ fontFamily: 'var(--font-fraunces)', color: '#fff', fontSize: '20px', margin: 0 }}>Sessões ativas</h1>
       </div>
 
       <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 20px' }}>
@@ -133,14 +133,14 @@ export default function SessoesPage() {
 
         {!loading && sessoes.length === 0 && (
           <div style={{ textAlign: 'center', paddingTop: '60px', color: 'rgba(255,255,255,0.3)', fontSize: '15px' }}>
-            Nenhuma sessao ativa registrada.
+            Nenhuma sessão ativa registrada.
           </div>
         )}
 
         {!loading && sessoes.length > 0 && (
           <>
             <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginBottom: '16px', lineHeight: 1.6 }}>
-              Estas sao as sessoes ativas na sua conta. Encerre sessoes desconhecidas imediatamente.
+              Estas são as sessões ativas na sua conta. Encerre sessões desconhecidas imediatamente.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '24px' }}>
@@ -168,7 +168,7 @@ export default function SessoesPage() {
                         IP: {sessao.ip ?? 'desconhecido'}
                       </p>
                       <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '12px', margin: 0 }}>
-                        Ultimo acesso: {formatarData(sessao.last_active_at)}
+                        Último acesso: {formatarData(sessao.last_active_at)}
                       </p>
                     </div>
                     <button
@@ -188,7 +188,7 @@ export default function SessoesPage() {
                 onClick={encerrarTodas}
                 style={{ width: '100%', padding: '14px', borderRadius: '12px', border: '1px solid rgba(239,68,68,0.3)', backgroundColor: 'rgba(239,68,68,0.08)', color: '#f87171', fontWeight: 600, fontSize: '14px', cursor: 'pointer' }}
               >
-                Encerrar todas as sessoes
+                Encerrar todas as sessões
               </button>
             )}
           </>

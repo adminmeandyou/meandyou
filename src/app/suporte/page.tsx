@@ -7,9 +7,9 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Headphones, Send, CheckCircle, Loader2, Crown, AlertCircle } from 'lucide-react'
 
 const CATEGORIAS = [
-  { value: 'verificacao', label: 'Verificacao de identidade' },
+  { value: 'verificacao', label: 'Verificação de identidade' },
   { value: 'pagamento',   label: 'Pagamento / Assinatura' },
-  { value: 'bug',         label: 'Bug / Problema tecnico' },
+  { value: 'bug',         label: 'Bug / Problema técnico' },
   { value: 'conta',       label: 'Minha conta' },
   { value: 'outro',       label: 'Outro' },
 ]
@@ -46,7 +46,7 @@ export default function SuportePage() {
       .single()
 
     const plano = limits.isBlack ? 'Black' : limits.isPlus ? 'Plus' : 'Essencial'
-    const prioridade = limits.isBlack ? 'PRIORITARIO (Black)' : limits.isPlus ? 'Plus' : 'Essencial'
+    const prioridade = limits.isBlack ? 'PRIORITÁRIO (Black)' : limits.isPlus ? 'Plus' : 'Essencial'
 
     const { data: { session } } = await supabase.auth.getSession()
     const res = await fetch('/api/suporte', {
@@ -71,7 +71,7 @@ export default function SuportePage() {
     if (res.ok) {
       setSent(true)
     } else {
-      setError('Nao foi possivel enviar. Tente novamente ou mande email para adminmeandyou@proton.me')
+      setError('Não foi possível enviar. Tente novamente ou mande email para adminmeandyou@proton.me')
     }
   }
 
@@ -85,8 +85,8 @@ export default function SuportePage() {
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', color: '#F8F9FA', margin: '0 0 8px' }}>Mensagem enviada!</h2>
           <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', lineHeight: '1.6', margin: 0, maxWidth: '280px' }}>
             {limits.isBlack
-              ? 'Suporte prioritario Black — responderemos em ate 24h.'
-              : 'Responderemos o mais breve possivel pelo email cadastrado.'}
+              ? 'Suporte prioritário Black, responderemos em até 24h.'
+              : 'Responderemos o mais breve possível pelo email cadastrado.'}
           </p>
         </div>
         <button
@@ -113,7 +113,7 @@ export default function SuportePage() {
         <div style={{ flex: 1 }}>
           <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: '#F8F9FA', margin: 0 }}>Suporte</h1>
           <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', margin: 0 }}>
-            {limits.isBlack ? 'Prioritario — resposta em ate 24h' : 'Fale com a equipe MeAndYou'}
+            {limits.isBlack ? 'Prioritário, resposta em até 24h' : 'Fale com a equipe MeAndYou'}
           </p>
         </div>
         {limits.isBlack && (
@@ -136,12 +136,12 @@ export default function SuportePage() {
           <Headphones size={20} color={limits.isBlack ? '#F59E0B' : limits.isPlus ? '#8b5cf6' : 'rgba(248,249,250,0.30)'} strokeWidth={1.5} />
           <div>
             <p style={{ color: 'rgba(248,249,250,0.70)', fontSize: '14px', fontWeight: 600, margin: '0 0 2px' }}>
-              {limits.isBlack ? 'Suporte prioritario 24h' : limits.isPlus ? 'Suporte Plus' : 'Suporte Essencial'}
+              {limits.isBlack ? 'Suporte prioritário 24h' : limits.isPlus ? 'Suporte Plus' : 'Suporte Essencial'}
             </p>
             <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', margin: 0 }}>
               {limits.isBlack
-                ? 'Sua mensagem sera tratada com prioridade maxima'
-                : 'Para suporte prioritario, assine o plano Black'}
+                ? 'Sua mensagem será tratada com prioridade máxima'
+                : 'Para suporte prioritário, assine o plano Black'}
             </p>
           </div>
         </div>
@@ -178,7 +178,7 @@ export default function SuportePage() {
           <textarea
             value={form.descricao}
             onChange={(e) => setForm((f) => ({ ...f, descricao: e.target.value.slice(0, 1000) }))}
-            placeholder="Descreva o problema com o maximo de detalhes possivel..."
+            placeholder="Descreva o problema com o máximo de detalhes possível..."
             rows={6}
             style={{ width: '100%', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', borderRadius: '16px', padding: '14px 16px', color: '#F8F9FA', fontSize: '14px', fontFamily: 'var(--font-jakarta)', resize: 'vertical', outline: 'none', boxSizing: 'border-box' }}
           />
@@ -204,7 +204,7 @@ export default function SuportePage() {
 
         {/* FAQ link */}
         <p style={{ textAlign: 'center', color: 'rgba(248,249,250,0.20)', fontSize: '13px', margin: 0 }}>
-          Tem uma duvida simples?{' '}
+          Tem uma dúvida simples?{' '}
           <a href="/ajuda" style={{ color: 'rgba(248,249,250,0.40)', textDecoration: 'underline' }}>
             Consulte o FAQ
           </a>

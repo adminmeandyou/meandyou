@@ -151,7 +151,7 @@ export default function AmigosPage() {
                 <UserPlus size={40} color="var(--muted-2)" strokeWidth={1} style={{ marginBottom: 12 }} />
                 <p style={{ color: 'var(--muted)', fontSize: 14, margin: 0 }}>Nenhum amigo ainda.</p>
                 <p style={{ color: 'var(--muted-2)', fontSize: 13, margin: '6px 0 0', lineHeight: 1.5 }}>
-                  Depois de um match, voce pode adicionar a pessoa como amigo.
+                  Depois de um match, você pode adicionar a pessoa como amigo.
                 </p>
               </div>
             ) : (
@@ -205,7 +205,7 @@ export default function AmigosPage() {
                       )}
                     </Link>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontWeight: 600, fontSize: 14, margin: 0 }}>{f.other?.name ?? 'Usuario'}</p>
+                      <p style={{ fontWeight: 600, fontSize: 14, margin: 0 }}>{f.other?.name ?? 'Usuário'}</p>
                       <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0 0' }}>Quer ser seu amigo</p>
                     </div>
                     <div style={{ display: 'flex', gap: 8 }}>
@@ -245,7 +245,7 @@ export default function AmigosPage() {
                       )}
                     </Link>
                     <div style={{ flex: 1 }}>
-                      <p style={{ fontWeight: 600, fontSize: 14, margin: 0 }}>{f.other?.name ?? 'Usuario'}</p>
+                      <p style={{ fontWeight: 600, fontSize: 14, margin: 0 }}>{f.other?.name ?? 'Usuário'}</p>
                       <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
                         <Clock size={11} /> Aguardando resposta
                       </p>

@@ -231,7 +231,7 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
             }}
           >
             <MessageCircle size={18} strokeWidth={1.5} />
-            Enviar Mensagem
+            Enviar mensagem
           </button>
 
           {onAddFriend && (
@@ -269,7 +269,7 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
               letterSpacing: '0.01em',
             }}
           >
-            Continuar Explorando
+            Continuar explorando
           </button>
         </div>
       </div>

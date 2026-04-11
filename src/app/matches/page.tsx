@@ -214,7 +214,7 @@ export default function MatchesPage() {
               lineHeight: 1.2,
               letterSpacing: '-0.03em',
             }}>
-              Voce nao tem<br />matches ainda
+              Você não tem<br />matches ainda
             </h2>
             <p style={{
               color: 'rgba(248,249,250,0.50)',
@@ -223,7 +223,7 @@ export default function MatchesPage() {
               margin: '0 0 36px',
               maxWidth: 260,
             }}>
-              Sua jornada para encontrar conexoes profundas esta apenas comecando. Que tal explorar novos horizontes?
+              Sua jornada para encontrar conexões profundas está apenas começando. Que tal explorar novos horizontes?
             </p>
             <button
               onClick={() => router.push('/modos')}
@@ -467,8 +467,8 @@ function NovoMatchCard({
 function getNivel(matchedAt: string, lastMessageAt: string | null): { label: string; color: string } | null {
   if (!lastMessageAt) return null
   const daysSinceMatch = (Date.now() - new Date(matchedAt).getTime()) / 86400000
-  if (daysSinceMatch > 30) return { label: 'Historia', color: '#F59E0B' }
-  if (daysSinceMatch > 7)  return { label: 'Conexao',  color: '#10b981' }
+  if (daysSinceMatch > 30) return { label: 'História', color: '#F59E0B' }
+  if (daysSinceMatch > 7)  return { label: 'Conexão',  color: '#10b981' }
   return { label: 'Sintonia', color: '#60a5fa' }
 }
 

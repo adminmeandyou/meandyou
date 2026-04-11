@@ -47,7 +47,7 @@ function CasalAceitarContent() {
       setDone(true)
       setTimeout(() => router.push('/configuracoes/casal'), 2500)
     } catch {
-      setError('Erro de conexao. Tente novamente.')
+      setError('Erro de conexão. Tente novamente.')
       setAccepting(false)
     }
   }
@@ -57,7 +57,7 @@ function CasalAceitarContent() {
       <div style={{ minHeight: '100vh', background: '#08090E', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: 'var(--font-jakarta)' }}>
         <div style={{ textAlign: 'center' }}>
           <AlertCircle size={40} color="rgba(225,29,72,0.6)" style={{ marginBottom: 16 }} />
-          <p style={{ color: 'rgba(248,249,250,0.5)', fontSize: 15, margin: 0 }}>Link invalido ou expirado.</p>
+          <p style={{ color: 'rgba(248,249,250,0.5)', fontSize: 15, margin: 0 }}>Link inválido ou expirado.</p>
         </div>
       </div>
     )
@@ -99,7 +99,7 @@ function CasalAceitarContent() {
               Casal conectado!
             </h2>
             <p style={{ color: 'rgba(248,249,250,0.5)', fontSize: 14, margin: 0, lineHeight: 1.6 }}>
-              Voces agora tem um perfil de casal Black.<br />Redirecionando...
+              Vocês agora têm um perfil de casal Black.<br />Redirecionando...
             </p>
           </div>
         ) : (

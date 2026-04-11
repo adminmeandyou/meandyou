@@ -355,7 +355,7 @@ export default function ConfiguracoesPage() {
           <ToggleRow
             icon={<Eye size={17} />}
             label="Mostrar quando estou ativo"
-            sub={showLastActive ? 'Visível para outros usuários' : 'Oculto para você e para outros'}
+            sub={showLastActive ? 'Visível para outros usuários' : 'Oculto para outros usuários'}
             ativo={showLastActive}
             onChange={toggleLastActive}
             loading={savingLastActive}
@@ -371,7 +371,7 @@ export default function ConfiguracoesPage() {
             href="/configuracoes/2fa"
             icon={<Lock size={17} />}
             label="Verificação em dois fatores"
-            sub={twoFaAtivo ? 'Ativado' : 'Desativado — recomendamos ativar'}
+            sub={twoFaAtivo ? 'Ativado' : 'Desativado - recomendamos ativar'}
             badge={twoFaAtivo ? <Badge label="Ativo" cor="#22c55e" /> : <Badge label="Inativo" cor="#f59e0b" />}
             last
           />
@@ -458,7 +458,7 @@ export default function ConfiguracoesPage() {
             }}
           >
             <LogOut size={15} strokeWidth={2} />
-            SAIR DA CONTA
+            Sair da conta
           </button>
         </div>
 

@@ -34,7 +34,7 @@ const RATING_OPTIONS = [
 ]
 
 const INVITE_PREFIX = '__CONVITE__:'
-const INVITE_RESPONSES = ['Aceito!', 'Nao posso', 'Em breve', 'Me conta mais!']
+const INVITE_RESPONSES = ['Aceito!', 'Não posso', 'Em breve', 'Me conta mais!']
 
 // ─── Tipos ─────────────────────────────────────────────────────────────────────
 
@@ -406,7 +406,7 @@ export default function CamaroteChatPage() {
             {other?.name} te convidou para um encontro
           </span>
           <div style={{ display: 'flex', gap: 6 }}>
-            {['Aceito!', 'Agora nao'].map(r => (
+            {['Aceito!', 'Agora não'].map(r => (
               <button
                 key={r}
                 onClick={() => sendMessage(r)}
@@ -454,7 +454,7 @@ export default function CamaroteChatPage() {
           <div style={{ textAlign: 'center', padding: '40px 0' }}>
             <Crown size={28} color={G_BORDER} strokeWidth={1.5} style={{ marginBottom: 12 }} />
             <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.30)', margin: 0 }}>
-              Nenhuma mensagem ainda. Diga ola!
+              Nenhuma mensagem ainda. Diga olá!
             </p>
           </div>
         )}
@@ -534,7 +534,7 @@ export default function CamaroteChatPage() {
           <textarea
             value={inviteText}
             onChange={e => setInviteText(e.target.value)}
-            placeholder={`Ex: Que tal nos encontrarmos sabado? Pensei em...`}
+            placeholder={`Ex: Que tal nos encontrarmos sábado? Pensei em...`}
             rows={2}
             maxLength={200}
             style={{ width: '100%', padding: '10px 12px', borderRadius: 12, resize: 'none', outline: 'none', background: BG, border: `1px solid ${G_BORDER}`, color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: 13, lineHeight: 1.5, boxSizing: 'border-box' }}
@@ -791,7 +791,7 @@ function RatingPanel({
         onClick={onSkip}
         style={{ marginTop: inline ? 12 : 14, width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', fontSize: inline ? 12 : 13, color: 'rgba(255,255,255,0.30)', fontFamily: 'var(--font-jakarta)' }}
       >
-        Agora nao
+        Agora não
       </button>
     </div>
   )

@@ -41,9 +41,9 @@ const ICEBREAKERS = [
   'Qual o melhor lugar que você já visitou?',
   'Se pudesse viajar agora, para onde iria?',
   'O que você faria num sábado perfeito?',
-  'Series ou filmes? Qual recomenda?',
+  'Séries ou filmes? Qual recomenda?',
   'Qual superpoder você escolheria?',
-  'Cafe da manha ou jantar romantico?',
+  'Café da manhã ou jantar romântico?',
 ]
 
 export default function ChatPage() {
@@ -334,7 +334,7 @@ export default function ChatPage() {
     } catch {
       // Rede falhou — remove a mensagem otimista
       setMessages(prev => prev.filter(m => m.id !== tempId))
-      setError('Erro de conexao. Tente novamente.')
+      setError('Erro de conexão. Tente novamente.')
     } finally {
       setSending(false)
       scrollToBottom()
@@ -344,7 +344,7 @@ export default function ChatPage() {
   async function handleSend() {
     const texto = input.trim()
     if (!texto || !userId || sending) return
-    if (texto.length > MAX_CHARS) { setError(`Maximo ${MAX_CHARS} caracteres.`); return }
+    if (texto.length > MAX_CHARS) { setError(`Máximo ${MAX_CHARS} caracteres.`); return }
 
     if (checkRateLimit()) {
       setRateLimited(true)
@@ -1473,7 +1473,7 @@ function ActionBtn({
 
 // ─── Card de Convite Encontro ─────────────────────────────────────────────────
 
-const RESPOSTAS_RAPIDAS = ['Aceito!', 'Nao posso', 'Em breve', 'Me conta mais!']
+const RESPOSTAS_RAPIDAS = ['Aceito!', 'Não posso', 'Em breve', 'Me conta mais!']
 
 function ConviteCard({
   text, isMe, time, onReply,

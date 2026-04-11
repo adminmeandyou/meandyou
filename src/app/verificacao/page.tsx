@@ -1026,7 +1026,7 @@ function Verificacao() {
                 </button>
               ) : (
                 <button onClick={iniciarLiveness} style={{ width: '100%', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
-                  Iniciar verificacao facial
+                  Iniciar verificação facial
                 </button>
               )}
             </>
