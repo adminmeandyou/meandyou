@@ -21,7 +21,7 @@ type Notification = {
 const TYPE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string; bg: string }> = {
   match:         { label: 'Novo match!',         icon: <Heart size={16} />,         color: '#f472b6', bg: 'rgba(244,114,182,0.10)' },
   message:       { label: 'Nova mensagem',        icon: <MessageCircle size={16} />, color: '#60a5fa', bg: 'rgba(96,165,250,0.10)' },
-  superlike:     { label: 'SuperLike recebido',   icon: <Star size={16} />,          color: '#facc15', bg: 'rgba(250,204,21,0.10)' },
+  superlike:     { label: 'SuperCurtida recebida', icon: <Star size={16} />,          color: '#facc15', bg: 'rgba(250,204,21,0.10)' },
   boost_expired: { label: 'Boost expirado',       icon: <Zap size={16} />,           color: 'var(--muted)', bg: 'rgba(255,255,255,0.05)' },
   plan_expired:  { label: 'Plano expirado',       icon: <Crown size={16} />,         color: '#fb923c', bg: 'rgba(251,146,60,0.10)' },
 }

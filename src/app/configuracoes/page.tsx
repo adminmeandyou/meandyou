@@ -371,7 +371,7 @@ export default function ConfiguracoesPage() {
             href="/configuracoes/2fa"
             icon={<Lock size={17} />}
             label="Verificação em dois fatores"
-            sub={twoFaAtivo ? 'Ativado' : 'Desativado - recomendamos ativar'}
+            sub={twoFaAtivo ? 'Ativado' : 'Desativado — recomendamos ativar'}
             badge={twoFaAtivo ? <Badge label="Ativo" cor="#22c55e" /> : <Badge label="Inativo" cor="#f59e0b" />}
             last
           />
@@ -423,7 +423,7 @@ export default function ConfiguracoesPage() {
             </div>
             <div style={{ flex: 1 }}>
               <p style={{ color: '#fff', fontSize: '15px', fontWeight: 500, margin: 0 }}>Reportar problema</p>
-              <p style={{ color: 'rgba(255,255,255,0.30)', fontSize: '12px', margin: '2px 0 0' }}>Encontrou um bug? Nos avise</p>
+              <p style={{ color: 'rgba(255,255,255,0.30)', fontSize: '12px', margin: '2px 0 0' }}>Encontrou um problema? Avise-nos.</p>
             </div>
             <ChevronRight size={16} color="rgba(255,255,255,0.20)" />
           </button>
@@ -513,7 +513,7 @@ export default function ConfiguracoesPage() {
                     opacity: bugDescricao.trim().length < 20 ? 0.5 : 1,
                   }}
                 >
-                  {bugEnviando ? 'Enviando...' : 'Enviar reporte'}
+                  {bugEnviando ? 'Enviando...' : 'Enviar relatório'}
                 </button>
               </>
             )}

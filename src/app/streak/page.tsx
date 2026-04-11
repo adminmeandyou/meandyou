@@ -13,7 +13,7 @@ const REWARD_CONFIG: Record<string, {
   color: string; bg: string; border: string; label: string; icon: React.ReactNode
 }> = {
   ticket:        { color: '#eab308', bg: 'rgba(234,179,8,0.10)',   border: 'rgba(234,179,8,0.30)',   label: 'Ticket',          icon: <Ticket size={18} strokeWidth={1.5} /> },
-  supercurtida:  { color: '#ec4899', bg: 'rgba(236,72,153,0.10)',  border: 'rgba(236,72,153,0.30)',  label: 'SuperLike',       icon: <Star size={18} strokeWidth={1.5} /> },
+  supercurtida:  { color: '#ec4899', bg: 'rgba(236,72,153,0.10)',  border: 'rgba(236,72,153,0.30)',  label: 'SuperCurtida',    icon: <Star size={18} strokeWidth={1.5} /> },
   boost:         { color: '#b8f542', bg: 'rgba(184,245,66,0.10)',  border: 'rgba(184,245,66,0.30)',  label: 'Boost',           icon: <Zap size={18} strokeWidth={1.5} /> },
   lupa:          { color: '#3b82f6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.30)',  label: 'Lupa',            icon: <Search size={18} strokeWidth={1.5} /> },
   rewind:        { color: '#a855f7', bg: 'rgba(168,85,247,0.10)',  border: 'rgba(168,85,247,0.30)',  label: 'Desfazer',        icon: <RotateCcw size={18} strokeWidth={1.5} /> },

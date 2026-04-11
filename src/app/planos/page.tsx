@@ -31,7 +31,7 @@ const PLANS = [
     icon: Star,
     color: '#E11D48',
     highlight: true,
-    badge: 'Melhor Custo-Benefício',
+    badge: 'Melhor custo-benefício',
     features: [
       'Até 10 fotos no perfil',
       '30 curtidas por dia',
