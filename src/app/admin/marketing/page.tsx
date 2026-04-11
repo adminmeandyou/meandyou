@@ -8,7 +8,7 @@ import { Send, Settings2, BarChart2 } from 'lucide-react'
 const TABS = [
   { id: 'analytics', label: 'Analytics', icon: BarChart2 },
   { id: 'campanhas', label: 'Campanhas', icon: Send },
-  { id: 'notificacoes', label: 'Notificacoes', icon: Settings2 },
+  { id: 'notificacoes', label: 'Notificações', icon: Settings2 },
 ]
 
 const EVENTOS = [
@@ -191,7 +191,7 @@ export default function AdminMarketing() {
       {/* ABA ANALYTICS */}
       {tab === 'analytics' && (
         <>
-          <Section title="Funil de conversao">
+          <Section title="Funil de conversão">
             <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {[
                 { label: 'Cadastraram', value: total,      color: '#3b82f6' },
@@ -215,10 +215,10 @@ export default function AdminMarketing() {
             </div>
           </Section>
 
-          <Section title={`Indicacoes (${referrals?.length ?? 0})`}>
+          <Section title={`Indicações (${referrals?.length ?? 0})`}>
             <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', overflow: 'hidden' }}>
               {(referrals?.length ?? 0) === 0 ? (
-                <p style={{ padding: '20px', color: 'rgba(248,249,250,0.40)', textAlign: 'center' }}>Nenhuma indicacao ainda</p>
+                <p style={{ padding: '20px', color: 'rgba(248,249,250,0.40)', textAlign: 'center' }}>Nenhuma indicação ainda</p>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                   <thead>
@@ -248,15 +248,15 @@ export default function AdminMarketing() {
             </div>
           </Section>
 
-          <Section title={`Excluiram a conta (${deleted?.length ?? 0})`}>
+          <Section title={`Excluíram a conta (${deleted?.length ?? 0})`}>
             <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', overflow: 'hidden' }}>
               {(deleted?.length ?? 0) === 0 ? (
-                <p style={{ padding: '20px', color: 'rgba(248,249,250,0.40)', textAlign: 'center' }}>Nenhuma conta excluida</p>
+                <p style={{ padding: '20px', color: 'rgba(248,249,250,0.40)', textAlign: 'center' }}>Nenhuma conta excluída</p>
               ) : (
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                   <thead>
                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                      {['Nome', 'Data de exclusao'].map(h => (
+                      {['Nome', 'Data de exclusão'].map(h => (
                         <th key={h} style={{ padding: '12px 16px', textAlign: 'left', color: 'rgba(248,249,250,0.40)', fontSize: '12px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{h}</th>
                       ))}
                     </tr>
@@ -293,7 +293,7 @@ export default function AdminMarketing() {
                     padding: '6px 14px', borderRadius: '8px', border: 'none', cursor: 'pointer', fontSize: '13px',
                     backgroundColor: campSegmento === s ? '#e11d48' : '#13161F',
                     color: campSegmento === s ? '#fff' : '#666',
-                  }}>{s === 'todos' ? 'Todos os usuarios' : `Plano ${s}`}</button>
+                  }}>{s === 'todos' ? 'Todos os usuários' : `Plano ${s}`}</button>
                 ))}
               </div>
               <textarea
@@ -311,8 +311,8 @@ export default function AdminMarketing() {
                   color: campResultado.ok ? '#22c55e' : '#ef4444',
                 }}>
                   {campResultado.ok
-                    ? `Campanha enviada para ${campResultado.total} destinatarios!`
-                    : 'Erro ao enviar campanha. Verifique as configuracoes do Resend.'}
+                    ? `Campanha enviada para ${campResultado.total} destinatários!`
+                    : 'Erro ao enviar campanha. Verifique as configurações do Resend.'}
                 </div>
               )}
               <button
@@ -330,7 +330,7 @@ export default function AdminMarketing() {
             </div>
           </Section>
 
-          <Section title="Historico de campanhas">
+          <Section title="Histórico de campanhas">
             <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', overflow: 'hidden' }}>
               {historicoLoading ? (
                 <p style={{ padding: '20px', color: 'rgba(248,249,250,0.40)', textAlign: 'center' }}>Carregando...</p>
@@ -375,7 +375,7 @@ export default function AdminMarketing() {
           <Section title="WhatsApp Business API">
             <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', padding: '20px' }}>
               <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '13px', marginBottom: '12px', lineHeight: 1.6 }}>
-                URL do webhook do provedor WhatsApp (Z-API, Evolution API, Twilio, etc). Deixe em branco ate contratar o servico.
+                URL do webhook do provedor WhatsApp (Z-API, Evolution API, Twilio, etc). Deixe em branco até contratar o serviço.
               </p>
               <div style={{ display: 'flex', gap: '10px' }}>
                 <input
@@ -395,7 +395,7 @@ export default function AdminMarketing() {
             </div>
           </Section>
 
-          <Section title="Eventos automaticos">
+          <Section title="Eventos automáticos">
             <div style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', overflow: 'hidden' }}>
               {notifLoading ? (
                 <p style={{ padding: '20px', color: 'rgba(248,249,250,0.40)', textAlign: 'center' }}>Carregando...</p>
@@ -429,7 +429,7 @@ export default function AdminMarketing() {
               )}
               {!whatsappUrl && (
                 <p style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.40)', fontSize: '12px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
-                  Configure a URL do WhatsApp acima para ativar notificacoes via WhatsApp.
+                  Configure a URL do WhatsApp acima para ativar notificações via WhatsApp.
                 </p>
               )}
             </div>

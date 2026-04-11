@@ -144,7 +144,7 @@ export default function CancelamentosPage() {
         flexWrap: 'wrap',
       }}>
         <p style={{ color: '#f59e0b', fontSize: '14px', margin: 0, lineHeight: '1.5' }}>
-          ⚠️ Gateway de pagamentos pendente de configuracao. Cancelar manualmente no painel do novo gateway antes de marcar como processado.
+          ⚠️ Gateway de pagamentos pendente de configuração. Cancelar manualmente no painel do novo gateway antes de marcar como processado.
         </p>
         {/* TODO: adicionar link para o painel do novo gateway de pagamentos */}
       </div>
