@@ -1087,7 +1087,7 @@ function ResgatesSection() {
       {/* Nota explicativa */}
       <div style={{ marginTop: 24, padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.30)', lineHeight: 1.6, margin: 0 }}>
-          Ao resgatar, voce paga R$ 49,90 para iniciar uma conversa por 30 dias. Isso nao e garantia de encontro — apenas o inicio de uma conversa.
+          Ao resgatar, você paga R$ 49,90 para iniciar uma conversa por 30 dias. Isso não é garantia de encontro — apenas o início de uma conversa.
         </p>
       </div>
 
@@ -1142,7 +1142,7 @@ function ResgatesSection() {
               })}
             </div>
             <button onClick={() => setRatingFor(null)} style={{ marginTop: 14, width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(255,255,255,0.30)', fontFamily: 'var(--font-jakarta)' }}>
-              Agora nao
+              Agora não
             </button>
           </div>
         </>
@@ -1244,7 +1244,7 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
           Camarote Black
         </h2>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.40)', textAlign: 'center', lineHeight: 1.65, margin: '0 0 32px', maxWidth: 300 }}>
-          Um ambiente exclusivo para experiencias que vao alem do comum. Apenas assinantes Black tem acesso.
+          Um ambiente exclusivo para experiências que vão além do comum. Apenas assinantes Black têm acesso.
         </p>
 
         {/* Categorias travadas */}
@@ -1354,7 +1354,7 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
               })}
             </div>
             <button onClick={() => setRatingFor(null)} style={{ marginTop: 14, width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, color: 'rgba(255,255,255,0.30)', fontFamily: 'var(--font-jakarta)' }}>
-              Agora nao
+              Agora não
             </button>
           </div>
         </>
@@ -1427,14 +1427,14 @@ function CamaroteAccessModal({
             <>
               {/* Secao 1: o que recebe sendo resgatado */}
               <div style={{ marginBottom: 20 }}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: G, letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 12px' }}>O que voce recebe sendo resgatado</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: G, letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 12px' }}>O que você recebe sendo resgatado</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {[
-                    'Um assinante Black paga R$ 15 para iniciar uma conversa com voce',
+                    'Um assinante Black paga R$ 15 para iniciar uma conversa com você',
                     'Você e o resgatador terão acesso ao chat exclusivo do Camarote por 30 dias',
                     'O que acontece depende da conversa entre vocês — não é garantia de nada',
-                    'Assinantes Black da sua categoria sao notificados assim que voce pede acesso',
-                    'Quem pagar primeiro tem acesso — os demais nao veem mais o seu pedido',
+                    'Assinantes Black da sua categoria são notificados assim que você pede acesso',
+                    'Quem pagar primeiro tem acesso — os demais não veem mais o seu pedido',
                   ].map((item, i) => (
                     <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                       <CheckCircle size={14} color={G} strokeWidth={2} style={{ flexShrink: 0, marginTop: 2 }} />
@@ -1446,7 +1446,7 @@ function CamaroteAccessModal({
 
               {/* Secao 2: com o Black voce teria */}
               <div style={{ padding: '14px 16px', borderRadius: 14, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 20 }}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 10px' }}>Com o plano Black voce teria</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 10px' }}>Com o plano Black você teria</p>
                 {[
                   'Acesso completo a vitrine do Camarote',
                   'Interação com todos os Black disponíveis',
@@ -1474,7 +1474,7 @@ function CamaroteAccessModal({
 
               {/* Selecao de categoria */}
               <div style={{ marginBottom: 16 }}>
-                <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 10px' }}>Em qual categoria voce quer entrar?</p>
+                <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 10px' }}>Em qual categoria você quer entrar?</p>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                   {CATEGORIAS.map(cat => (
                     <button

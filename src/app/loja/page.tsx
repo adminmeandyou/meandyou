@@ -507,7 +507,7 @@ export default function LojaPage() {
                 <BalanceItem icon={<RotateCcw size={16} strokeWidth={1.5} color="#a855f7" />} label="Rewinds" value={rewinds} />
                 <BalanceItem icon={<Ghost size={16} strokeWidth={1.5} color="#6b7280" />} label="Fantasma" value={ghostDaysLeft} suffix="d" active={!!ghostIsActive} countdown={ghostIsActive && ghostModeUntil ? ghostModeUntil : undefined} />
                 <BalanceItem icon={<Eye size={16} strokeWidth={1.5} color="#ec4899" />} label="Ver curtidas" value={revealsIsActive ? 1 : 0} active={!!revealsIsActive} countdown={revealsIsActive && curtidasRevealsUntil ? curtidasRevealsUntil : undefined} />
-                <BalanceItem icon={<TrendingUp size={16} strokeWidth={1.5} color="#10b981" />} label="Bonus XP" value={xpBonusIsActive ? 1 : 0} active={!!xpBonusIsActive} countdown={xpBonusIsActive && xpBonusUntil ? xpBonusUntil : undefined} />
+                <BalanceItem icon={<TrendingUp size={16} strokeWidth={1.5} color="#10b981" />} label="Bônus XP" value={xpBonusIsActive ? 1 : 0} active={!!xpBonusIsActive} countdown={xpBonusIsActive && xpBonusUntil ? xpBonusUntil : undefined} />
               </div>
             </div>
           )}

@@ -1286,7 +1286,7 @@ export default function ChatPage() {
                       <input type="time" value={meetingTimeVal} onChange={e => setMeetingTimeVal(e.target.value)} style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none',colorScheme:'dark' }} />
                     </div>
                   </div>
-                  <p style={{ fontSize:11,color:'var(--muted-2)',lineHeight:1.5,margin:0 }}>Este registro fica somente no seu dispositivo. Faremos um check-in 2h apos o horario marcado.</p>
+                  <p style={{ fontSize:11,color:'var(--muted-2)',lineHeight:1.5,margin:0 }}>Este registro fica somente no seu dispositivo. Faremos um check-in 2h após o horário marcado.</p>
                   <button onClick={handleSaveMeeting} disabled={!meetingLocal.trim()||!meetingDateVal||!meetingTimeVal} style={{ width:'100%',padding:'13px 0',borderRadius:12,background:meetingLocal.trim()&&meetingDateVal&&meetingTimeVal?'var(--accent)':'rgba(255,255,255,0.08)',border:'none',color:meetingLocal.trim()&&meetingDateVal&&meetingTimeVal?'#fff':'var(--muted)',fontFamily:'var(--font-jakarta)',fontSize:14,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8 }}>
                     <MapPin size={14} />
                     Salvar registro

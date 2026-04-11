@@ -155,7 +155,7 @@ export default function Privacidade() {
             Excluir minha conta e dados
           </h2>
           <p style={{ fontSize: '14px', color: 'var(--muted)', lineHeight: 1.7, marginBottom: '16px' }}>
-            Voce pode solicitar a exclusao permanente da sua conta e de todos os seus dados pessoais a qualquer momento, em conformidade com a LGPD. Apos a exclusao, voce receberá um comprovante por email.
+            Você pode solicitar a exclusão permanente da sua conta e de todos os seus dados pessoais a qualquer momento, em conformidade com a LGPD. Após a exclusão, você receberá um comprovante por email.
           </p>
           <Link
             href="/deletar-conta"
@@ -171,7 +171,7 @@ export default function Privacidade() {
               border: '1px solid rgba(239,68,68,0.25)',
             }}
           >
-            Solicitar exclusao de dados
+            Solicitar exclusão de dados
           </Link>
         </div>
 

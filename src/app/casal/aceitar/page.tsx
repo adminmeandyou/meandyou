@@ -117,7 +117,7 @@ function CasalAceitarContent() {
               Convite de casal
             </h2>
             <p style={{ color: 'rgba(248,249,250,0.5)', fontSize: 14, margin: '0 0 32px', lineHeight: 1.6 }}>
-              Voce foi convidado(a) para criar um perfil de casal Black no MeAndYou.
+              Você foi convidado(a) para criar um perfil de casal Black no MeAndYou.
               Aceite para conectar seus perfis.
             </p>
 
