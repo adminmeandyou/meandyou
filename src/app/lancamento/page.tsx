@@ -171,8 +171,8 @@ export default function LancamentoPage() {
 
     const nm = ['Ana','Carlos','Juliana','Marcos','Beatriz','Rafael','Leticia','Diego','Priscila','Bruno','Fernanda','Gustavo','Isabela','Thiago','Camila','Leonardo','Vanessa','Eduardo','Patricia','Rodrigo','Mariana','Felipe','Natalia','Vinicius','Larissa','Amanda','Ricardo','Bianca','Fabricio','Simone','Caio','Rebeca','Henrique','Luciana','Andre','Sabrina','Alex','Carolina','Marcelo','Giovana']
     const ct = userCity
-      ? [userCity,'Sao Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiania','Campinas','Florianopolis','Belem']
-      : ['Sao Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiania','Campinas','Florianopolis','Belem','Natal']
+      ? [userCity,'São Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiânia','Campinas','Florianópolis','Belém']
+      : ['São Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiânia','Campinas','Florianópolis','Belém','Natal']
     const filtros = ['que não queira ter filhos','que tenha pets','que seja evangélico(a)','que não fume','que não beba','que faça academia','que goste de viajar','que goste de leitura','que seja gamer','que goste de cinema','que seja solteiro(a) sem filhos']
 
     const rnd = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)]
