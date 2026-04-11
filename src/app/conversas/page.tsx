@@ -484,7 +484,7 @@ function AbaTodos({ matches, onEmpty, onOpen, searchTerm }: {
       <EmptyState
         icon={<Heart size={28} />}
         title={searchTerm ? 'Nenhum match encontrado' : 'Nenhum match ainda'}
-        description={searchTerm ? undefined : 'Continue curtindo! Quando alguem curtir de volta, aparece aqui.'}
+        description={searchTerm ? undefined : 'Continue curtindo! Quando alguém curtir de volta, aparece aqui.'}
         action={!searchTerm ? { label: 'Explorar perfis', onClick: onEmpty } : undefined}
       />
     )

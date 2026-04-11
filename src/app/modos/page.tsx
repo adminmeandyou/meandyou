@@ -1144,7 +1144,7 @@ function RoomsView({ userPlan }: { userPlan: string }) {
       if (!res.ok) { setJoinError(data.error ?? 'Erro ao entrar na sala'); setJoining(false); return }
       router.push(`/salas/${joiningRoom.id}`)
     } catch {
-      setJoinError('Erro de conexao. Tente novamente.')
+      setJoinError('Erro de conexão. Tente novamente.')
       setJoining(false)
     }
   }
@@ -1897,7 +1897,7 @@ function BuscaInner() {
         }
       } catch (err) {
         console.error('Erro ao processar swipe:', err)
-        toast.error('Falha ao registrar acao. Verifique sua conexao.')
+        toast.error('Falha ao registrar ação. Verifique sua conexão.')
         haptics.error()
       }
     }, 350)

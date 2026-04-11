@@ -17,11 +17,11 @@ const PLANS = [
     features: [
       'Até 10 fotos no perfil',
       '20 curtidas por dia',
-      '1 SuperCurtida/dia',
-      '1 Ticket de roleta/dia',
+      '1 SuperCurtida por dia',
+      '1 Ticket de roleta por dia',
       '1 Lupa por dia',
       'Chat com seus matches',
-      '1h de videochamada/dia',
+      '1h de videochamada por dia',
     ],
   },
   {
@@ -35,13 +35,13 @@ const PLANS = [
     features: [
       'Até 10 fotos no perfil',
       '30 curtidas por dia',
-      '4 SuperCurtidas/dia',
-      '2 Tickets de roleta/dia',
+      '4 SuperCurtidas por dia',
+      '2 Tickets de roleta por dia',
       '1 Lupa por dia',
       'Ver quem curtiu você',
-      'Desfazer curtida (1/dia)',
+      'Desfazer curtida (1 por dia)',
       'Destaque na busca',
-      '5h de videochamada/dia',
+      '5h de videochamada por dia',
     ],
   },
   {
@@ -53,13 +53,13 @@ const PLANS = [
     features: [
       'Até 10 fotos no perfil',
       'Curtidas ilimitadas',
-      '10 SuperCurtidas/dia',
-      '3 Tickets de roleta/dia',
+      '10 SuperCurtidas por dia',
+      '3 Tickets de roleta por dia',
       '2 Lupas por dia',
       'Boosts (máx. 2 simultâneos)',
       'Filtros Sugar e Fetiche',
       'Área Backstage exclusiva',
-      '10h de videochamada/dia',
+      '10h de videochamada por dia',
     ],
   },
 ]
@@ -264,7 +264,7 @@ export default function PlanosPage() {
       <div style={{ padding: '0 20px 24px' }}>
         <div style={{ borderRadius: '16px', border: '1px solid rgba(255,255,255,0.06)', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', textAlign: 'center', fontSize: '11px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-            <div style={{ padding: '12px 8px', color: 'var(--muted)', fontWeight: 600 }}>Feature</div>
+            <div style={{ padding: '12px 8px', color: 'var(--muted)', fontWeight: 600 }}>Recurso</div>
             {PLANS.map((p) => (
               <div key={p.id} style={{ padding: '12px 4px', fontWeight: 700, color: p.color }}>{p.name}</div>
             ))}

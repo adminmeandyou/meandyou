@@ -492,7 +492,7 @@ function FotosBioSection({ userId, profileData, onSaved }: {
       }
       setSucesso(true)
       setTimeout(() => setSucesso(false), 3000)
-    } catch (err) { console.error('[editar-perfil] fotos-bio', err); setErro('Erro ao salvar. Verifique sua conexao e tente novamente.') }
+    } catch (err) { console.error('[editar-perfil] fotos-bio', err); setErro('Erro ao salvar. Verifique sua conexão e tente novamente.') }
     setSalvando(false)
   }
 
@@ -580,7 +580,7 @@ function FotosBioSection({ userId, profileData, onSaved }: {
       <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', textAlign: 'right', margin: '4px 0 10px' }}>{bio.length}/300</p>
 
       {/* Pílulas de sugestão */}
-      <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '11px', margin: '0 0 6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Sugestoes</p>
+      <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '11px', margin: '0 0 6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Sugestões</p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
         {BIO_SUGESTOES.map(sug => (
           <button

@@ -563,7 +563,7 @@ export default function ChatPage() {
           <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           <span style={{ fontSize: 12, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
             <Zap size={12} color="var(--accent)" />
-            {isMe ? 'Voce deu um nudge!' : `${otherUser?.name} deu um nudge!`}
+            {isMe ? 'Você deu um nudge!' : `${otherUser?.name} deu um nudge!`}
           </span>
           <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         </div>
@@ -903,7 +903,7 @@ export default function ChatPage() {
               </div>
               <div style={{ textAlign: 'center' }}>
                 <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)', margin: '0 0 6px' }}>
-                  Voces fizeram um match!
+                  Vocês fizeram um match!
                 </p>
                 <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: 0 }}>Seja o(a) primeiro(a) a dizer ola.</p>
               </div>
@@ -1190,8 +1190,8 @@ export default function ChatPage() {
               <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliação anônima — {otherUser?.name} não saberá quem avaliou.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { id: 'incrivel', label: 'Pessoa incrivel!', color: '#10b981' },
-                  { id: 'agradavel', label: 'Conversa agradavel', color: '#60a5fa' },
+                  { id: 'incrivel', label: 'Pessoa incrível!', color: '#10b981' },
+                  { id: 'agradavel', label: 'Conversa agradável', color: '#60a5fa' },
                   { id: 'nao_interessei', label: 'Não me interessei', color: 'rgba(248,249,250,0.45)' },
                   { id: 'ignorado', label: 'Fui ignorado(a)', color: '#F43F5E' },
                 ].map(op => (
@@ -1220,11 +1220,11 @@ export default function ChatPage() {
             >
               <div style={{ textAlign: 'center', marginBottom: 20 }}>
                 <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>O encontro aconteceu?</h3>
-                <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: 0, lineHeight: 1.55 }}>Voce aceitou um convite de encontro. Nos conte como foi!</p>
+                <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: 0, lineHeight: 1.55 }}>Você aceitou um convite de encontro. Nos conte como foi!</p>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { id: 'incrivel', label: 'Foi incrivel!' },
+                  { id: 'incrivel', label: 'Foi incrível!' },
                   { id: 'estranho', label: 'Foi estranho' },
                   { id: 'bolo', label: 'Levei um bolo' },
                   { id: 'ainda_nao', label: 'Ainda não aconteceu' },
@@ -1303,7 +1303,7 @@ export default function ChatPage() {
             <div style={{ background:'var(--bg-card)',border:'1px solid rgba(225,29,72,0.30)',borderRadius:24,padding:'32px 24px',maxWidth:340,width:'100%',textAlign:'center' }}>
               <div style={{ fontSize:48,marginBottom:16 }}>🔔</div>
               <h3 style={{ fontFamily:'var(--font-fraunces)',fontSize:22,color:'var(--text)',margin:'0 0 8px' }}>Check-in de seguranca</h3>
-              <p style={{ fontSize:13,color:'var(--muted)',margin:'0 0 6px',lineHeight:1.55 }}>Voce tinha um encontro com <strong style={{ color:'rgba(248,249,250,0.75)' }}>{otherUser?.name}</strong></p>
+              <p style={{ fontSize:13,color:'var(--muted)',margin:'0 0 6px',lineHeight:1.55 }}>Você tinha um encontro com <strong style={{ color:'rgba(248,249,250,0.75)' }}>{otherUser?.name}</strong></p>
               <p style={{ fontSize:12,color:'var(--muted-2)',margin:'0 0 28px' }}>{checkinMeeting.local} · {new Date(checkinMeeting.date).toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
               <p style={{ fontSize:14,color:'var(--text)',fontWeight:600,margin:'0 0 20px' }}>Como você está?</p>
               <div style={{ display:'flex',flexDirection:'column',gap:10 }}>
@@ -1409,7 +1409,7 @@ export default function ChatPage() {
               <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(225,29,72,0.12)', border: '1px solid rgba(225,29,72,0.30)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
                 <ShieldAlert size={26} color="#F43F5E" strokeWidth={1.5} />
               </div>
-              <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: '0 0 8px' }}>Voce esta em perigo?</h3>
+              <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: '0 0 8px' }}>Você está em perigo?</h3>
               <p style={{ color: 'var(--muted)', fontSize: 14, margin: '0 0 24px', lineHeight: 1.55 }}>
                 Esta acao ligara imediatamente para a <strong style={{ color: 'rgba(248,249,250,0.70)' }}>Policia Militar (190)</strong>. Use apenas em situacoes de risco real.
               </p>

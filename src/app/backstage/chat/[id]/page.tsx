@@ -470,7 +470,7 @@ export default function CamaroteChatPage() {
                   <div style={{ padding: '8px 14px', background: isMine ? G_SOFT : 'rgba(225,29,72,0.10)', display: 'flex', alignItems: 'center', gap: 7 }}>
                     <CalendarPlus size={13} color={isMine ? G : '#E11D48'} strokeWidth={1.5} />
                     <span style={{ fontSize: 11, fontWeight: 700, color: isMine ? G : '#E11D48' }}>
-                      {isMine ? 'Voce enviou um convite' : `${other?.name} te convidou`}
+                      {isMine ? 'Você enviou um convite' : `${other?.name} te convidou`}
                     </span>
                   </div>
                   {/* Texto */}

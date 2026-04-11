@@ -553,7 +553,7 @@ function CamaroteVitrine({
               </div>
               <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: '#fff', margin: '0 0 4px' }}>Ninguem mais por aqui</p>
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.40)', margin: '0 0 20px', lineHeight: 1.5 }}>
-                {hasActiveFilters ? 'Tente ajustar os filtros.' : 'Voce ja viu todos os perfis disponiveis.'}
+                {hasActiveFilters ? 'Tente ajustar os filtros.' : 'Você já viu todos os perfis disponíveis.'}
               </p>
               <button onClick={load} style={{ padding: '12px 24px', borderRadius: 12, border: `1px solid ${G_BORDER}`, background: G_SOFT, color: G, fontWeight: 600, fontSize: 14, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>
                 Recarregar
@@ -1264,7 +1264,7 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
         {rescuedChats.length > 0 && (
           <div style={{ width: '100%', maxWidth: 320, marginBottom: 16 }}>
             <p style={{ fontSize: 11, fontWeight: 700, color: G, letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 10px', textAlign: 'center' }}>
-              Voce foi resgatado
+              Você foi resgatado
             </p>
             {rescuedChats.map(chat => (
               <div
@@ -1431,8 +1431,8 @@ function CamaroteAccessModal({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {[
                     'Um assinante Black paga R$ 15 para iniciar uma conversa com voce',
-                    'Voce e o resgatador terao acesso ao chat exclusivo do Camarote por 30 dias',
-                    'O que acontece depende da conversa entre voces — nao e garantia de nada',
+                    'Você e o resgatador terão acesso ao chat exclusivo do Camarote por 30 dias',
+                    'O que acontece depende da conversa entre vocês — não é garantia de nada',
                     'Assinantes Black da sua categoria sao notificados assim que voce pede acesso',
                     'Quem pagar primeiro tem acesso — os demais nao veem mais o seu pedido',
                   ].map((item, i) => (
@@ -1468,7 +1468,7 @@ function CamaroteAccessModal({
               <div style={{ padding: '12px 14px', borderRadius: 12, background: 'rgba(245,158,11,0.07)', border: `1px solid ${G_BORDER}`, marginBottom: 20, display: 'flex', gap: 10 }}>
                 <AlertTriangle size={15} color={G} strokeWidth={1.5} style={{ flexShrink: 0, marginTop: 1 }} />
                 <p style={{ fontSize: 12, color: 'rgba(245,158,11,0.80)', lineHeight: 1.55, margin: 0 }}>
-                  <strong>Importante:</strong> isso nao e uma compra de servico. O assinante esta pagando para iniciar uma conversa, nao por qualquer ato. O que acontece entre voces e resultado da troca e da conexao — nao de uma transacao.
+                  <strong>Importante:</strong> isso não é uma compra de serviço. O assinante está pagando para iniciar uma conversa, não por qualquer ato. O que acontece entre vocês é resultado da troca e da conexão — não de uma transação.
                 </p>
               </div>
 
@@ -1509,7 +1509,7 @@ function CamaroteAccessModal({
                   {accepted && <Check size={12} color="#fff" strokeWidth={2.5} />}
                 </div>
                 <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.40)', lineHeight: 1.55 }}>
-                  Entendo que isso nao e uma compra de servico e que o resultado depende da troca entre nos dois.
+                  Entendo que isso não é uma compra de serviço e que o resultado depende da troca entre nós dois.
                 </span>
               </label>
 
