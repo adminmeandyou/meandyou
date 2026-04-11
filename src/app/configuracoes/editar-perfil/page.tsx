@@ -511,7 +511,7 @@ function FotosBioSection({ userId, profileData, onSaved }: {
             }}
             style={{ backgroundColor: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.20)', color: '#E11D48', borderRadius: '100px', fontSize: '12px', padding: '6px 14px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', fontWeight: 500 }}
           >
-            ✦ Foto Inteligente — auto-selecionar melhor
+            ✦ Foto Inteligente - auto-selecionar melhor
           </button>
         </div>
       )}

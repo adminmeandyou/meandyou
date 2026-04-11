@@ -371,7 +371,7 @@ export default function ConfiguracoesPage() {
             href="/configuracoes/2fa"
             icon={<Lock size={17} />}
             label="Verificação em dois fatores"
-            sub={twoFaAtivo ? 'Ativado' : 'Desativado — recomendamos ativar'}
+            sub={twoFaAtivo ? 'Ativado' : 'Desativado - recomendamos ativar'}
             badge={twoFaAtivo ? <Badge label="Ativo" cor="#22c55e" /> : <Badge label="Inativo" cor="#f59e0b" />}
             last
           />

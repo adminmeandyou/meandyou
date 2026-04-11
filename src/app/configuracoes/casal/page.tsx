@@ -171,13 +171,13 @@ export default function CasalPage() {
                       Casal ativo com {couple.partner.name}
                     </p>
                     <p style={{ fontSize: 12, color: '#F59E0B', margin: 0 }}>
-                      Perfil duplo ativado — aparece no feed como casal
+                      Perfil duplo ativado. Aparece no feed como casal.
                     </p>
                   </div>
                 </div>
 
                 <div style={{ padding: '16px', borderRadius: 14, backgroundColor: 'rgba(16,185,129,0.07)', border: '1px solid rgba(16,185,129,0.18)', marginBottom: 16 }}>
-                  <p style={{ fontSize: 13, color: '#10b981', margin: '0 0 4px', fontWeight: 600 }}>Beneficios ativos</p>
+                  <p style={{ fontSize: 13, color: '#10b981', margin: '0 0 4px', fontWeight: 600 }}>Benefícios ativos</p>
                   <p style={{ fontSize: 12, color: 'rgba(16,185,129,0.7)', margin: 0, lineHeight: 1.5 }}>
                     Seu parceiro tem 50% de desconto enquanto o casal estiver ativo. O card de casal aparece no feed de busca dos outros usuários.
                   </p>
