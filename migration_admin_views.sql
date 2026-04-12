@@ -5,6 +5,10 @@
 -- Execute no Supabase SQL Editor
 -- =============================================
 
+-- Garantir que colunas necessárias existem em profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS banned_reason text;
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+
 -- ── admin_users ──────────────────────────────────────────────────────────
 
 CREATE OR REPLACE VIEW public.admin_users
@@ -27,7 +31,7 @@ SELECT
   p.photo_best,
   p.photo_face,
   p.plan                                                             AS plan_name,
-  NULL::text                                                           AS banned_reason,
+  p.banned_reason,
   (
     SELECT COUNT(*)::integer
     FROM public.reports r
