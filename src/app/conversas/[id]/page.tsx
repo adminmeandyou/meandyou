@@ -1091,7 +1091,7 @@ export default function ChatPage() {
             <ActionBtn
               icon={<Mic size={13} strokeWidth={1.5} />}
               label="Áudio"
-              onClick={() => setError('Áudio em breve')}
+              onClick={() => setError('Recurso de áudio em breve.')}
             />
           </div>
 

@@ -1130,8 +1130,8 @@ function RoomsView({ userPlan }: { userPlan: string }) {
 
   async function handleJoin() {
     if (!joiningRoom || joining) return
-    if (nickname.trim().length < 2) { setJoinError('Nome deve ter ao menos 2 caracteres'); return }
-    if (nickname.trim().length > 20) { setJoinError('Nome deve ter no maximo 20 caracteres'); return }
+    if (nickname.trim().length < 2) { setJoinError('Nome deve ter ao menos 2 caracteres.'); return }
+    if (nickname.trim().length > 20) { setJoinError('Nome deve ter no máximo 20 caracteres.'); return }
     setJoining(true)
     setJoinError('')
     try {

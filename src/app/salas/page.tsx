@@ -34,11 +34,11 @@ function JoinSheet({
 
   async function handleJoin() {
     if (nickname.trim().length < 2) {
-      setError('Nome deve ter ao menos 2 caracteres')
+      setError('Nome deve ter ao menos 2 caracteres.')
       return
     }
     if (nickname.trim().length > 20) {
-      setError('Nome muito longo (máx. 20 caracteres)')
+      setError('Nome muito longo (máx. 20 caracteres).')
       return
     }
     setLoading(true)

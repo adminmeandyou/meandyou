@@ -115,7 +115,7 @@ export default function AdminUsuarios() {
         <div style={{ position: 'relative', flex: 1, minWidth: '240px' }}>
           <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'rgba(248,249,250,0.40)' }} />
           <input
-            placeholder="Buscar por nome ou email..."
+            placeholder="Buscar por nome ou e-mail..."
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{ width: '100%', paddingLeft: '36px', padding: '10px 12px 10px 36px', backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', color: '#fff', fontSize: '14px', outline: 'none' }}

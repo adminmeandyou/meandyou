@@ -892,12 +892,12 @@ function FisicoSection({ userId, filtersData, bloqueado, onSaved }: {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
           <div>
             <label style={{ color: 'rgba(248,249,250,0.45)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>Altura (cm)</label>
-            <input type="number" value={altura} onChange={e => setAltura(e.target.value)} placeholder="ex: 170"
+            <input type="number" value={altura} onChange={e => setAltura(e.target.value)} placeholder="Ex: 170"
               style={{ width: '100%', padding: '10px 12px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#F8F9FA', fontSize: '14px', boxSizing: 'border-box', outline: 'none' }} />
           </div>
           <div>
             <label style={{ color: 'rgba(248,249,250,0.45)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', display: 'block', marginBottom: '6px' }}>Peso (kg)</label>
-            <input type="number" value={peso} onChange={e => setPeso(e.target.value)} placeholder="ex: 65"
+            <input type="number" value={peso} onChange={e => setPeso(e.target.value)} placeholder="Ex: 65"
               style={{ width: '100%', padding: '10px 12px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '10px', color: '#F8F9FA', fontSize: '14px', boxSizing: 'border-box', outline: 'none' }} />
           </div>
         </div>

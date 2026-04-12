@@ -17,7 +17,7 @@ export default function CriarSalaPage() {
 
   async function handleCriar() {
     if (nome.trim().length < 3) {
-      setError('Nome deve ter ao menos 3 caracteres')
+      setError('Nome deve ter ao menos 3 caracteres.')
       return
     }
     setLoading(true)
