@@ -141,12 +141,13 @@ export async function POST(req: NextRequest) {
       const quantidade = fichasFromAmount(Number(payment.amount))
       if (quantidade > 0) {
         try {
-          await supabase.rpc('add_fichas', {
+          await supabase.rpc('increment_user_balance', {
+            p_table: 'user_fichas',
             p_user_id: payment.user_id,
             p_amount: quantidade,
           })
         } catch (e) {
-          console.error('add_fichas error — creditar manualmente para user', payment.user_id, ':', e)
+          console.error('increment_user_balance (fichas) error — creditar manualmente para user', payment.user_id, ':', e)
         }
       }
 
