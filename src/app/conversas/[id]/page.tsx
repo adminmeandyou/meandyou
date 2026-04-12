@@ -940,7 +940,7 @@ export default function ChatPage() {
             borderRadius: 16, padding: '14px 14px',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Puxando Assunto</span>
+              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Puxando assunto</span>
               <button onClick={() => setShowIcebreakers(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
                 <X size={13} color="var(--muted)" />
               </button>
@@ -1363,7 +1363,7 @@ export default function ChatPage() {
                 <button onClick={() => { setShowSecuritySheet(false); router.push('/loja') }} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'14px 16px',borderRadius:16,background:'rgba(255,255,255,0.04)',border:'1px solid var(--border)',cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>
                   <div style={{ width:40,height:40,borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><Ghost size={18} color="rgba(248,249,250,0.45)" strokeWidth={1.5} /></div>
                   <div style={{ textAlign:'left',flex:1 }}>
-                    <p style={{ fontSize:14,fontWeight:600,color:'var(--text)',margin:0 }}>Modo Invisível</p>
+                    <p style={{ fontSize:14,fontWeight:600,color:'var(--text)',margin:0 }}>Modo invisível</p>
                     <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>
                       {ghostModeUntil && new Date(ghostModeUntil) > new Date()
                         ? `Ativo até ${new Date(ghostModeUntil).toLocaleDateString('pt-BR')}`
@@ -1379,7 +1379,7 @@ export default function ChatPage() {
                   <div style={{ width:40,height:40,borderRadius:12,background:'rgba(225,29,72,0.12)',border:'1px solid rgba(225,29,72,0.30)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><Phone size={18} color="#F43F5E" strokeWidth={1.5} /></div>
                   <div style={{ textAlign:'left' }}>
                     <p style={{ fontSize:14,fontWeight:600,color:'#F43F5E',margin:0 }}>Ligar 190</p>
-                    <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>Policia Militar, emergencia real</p>
+                    <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>Polícia Militar, emergência real</p>
                   </div>
                 </a>
               </div>

@@ -11,13 +11,13 @@ const modos = [
     color: '#E11D48', colorSoft: 'rgba(225,29,72,0.12)', colorBorder: 'rgba(225,29,72,0.25)', colorGlow: 'rgba(225,29,72,0.30)',
   },
   {
-    num: '02', icon: <IcFilter />, title: 'Busca Avançada',
+    num: '02', icon: <IcFilter />, title: 'Busca avançada',
     text: 'Mais de 100 filtros. Você define tudo: corpo, estilo, hábitos, intenções. Quem não combina, não aparece.',
     preview: 'Você define o tipo. O app filtra tudo que não encaixa.',
     color: '#A855F7', colorSoft: 'rgba(168,85,247,0.12)', colorBorder: 'rgba(168,85,247,0.25)', colorGlow: 'rgba(168,85,247,0.30)',
   },
   {
-    num: '03', icon: <IcStar />, title: 'Match do Dia',
+    num: '03', icon: <IcStar />, title: 'Match do dia',
     text: 'Todo dia, o app analisa seu perfil e te entrega uma seleção cirúrgica. Sem sorte. Com precisão.',
     preview: 'Uma seleção nova todo dia, feita só para você.',
     color: '#F59E0B', colorSoft: 'rgba(245,158,11,0.10)', colorBorder: 'rgba(245,158,11,0.25)', colorGlow: 'rgba(245,158,11,0.28)',

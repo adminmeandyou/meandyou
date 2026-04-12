@@ -392,7 +392,7 @@ function LocationAutocomplete({
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function getModeLimit(plan: string, mode: ViewMode): number {
-  // Match do Dia: limite e o tamanho do deck (controlado em loadDaily)
+  // Match do dia: limite e o tamanho do deck (controlado em loadDaily)
   if (mode === 'daily' || mode === 'rooms') return Infinity
   // Descobrir e Busca Avancada: limite por plano
   if (plan === 'black') return Infinity
@@ -457,7 +457,7 @@ function BoostActiveBanner({ until }: { until: Date }) {
 const MODE_LABELS: Record<ViewMode, string> = {
   discovery: 'Descobrir',
   search: 'Busca',
-  daily: 'Match do Dia',
+  daily: 'Match do dia',
   rooms: 'Salas',
 }
 
@@ -524,7 +524,7 @@ function ModeSelectorTabs({
   )
 }
 
-// ─── Match do Dia ─────────────────────────────────────────────────────────────
+// ─── Match do dia ─────────────────────────────────────────────────────────────
 
 // Todas as chaves de filtro de compatibilidade (exceto search_* e campos de controle)
 const COMPAT_KEYS = FILTER_CATEGORIES.flatMap(cat =>
@@ -700,7 +700,7 @@ function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | n
       <div style={{ marginBottom: 20 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
           <Sparkles size={15} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
-          <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)' }}>Match do Dia</span>
+          <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)' }}>Match do dia</span>
         </div>
         <p style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'capitalize', marginBottom: 4 }}>{todayLabel}</p>
         <p style={{ fontSize: 12, color: 'var(--muted-2)' }}>
@@ -840,7 +840,7 @@ const MODES_CONFIG = [
   },
   {
     key: 'daily' as ViewMode,
-    label: 'Match do Dia',
+    label: 'Match do dia',
     subtitle: 'A nossa recomendação fatal.',
     bg: '#100900',
     img: '/images/modos/match-dia.jpg',

@@ -15,7 +15,7 @@ const MODOS = [
   },
   {
     icon: <SlidersHorizontal size={32} strokeWidth={1.5} color="#60a5fa" />,
-    label: 'Busca Avançada',
+    label: 'Busca avançada',
     desc: 'Filtre por idade, distância e gênero. Navegue por uma grade de perfis no seu ritmo.',
     cor: '#60a5fa',
     bg: 'linear-gradient(135deg, rgba(96,165,250,0.12) 0%, rgba(96,165,250,0.04) 100%)',
@@ -23,7 +23,7 @@ const MODOS = [
   },
   {
     icon: <Star size={32} strokeWidth={1.5} color="#F59E0B" />,
-    label: 'Match do Dia',
+    label: 'Match do dia',
     desc: 'Todo dia o app seleciona 5 perfis com alta compatibilidade com você. Qualidade acima de quantidade.',
     cor: '#F59E0B',
     bg: 'linear-gradient(135deg, rgba(245,158,11,0.12) 0%, rgba(245,158,11,0.04) 100%)',
