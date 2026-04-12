@@ -669,7 +669,7 @@ function CamaroteVitrine({
               </div>
 
               <p style={{ textAlign: 'center', fontSize: 11, color: 'rgba(255,255,255,0.18)', marginBottom: 8, flexShrink: 0 }}>
-                {deck.length} {deck.length !== 1 ? 'perfis' : 'perfil'} disponivel
+                {deck.length} {deck.length !== 1 ? 'perfis' : 'perfil'} disponível
               </p>
             </>
           )}

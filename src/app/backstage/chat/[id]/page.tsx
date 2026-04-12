@@ -336,7 +336,7 @@ export default function CamaroteChatPage() {
         ) : (
           <div style={{ marginBottom: 24, display: 'flex', alignItems: 'center', gap: 8 }}>
             <Star size={14} color={G} strokeWidth={1.5} />
-            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.40)' }}>Avaliacao enviada</span>
+            <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.40)' }}>Avaliação enviada</span>
           </div>
         )}
 

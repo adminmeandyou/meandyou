@@ -501,7 +501,7 @@ export default function LojaPage() {
             <div style={{ padding: '0 16px 16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', paddingTop: '12px' }}>
                 <BalanceItem icon={<Coins size={16} strokeWidth={1.5} color="#F59E0B" />} label="Fichas" value={fichas} />
-                <BalanceItem icon={<Star size={16} strokeWidth={1.5} color="#F59E0B" />} label="SuperLikes" value={superlikes} />
+                <BalanceItem icon={<Star size={16} strokeWidth={1.5} color="#F59E0B" />} label="SuperCurtidas" value={superlikes} />
                 <BalanceItem icon={<Zap size={16} strokeWidth={1.5} color="var(--accent)" />} label="Boosts" value={boosts} active={!!boostIsActive} countdown={boostIsActive && boostActiveUntil ? boostActiveUntil : undefined} />
                 <BalanceItem icon={<Search size={16} strokeWidth={1.5} color="#3b82f6" />} label="Lupas" value={lupas} />
                 <BalanceItem icon={<RotateCcw size={16} strokeWidth={1.5} color="#a855f7" />} label="Rewinds" value={rewinds} />
@@ -538,7 +538,7 @@ export default function LojaPage() {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 3 }}>
                       <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 17, color: '#fff', margin: 0 }}>Pacote lendário</p>
-                      <span style={{ fontSize: 9, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.20)', border: '1px solid rgba(245,158,11,0.50)', borderRadius: 100, padding: '2px 8px' }}>PROMOÇÃO EXCLUSIVA</span>
+                      <span style={{ fontSize: 9, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.20)', border: '1px solid rgba(245,158,11,0.50)', borderRadius: 100, padding: '2px 8px' }}>Promoção exclusiva</span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 6 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
@@ -697,7 +697,7 @@ export default function LojaPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', margin: 0 }}>{item.label}</p>
                       {item.new && (
-                        <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent)', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: 100, padding: '1px 6px' }}>NOVO</span>
+                        <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent)', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: 100, padding: '1px 6px' }}>Novo</span>
                       )}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 2 }}>
@@ -806,10 +806,10 @@ export default function LojaPage() {
                   }}>
                     {SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.icon ?? <Gift size={44} color="#fff" strokeWidth={1.5} />}
                   </div>
-                  <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(248,249,250,0.45)', margin: '0 0 8px' }}>CAIXA SURPRESA</p>
+                  <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(248,249,250,0.45)', margin: '0 0 8px' }}>Caixa surpresa</p>
                   <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 34, color: '#fff', margin: '0 0 8px', lineHeight: 1 }}>Você ganhou!</p>
                   <p style={{ fontSize: 24, fontWeight: 800, color: SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.color ?? '#E11D48', margin: '0 0 4px' }}>
-                    {(boxReveal.payload?.reward_amount ?? 1)}x {SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.label ?? (boxReveal.payload?.reward_type ? boxReveal.payload.reward_type.charAt(0).toUpperCase() + boxReveal.payload.reward_type.slice(1) : 'Premio')}
+                    {(boxReveal.payload?.reward_amount ?? 1)}x {SURPRESA_CONFIG[boxReveal.payload?.reward_type]?.label ?? (boxReveal.payload?.reward_type ? boxReveal.payload.reward_type.charAt(0).toUpperCase() + boxReveal.payload.reward_type.slice(1) : 'Prêmio')}
                   </p>
                 </>
               ) : (
@@ -821,11 +821,11 @@ export default function LojaPage() {
                       <Gift size={44} color="#F59E0B" strokeWidth={1.5} />
                     </div>
                   )}
-                  <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#F59E0B', margin: '0 0 8px' }}>EMBLEMA SUPER LENDARIO</p>
+                  <p style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.12em', color: '#F59E0B', margin: '0 0 8px' }}>Emblema super lendário</p>
                   <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 34, color: '#fff', margin: '0 0 8px', lineHeight: 1 }}>Você ganhou!</p>
                   <p style={{ fontSize: 22, fontWeight: 800, color: '#F59E0B', margin: '0 0 4px' }}>{boxReveal.payload?.badge_name ?? 'Emblema Exclusivo'}</p>
                   {boxReveal.payload?.type === 'badge_pending' && (
-                    <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.40)', marginTop: 6 }}>Em breve disponivel no seu perfil</p>
+                    <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.40)', marginTop: 6 }}>Em breve disponível no seu perfil.</p>
                   )}
                 </>
               )}

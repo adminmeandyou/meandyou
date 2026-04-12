@@ -689,8 +689,8 @@ function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | n
     return (
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, padding: 24, textAlign: 'center' }}>
         <Heart size={40} color="rgba(255,255,255,0.20)" strokeWidth={1} />
-        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Sem sugestoes hoje</p>
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Volte amanha ou ajuste seus filtros para ver mais pessoas</p>
+        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Sem sugestões hoje</p>
+        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Volte amanhã ou ajuste seus filtros para ver mais pessoas.</p>
       </div>
     )
   }
@@ -712,8 +712,8 @@ function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | n
 
       {allActed ? (
         <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)', borderRadius: 16, padding: '24px 20px', textAlign: 'center' }}>
-          <p style={{ fontSize: 15, color: 'var(--text)', fontWeight: 600, marginBottom: 8 }}>Volte amanha!</p>
-          <p style={{ fontSize: 13, color: 'var(--muted)' }}>Novas sugestoes aparecem todo dia as 00:00.</p>
+          <p style={{ fontSize: 15, color: 'var(--text)', fontWeight: 600, marginBottom: 8 }}>Volte amanhã!</p>
+          <p style={{ fontSize: 13, color: 'var(--muted)' }}>Novas sugestões aparecem todo dia às 00:00.</p>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10 }}>
@@ -866,7 +866,7 @@ function ModesHubView({ userPlan, onSelect, onCamarote }: {
           fontFamily: 'var(--font-jakarta)',
           margin: '0 0 6px',
         }}>
-          Conexoes Curadas
+          Conexões curadas
         </p>
         <h2 style={{
           fontFamily: 'var(--font-fraunces)',
@@ -1192,7 +1192,7 @@ function RoomsView({ userPlan }: { userPlan: string }) {
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 100, backgroundColor: 'rgba(8,9,14,0.85)', border: '1px solid rgba(225,29,72,0.25)', backdropFilter: 'blur(4px)' }}>
               <Lock size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>Disponivel no Plus e Black</span>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>Disponível no Plus e Black</span>
             </div>
           </div>
         </div>
@@ -1300,7 +1300,7 @@ function RoomsView({ userPlan }: { userPlan: string }) {
 
       {publicRooms.length === 0 && blackRooms.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '40px 0' }}>
-          <p style={{ color: 'var(--muted)', fontSize: 14 }}>Nenhuma sala disponivel no momento.</p>
+          <p style={{ color: 'var(--muted)', fontSize: 14 }}>Nenhuma sala disponível no momento.</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
