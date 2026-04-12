@@ -424,7 +424,7 @@ export default function CamaroteChatPage() {
         <div style={{ flexShrink: 0, padding: '10px 16px', background: G_SOFT, borderBottom: `1px solid ${G_BORDER}`, display: 'flex', alignItems: 'center', gap: 10 }}>
           <Star size={14} color={G} strokeWidth={1.5} style={{ flexShrink: 0 }} />
           <span style={{ flex: 1, fontSize: 12, color: 'rgba(255,255,255,0.80)' }}>
-            Como esta sendo essa conversa?
+            Como está sendo essa conversa?
           </span>
           <button
             onClick={() => setShowRating(true)}

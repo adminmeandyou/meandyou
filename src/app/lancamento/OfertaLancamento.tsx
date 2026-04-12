@@ -10,7 +10,7 @@ export default function OfertaLancamento() {
             Não é um app gratuito.<br /><em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>É uma oportunidade.</em>
           </h2>
           <p style={{ fontSize: 'clamp(15px,2vw,17px)', color: 'rgba(248,249,250,0.60)', lineHeight: 1.8, marginBottom: 12 }}>
-            O MeAndYou é uma plataforma paga — e vai continuar sendo. Quem paga, leva a experiência a sério. E isso muda o nível de todo mundo dentro do app.
+            O MeAndYou é uma plataforma paga. E vai continuar sendo. Quem paga, leva a experiência a sério. E isso muda o nível de todo mundo dentro do app.
           </p>
           <p style={{ fontSize: 'clamp(15px,2vw,17px)', color: 'rgba(248,249,250,0.60)', lineHeight: 1.8, marginBottom: 40 }}>
             Mas antes de abrir para o mundo, precisamos de pessoas reais testando, explorando, e nos dizendo o que ainda pode melhorar. Então fizemos uma troca justa: você usa tudo por 2 meses. Nós coletamos feedback real. Depois, se quiser continuar, é R$9,97/mês. Se não quiser, cancela. Sem pressão, sem truque.

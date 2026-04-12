@@ -24,7 +24,7 @@ const modos = [
   },
   {
     num: '04', icon: <IcUsers />, title: 'Salas',
-    text: 'Entre em salas públicas com até 20 pessoas ou crie a sua — privada ou aberta para todos. Conexão em tempo real.',
+    text: 'Entre em salas públicas com até 20 pessoas ou crie a sua, privada ou aberta para todos. Conexão em tempo real.',
     preview: 'Salas públicas ou personalizadas. Você decide quem entra.',
     color: '#10B981', colorSoft: 'rgba(16,185,129,0.10)', colorBorder: 'rgba(16,185,129,0.22)', colorGlow: 'rgba(16,185,129,0.25)',
   },

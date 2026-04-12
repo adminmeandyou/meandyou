@@ -17,7 +17,7 @@ const depoimentos = [
     nome: 'Mariana',
     idade: 34,
     cidade: 'São Paulo',
-    txt: 'Entrei no lançamento sem expectativa. Já na primeira semana entendi por que é diferente. Nem precisa explicar — você sente quando entra.',
+    txt: 'Entrei no lançamento sem expectativa. Já na primeira semana entendi por que é diferente. Nem precisa explicar, você sente quando entra.',
     verificado: true,
     destaque: true,
   },

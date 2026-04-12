@@ -51,7 +51,7 @@ export default function PlanosLancamento() {
       nome: 'Black',
       area: 'Backstage',
       preco: '99,97',
-      desc: 'Você acessa tudo — sem restrições. Com área exclusiva Backstage e o máximo do algoritmo.',
+      desc: 'Você acessa tudo, sem restrições. Com área exclusiva Backstage e o máximo do algoritmo.',
       ctaText: 'Assinar o Black',
       feats: [
         { ok: true, gold: true,  txt: 'Curtidas ilimitadas' },

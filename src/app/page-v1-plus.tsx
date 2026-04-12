@@ -1770,8 +1770,8 @@ export default function Home() {
               <div className="lp-camarote-visual-v2">
                 {camaroteRevealed ? (
                   [
-                    { icon: <IcLock />, title: 'Acesso privado', text: 'So quem sinalizou as mesmas intencoes pode ver seu perfil no Camarote.' },
-                    { icon: <IcEye />, title: 'Zero exposicao', text: 'Seu perfil no Camarote e separado do perfil principal. Voce controla tudo.' },
+                    { icon: <IcLock />, title: 'Acesso privado', text: 'Só quem sinalizou as mesmas intenções pode ver seu perfil no Camarote.' },
+                    { icon: <IcEye />, title: 'Zero exposição', text: 'Seu perfil no Camarote é separado do perfil principal. Você controla tudo.' },
                     { icon: <IcShield />, title: 'Comunidade curada', text: 'Perfis verificados, filtros exclusivos e uma comunidade que compartilha interesses.' },
                   ].map((c, i) => (
                     <div key={i} className="lp-camarote-card-v2 lp-camarote-reveal" style={{ animationDelay: `${i * 0.1}s` }}>

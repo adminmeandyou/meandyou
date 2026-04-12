@@ -75,7 +75,7 @@ export default function HeroLancamento({ userCity, notifList }: HeroProps) {
 
           <h1><em style={{color:'var(--accent)',fontStyle:'italic'}}>Você decide</em> quem entra<br /><em style={{color:'var(--text)',fontStyle:'italic'}}>no seu mundo.</em></h1>
           <p className="lp-hero-sub">
-            Filtros avançados, videochamada, salas e muito mais. Antes do lançamento oficial, você testa tudo de graça por 2 meses — e ainda ganha um emblema de Fundador que ninguém mais vai ter.
+            Filtros avançados, videochamada, salas e muito mais. Antes do lançamento oficial, você testa tudo de graça por 2 meses e ainda ganha um emblema de Fundador que ninguém mais vai ter.
           </p>
           <p className="lp-hero-complement">
             A plataforma é paga. Mas agora, antes de abrir para o mundo, precisamos de pessoas reais testando. A troca é justa.
