@@ -11,7 +11,8 @@ ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
 
 -- ── admin_users ──────────────────────────────────────────────────────────
 
-CREATE OR REPLACE VIEW public.admin_users
+DROP VIEW IF EXISTS public.admin_users;
+CREATE VIEW public.admin_users
 WITH (security_invoker = false)  -- SECURITY DEFINER: roda como owner, bypassa RLS
 AS
 SELECT
@@ -54,7 +55,8 @@ REVOKE SELECT ON public.admin_users FROM anon;
 
 -- ── admin_metrics ─────────────────────────────────────────────────────────
 
-CREATE OR REPLACE VIEW public.admin_metrics
+DROP VIEW IF EXISTS public.admin_metrics;
+CREATE VIEW public.admin_metrics
 WITH (security_invoker = false)  -- SECURITY DEFINER: roda como owner, bypassa RLS
 AS
 SELECT
