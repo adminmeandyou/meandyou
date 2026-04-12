@@ -366,7 +366,7 @@ export default function DeletarContaPage() {
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleDelete()}
-                  placeholder="Digite sua senha"
+                  placeholder="Confirme sua senha"
                   autoFocus
                   style={{
                     width: '100%', padding: '13px 48px 13px 16px', borderRadius: '12px',

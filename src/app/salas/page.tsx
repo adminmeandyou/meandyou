@@ -387,7 +387,7 @@ export default function SalasPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setJoinError(data.error ?? 'Erro ao entrar na sala')
+        setJoinError(data.error ?? 'Erro ao entrar na sala.')
         setJoining(false)
         return
       }

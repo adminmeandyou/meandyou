@@ -165,7 +165,7 @@ export default function Login() {
               <div style={{ position: 'relative' }}>
                 <input
                   type={verSenha ? 'text' : 'password'}
-                  placeholder="Sua senha"
+                  placeholder="••••••••"
                   value={senha}
                   onChange={(e) => setSenha(e.target.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleLogin()}

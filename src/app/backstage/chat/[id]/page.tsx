@@ -583,7 +583,7 @@ export default function CamaroteChatPage() {
           value={input}
           onChange={e => { setInput(e.target.value); setError('') }}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() } }}
-          placeholder="Digite uma mensagem..."
+          placeholder="Escreva uma mensagem..."
           maxLength={MAX_CHARS}
           rows={1}
           style={{

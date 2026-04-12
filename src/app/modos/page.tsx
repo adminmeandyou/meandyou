@@ -650,7 +650,7 @@ function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | n
       })
       toast.success('Curtida enviada!')
     } catch {
-      toast.error('Falha ao curtir. Tente novamente.')
+      toast.error('Erro ao curtir. Tente novamente.')
     }
   }
 
@@ -1141,7 +1141,7 @@ function RoomsView({ userPlan }: { userPlan: string }) {
         body: JSON.stringify({ roomId: joiningRoom.id, nickname: nickname.trim() }),
       })
       const data = await res.json()
-      if (!res.ok) { setJoinError(data.error ?? 'Erro ao entrar na sala'); setJoining(false); return }
+      if (!res.ok) { setJoinError(data.error ?? 'Erro ao entrar na sala.'); setJoining(false); return }
       router.push(`/salas/${joiningRoom.id}`)
     } catch {
       setJoinError('Erro de conexão. Tente novamente.')
@@ -1897,7 +1897,7 @@ function BuscaInner() {
         }
       } catch (err) {
         console.error('Erro ao processar swipe:', err)
-        toast.error('Falha ao registrar ação. Verifique sua conexão.')
+        toast.error('Erro ao registrar ação. Verifique sua conexão.')
         haptics.error()
       }
     }, 350)

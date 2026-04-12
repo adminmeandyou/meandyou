@@ -63,7 +63,7 @@ export default function NotificacoesPage() {
         toast.error('Erro ao carregar notificações.')
       }
     } catch {
-      toast.error('Erro ao carregar notificações')
+      toast.error('Erro ao carregar notificações.')
     }
     setLoading(false)
   }

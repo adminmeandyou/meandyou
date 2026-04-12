@@ -65,10 +65,10 @@ export default function CasalPage() {
     try {
       const res = await fetch('/api/casal', { method: 'POST' })
       const data = await res.json()
-      if (!res.ok) { setError(data.error ?? 'Erro ao criar convite'); return }
+      if (!res.ok) { setError(data.error ?? 'Erro ao criar convite.'); return }
       setInviteUrl(data.inviteUrl)
       await loadData()
-    } catch { setError('Erro de conexão') }
+    } catch { setError('Erro de conexão.') }
     setCreating(false)
   }
 

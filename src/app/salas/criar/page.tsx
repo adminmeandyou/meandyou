@@ -30,7 +30,7 @@ export default function CriarSalaPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error ?? 'Erro ao criar sala')
+        setError(data.error ?? 'Erro ao criar sala.')
         setLoading(false)
         return
       }

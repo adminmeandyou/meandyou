@@ -39,7 +39,7 @@ function CasalAceitarContent() {
       })
       const json = await res.json()
       if (!res.ok) {
-        setError(json.error ?? 'Erro ao aceitar convite')
+        setError(json.error ?? 'Erro ao aceitar convite.')
         setAccepting(false)
         return
       }

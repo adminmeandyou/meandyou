@@ -50,7 +50,7 @@ export default function AcessoPage() {
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input
             type="password"
-            placeholder="Senha de acesso"
+            placeholder="••••••••"
             value={senha}
             onChange={e => setSenha(e.target.value)}
             autoFocus

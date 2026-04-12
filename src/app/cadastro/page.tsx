@@ -350,7 +350,7 @@ function CadastroInner() {
           <>
             {pergunta('Qual é o seu nome completo?', 'Usado apenas para verificação. Não aparece no perfil.')}
             <input
-              type="text" placeholder="Nome e Sobrenome" value={nomeCompleto}
+              type="text" placeholder="Nome completo" value={nomeCompleto}
               onChange={e => setNomeCompleto(e.target.value)} onKeyDown={handleKeyDown}
               autoFocus style={inputStyle} autoComplete="name"
             />

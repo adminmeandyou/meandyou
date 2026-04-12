@@ -826,7 +826,7 @@ export default function SalaChatPage() {
                 sendMessage()
               }
             }}
-            placeholder="Digite sua mensagem..."
+            placeholder="Escreva uma mensagem..."
             maxLength={500}
             rows={1}
             style={{

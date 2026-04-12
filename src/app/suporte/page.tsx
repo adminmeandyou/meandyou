@@ -71,7 +71,7 @@ export default function SuportePage() {
     if (res.ok) {
       setSent(true)
     } else {
-      setError('Não foi possível enviar. Tente novamente ou mande email para adminmeandyou@proton.me')
+      setError('Não foi possível enviar. Tente novamente ou envie um e-mail para adminmeandyou@proton.me')
     }
   }
 

@@ -150,7 +150,7 @@ export function DenunciaModal({ profileId, userId, supabase, toast, onClose }: D
                   })
                   setEnviado(true)
                 } catch {
-                  toast.show('Falha ao enviar denúncia. Tente novamente.', 'error')
+                  toast.show('Erro ao enviar denúncia. Tente novamente.', 'error')
                 } finally {
                   setEnviando(false)
                 }

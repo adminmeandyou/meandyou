@@ -233,7 +233,7 @@ export default function MatchesHubPage() {
     localStorage.setItem(ARCHIVED_KEY, JSON.stringify(Array.from(ids)))
     setArchivedIds(new Set(ids))
     haptics.tap()
-    toast.success(ids.has(matchId) ? 'Conversa arquivada' : 'Conversa restaurada')
+    toast.success(ids.has(matchId) ? 'Conversa arquivada.' : 'Conversa restaurada.')
   }
 
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0)
