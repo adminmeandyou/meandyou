@@ -236,7 +236,7 @@ export default function PlanosPage() {
                   ),
                 }}
               >
-                {isActive ? 'Ativo' : `Assinar ${plan.name}`}
+                {isActive ? 'Plano atual' : `Assinar ${plan.name}`}
               </button>
             </div>
           )

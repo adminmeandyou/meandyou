@@ -172,7 +172,7 @@ function SwipeCard({ profile, onSwipe, processing }: {
           border: '4px solid #f87171', borderRadius: '12px', padding: '6px 16px',
           transform: 'rotate(20deg)', opacity: Math.max(dislikeOpacity, 0),
         }}>
-          <span style={{ color: '#f87171', fontWeight: 900, fontSize: '24px', letterSpacing: '0.1em' }}>NOPE</span>
+          <span style={{ color: '#f87171', fontWeight: 900, fontSize: '24px', letterSpacing: '0.1em' }}>PASSA</span>
         </div>
 
         {/* Info */}

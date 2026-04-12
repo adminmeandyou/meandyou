@@ -2273,7 +2273,7 @@ function BuscaInner() {
                       opacity: passOpacity,
                     }}
                   >
-                    <span style={{ color: '#E11D48', fontWeight: 800, fontSize: 20, letterSpacing: 2 }}>NOPE</span>
+                    <span style={{ color: '#E11D48', fontWeight: 800, fontSize: 20, letterSpacing: 2 }}>PASSA</span>
                   </div>
                 )}
 

@@ -256,7 +256,7 @@ export default function OnboardingPage() {
         {passo < PASSOS.length - 1 ? (
           <button onClick={() => setPasso(passo + 1)}
             style={{ width: '100%', padding: '16px', borderRadius: '100px', border: 'none', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontFamily: 'var(--font-jakarta)', fontSize: '16px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', boxShadow: '0 8px 24px rgba(225,29,72,0.25)' }}>
-            Continuar <ChevronRight size={20} />
+            {passo === 0 ? 'Ver como funciona' : passo === 1 ? 'Ativar permissões' : 'Quase lá!'} <ChevronRight size={20} />
           </button>
         ) : (
           <>
