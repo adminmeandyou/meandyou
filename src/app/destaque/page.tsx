@@ -78,7 +78,7 @@ export default function DestaquesPage() {
       toast.success('Perfil revelado!')
     } else {
       haptics.error()
-      toast.error('Erro ao revelar perfil')
+      toast.error('Erro ao revelar perfil.')
     }
     setRevealing(null)
   }

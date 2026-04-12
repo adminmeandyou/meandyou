@@ -60,7 +60,7 @@ export default function NotificacoesPage() {
         const data = await res.json()
         setNotifications(data.notificacoes ?? [])
       } else {
-        toast.error('Erro ao carregar notificações')
+        toast.error('Erro ao carregar notificações.')
       }
     } catch {
       toast.error('Erro ao carregar notificações')
@@ -79,9 +79,9 @@ export default function NotificacoesPage() {
         headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}` },
       })
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-      toast.success('Todas marcadas como lidas')
+      toast.success('Todas marcadas como lidas.')
     } catch {
-      toast.error('Erro ao marcar como lidas')
+      toast.error('Erro ao marcar como lidas.')
     }
     setMarkingRead(false)
   }

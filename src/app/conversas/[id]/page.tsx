@@ -364,7 +364,7 @@ export default function ChatPage() {
       const diff = Date.now() - parseInt(last)
       if (diff < 60 * 60 * 1000) {
         const mins = Math.ceil((60 * 60 * 1000 - diff) / 60000)
-        toast.info(`Aguarde ${mins} min para dar outro nudge`)
+        toast.info(`Aguarde ${mins} min para dar outro nudge.`)
         return
       }
     }
@@ -775,7 +775,7 @@ export default function ChatPage() {
           <button
             onClick={() => setShowSecuritySheet(true)}
             style={{ width: 36, height: 36, borderRadius: '50%', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-            title="Seguranca"
+            title="Segurança"
           >
             <Shield size={18} color="rgba(248,249,250,0.25)" strokeWidth={1.5} />
           </button>
@@ -1090,8 +1090,8 @@ export default function ChatPage() {
             {/* Mic placeholder */}
             <ActionBtn
               icon={<Mic size={13} strokeWidth={1.5} />}
-              label="Audio"
-              onClick={() => setError('Audio em breve')}
+              label="Áudio"
+              onClick={() => setError('Áudio em breve')}
             />
           </div>
 

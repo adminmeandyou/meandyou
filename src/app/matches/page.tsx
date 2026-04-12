@@ -90,7 +90,7 @@ export default function MatchesPage() {
       setMatches(data || [])
     } catch {
       setMatches([])
-      toast.error('Erro ao carregar matches')
+      toast.error('Erro ao carregar matches.')
     }
     setLoading(false)
   }

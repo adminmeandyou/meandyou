@@ -99,7 +99,7 @@ export default function CurtidasPage() {
       })
       toast.success('Curtida enviada!')
     } catch {
-      toast.error('Erro ao enviar curtida')
+      toast.error('Erro ao enviar curtida.')
     }
     setLikedBack((prev) => new Set(Array.from(prev).concat(profileId)))
   }

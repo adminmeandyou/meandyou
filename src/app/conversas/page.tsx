@@ -222,7 +222,7 @@ export default function MatchesHubPage() {
         setOnlineFriends([])
       }
     } catch {
-      toast.error('Erro ao carregar matches')
+      toast.error('Erro ao carregar matches.')
     }
     setLoading(false)
   }

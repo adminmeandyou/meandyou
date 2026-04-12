@@ -176,10 +176,10 @@ export default function ConfiguracoesPage() {
     try {
       const { error } = await supabase.from('profiles').update({ show_last_active: novo }).eq('id', userId!)
       if (error) throw error
-      toast.success(novo ? 'Status de atividade ativado' : 'Status de atividade ocultado')
+      toast.success(novo ? 'Status de atividade ativado.' : 'Status de atividade ocultado.')
     } catch {
       setShowLastActive(!novo)
-      toast.error('Erro ao salvar preferência')
+      toast.error('Erro ao salvar preferência.')
     }
     setSavingLastActive(false)
   }
@@ -193,10 +193,10 @@ export default function ConfiguracoesPage() {
     try {
       const { error } = await supabase.from('profiles').update({ notifications_email: novo }).eq('id', userId!)
       if (error) throw error
-      toast.success(novo ? 'Emails de engajamento ativados' : 'Emails de engajamento desativados')
+      toast.success(novo ? 'Emails de engajamento ativados.' : 'Emails de engajamento desativados.')
     } catch {
       setNotifEmail(!novo)
-      toast.error('Erro ao salvar preferência')
+      toast.error('Erro ao salvar preferência.')
     }
     setSavingNotifEmail(false)
   }
@@ -210,9 +210,9 @@ export default function ConfiguracoesPage() {
         const perm = await Notification.requestPermission()
         if (perm === 'granted') {
           setNotifPush(true)
-          toast.success('Notificações ativadas')
+          toast.success('Notificações ativadas.')
         } else {
-          toast.info('Permissão negada pelo dispositivo')
+          toast.info('Permissão negada pelo dispositivo.')
         }
       }
     } finally { setSavingPush(false) }
