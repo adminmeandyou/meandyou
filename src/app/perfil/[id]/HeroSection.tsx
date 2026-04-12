@@ -31,7 +31,7 @@ interface HeroSectionProps {
 export function HeroSection({
   photos, activePhoto, setActivePhoto,
   profileName, age, city, state, distance,
-  verified, viewerIsBlack, viewedPlan,
+  verified, verifiedPlus, viewerIsBlack, viewedPlan,
   isOwnProfile, statusPills, statusTempVivo, statusTemp,
   swipeAction, onBack, onEditPhotos, onEmergency,
 }: HeroSectionProps) {
@@ -140,6 +140,7 @@ export function HeroSection({
             <LocationLabel city={city} state={state} distance={distance} />
           )}
           {verified && <VerifiedBadge />}
+          {verifiedPlus && <VerifiedPlusBadge />}
         </div>
       </div>
 
@@ -184,6 +185,14 @@ export function VerifiedBadge() {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '100px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', border: '1px solid rgba(225,29,72,0.45)', backgroundColor: 'rgba(225,29,72,0.18)', color: '#F43F5E', backdropFilter: 'blur(8px)' }}>
       Perfil verificado
+    </span>
+  )
+}
+
+export function VerifiedPlusBadge() {
+  return (
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '100px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', border: '1px solid rgba(245,158,11,0.45)', backgroundColor: 'rgba(245,158,11,0.14)', color: '#F59E0B', backdropFilter: 'blur(8px)' }}>
+      ✦ Verificado Plus
     </span>
   )
 }
