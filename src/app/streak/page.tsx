@@ -150,7 +150,7 @@ export default function StreakPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 11px', borderRadius: '100px', backgroundColor: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', flexShrink: 0 }}>
           <Flame size={12} color="#E11D48" strokeWidth={1.5} />
-          <span style={{ fontSize: '12px', color: '#E11D48', fontWeight: 700 }}>{loading ? '…' : currentDay}d</span>
+          <span style={{ fontSize: '12px', color: '#E11D48', fontWeight: 700 }}>{loading ? '...' : currentDay}d</span>
         </div>
       </header>
 

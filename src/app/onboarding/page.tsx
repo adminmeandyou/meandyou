@@ -150,7 +150,7 @@ export default function OnboardingPage() {
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '26px', color: 'var(--text)', marginBottom: '8px', textAlign: 'center' }}>Como funciona?</h2>
             <p style={{ fontSize: '14px', color: 'var(--muted)', textAlign: 'center', marginBottom: '32px' }}>Em 4 passos simples</p>
             {[
-              { icon: <Shield size={22} color="var(--accent)" />, titulo: '1. Complete seu perfil', desc: 'Preencha suas informações reais — aparência, personalidade, valores e o que busca. Isso define quem vai aparecer para você.' },
+              { icon: <Shield size={22} color="var(--accent)" />, titulo: '1. Complete seu perfil', desc: 'Preencha suas informações reais: aparência, personalidade, valores e o que busca. Isso define quem vai aparecer para você.' },
               { icon: <Search size={22} color="var(--accent)" />, titulo: '2. Explore e filtre', desc: 'Use filtros avançados para encontrar pessoas compatíveis na sua região. Curta, passe ou dê uma SuperCurtida.' },
               { icon: <Heart size={22} color="var(--accent)" />, titulo: '3. É um match!', desc: 'Quando dois se curtem mutuamente, vira match. A partir daí vocês podem conversar.' },
               { icon: <Zap size={22} color="var(--accent)" />, titulo: '4. Videochamada integrada', desc: 'Antes de marcar um encontro, converse por vídeo dentro do app. Seguro e sem precisar trocar contato.' },

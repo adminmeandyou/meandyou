@@ -8,7 +8,7 @@ export default function QuemSomosSection() {
           <div className="lp-about-pillar lp-anim">
             <p className="lp-section-label" style={{ marginBottom: 12 }}>Quem somos</p>
             <div className="lp-about-pillar-label">Ecossistema</div>
-            <h4>O mais inclusivo do Brasil — e talvez do mundo.</h4>
+            <h4>O mais inclusivo do Brasil, e talvez do mundo.</h4>
             <p>Não importa sua raça, identidade de gênero, religião, se você é PCD, assexual ou qual é a sua orientação. Com mais de 100 filtros, você molda o app em volta de você. Nós nos recusamos a criar &quot;só mais um app&quot;. Construímos a primeira plataforma com arquitetura de inclusão total.</p>
           </div>
           <div className="lp-about-pillar lp-anim">
@@ -19,7 +19,7 @@ export default function QuemSomosSection() {
           <div className="lp-about-pillar lp-anim">
             <div className="lp-about-pillar-label">Nossa marca</div>
             <h4>Simplicidade no acesso, elegância na conexão.</h4>
-            <p>MeAndYou: pensado para ser simples, direto e rápido de digitar no navegador — o caminho mais curto para o seu próximo encontro. Me&amp;You: no logotipo, o &amp; representa o elo perfeito. É a tecnologia unindo, de forma segura e sem julgamentos, o &quot;Eu&quot; e o &quot;Você&quot;.</p>
+            <p>MeAndYou: pensado para ser simples, direto e rápido de digitar no navegador. O caminho mais curto para o seu próximo encontro. Me&amp;You: no logotipo, o &amp; representa o elo perfeito. É a tecnologia unindo, de forma segura e sem julgamentos, o &quot;Eu&quot; e o &quot;Você&quot;.</p>
           </div>
         </div>
         <div className="lp-about-brand lp-anim">
@@ -35,7 +35,7 @@ export default function QuemSomosSection() {
             <div className="lp-about-brand-card">
               <div className="label">Identidade visual</div>
               <div className="val">Me&amp;You</div>
-              <div className="note">logotipo oficial · o &amp; é intencional — representa o elo entre duas pessoas, não é um erro de grafia</div>
+              <div className="note">logotipo oficial · o &amp; é intencional: representa o elo entre duas pessoas, não é um erro de grafia</div>
             </div>
           </div>
         </div>

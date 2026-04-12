@@ -26,7 +26,7 @@ export default function FooterSection() {
           <h4>Conta</h4>
           <a href="/cadastro">Criar conta</a>
           <a href="/login">Entrar</a>
-          <a href="/fale-conosco">Fale Conosco</a>
+          <a href="/fale-conosco">Fale conosco</a>
           <a href="/suporte">Suporte</a>
         </div>
       </div>

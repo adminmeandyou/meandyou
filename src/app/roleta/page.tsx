@@ -568,7 +568,7 @@ export default function RoletaPage() {
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 14px', borderRadius: '100px', backgroundColor: 'rgba(234,179,8,0.10)', border: '1px solid rgba(234,179,8,0.25)', flexShrink: 0 }}>
           <Ticket size={13} color="#eab308" strokeWidth={1.5} />
-          <span style={{ fontSize: '13px', color: '#eab308', fontWeight: 700 }}>{loading ? '…' : tickets}</span>
+          <span style={{ fontSize: '13px', color: '#eab308', fontWeight: 700 }}>{loading ? '...' : tickets}</span>
         </div>
       </header>
 

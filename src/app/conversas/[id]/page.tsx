@@ -1411,7 +1411,7 @@ export default function ChatPage() {
               </div>
               <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: '0 0 8px' }}>Você está em perigo?</h3>
               <p style={{ color: 'var(--muted)', fontSize: 14, margin: '0 0 24px', lineHeight: 1.55 }}>
-                Esta ação ligará imediatamente para a <strong style={{ color: 'rgba(248,249,250,0.70)' }}>Policia Militar (190)</strong>. Use apenas em situações de risco real.
+                Esta ação ligará imediatamente para a <strong style={{ color: 'rgba(248,249,250,0.70)' }}>Polícia Militar (190)</strong>. Use apenas em situações de risco real.
               </p>
               <a
                 href="tel:190"

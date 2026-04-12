@@ -1665,7 +1665,7 @@ function BuscaInner() {
         setLocalFilters(merged)
         setFiltersConfigured(true)
         const stateCode = (merged.search_state as string) || ''
-        if (stateCode && STATE_NAMES[stateCode]) setLocationDisplay(`${STATE_NAMES[stateCode]} — ${stateCode}`)
+        if (stateCode && STATE_NAMES[stateCode]) setLocationDisplay(`${STATE_NAMES[stateCode]} - ${stateCode}`)
         await loadDeck(merged, user.id)
       } else {
         // Verifica se tem backup local mesmo sem search_saved no banco

@@ -164,7 +164,7 @@ export default function FaleConosco() {
             </div>
           ) : (
             <>
-              <h1 className="fc-title">Fale Conosco</h1>
+              <h1 className="fc-title">Fale conosco</h1>
               <p className="fc-subtitle">
                 Tem uma dúvida, sugestão ou precisa de ajuda? Preencha o formulário abaixo.<br />
                 Respondemos em até 24 horas úteis.

@@ -26,7 +26,7 @@ export default function SegurancaSection() {
               texto: 'Você mantém controle total da interação enquanto ela acontece.',
               feats: [
                 { cor: 'verde', txt: 'Bloqueio e denúncia em um toque, sem confirmações desnecessárias' },
-                { cor: 'verde', txt: 'Modo invisível — sai do radar sem precisar explicar nada' },
+                { cor: 'verde', txt: 'Modo invisível: sai do radar sem precisar explicar nada' },
                 { cor: 'verde', txt: 'Alerta automático para comportamentos suspeitos na conversa' },
               ],
             },
@@ -36,8 +36,8 @@ export default function SegurancaSection() {
               texto: 'Você continua protegido mesmo fora da conversa, mesmo após um encontro.',
               feats: [
                 { cor: 'verde', txt: 'Registro privado de encontro guardado só para você' },
-                { cor: 'verde', txt: 'Check-in automático pós-encontro — o app pergunta se você está bem' },
-                { cor: 'verde', txt: 'Botão de emergência — 190 em um toque, a qualquer momento' },
+                { cor: 'verde', txt: 'Check-in automático pós-encontro: o app pergunta se você está bem' },
+                { cor: 'verde', txt: 'Botão de emergência: 190 em um toque, a qualquer momento' },
               ],
             },
           ].map((fase, i) => (

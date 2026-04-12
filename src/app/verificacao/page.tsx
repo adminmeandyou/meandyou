@@ -1164,7 +1164,7 @@ function Verificacao() {
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', color: 'var(--text)', marginBottom: '8px' }}>Identidade verificada!</h2>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', backgroundColor: 'rgba(37,99,235,0.12)', border: '1px solid rgba(37,99,235,0.3)', borderRadius: '100px', padding: '4px 14px', marginBottom: '16px' }}>
             <svg width="12" height="12" viewBox="0 0 88 88"><path d="M44 6 L76 18 L76 44 C76 61 62 75 44 82 C26 75 12 61 12 44 L12 18 Z" fill="#2563EB" /><polyline points="28,44 38,54 60,32" fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" /></svg>
-            <span style={{ fontSize: '12px', fontWeight: '700', color: '#60A5FA' }}>Perfil Verificado</span>
+            <span style={{ fontSize: '12px', fontWeight: '700', color: '#60A5FA' }}>Perfil verificado</span>
           </div>
           <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7' }}>Sua identidade foi confirmada com sucesso. Agora complete o seu perfil para começar.<br /><br />Redirecionando...</p>
           <div style={{ width: '48px', height: '48px', border: '4px solid var(--accent)', borderTop: '4px solid transparent', borderRadius: '50%', margin: '24px auto 0', animation: 'spin 1s linear infinite' }} />

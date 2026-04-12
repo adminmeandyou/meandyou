@@ -469,7 +469,7 @@ export default function LojaPage() {
           </button>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '100px', backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)' }}>
             <Coins size={13} color="#F59E0B" strokeWidth={1.5} />
-            <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: '700' }}>{loading ? '…' : fichas}</span>
+            <span style={{ fontSize: '13px', color: '#F59E0B', fontWeight: '700' }}>{loading ? '...' : fichas}</span>
             <span style={{ fontSize: '11px', color: 'rgba(245,158,11,0.6)' }}>fichas</span>
           </div>
         </div>

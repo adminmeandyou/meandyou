@@ -574,7 +574,7 @@ function FotosBioSection({ userId, profileData, onSaved }: {
         value={bio}
         onChange={e => setBio(e.target.value)}
         maxLength={300}
-        placeholder="Fale um pouco sobre você…"
+        placeholder="Fale um pouco sobre você..."
         style={{ width: '100%', minHeight: '100px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '12px', color: '#F8F9FA', fontSize: '14px', fontFamily: 'var(--font-jakarta)', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
       />
       <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', textAlign: 'right', margin: '4px 0 10px' }}>{bio.length}/300</p>

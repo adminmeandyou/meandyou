@@ -43,7 +43,7 @@ export default function FaqSection() {
     <section className="lp-faq">
       <div className="lp-faq-inner">
         <p className="lp-section-label">FAQ</p>
-        <h2 className="lp-section-title">Dúvidas Frequentes</h2>
+        <h2 className="lp-section-title">Dúvidas frequentes</h2>
         <div className="lp-faq-list">
           {faqItems.map((item, i) => <FaqItem key={i} pergunta={item.q} resposta={item.a} />)}
         </div>

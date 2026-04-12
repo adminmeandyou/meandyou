@@ -99,7 +99,7 @@ export default function InstallSection() {
                 <div className="lp-install-step-num ios">1</div>
                 <div>
                   <h4>Abra no Safari</h4>
-                  <p>No iPhone, use o Safari — é o único navegador que permite instalar apps pela web.</p>
+                  <p>No iPhone, use o Safari: é o único navegador que permite instalar apps pela web.</p>
                 </div>
               </div>
               <div className="lp-install-step">
