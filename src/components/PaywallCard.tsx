@@ -34,7 +34,7 @@ export function PaywallCard({
   title,
   description,
   resetAt,
-  ctaLabel = 'Fazer upgrade',
+  ctaLabel = 'Ver planos',
 }: PaywallCardProps) {
   const router = useRouter()
   const countdown = useCountdown(resetAt)

@@ -204,7 +204,7 @@ function StepPix({ pixData, timeLeft, copied, onCopy }: {
   return (
     <div style={{ textAlign: 'center' }}>
       <p style={{ margin: '0 0 16px', fontSize: 14, color: 'rgba(248,249,250,0.7)', fontFamily: 'var(--font-jakarta)' }}>
-        Escaneie o QR code ou copie o código
+        Escaneie o QR Code ou copie o código
       </p>
       {pixData.brCodeBase64 && (
         <img

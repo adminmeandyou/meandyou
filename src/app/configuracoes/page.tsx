@@ -239,7 +239,7 @@ export default function ConfiguracoesPage() {
   }
 
   const planLabel = profile?.plan === 'black' ? 'Black' : profile?.plan === 'plus' ? 'Plus' : 'Essencial'
-  const planLabelFull = profile?.plan === 'black' ? 'PLANO BLACK' : profile?.plan === 'plus' ? 'PLANO PLUS' : 'PLANO ESSENCIAL'
+  const planLabelFull = profile?.plan === 'black' ? 'BLACK' : profile?.plan === 'plus' ? 'PLUS' : 'ESSENCIAL'
   const planCor = profile?.plan === 'black' ? '#F59E0B' : profile?.plan === 'plus' ? 'var(--accent)' : 'rgba(255,255,255,0.4)'
 
   if (loading) {
@@ -371,7 +371,7 @@ export default function ConfiguracoesPage() {
             href="/configuracoes/2fa"
             icon={<Lock size={17} />}
             label="Verificação em dois fatores"
-            sub={twoFaAtivo ? 'Ativado' : 'Desativado - recomendamos ativar'}
+            sub={twoFaAtivo ? 'Ativado' : 'Desativado, recomendamos ativar'}
             badge={twoFaAtivo ? <Badge label="Ativo" cor="#22c55e" /> : <Badge label="Inativo" cor="#f59e0b" />}
             last
           />
@@ -381,7 +381,7 @@ export default function ConfiguracoesPage() {
         <CardSection titulo="Notificações">
           <ToggleRow
             icon={<Mail size={17} />}
-            label="Emails de engajamento"
+            label="Novidades e matches"
             sub="Matches, curtidas e novidades por email"
             ativo={notifEmail}
             onChange={toggleNotifEmail}
@@ -389,7 +389,7 @@ export default function ConfiguracoesPage() {
           />
           <ToggleRow
             icon={<Bell size={17} />}
-            label="Notificações push"
+            label="Notificações do app"
             sub={notifPush ? 'Ativadas neste dispositivo' : 'Ative para receber alertas instantâneos'}
             ativo={notifPush}
             onChange={toggleNotifPush}
@@ -458,7 +458,7 @@ export default function ConfiguracoesPage() {
             }}
           >
             <LogOut size={15} strokeWidth={2} />
-            Sair da conta
+            Sair
           </button>
         </div>
 
@@ -513,7 +513,7 @@ export default function ConfiguracoesPage() {
                     opacity: bugDescricao.trim().length < 20 ? 0.5 : 1,
                   }}
                 >
-                  {bugEnviando ? 'Enviando...' : 'Enviar relatório'}
+                  {bugEnviando ? 'Enviando...' : 'Enviar'}
                 </button>
               </>
             )}

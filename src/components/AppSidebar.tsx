@@ -16,7 +16,7 @@ interface SidebarItem {
 }
 
 const NAV_ITEMS: SidebarItem[] = [
-  { href: '/conversas', label: 'Chat',      icon: MessageCircle },
+  { href: '/conversas', label: 'Conversas',  icon: MessageCircle },
   { href: '/modos',     label: 'Descobrir', icon: Compass },
   { href: '/recompensas', label: 'Prêmios',   icon: Gift },
   { href: '/loja',        label: 'Loja',     icon: ShoppingBag },

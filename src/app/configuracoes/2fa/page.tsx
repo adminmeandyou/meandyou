@@ -160,7 +160,7 @@ export default function Page2FA() {
         {etapa === 'backup' && (
           <div>
             <div style={{ backgroundColor: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)', borderRadius: '12px', padding: '16px', marginBottom: '20px' }}>
-              <p style={{ color: '#f59e0b', fontWeight: 600, fontSize: '14px', margin: '0 0 6px' }}>Salve seus códigos de backup</p>
+              <p style={{ color: '#f59e0b', fontWeight: 600, fontSize: '14px', margin: '0 0 6px' }}>Salve seus códigos de recuperação</p>
               <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '13px', margin: 0, lineHeight: 1.6 }}>
                 Guarde estes códigos em um local seguro. Cada um pode ser usado uma vez se você perder acesso ao app autenticador.
               </p>
@@ -176,13 +176,13 @@ export default function Page2FA() {
               onClick={copiarBackup}
               style={{ width: '100%', padding: '12px', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.1)', backgroundColor: 'transparent', color: '#fff', fontWeight: 600, fontSize: '14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '16px' }}
             >
-              {copiado ? <><Check size={16} color="#22c55e" /> Copiado!</> : <><Copy size={16} /> Copiar todos</>}
+              {copiado ? <><Check size={16} color="#22c55e" /> Copiado!</> : <><Copy size={16} /> Copiar todos os códigos</>}
             </button>
             <button
               onClick={() => setEtapa('ativo')}
               style={{ width: '100%', padding: '14px', borderRadius: '12px', border: 'none', backgroundColor: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: '15px', cursor: 'pointer' }}
             >
-              Já salvei, continuar
+              Já anotei, continuar
             </button>
           </div>
         )}
