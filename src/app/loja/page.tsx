@@ -349,7 +349,7 @@ export default function LojaPage() {
     const data = await res.json()
     if (data?.success) {
       haptics.success()
-      toast.success('Boost ativado! Você está em destaque por 30 minutos.')
+      toast.success('Boost ativado! Você está em destaque por 30 minutos')
       setBoostActiveUntil(data.active_until)
       setBoosts((b) => b - 1)
     } else if (data?.reason === 'no_boosts') {

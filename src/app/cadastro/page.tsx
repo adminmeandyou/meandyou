@@ -134,37 +134,37 @@ function CadastroInner() {
 
     if (step === 0) {
       if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        setErro('Informe um email válido')
+        setErro('Informe um email válido.')
         return
       }
     }
     if (step === 1) {
       if (senha.length < 6) {
-        setErro('A senha deve ter pelo menos 6 caracteres')
+        setErro('A senha deve ter pelo menos 6 caracteres.')
         return
       }
     }
     if (step === 2) {
       if (nomeCompleto.trim().split(' ').length < 2) {
-        setErro('Informe nome e sobrenome')
+        setErro('Informe nome e sobrenome.')
         return
       }
     }
     if (step === 3) {
       if (nomeExibicao.trim().length < 2) {
-        setErro('O nome deve ter pelo menos 2 caracteres')
+        setErro('O nome deve ter pelo menos 2 caracteres.')
         return
       }
     }
     if (step === 4) {
       if (cpf.replace(/\D/g, '').length !== 11) {
-        setErro('CPF inválido')
+        setErro('CPF inválido.')
         return
       }
     }
     if (step === 5) {
       if (telefone.replace(/\D/g, '').length < 10) {
-        setErro('Telefone inválido')
+        setErro('Telefone inválido.')
         return
       }
     }
@@ -194,7 +194,7 @@ function CadastroInner() {
   const handleCadastro = async () => {
     setErro('')
     if (TURNSTILE_SITE_KEY && !cfToken) {
-      setErro('Complete a verificação de segurança')
+      setErro('Complete a verificação de segurança.')
       return
     }
     setLoading(true)
@@ -215,7 +215,7 @@ function CadastroInner() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setErro(data.error || 'Erro ao criar conta')
+        setErro(data.error || 'Erro ao criar conta.')
         resetTurnstile() // token já foi consumido — gera um novo
         return
       }
@@ -482,7 +482,7 @@ function CadastroInner() {
           )
         ) : (
           <button
-            onClick={temCodigo === null ? () => setErro('Escolha uma das opções acima para continuar') : handleCadastro}
+            onClick={temCodigo === null ? () => setErro('Escolha uma das opções acima para continuar.') : handleCadastro}
             disabled={loading || (!!TURNSTILE_SITE_KEY && !cfToken && temCodigo !== null)}
             className="btn-primary"
             style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>

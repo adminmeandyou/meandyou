@@ -551,7 +551,7 @@ function CamaroteVitrine({
               <div style={{ width: 56, height: 56, borderRadius: '50%', background: G_SOFT, border: `1px solid ${G_BORDER}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <Users size={24} color={G} strokeWidth={1.5} />
               </div>
-              <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: '#fff', margin: '0 0 4px' }}>Ninguem mais por aqui</p>
+              <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: '#fff', margin: '0 0 4px' }}>Ninguém mais por aqui</p>
               <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.40)', margin: '0 0 20px', lineHeight: 1.5 }}>
                 {hasActiveFilters ? 'Tente ajustar os filtros.' : 'Você já viu todos os perfis disponíveis.'}
               </p>

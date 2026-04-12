@@ -17,7 +17,7 @@ export default function Login() {
 
   const handleLogin = async () => {
     if (!email || !senha) {
-      setErro('Preencha todos os campos')
+      setErro('Preencha todos os campos.')
       return
     }
 
@@ -34,7 +34,7 @@ export default function Login() {
       const data = await res.json()
 
       if (!res.ok) {
-        setErro(data.error || 'Email ou senha incorretos')
+        setErro(data.error || 'Email ou senha incorretos.')
         return
       }
 
@@ -56,7 +56,7 @@ export default function Login() {
   }
 
   const handle2FA = async () => {
-    if (codigo2fa.length < 6) { setErro('Digite o código de 6 dígitos'); return }
+    if (codigo2fa.length < 6) { setErro('Digite o código de 6 dígitos.'); return }
     setLoading(true); setErro('')
     try {
       const res = await fetch('/api/auth/2fa/verificar', {
@@ -65,7 +65,7 @@ export default function Login() {
         body: JSON.stringify({ temp_token: tempToken, codigo: codigo2fa }),
       })
       const data = await res.json()
-      if (!res.ok) { setErro(data.error || 'Código inválido'); return }
+      if (!res.ok) { setErro(data.error || 'Código inválido.'); return }
       window.location.href = '/modos'
     } catch {
       setErro('Erro de conexão. Tente novamente.')
