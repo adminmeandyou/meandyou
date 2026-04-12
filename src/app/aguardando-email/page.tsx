@@ -50,7 +50,7 @@ export default function AguardandoEmailPage() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setErro(data.error || 'Erro ao reenviar')
+        setErro(data.error || 'Erro ao reenviar.')
       } else {
         setMensagem('Email reenviado! Verifique sua caixa de entrada.')
       }
