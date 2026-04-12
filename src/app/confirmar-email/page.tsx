@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
+import { CheckCircle, XCircle } from 'lucide-react'
 
 function ConfirmarEmailConteudo() {
   const searchParams = useSearchParams()
@@ -75,9 +76,8 @@ function ConfirmarEmailConteudo() {
               borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 24px',
-              fontSize: '28px',
             }}>
-              ✅
+              <CheckCircle size={32} color="#22c55e" strokeWidth={1.5} />
             </div>
             <h1 style={{ color: 'var(--text)', fontSize: '22px', fontWeight: 700, margin: '0 0 12px', fontFamily: 'var(--font-fraunces)' }}>
               Email confirmado!
@@ -111,9 +111,8 @@ function ConfirmarEmailConteudo() {
               borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 24px',
-              fontSize: '28px',
             }}>
-              ❌
+              <XCircle size={32} color="#ef4444" strokeWidth={1.5} />
             </div>
             <h1 style={{ color: 'var(--text)', fontSize: '22px', fontWeight: 700, margin: '0 0 12px', fontFamily: 'var(--font-fraunces)' }}>
               Link inválido

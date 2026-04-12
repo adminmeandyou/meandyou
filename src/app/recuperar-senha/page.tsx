@@ -12,12 +12,12 @@ export default function RecuperarSenha() {
   const handleEnviar = async () => {
     setErro('')
     if (!email) {
-      setErro('Digite seu e-mail')
+      setErro('Digite seu email')
       return
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(email)) {
-      setErro('E-mail inválido')
+      setErro('Email inválido')
       return
     }
 
@@ -28,7 +28,7 @@ export default function RecuperarSenha() {
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ email: email.trim().toLowerCase() }),
       })
-      // Sempre mostra sucesso — nunca revela se o e-mail existe (segurança)
+      // Sempre mostra sucesso — nunca revela se o email existe (segurança)
       setEnviado(true)
     } catch {
       setEnviado(true)
@@ -73,14 +73,14 @@ export default function RecuperarSenha() {
             <>
               <div style={{ backgroundColor: 'var(--accent-light)', borderRadius: '12px', padding: '14px 16px', marginBottom: '24px' }}>
                 <p style={{ fontSize: '14px', color: 'var(--accent-dark)', lineHeight: 1.6, margin: 0 }}>
-                  Digite o e-mail cadastrado. Enviaremos um link para você criar uma nova senha.
+                  Digite o email cadastrado. Enviaremos um link para você criar uma nova senha.
                 </p>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 <div>
                   <label style={{ fontSize: '13px', color: 'var(--muted)', marginBottom: '6px', display: 'block', fontWeight: 600 }}>
-                    E-mail
+                    Email
                   </label>
                   <input
                     type="email"
@@ -120,10 +120,10 @@ export default function RecuperarSenha() {
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#E11D48" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
               </div>
               <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '24px', marginBottom: '12px', color: 'var(--text)' }}>
-                E-mail enviado!
+                Email enviado!
               </h2>
               <p style={{ color: 'var(--muted)', fontSize: '15px', lineHeight: 1.7, marginBottom: '24px' }}>
-                Se existe uma conta com o e-mail <strong style={{ color: 'var(--text)' }}>{email}</strong>,
+                Se existe uma conta com o email <strong style={{ color: 'var(--text)' }}>{email}</strong>,
                 você receberá um link para redefinir sua senha em instantes.
               </p>
               <p style={{ color: 'var(--muted)', fontSize: '13px', lineHeight: 1.6, marginBottom: '28px' }}>

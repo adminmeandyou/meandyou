@@ -623,7 +623,7 @@ function Verificacao() {
       setSelfiePreview(url)
       setLivenessOk(true)
       setDeteccaoAtiva(false)
-      setFeedbackLiveness('✅ Verificação concluída!')
+      setFeedbackLiveness('Verificação concluída!')
       // Persiste selfie no draft para não precisar refazer liveness se a página fechar
       const reader = new FileReader()
       reader.onloadend = () => {
@@ -847,7 +847,7 @@ function Verificacao() {
           <label style={{ display: 'block', border: '2px dashed var(--border)', borderRadius: '16px', padding: '24px', cursor: 'pointer', textAlign: 'center' }}>
             <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleArquivo(e.target.files[0], tipo)} />
             <FolderOpen size={36} color="var(--muted)" strokeWidth={1.5} />
-            <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '8px' }}>Toque para selecionar arquivo<br /><span style={{ fontSize: '11px' }}>JPG, PNG, WEBP ou PDF — máx. 10MB</span></p>
+            <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '8px' }}>Toque para selecionar arquivo<br /><span style={{ fontSize: '11px' }}>JPG, PNG, WEBP ou PDF (máx. 10MB)</span></p>
           </label>
         )}
         {arquivo && (
@@ -898,7 +898,7 @@ function Verificacao() {
         {status === 'dados' && card(<>
           {passos(1)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Seus dados</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '20px' }}>Passo 1 de {totalPassos} — CPF e documento</p>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '20px' }}>Passo 1 de {totalPassos}: CPF e documento</p>
           <div style={{ textAlign: 'left', marginBottom: '16px' }}>
             <label style={{ fontSize: '13px', fontWeight: '600', color: 'var(--muted)', display: 'block', marginBottom: '6px' }}>CPF</label>
             <input type="tel" placeholder="000.000.000-00" value={cpf} onChange={e => setCpf(formatarCPF(e.target.value))}
@@ -924,7 +924,7 @@ function Verificacao() {
         {status === 'doc_frente' && card(<>
           {passos(2)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Frente do documento</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 2 de {totalPassos} — {tipoDoc === 'rg' ? 'RG' : tipoDoc === 'cnh' ? 'CNH' : 'CPF'} frente</p>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 2 de {totalPassos}: {tipoDoc === 'rg' ? 'RG' : tipoDoc === 'cnh' ? 'CNH' : 'CPF'} frente</p>
           {frenteFeita && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
               <Check size={16} color="#10b981" strokeWidth={2} />
@@ -937,7 +937,7 @@ function Verificacao() {
               <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Enviando foto...</p>
             </div>
           )}
-          {dicas(['Fundo liso, de preferência branco ou claro', 'Boa iluminação — evite sombras e reflexos', 'Documento inteiro visível, sem cortar bordas', 'Sem acessórios cobrindo o documento', 'Imagem nítida e sem borrão'])}
+          {dicas(['Fundo liso, de preferência branco ou claro', 'Boa iluminação: evite sombras e reflexos', 'Documento inteiro visível, sem cortar bordas', 'Sem acessórios cobrindo o documento', 'Imagem nítida e sem borrão'])}
           {botoesCaptura('frente', modoFrente, setModoFrente, docFrentePreview, docFrente, cameraFrenteAtiva, videoFrenteRef, canvasFrenteRef)}
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
           <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
@@ -960,7 +960,7 @@ function Verificacao() {
         {status === 'doc_verso' && card(<>
           {passos(3)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Verso do documento</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 3 de {totalPassos} — {tipoDoc === 'rg' ? 'RG' : 'CNH'} verso</p>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo 3 de {totalPassos}: {tipoDoc === 'rg' ? 'RG' : 'CNH'} verso</p>
           {versoFeita && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)', borderRadius: '12px', padding: '10px 14px', marginBottom: '12px' }}>
               <Check size={16} color="#10b981" strokeWidth={2} />
@@ -973,7 +973,7 @@ function Verificacao() {
               <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Enviando foto...</p>
             </div>
           )}
-          {dicas(['Fundo liso, de preferência branco ou claro', 'Boa iluminação — evite sombras e reflexos', 'Documento inteiro visível, sem cortar bordas', 'Imagem nítida e sem borrão'])}
+          {dicas(['Fundo liso, de preferência branco ou claro', 'Boa iluminação: evite sombras e reflexos', 'Documento inteiro visível, sem cortar bordas', 'Imagem nítida e sem borrão'])}
           {botoesCaptura('verso', modoVerso, setModoVerso, docVersoPreview, docVerso, cameraVersoAtiva, videoVersoRef, canvasVersoRef)}
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
           <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
@@ -996,7 +996,7 @@ function Verificacao() {
         {status === 'selfie' && card(<>
           {passos(totalPassos)}
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Verificação facial</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo {totalPassos} de {totalPassos} — Confirmação de que você é uma pessoa real</p>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo {totalPassos} de {totalPassos}: confirmação de identidade</p>
 
           {!livnessIniciado && !livenessOk && (
             <>

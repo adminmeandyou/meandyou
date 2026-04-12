@@ -348,7 +348,7 @@ function CadastroInner() {
         {/* Passo 2: Nome completo */}
         {step === 2 && (
           <>
-            {pergunta('Qual é o seu nome completo?', 'Usado apenas para verificação — não aparece no perfil')}
+            {pergunta('Qual é o seu nome completo?', 'Usado apenas para verificação. Não aparece no perfil.')}
             <input
               type="text" placeholder="Nome e Sobrenome" value={nomeCompleto}
               onChange={e => setNomeCompleto(e.target.value)} onKeyDown={handleKeyDown}
@@ -372,7 +372,7 @@ function CadastroInner() {
         {/* Passo 4: CPF */}
         {step === 4 && (
           <>
-            {pergunta('Qual é o seu CPF?', 'Garante 1 conta por pessoa — não é compartilhado')}
+            {pergunta('Qual é o seu CPF?', 'Garante 1 conta por pessoa. Não é compartilhado.')}
             <input
               type="text" placeholder="000.000.000-00" value={cpf}
               onChange={e => {
