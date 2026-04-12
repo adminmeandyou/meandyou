@@ -360,7 +360,7 @@ function CadastroInner() {
         {/* Passo 3: Nome de exibição */}
         {step === 3 && (
           <>
-            {pergunta('Como quer ser chamado(a)?', 'Este é o nome que outros usuários vão ver')}
+            {pergunta('Como quer ser chamado(a)?', 'Este é o nome que outros usuários vão ver.')}
             <input
               type="text" placeholder={`Ex: ${nomeCompleto.split(' ')[0] || 'Ana'}`} value={nomeExibicao}
               onChange={e => setNomeExibicao(e.target.value)} onKeyDown={handleKeyDown}
