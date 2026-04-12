@@ -25,7 +25,7 @@ function NovaSenhaInner() {
     setErro('')
 
     if (!senha || !confirmar) {
-      setErro('Preencha todos os campos')
+      setErro('Preencha todos os campos obrigatórios.')
       setLoading(false)
       return
     }

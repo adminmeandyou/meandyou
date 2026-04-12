@@ -172,7 +172,7 @@ function ObrigadoContent() {
               transition: 'opacity 0.15s',
             }}
           >
-            Acessar minha conta
+            Ir para o app
           </Link>
           <Link
             href="/minha-assinatura"

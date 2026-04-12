@@ -17,7 +17,7 @@ export default function BanidoPage() {
           href="mailto:suporte@meandyou.com.br"
           style={{ display: 'inline-block', padding: '12px 24px', borderRadius: '16px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.06)', color: 'var(--muted)', fontSize: '14px', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', transition: 'color 0.2s' }}
         >
-          Contatar suporte
+          Entrar em contato com o suporte
         </a>
       </div>
     </div>

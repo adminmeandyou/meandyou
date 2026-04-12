@@ -134,7 +134,7 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
             letterSpacing: '-0.02em',
             textShadow: '0 0 20px rgba(225,29,72,0.4)',
           }}>
-            Conexão Real!
+            É um match!
           </h2>
           <p style={{
             color: 'rgba(248,249,250,0.5)',
@@ -143,7 +143,7 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
             fontWeight: 400,
             letterSpacing: '0.01em',
           }}>
-            O desejo é mútuo. Que tal começar com um oi?
+            Vocês dois curtiram um ao outro. Que tal começar com um oi?
           </p>
         </div>
 

@@ -45,7 +45,7 @@ export default function AlterarEmailPage() {
     setEnviando(false)
 
     if (!res.ok) {
-      setErro(json.error ?? 'Erro ao enviar email')
+      setErro(json.error ?? 'Não foi possível enviar o e-mail. Verifique sua conexão e tente novamente.')
       return
     }
 

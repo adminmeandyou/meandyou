@@ -74,7 +74,7 @@ const GENDER_OPTIONS = [
   { value: 'cis_man', label: 'Homem' },
   { value: 'trans_woman', label: 'Mulher Trans' },
   { value: 'trans_man', label: 'Homem Trans' },
-  { value: 'nonbinary', label: 'Não-binário(a)' },
+  { value: 'nonbinary', label: 'Não-binário' },
   { value: 'fluid', label: 'Gênero Fluido' },
 ]
 
