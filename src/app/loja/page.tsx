@@ -47,8 +47,8 @@ interface StoreItem {
 
 const STORE_ITEMS: StoreItem[] = [
   {
-    key: 'superlike', label: 'SuperLike', description: 'Se destaque para quem você mais quer',
-    unit: 'SuperLike',
+    key: 'superlike', label: 'SuperCurtida', description: 'Se destaque para quem você mais quer',
+    unit: 'SuperCurtida',
     icon: <Star size={20} strokeWidth={1.5} />, baseFichas: 30, maxQty: 10,
     accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.25)',
     balanceKey: 'superlikes',
@@ -136,7 +136,7 @@ const STORE_ITEMS: StoreItem[] = [
 // ─── Config visual dos premios da caixa surpresa ─────────────────────────
 const SURPRESA_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
   ticket:        { label: 'Ficha da Roleta', color: '#a855f7', bg: 'rgba(168,85,247,0.15)', icon: <Gift size={44} color="#a855f7" strokeWidth={1.5} /> },
-  supercurtida:  { label: 'SuperLike',        color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <Star size={44} color="#F59E0B" strokeWidth={1.5} /> },
+  supercurtida:  { label: 'SuperCurtida',        color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <Star size={44} color="#F59E0B" strokeWidth={1.5} /> },
   boost:         { label: 'Boost',            color: '#E11D48', bg: 'rgba(225,29,72,0.15)',  icon: <Zap  size={44} color="#E11D48" strokeWidth={1.5} /> },
   lupa:          { label: 'Lupa',             color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: <Search size={44} color="#3b82f6" strokeWidth={1.5} /> },
   rewind:        { label: 'Desfazer',         color: '#a855f7', bg: 'rgba(168,85,247,0.15)', icon: <RotateCcw size={44} color="#a855f7" strokeWidth={1.5} /> },

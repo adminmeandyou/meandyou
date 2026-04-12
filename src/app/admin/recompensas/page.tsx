@@ -10,7 +10,7 @@ import {
 // ─── Labels e ícones em português ────────────────────────────────────────
 const TIPO_CONFIG: Record<string, { label: string; cor: string; icon: React.ReactNode }> = {
   ticket:        { label: 'Ticket da Roleta',  cor: '#eab308', icon: <Ticket size={15} strokeWidth={1.5} /> },
-  supercurtida:  { label: 'SuperLike',          cor: '#ec4899', icon: <Star   size={15} strokeWidth={1.5} /> },
+  supercurtida:  { label: 'SuperCurtida',      cor: '#ec4899', icon: <Star   size={15} strokeWidth={1.5} /> },
   boost:         { label: 'Boost',              cor: '#b8f542', icon: <Zap    size={15} strokeWidth={1.5} /> },
   lupa:          { label: 'Lupa',               cor: '#3b82f6', icon: <Search size={15} strokeWidth={1.5} /> },
   rewind:        { label: 'Desfazer',           cor: '#a855f7', icon: <RotateCcw size={15} strokeWidth={1.5} /> },

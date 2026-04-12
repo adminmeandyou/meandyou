@@ -247,7 +247,7 @@ export default function AdminUsuarios() {
             {[
               { key: 'fichas',     label: 'Fichas (loja)' },
               { key: 'tickets',    label: 'Tickets (roleta)' },
-              { key: 'superlikes', label: 'Supercurtidas' },
+              { key: 'superlikes', label: 'SuperCurtidas' },
               { key: 'boosts',     label: 'Boosts' },
               { key: 'lupas',      label: 'Lupas' },
               { key: 'rewinds',    label: 'Rewinds' },

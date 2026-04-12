@@ -192,7 +192,7 @@ export default function IndicarPage() {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px', textAlign: 'center' }}>
             <div>
               <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', margin: 0 }}>{saldo.superlikes}</p>
-              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>SuperLikes</p>
+              <p style={{ fontSize: '11px', color: 'var(--muted)', margin: '3px 0 0' }}>SuperCurtidas</p>
             </div>
             <div>
               <p style={{ fontSize: '20px', fontWeight: 800, color: 'var(--text)', margin: 0 }}>{saldo.boosts}</p>

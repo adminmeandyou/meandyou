@@ -32,8 +32,8 @@ const RARIDADE_CORES: Record<string, string> = {
 }
 
 const STORE_ITEMS = [
-  { value: 'superlike_1',         label: '1x SuperLike' },
-  { value: 'superlike_5',         label: '5x SuperLike' },
+  { value: 'superlike_1',         label: '1x SuperCurtida' },
+  { value: 'superlike_5',         label: '5x SuperCurtida' },
   { value: 'boost_1',             label: '1x Boost' },
   { value: 'boost_5',             label: '5x Boost' },
   { value: 'lupa_1',              label: '1x Lupa' },

@@ -33,7 +33,7 @@ const FAQS: FAQ[] = [
   {
     categoria: 'Planos',
     pergunta: 'Qual a diferença entre os planos?',
-    resposta: 'Essencial: 5 curtidas/dia, 1 ticket de roleta. Plus: 30 curtidas/dia, ver quem curtiu, área de destaques, 2 tickets/dia. Black: curtidas ilimitadas, Backstage exclusivo, 10 SuperCurtidas/dia, suporte prioritário 24h, 3 tickets/dia.',
+    resposta: 'Essencial: 20 curtidas/dia, 1 SuperCurtida/dia, 1 ticket de roleta. Plus: 50 curtidas/dia, ver quem curtiu, área de destaques, 2 tickets/dia. Black: curtidas ilimitadas, Backstage exclusivo, 10 SuperCurtidas/dia, suporte prioritário 24h, 3 tickets/dia.',
   },
   {
     categoria: 'Planos',
@@ -43,7 +43,7 @@ const FAQS: FAQ[] = [
   {
     categoria: 'Planos',
     pergunta: 'Posso pedir reembolso?',
-    resposta: 'Assinaturas não são reembolsáveis após ativação. Compras avulsas (fichas, SuperLikes, Boosts etc.) também não têm reembolso. Em caso de cobrança indevida, entre em contato pelo suporte.',
+    resposta: 'Assinaturas não são reembolsáveis após ativação. Compras avulsas (fichas, SuperCurtidas, Boosts etc.) também não têm reembolso. Em caso de cobrança indevida, entre em contato pelo suporte.',
   },
   // Funcionalidades
   {
@@ -64,7 +64,7 @@ const FAQS: FAQ[] = [
   {
     categoria: 'Funcionalidades',
     pergunta: 'Como funciona a roleta?',
-    resposta: 'Use tickets para girar a roleta e ganhar prêmios (SuperLikes, Boosts, Lupas e mais). Você ganha tickets todo dia só por entrar no app, pelo calendário de streak e ao indicar amigos.',
+    resposta: 'Use tickets para girar a roleta e ganhar prêmios (SuperCurtidas, Boosts, Lupas e mais). Você ganha tickets todo dia só por entrar no app, pelo calendário de streak e ao indicar amigos.',
   },
   {
     categoria: 'Funcionalidades',
@@ -79,7 +79,7 @@ const FAQS: FAQ[] = [
   {
     categoria: 'Funcionalidades',
     pergunta: 'O que são fichas?',
-    resposta: 'Fichas são a moeda do MeAndYou. Você compra pacotes de fichas e usa para adquirir itens na loja, como SuperLikes, Boosts, Lupas e outros recursos especiais.',
+    resposta: 'Fichas são a moeda do MeAndYou. Você compra pacotes de fichas e usa para adquirir itens na loja, como SuperCurtidas, Boosts, Lupas e outros recursos especiais.',
   },
   // Seguranca
   {

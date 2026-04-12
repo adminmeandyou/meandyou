@@ -125,7 +125,7 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
             <textarea
               value={details}
               onChange={(e) => setDetails(e.target.value)}
-              placeholder="Descreva o que aconteceu…"
+              placeholder="Descreva o que aconteceu..."
               maxLength={500}
               rows={4}
               className="w-full bg-white/5 border border-white/10 rounded-2xl px-4 py-3 text-sm text-white placeholder-white/30 outline-none focus:border-red-500/30 transition resize-none"

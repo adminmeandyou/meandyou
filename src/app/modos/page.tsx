@@ -2441,7 +2441,7 @@ function BuscaInner() {
                 variant="info"
                 size="md"
                 icon={<Star size={20} strokeWidth={1.5} />}
-                label={`Super Curtida (${superlikesUsed}/${superlikeLimit})`}
+                label={`SuperCurtida (${superlikesUsed}/${superlikeLimit})`}
                 onClick={() => triggerSwipe('up')}
               />
 

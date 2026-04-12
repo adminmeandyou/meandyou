@@ -169,7 +169,7 @@ export default function DeletarContaPage() {
                 'Perfil e fotos',
                 'Todos os matches e conversas',
                 'Histórico de curtidas',
-                'Saldo de SuperLikes, Boosts, Lupas e tickets',
+                'Saldo de SuperCurtidas, Boosts, Lupas e tickets',
                 'Assinatura ativa (sem reembolso)',
                 'Indicações e bônus pendentes',
               ].map((item) => (
@@ -242,7 +242,7 @@ export default function DeletarContaPage() {
               </p>
               {[
                 'Seus matches e conversas intactos',
-                'Saldo de SuperLikes, Lupas e Tickets',
+                'Saldo de SuperCurtidas, Lupas e Tickets',
                 'Seu perfil e todas as fotos',
                 'Histórico de indicações e bônus',
               ].map((item) => (

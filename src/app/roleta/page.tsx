@@ -16,7 +16,7 @@ const PRIZE_CONFIG: Record<string, {
   icon: React.ReactNode; rarity?: string
 }> = {
   fichas:          { label: 'Fichas',          color: '#F59E0B', bg: 'rgba(245,158,11,0.12)',  border: 'rgba(245,158,11,0.35)',  glow: 'rgba(245,158,11,0.5)',  icon: <Ticket size={22} strokeWidth={1.5} /> },
-  supercurtida:    { label: 'SuperLike',       color: '#ec4899', bg: 'rgba(236,72,153,0.12)',  border: 'rgba(236,72,153,0.35)',  glow: 'rgba(236,72,153,0.5)',  icon: <Star size={22} strokeWidth={1.5} /> },
+  supercurtida:    { label: 'SuperCurtida',   color: '#ec4899', bg: 'rgba(236,72,153,0.12)',  border: 'rgba(236,72,153,0.35)',  glow: 'rgba(236,72,153,0.5)',  icon: <Star size={22} strokeWidth={1.5} /> },
   boost:           { label: 'Boost',           color: '#E11D48', bg: 'rgba(225,29,72,0.12)',   border: 'rgba(225,29,72,0.35)',   glow: 'rgba(225,29,72,0.5)',   icon: <Zap size={22} strokeWidth={1.5} /> },
   lupa:            { label: 'Lupa',            color: '#ea580c', bg: 'rgba(234,88,12,0.12)',   border: 'rgba(234,88,12,0.35)',   glow: 'rgba(234,88,12,0.5)',   icon: <Search size={22} strokeWidth={1.5} /> },
   rewind:          { label: 'Desfazer',        color: '#be185d', bg: 'rgba(190,24,93,0.12)',   border: 'rgba(190,24,93,0.35)',   glow: 'rgba(190,24,93,0.5)',   icon: <RotateCcw size={22} strokeWidth={1.5} /> },
@@ -30,7 +30,7 @@ const PRIZE_CONFIG: Record<string, {
 // Índices precisam bater exatamente com getSegIdx() abaixo
 const WHEEL_SEGMENTS = [
   { type: 'fichas',          label: '1 Ficha',      colorA: '#78350f', colorB: '#d97706' }, // 0
-  { type: 'supercurtida',    label: 'SuperLike',    colorA: '#831843', colorB: '#ec4899' }, // 1
+  { type: 'supercurtida',    label: 'SuperCurtida',    colorA: '#831843', colorB: '#ec4899' }, // 1
   { type: 'fichas',          label: '2 Fichas',     colorA: '#92400e', colorB: '#f59e0b' }, // 2
   { type: 'lupa',            label: 'Lupa',         colorA: '#7c2d12', colorB: '#ea580c' }, // 3
   { type: 'ver_quem_curtiu', label: 'Ver Curtidas', colorA: '#4c0519', colorB: '#F43F5E' }, // 4

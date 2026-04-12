@@ -69,7 +69,7 @@ export default function Termos() {
         </Section>
 
         <Section titulo="4. Planos e pagamentos">
-          O MeAndYou não oferece plano gratuito. Os planos disponíveis são: Essencial (R$10/mês), Plus (R$39/mês) e Black (R$100/mês). Os pagamentos são processados por gateway de pagamentos terceirizado. O acesso a cada plano é válido por 30 dias a partir da data de pagamento. O cancelamento pode ser feito a qualquer momento e o acesso se encerra ao final do período vigente, sem reembolso proporcional. Preços podem ser alterados com aviso prévio de 30 dias. Compras avulsas de SuperLikes e Boosts não são reembolsáveis.
+          O MeAndYou não oferece plano gratuito. Os planos disponíveis são: Essencial (R$10/mês), Plus (R$39/mês) e Black (R$100/mês). Os pagamentos são processados por gateway de pagamentos terceirizado. O acesso a cada plano é válido por 30 dias a partir da data de pagamento. O cancelamento pode ser feito a qualquer momento e o acesso se encerra ao final do período vigente, sem reembolso proporcional. Preços podem ser alterados com aviso prévio de 30 dias. Compras avulsas de SuperCurtidas e Boosts não são reembolsáveis.
         </Section>
 
         <Section titulo="5. Conduta do usuário">
