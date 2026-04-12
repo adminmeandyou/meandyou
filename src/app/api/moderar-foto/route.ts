@@ -124,9 +124,11 @@ export async function POST(req: NextRequest) {
           }
         } else {
           console.error('Sightengine erro:', resultado)
+          return NextResponse.json({ aprovado: false, motivo: 'Serviço de moderação indisponível. Tente novamente em instantes.' })
         }
       } else {
         console.error('Sightengine HTTP error:', response.status)
+        return NextResponse.json({ aprovado: false, motivo: 'Serviço de moderação indisponível. Tente novamente em instantes.' })
       }
     } else {
       console.warn('[moderar-foto] Sightengine sem credenciais — moderação ignorada')
