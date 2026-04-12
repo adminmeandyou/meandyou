@@ -173,7 +173,7 @@ export default function VerPerfilPage() {
         p_user_id: userId, p_target_id: profileId, p_is_superlike: action === 'superlike',
       })
       if (swipeErr) {
-        toast.show('Não foi possível registrar a ação. Tente novamente.', 'error')
+        toast.show('Não foi possível enviar a curtida. Tente novamente.', 'error')
         setSwipeAction(null)
         return
       }

@@ -25,7 +25,7 @@ export default function AlterarEmailPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!novoEmail) { setErro('Digite o novo email'); return }
-    if (!novoEmail.includes('@')) { setErro('Email inválido'); return }
+    if (!novoEmail.includes('@')) { setErro('Digite um e-mail válido'); return }
     if (novoEmail.toLowerCase() === emailAtual.toLowerCase()) {
       setErro('O novo email deve ser diferente do atual')
       return

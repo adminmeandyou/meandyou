@@ -369,7 +369,7 @@ export default function CheckoutModal({
         if (json.status === 'paid') {
           setStep(4)
         } else if (json.status === 'expired') {
-          setError('PIX expirado. Feche e tente novamente.')
+          setError('O PIX expirou. Feche o modal e gere um novo código.')
         } else {
           pollTimer = setTimeout(poll, 3000)
         }
@@ -417,7 +417,7 @@ export default function CheckoutModal({
       }
       setStep(3)
     } catch {
-      setError('Erro de conexão. Tente novamente.')
+      setError('Sem conexão. Verifique sua internet e tente novamente.')
     } finally {
       setLoading(false)
     }
