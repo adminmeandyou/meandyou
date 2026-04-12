@@ -27,7 +27,7 @@ SELECT
   p.photo_best,
   p.photo_face,
   p.plan                                                             AS plan_name,
-  u.banned_reason,
+  p.banned_reason,
   (
     SELECT COUNT(*)::integer
     FROM public.reports r
