@@ -28,7 +28,7 @@ const MAX_CHARS = 500
 const RATING_OPTIONS = [
   { key: 'bom_papo',  label: 'Bom de papo',              icon: ThumbsUp,       color: '#2ec4a0' },
   { key: 'sairam',    label: 'Sairam para se conhecer',  icon: HeartHandshake, color: '#E11D48' },
-  { key: 'objetivo',  label: 'Alcancaram o objetivo',    icon: Trophy,         color: G         },
+  { key: 'objetivo',  label: 'Alcançaram o objetivo',    icon: Trophy,         color: G         },
   { key: 'bolo',      label: 'Levou bolo',               icon: ThumbsDown,     color: 'rgba(248,249,250,0.40)' },
   { key: 'denuncia',  label: 'Denunciar',                icon: Flag,           color: '#f87171' },
 ]
@@ -146,7 +146,7 @@ export default function CamaroteChatPage() {
 
     setOther({
       id: otherId,
-      name: profile?.name ?? 'Usuario',
+      name: profile?.name ?? 'Usuário',
       photo_best: profile?.photo_best ?? null,
     })
 
@@ -323,7 +323,7 @@ export default function CamaroteChatPage() {
           Conversa encerrada
         </h2>
         <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.40)', textAlign: 'center', lineHeight: 1.6, margin: '0 0 28px' }}>
-          O periodo de 30 dias desta conversa do Camarote expirou.
+          O período de 30 dias desta conversa do Camarote expirou.
         </p>
 
         {!ratingDone ? (
@@ -626,7 +626,7 @@ export default function CamaroteChatPage() {
               </button>
             </div>
             <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '0 0 16px' }}>
-              Registro privado, salvo so no seu dispositivo.
+              Registro privado, salvo só no seu dispositivo.
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
@@ -752,7 +752,7 @@ function RatingPanel({
       </div>
 
       <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '0 0 16px' }}>
-        Sua avaliacao e anonima. Ajuda outros usuarios e melhora o Camarote.
+        Sua avaliação é anônima. Ajuda outros usuários e melhora o Camarote.
       </p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
