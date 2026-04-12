@@ -16,7 +16,7 @@ export default function GamificacaoLancamento() {
               anim: 'spin',
               icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>,
               titulo: 'Roleta diária',
-              texto: 'Gire todo dia e ganhe SuperCurtidas, Lupas, Boosts e até 1 dia de plano superior. Você já tem tickets desde o primeiro acesso — inclusive durante o período gratuito.',
+              texto: 'Gire todo dia e ganhe SuperCurtidas, Lupas, Boosts e até 1 dia de plano superior. Você já tem tickets desde o primeiro acesso, inclusive durante o período gratuito.',
               tag: 'Disponível agora',
             },
             {
@@ -36,7 +36,7 @@ export default function GamificacaoLancamento() {
             {
               anim: 'glow',
               icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></svg>,
-              titulo: 'Emblema de Fundador — Lendário',
+              titulo: 'Emblema de Fundador: Lendário',
               texto: 'Quem entra durante o lançamento recebe automaticamente o emblema mais raro do app. Aparece no perfil para todos verem. Raridade Lendário. Nunca mais será concedido.',
               tag: 'Só no lançamento',
             },

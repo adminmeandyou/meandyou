@@ -37,7 +37,7 @@ export default function EarlyLancamento() {
           </h2>
 
           <p className="lp-early-text-v2" style={{ maxWidth: 560, margin: '0 auto 16px' }}>
-            O MeAndYou está lançando agora. Todo usuário que entrar durante o lançamento recebe automaticamente o <strong style={{ color: '#F59E0B' }}>Emblema de Fundador — raridade Lendária</strong>.
+            O MeAndYou está lançando agora. Todo usuário que entrar durante o lançamento recebe automaticamente o <strong style={{ color: '#F59E0B' }}>Emblema de Fundador, raridade Lendária</strong>.
           </p>
           <p className="lp-early-text-v2" style={{ maxWidth: 560, margin: '0 auto 16px' }}>
             Ele aparece no seu perfil para todos verem. Quando o lançamento encerrar, ninguém mais recebe. Quem já tem, carrega para sempre. É uma prova permanente de que você esteve aqui desde o começo.

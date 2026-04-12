@@ -19,7 +19,7 @@ export default function IdentLancamento() {
           ))}
         </div>
         <p className="lp-ident-closing lp-anim">
-          O problema nunca foi você.<br />Era o ambiente. E agora você tem a chance de testar o ambiente certo -- antes de todo mundo.
+          O problema nunca foi você.<br />Era o ambiente. E agora você tem a chance de testar o ambiente certo, antes de todo mundo.
         </p>
       </div>
     </section>
