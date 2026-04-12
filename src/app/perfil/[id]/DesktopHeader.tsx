@@ -1,6 +1,6 @@
 'use client'
 
-import { CamaroteBadge, LocationLabel, VerifiedBadge } from './HeroSection'
+import { CamaroteBadge, LocationLabel, VerifiedPlusBadge } from './HeroSection'
 
 interface DesktopHeaderProps {
   profileName: string
@@ -8,14 +8,14 @@ interface DesktopHeaderProps {
   city: string | null
   state: string | null
   distance: number | null
-  verified: boolean
+  verifiedPlus: boolean
   viewerIsBlack: boolean
   viewedPlan: string | null
 }
 
 export function DesktopHeader({
   profileName, age, city, state, distance,
-  verified, viewerIsBlack, viewedPlan,
+  verifiedPlus, viewerIsBlack, viewedPlan,
 }: DesktopHeaderProps) {
   return (
     <div className="perfil-desktop-header" style={{ alignItems: 'flex-start', gap: '12px', flexDirection: 'column', marginBottom: '20px' }}>
@@ -29,7 +29,7 @@ export function DesktopHeader({
         {(city || distance !== null) && (
           <LocationLabel city={city} state={state} distance={distance} fontSize="12px" />
         )}
-        {verified && <VerifiedBadge />}
+        {verifiedPlus && <VerifiedPlusBadge />}
       </div>
     </div>
   )

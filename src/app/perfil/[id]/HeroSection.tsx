@@ -139,7 +139,6 @@ export function HeroSection({
           {(city || distance !== null) && (
             <LocationLabel city={city} state={state} distance={distance} />
           )}
-          {verified && <VerifiedBadge />}
           {verifiedPlus && <VerifiedPlusBadge />}
         </div>
       </div>

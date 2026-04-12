@@ -276,7 +276,7 @@ export default function VerPerfilPage() {
 
         {/* ══ Coluna info ══ */}
         <div className="perfil-col-info">
-          <DesktopHeader profileName={profile.name} age={age} city={profile.city} state={profile.state} distance={distance} verified={!!userRow?.verified} viewerIsBlack={viewerIsBlack} viewedPlan={viewedPlan} />
+          <DesktopHeader profileName={profile.name} age={age} city={profile.city} state={profile.state} distance={distance} verifiedPlus={!!userRow?.verified_plus} viewerIsBlack={viewerIsBlack} viewedPlan={viewedPlan} />
           <DesktopActions isOwnProfile={isOwnProfile} onEditProfile={goEdit} onSwipe={handleSwipe} />
 
           <div className="perfil-content-inner" style={{ display: 'flex', flexDirection: 'column', gap: '28px', position: 'relative', zIndex: 2 }}>
