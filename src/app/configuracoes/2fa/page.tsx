@@ -108,7 +108,7 @@ export default function Page2FA() {
           <div>
             <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '16px', padding: '24px', marginBottom: '24px', textAlign: 'center' }}>
               <ShieldOff size={40} color="rgba(255,255,255,0.2)" style={{ marginBottom: '16px' }} />
-              <p style={{ color: '#fff', fontWeight: 600, fontSize: '16px', margin: '0 0 8px' }}>2FA desativado</p>
+              <p style={{ color: '#fff', fontWeight: 600, fontSize: '16px', margin: '0 0 8px' }}>Verificação em dois fatores desativada</p>
               <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', lineHeight: 1.6, margin: 0 }}>
                 Ative a verificação em dois fatores para proteger sua conta com um app autenticador (Google Authenticator, Authy, etc).
               </p>
@@ -192,7 +192,7 @@ export default function Page2FA() {
           <div>
             <div style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '16px', padding: '24px', marginBottom: '24px', textAlign: 'center' }}>
               <ShieldCheck size={40} color="#22c55e" style={{ marginBottom: '16px' }} />
-              <p style={{ color: '#fff', fontWeight: 600, fontSize: '16px', margin: '0 0 8px' }}>2FA ativado</p>
+              <p style={{ color: '#fff', fontWeight: 600, fontSize: '16px', margin: '0 0 8px' }}>Verificação em dois fatores ativada</p>
               <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', lineHeight: 1.6, margin: 0 }}>
                 Sua conta está protegida com verificação em dois fatores.
               </p>

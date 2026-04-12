@@ -14,7 +14,7 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { href: '/matches',   label: 'Matches',    icon: Users },
-  { href: '/modos',     label: 'Modos',      icon: Compass },
+  { href: '/modos',     label: 'Descobrir',  icon: Compass },
   { href: '/roleta',    label: 'Roleta',     icon: Heart, center: true },
   { href: '/recompensas', label: 'Prêmios',   icon: Gift },
   { href: '/perfil',    label: 'Perfil',     icon: User },

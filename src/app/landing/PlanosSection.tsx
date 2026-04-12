@@ -25,7 +25,7 @@ export default function PlanosSection() {
       ],
     },
     {
-      badge: 'Mais escolhido', badgeCls: 'featured', ctaCls: 'featured', featured: true,
+      badge: 'Melhor custo-benefício', badgeCls: 'featured', ctaCls: 'featured', featured: true,
       nome: 'Plus',
       area: 'Área VIP',
       preco: '39,97',

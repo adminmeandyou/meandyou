@@ -233,7 +233,7 @@ export default function OnboardingPage() {
             <div style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '16px', padding: '16px', marginBottom: '24px', textAlign: 'left' }}>
               <p style={{ fontSize: '13px', color: 'var(--gold)', fontWeight: '700', marginBottom: '6px' }}>Dica importante</p>
               <p style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: '1.6' }}>
-                Você vai cadastrar <strong style={{ color: 'var(--text)' }}>suas próprias características</strong>, não o que procura em outra pessoa. Isso é o que define quem vai aparecer para você.
+                Você vai preencher <strong style={{ color: 'var(--text)' }}>suas características</strong> — o que define quem vai aparecer para você.
               </p>
             </div>
 
@@ -275,7 +275,7 @@ export default function OnboardingPage() {
         {passo === 2 && (
           <button onClick={() => setPasso(passo + 1)}
             style={{ width: '100%', padding: '12px', marginTop: '12px', borderRadius: '100px', border: 'none', backgroundColor: 'transparent', color: 'var(--muted)', fontFamily: 'var(--font-jakarta)', fontSize: '14px', cursor: 'pointer' }}>
-            Talvez depois
+            Ativar depois
           </button>
         )}
 

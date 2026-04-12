@@ -40,13 +40,13 @@ export function BadgesSection({
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
         <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(248,249,250,0.30)', display: 'flex', alignItems: 'center', gap: 6 }}>
           <Award size={12} strokeWidth={2} />
-          Conquistas &amp; Legado
+          Emblemas &amp; Conquistas
         </span>
         <button
           onClick={onViewAll}
           style={{ fontSize: '11px', color: 'var(--accent)', fontWeight: 700, background: 'none', border: 'none', borderRadius: 100, padding: '3px 0', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
         >
-          Ver todas
+          Ver todos os emblemas
         </button>
       </div>
       <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '4px' }}>

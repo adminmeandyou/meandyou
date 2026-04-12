@@ -83,7 +83,7 @@ export default function StreakPage() {
     })
     const result = res.ok ? await res.json().catch(() => null) : null
     if (!res.ok || !result?.success) {
-      const msgs: Record<string, string> = { already_claimed: 'Já resgatado hoje.', not_reached: 'Dia ainda não alcançado.', streak_reset: 'Seu streak foi resetado.' }
+      const msgs: Record<string, string> = { already_claimed: 'Já resgatado hoje', not_reached: 'Você ainda não chegou neste dia.', streak_reset: 'Seu streak foi zerado. Continue assim!' }
       setClaimMsg({ day: dayNumber, text: msgs[result?.reason ?? ''] ?? 'Não foi possível resgatar.' })
     } else {
       setCalendar((prev) => prev.map((e) => (e.day_number === dayNumber ? { ...e, claimed: true } : e)))
