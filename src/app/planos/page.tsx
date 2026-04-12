@@ -18,7 +18,7 @@ const PLANS = [
       'Até 10 fotos no perfil',
       '20 curtidas por dia',
       '1 SuperCurtida por dia',
-      '1 Ticket de roleta por dia',
+      '1 ticket de roleta por dia',
       '1 Lupa por dia',
       'Chat com seus matches',
       '1h de videochamada por dia',
@@ -34,8 +34,8 @@ const PLANS = [
     badge: 'Melhor custo-benefício',
     features: [
       'Até 10 fotos no perfil',
-      '30 curtidas por dia',
-      '4 SuperCurtidas por dia',
+      '50 curtidas por dia',
+      '5 SuperCurtidas por dia',
       '2 Tickets de roleta por dia',
       '1 Lupa por dia',
       'Ver quem curtiu você',
@@ -270,12 +270,12 @@ export default function PlanosPage() {
             ))}
           </div>
           {[
-            { label: 'Curtidas',      values: ['20/dia', '30/dia', 'Ilimitadas'] },
-            { label: 'SuperCurtidas', values: ['1/dia', '4/dia', '10/dia'] },
+            { label: 'Curtidas',      values: ['20/dia', '50/dia', 'Ilimitadas'] },
+            { label: 'SuperCurtidas', values: ['1/dia', '5/dia', '10/dia'] },
             { label: 'Lupas',         values: ['1/dia', '1/dia', '2/dia'] },
             { label: 'Tickets',       values: ['1/dia', '2/dia', '3/dia'] },
             { label: 'Vídeo',         values: ['1h/dia', '5h/dia', '10h/dia'] },
-            { label: 'Quem curtiu',   values: ['Não', 'Sim', 'Sim'] },
+            { label: 'Ver quem curtiu',   values: ['Não', 'Sim', 'Sim'] },
             { label: 'Backstage',     values: ['Não', 'Não', 'Sim'] },
           ].map((row, i) => (
             <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', textAlign: 'center', fontSize: '11px', backgroundColor: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>

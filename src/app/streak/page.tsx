@@ -170,7 +170,7 @@ export default function StreakPage() {
               fontFamily: 'var(--font-jakarta)',
               marginBottom: 12,
             }}>
-              Sua Jornada
+              Sua jornada
             </p>
             <h1 style={{
               fontFamily: 'var(--font-fraunces)',
@@ -219,7 +219,7 @@ export default function StreakPage() {
                 color: '#F8F9FA', margin: 0,
                 letterSpacing: '-0.01em',
               }}>
-                Prêmios Diários
+                Prêmios diários
               </h2>
               <span style={{
                 fontSize: 9, fontWeight: 800,
@@ -358,7 +358,7 @@ export default function StreakPage() {
                 boxShadow: '0 4px 15px rgba(225,29,72,0.30)',
                 transition: 'transform 0.15s',
               }}>
-                Ativar Lembrete Noturno
+                Ativar lembrete noturno
               </button>
             </div>
           </div>

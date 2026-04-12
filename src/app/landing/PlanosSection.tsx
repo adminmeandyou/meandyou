@@ -115,7 +115,7 @@ export default function PlanosSection() {
           ))}
         </div>
         <p className="lp-plans-v2-highlight lp-anim">Mais usado por quem quer ter controle total da experiência</p>
-        <p className="lp-plans-v2-micro lp-anim">Você pode cancelar a qualquer momento</p>
+        <p className="lp-plans-v2-micro lp-anim">Cancele quando quiser</p>
       </div>
     </section>
   )

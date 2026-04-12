@@ -20,7 +20,7 @@ const PRIZE_CONFIG: Record<string, {
   boost:           { label: 'Boost',           color: '#E11D48', bg: 'rgba(225,29,72,0.12)',   border: 'rgba(225,29,72,0.35)',   glow: 'rgba(225,29,72,0.5)',   icon: <Zap size={22} strokeWidth={1.5} /> },
   lupa:            { label: 'Lupa',            color: '#ea580c', bg: 'rgba(234,88,12,0.12)',   border: 'rgba(234,88,12,0.35)',   glow: 'rgba(234,88,12,0.5)',   icon: <Search size={22} strokeWidth={1.5} /> },
   rewind:          { label: 'Desfazer',        color: '#be185d', bg: 'rgba(190,24,93,0.12)',   border: 'rgba(190,24,93,0.35)',   glow: 'rgba(190,24,93,0.5)',   icon: <RotateCcw size={22} strokeWidth={1.5} /> },
-  ver_quem_curtiu: { label: 'Ver quem curtiu', color: '#F43F5E', bg: 'rgba(244,63,94,0.12)',   border: 'rgba(244,63,94,0.35)',   glow: 'rgba(244,63,94,0.5)',   icon: <Eye size={22} strokeWidth={1.5} /> },
+  ver_quem_curtiu: { label: 'Ver quem curtiu você', color: '#F43F5E', bg: 'rgba(244,63,94,0.12)',   border: 'rgba(244,63,94,0.35)',   glow: 'rgba(244,63,94,0.5)',   icon: <Eye size={22} strokeWidth={1.5} /> },
   invisivel_1d:    { label: 'Invisível 1 dia', color: '#9ca3af', bg: 'rgba(156,163,175,0.12)', border: 'rgba(156,163,175,0.35)', glow: 'rgba(156,163,175,0.5)', icon: <Gift size={22} strokeWidth={1.5} /> },
   plan_plus_1d:    { label: '1 dia Plus',      color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)',  border: 'rgba(139,92,246,0.45)',  glow: 'rgba(139,92,246,0.7)',  icon: <Crown size={22} strokeWidth={1.5} />, rarity: 'Raro' },
   plan_black_1d:   { label: '1 dia Black',     color: '#F59E0B', bg: 'rgba(245,158,11,0.15)',  border: 'rgba(245,158,11,0.45)',  glow: 'rgba(245,158,11,0.7)',  icon: <Trophy size={22} strokeWidth={1.5} />, rarity: 'Lendário' },
