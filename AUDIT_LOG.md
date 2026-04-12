@@ -150,3 +150,42 @@
 
 ## REGISTRO DE EXECUÇÃO
 
+### [2026-04-12 — SESSÃO 1] — GRUPOS A, D — EM ANDAMENTO
+
+**Arquivos do Grupo A inspecionados:**
+- `app/dashboard/page.tsx` — OK (só lógica de redirect)
+- `app/matches/page.tsx` — OK
+- `app/minha-assinatura/page.tsx` — OK
+- `app/modos-guia/page.tsx` — OK
+- `app/notificacoes/page.tsx` — OK
+- `app/chat/[matchId]/page.tsx` — OK (só redirect)
+- `app/match/page.tsx` — OK
+- `app/layout.tsx` — OK
+- `app/admin/layout.tsx` — OK (sem texto visível)
+- `app/backstage/chat/[id]/page.tsx` — **CORRIGIDO** (5 erros)
+
+**Correções aplicadas — commit f877504:**
+1. `'Alcancaram o objetivo'` → `'Alcançaram o objetivo'`
+2. `'Usuario'` (fallback) → `'Usuário'`
+3. `O periodo de 30 dias` → `O período de 30 dias`
+4. `salvo so no seu dispositivo` → `salvo só no seu dispositivo`
+5. `Sua avaliacao e anonima. Ajuda outros usuarios` → `Sua avaliação é anônima. Ajuda outros usuários`
+
+**Arquivos do Grupo D inspecionados:**
+- `components/ReportModal.tsx` — OK
+- `components/BadgeUnlockedToast.tsx` — OK
+- `components/PlanGuard.tsx` — OK (sem texto visível)
+- `components/EmptyState.tsx` — OK (só re-export)
+- `components/AppShell.tsx` — OK
+- `app/perfil/[id]/DesktopHeader.tsx` — OK (sem texto próprio)
+
+**Loja (parcialmente lido):**
+- `app/loja/page.tsx` — OK até linha ~850 (sem erros encontrados)
+
+**Pendentes para próxima sessão:**
+- Grupos B (landing/), C (lancamento/), e E (re-verificação)
+- `app/loja/page.tsx` — última parte não lida
+- `app/destaque/page.tsx` — comentário `/* Seletor de periodo */` (código, não UI)
+
+**ONDE PAROU:** Início do Grupo B (landing sections) e E (re-verificação).
+
