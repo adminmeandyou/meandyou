@@ -122,10 +122,10 @@ export default function OnboardingPage() {
               <Heart size={36} color="var(--accent)" fill="var(--accent)" />
             </div>
             <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '32px', color: 'var(--text)', marginBottom: '12px' }}>
-              {nome ? `Olá, ${nome.split(' ')[0]}!` : 'Bem-vindo(a)!'}
+              {nome ? `Olá, ${nome.split(' ')[0]}!` : 'Bem-vindo ao MeAndYou!'}
             </h1>
             <p style={{ fontSize: '15px', color: 'var(--muted)', lineHeight: '1.7', marginBottom: '32px' }}>
-              Você acaba de entrar no <strong style={{ color: 'var(--text)' }}>MeAnd<span style={{ color: 'var(--accent)' }}>You</span></strong>. Aqui, conexões reais acontecem. Diferente dos outros apps, a compatibilidade vai muito além de uma foto.
+              Você acaba de entrar no <strong style={{ color: 'var(--text)' }}>MeAnd<span style={{ color: 'var(--accent)' }}>You</span></strong>. Aqui, conexões reais acontecem. Aqui, compatibilidade vai muito além de uma foto.
             </p>
             <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '20px', padding: '20px', marginBottom: '32px', textAlign: 'left' }}>
               <p style={{ fontSize: '14px', color: 'var(--accent)', fontWeight: '700', marginBottom: '12px' }}>O que nos diferencia:</p>
@@ -192,7 +192,7 @@ export default function OnboardingPage() {
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: '15px', fontWeight: '700', color: 'var(--text)', marginBottom: '3px' }}>Localização</p>
                 <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0, lineHeight: '1.4' }}>
-                  {gpsAtivo ? 'Ativada. Você vai aparecer na busca da sua região.' : 'Para mostrar pessoas perto de você'}
+                  {gpsAtivo ? 'Ativada. Você vai aparecer para pessoas da sua região.' : 'Para mostrar pessoas perto de você'}
                 </p>
               </div>
               {gpsAtivo && <Check size={20} color="var(--accent)" style={{ flexShrink: 0 }} />}
@@ -239,7 +239,7 @@ export default function OnboardingPage() {
 
             <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '16px', padding: '16px', marginBottom: '32px', textAlign: 'left' }}>
               <p style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: '700', marginBottom: '8px' }}>O que você vai preencher:</p>
-              {['3 fotos (rosto, corpo inteiro e lateral)', 'Aparência e personalidade', 'Valores e estilo de vida', 'O que você busca'].map((item, i) => (
+              {['3 fotos obrigatórias: rosto, corpo inteiro e lateral', 'Aparência e personalidade', 'Valores e estilo de vida', 'O que você busca'].map((item, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: i < 3 ? '6px' : 0 }}>
                   <Check size={14} color="var(--accent)" />
                   <span style={{ fontSize: '13px', color: 'var(--text)' }}>{item}</span>

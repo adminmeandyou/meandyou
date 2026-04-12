@@ -131,11 +131,11 @@ export function RatingsCard({ ratings }: { ratings: { total: number; positive: n
           <p style={{ fontSize: '18px', fontWeight: 700, color: '#10b981', margin: '0 0 2px' }}>
             {Math.round((ratings.positive / ratings.total) * 100)}%
           </p>
-          <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>boas conversas</p>
+          <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>Boas conversas</p>
         </div>
         <div style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '10px', padding: '10px 12px', textAlign: 'center' }}>
           <p style={{ fontSize: '18px', fontWeight: 700, color: '#F8F9FA', margin: '0 0 2px' }}>{ratings.total}</p>
-          <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>avaliações</p>
+          <p style={{ fontSize: '11px', color: 'rgba(248,249,250,0.40)', margin: 0 }}>Avaliações</p>
         </div>
       </div>
     </div>

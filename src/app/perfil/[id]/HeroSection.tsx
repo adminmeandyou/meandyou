@@ -183,7 +183,7 @@ export function LocationLabel({ city, state, distance, fontSize = '10px' }: { ci
 export function VerifiedBadge() {
   return (
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '3px 9px', borderRadius: '100px', fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', border: '1px solid rgba(225,29,72,0.45)', backgroundColor: 'rgba(225,29,72,0.18)', color: '#F43F5E', backdropFilter: 'blur(8px)' }}>
-      Perfil Verificado
+      Perfil verificado
     </span>
   )
 }

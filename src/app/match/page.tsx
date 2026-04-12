@@ -316,7 +316,7 @@ function EmptyState({ onRefresh }: { onRefresh: () => void }) {
         onClick={onRefresh}
         style={{ padding: '12px 24px', borderRadius: '16px', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', color: 'var(--accent)', fontSize: '14px', fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.2s' }}
       >
-        Tentar novamente
+        Atualizar perfis
       </button>
     </div>
   )

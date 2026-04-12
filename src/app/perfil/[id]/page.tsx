@@ -222,8 +222,8 @@ export default function VerPerfilPage() {
   const statusTempVivo = !!(profile?.status_temp && profile?.status_temp_expires_at && new Date(profile.status_temp_expires_at) > new Date())
 
   const statusChips: { label: string; bg: string; color: string; border: string }[] = []
-  if (userRow?.verified) statusChips.push({ label: 'Verificada', bg: 'rgba(225,29,72,0.18)', color: '#F43F5E', border: 'rgba(225,29,72,0.35)' })
-  if (userRow?.verified_plus) statusChips.push({ label: 'Verificada Plus', bg: 'rgba(245,158,11,0.14)', color: '#F59E0B', border: 'rgba(245,158,11,0.30)' })
+  if (userRow?.verified) statusChips.push({ label: 'Verificado', bg: 'rgba(225,29,72,0.18)', color: '#F43F5E', border: 'rgba(225,29,72,0.35)' })
+  if (userRow?.verified_plus) statusChips.push({ label: 'Verificado Plus', bg: 'rgba(245,158,11,0.14)', color: '#F59E0B', border: 'rgba(245,158,11,0.30)' })
   if (viewerIsBlack && viewedPlan === 'black') statusChips.push({ label: 'Black', bg: 'rgba(245,158,11,0.10)', color: '#F59E0B', border: 'rgba(245,158,11,0.25)' })
   if (statusTempVivo) statusChips.push({ label: STATUS_TEMP_LABELS[profile.status_temp as string] ?? profile.status_temp, bg: 'rgba(96,165,250,0.12)', color: '#60a5fa', border: 'rgba(96,165,250,0.25)' })
 

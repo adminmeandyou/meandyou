@@ -127,10 +127,10 @@ export default function RecuperarSenha() {
                 você receberá um link para redefinir sua senha em instantes.
               </p>
               <p style={{ color: 'var(--muted)', fontSize: '13px', lineHeight: 1.6, marginBottom: '28px' }}>
-                Não recebeu? Verifique a pasta de spam ou aguarde alguns minutos.
+                Não recebeu? Verifique a pasta de spam ou aguarde 5 minutos.
               </p>
               <Link href="/login" className="btn-primary" style={{ display: 'block', textDecoration: 'none', textAlign: 'center' }}>
-                Voltar ao login
+                Voltar para o login
               </Link>
             </div>
           )}

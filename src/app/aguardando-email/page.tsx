@@ -52,7 +52,7 @@ export default function AguardandoEmailPage() {
       if (!res.ok) {
         setErro(data.error || 'Erro ao reenviar.')
       } else {
-        setMensagem('Email reenviado! Verifique sua caixa de entrada.')
+        setMensagem('E-mail reenviado! Verifique sua caixa de entrada (ou a pasta de spam).')
       }
     } catch {
       setErro('Erro de conexão. Tente novamente.')
@@ -82,7 +82,7 @@ export default function AguardandoEmailPage() {
       setTimeout(() => { window.location.href = '/verificacao' }, 1500)
     } else {
       setCarregando(false)
-      setErro('Email ainda não verificado. Clique no link que enviamos.')
+      setErro('E-mail ainda não confirmado. Clique no link que enviamos.')
     }
   }
 
@@ -99,7 +99,7 @@ export default function AguardandoEmailPage() {
     return (
       <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: '16px' }}>
         <CheckCircle size={48} color="var(--green)" strokeWidth={1.5} />
-        <p style={{ color: 'var(--text)', fontSize: '18px', fontWeight: 600 }}>Email verificado!</p>
+        <p style={{ color: 'var(--text)', fontSize: '18px', fontWeight: 600 }}>E-mail confirmado!</p>
         <p style={{ color: 'var(--muted)', fontSize: '14px' }}>Redirecionando...</p>
       </div>
     )
