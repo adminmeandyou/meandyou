@@ -110,21 +110,21 @@ const STORE_ITEMS: StoreItem[] = [
     new: true,
   },
   {
-    key: 'caixa_surpresa', label: 'Caixa Surpresa', description: 'Prêmio aleatório — pode ser raro!',
+    key: 'caixa_surpresa', label: 'Caixa Surpresa', description: 'Prêmio aleatório, pode ser raro!',
     unit: 'caixa',
     icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 35, maxQty: 5,
     accentColor: '#8b5cf6', accentBg: 'rgba(139,92,246,0.10)', accentBorder: 'rgba(139,92,246,0.25)',
     new: true,
   },
   {
-    key: 'caixa_lendaria', label: 'Caixa Super Lendária', description: 'Recompensas exclusivas e raras — itens que não existem em outro lugar',
+    key: 'caixa_lendaria', label: 'Caixa Super Lendária', description: 'Recompensas exclusivas e raras, itens que não existem em outro lugar',
     unit: 'caixa',
     icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 2250, maxQty: 1,
     accentColor: '#F59E0B', accentBg: 'rgba(139,92,246,0.15)', accentBorder: 'rgba(245,158,11,0.50)',
     new: true,
   },
   {
-    key: 'passaporte_camarote', label: 'Passaporte Camarote', description: 'Acesso ao Camarote por 30 dias — Sugar, Fetiche e salas VIP',
+    key: 'passaporte_camarote', label: 'Passaporte Camarote', description: 'Acesso ao Camarote por 30 dias: Sugar, Fetiche e salas VIP',
     unit: 'acesso (30 dias)',
     icon: <Crown size={20} strokeWidth={1.5} />, baseFichas: 70, maxQty: 1,
     accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.30)',
@@ -219,12 +219,12 @@ function PurchaseSheet({
               style={{ width: '100%', padding: '16px', borderRadius: 14, border: 'none', background: loading ? 'rgba(225,29,72,0.40)' : 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
             >
               {loading ? <Loader2 size={18} strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Coins size={18} strokeWidth={1.5} />}
-              {loading ? 'Processando...' : `Confirmar — ${total} fichas`}
+              {loading ? 'Processando...' : `Confirmar (${total} fichas)`}
             </button>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <p style={{ textAlign: 'center', fontSize: 13, color: '#f87171', margin: 0 }}>
-                Fichas insuficientes — faltam {total - fichas} fichas
+                Fichas insuficientes: faltam {total - fichas} fichas
               </p>
               <button onClick={onClose} style={{ width: '100%', padding: '14px', borderRadius: 14, border: '1px solid var(--accent-border)', backgroundColor: 'var(--accent-light)', color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>
                 Comprar fichas acima

@@ -267,7 +267,7 @@ export default function CancelamentosPage() {
               {/* Datas + status */}
               <div>
                 <p style={{ margin: '0 0 2px', fontSize: '12px', color: 'rgba(248,249,250,0.40)' }}>
-                  Solicitado em: <span style={{ color: '#aaa' }}>{req.requested_at ? formatDate(req.requested_at) : '—'}</span>
+                  Solicitado em: <span style={{ color: '#aaa' }}>{req.requested_at ? formatDate(req.requested_at) : '-'}</span>
                 </p>
                 {req.processed_at && (
                   <p style={{ margin: '0 0 6px', fontSize: '12px', color: 'rgba(248,249,250,0.40)' }}>

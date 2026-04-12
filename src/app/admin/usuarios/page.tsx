@@ -186,15 +186,15 @@ export default function AdminUsuarios() {
               <tr><td colSpan={7} style={{ padding: '40px', textAlign: 'center', color: 'rgba(248,249,250,0.40)' }}>Nenhum usuário encontrado</td></tr>
             ) : users.map(u => (
               <tr key={u.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.07)' }}>
-                <td style={{ padding: '12px 16px', color: '#fff' }}>{u.name ?? '—'}</td>
-                <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.50)' }}>{u.email ?? '—'}</td>
+                <td style={{ padding: '12px 16px', color: '#fff' }}>{u.name ?? '-'}</td>
+                <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.50)' }}>{u.email ?? '-'}</td>
                 <td style={{ padding: '12px 16px' }}>
                   {u.plan ? (
                     <span style={{ padding: '3px 10px', borderRadius: '100px', fontSize: '12px', fontWeight: '600',
                       backgroundColor: u.plan === 'black' ? '#f59e0b22' : u.plan === 'plus' ? '#3b82f622' : '#6b728022',
                       color:           u.plan === 'black' ? '#f59e0b'   : u.plan === 'plus' ? '#3b82f6'   : '#9ca3af',
                     }}>{u.plan}</span>
-                  ) : <span style={{ color: 'rgba(248,249,250,0.20)' }}>—</span>}
+                  ) : <span style={{ color: 'rgba(248,249,250,0.20)' }}>-</span>}
                 </td>
                 <td style={{ padding: '12px 16px' }}>
                   {u.banned ? (

@@ -110,7 +110,7 @@ function ModalEditar({
 
         {/* Peso */}
         <label style={{ fontSize: 12, color: 'rgba(248,249,250,0.5)', marginBottom: 6, display: 'block' }}>
-          Peso (mais peso = mais chance) — Chance atual: <strong style={{ color: '#E11D48' }}>{pct}%</strong>
+          Peso (mais peso = mais chance). Chance atual: <strong style={{ color: '#E11D48' }}>{pct}%</strong>
         </label>
         <input
           type="number" min={1} max={9999} value={peso}

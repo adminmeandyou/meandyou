@@ -1187,7 +1187,7 @@ export default function ChatPage() {
                   <X size={18} color="var(--muted)" strokeWidth={1.5} />
                 </button>
               </div>
-              <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliação anônima — {otherUser?.name} não saberá quem avaliou.</p>
+              <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliação anônima: {otherUser?.name} não saberá quem avaliou.</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
                   { id: 'incrivel', label: 'Pessoa incrível!', color: '#10b981' },
@@ -1313,7 +1313,7 @@ export default function ChatPage() {
                 </button>
                 <a href="tel:190" style={{ width:'100%',padding:'15px 0',borderRadius:14,background:'var(--accent)',border:'none',color:'#fff',fontFamily:'var(--font-jakarta)',fontSize:15,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:10,textDecoration:'none' }}>
                   <Phone size={18} />
-                  Preciso de ajuda — 190
+                  Preciso de ajuda (190)
                 </a>
               </div>
             </div>
@@ -1379,7 +1379,7 @@ export default function ChatPage() {
                   <div style={{ width:40,height:40,borderRadius:12,background:'rgba(225,29,72,0.12)',border:'1px solid rgba(225,29,72,0.30)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><Phone size={18} color="#F43F5E" strokeWidth={1.5} /></div>
                   <div style={{ textAlign:'left' }}>
                     <p style={{ fontSize:14,fontWeight:600,color:'#F43F5E',margin:0 }}>Ligar 190</p>
-                    <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>Policia Militar — emergencia real</p>
+                    <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>Policia Militar, emergencia real</p>
                   </div>
                 </a>
               </div>

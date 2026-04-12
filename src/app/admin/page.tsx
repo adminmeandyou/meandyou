@@ -205,7 +205,7 @@ function Card({ label, value, sub, icon: Icon, color = '#e11d48', onClick, linkT
           <Icon size={16} color={color} />
         </div>
       </div>
-      <p style={{ fontSize: '28px', fontWeight: '700', color: '#fff', fontFamily: 'var(--font-fraunces)' }}>{value ?? '—'}</p>
+      <p style={{ fontSize: '28px', fontWeight: '700', color: '#fff', fontFamily: 'var(--font-fraunces)' }}>{value ?? '-'}</p>
       {sub && <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)', marginTop: '4px' }}>{sub}</p>}
       {isClickable && <p style={{ fontSize: '11px', color: color + '88', marginTop: '6px' }}>Clique para ver usuários</p>}
     </div>
@@ -311,9 +311,9 @@ export default function AdminDashboard() {
 
       <Section title="💳 Assinaturas ativas">
         <div style={grid}>
-          <Card label="Essencial — R$10/mês" value={m.plan_essencial} icon={Heart} color="#6b7280" sub={`≈ R$${(m.plan_essencial * 10).toLocaleString('pt-BR')}/mês`} onClick={() => openDrawer('plan_essencial', 'Plano Essencial')} />
-          <Card label="Plus — R$39/mês"      value={m.plan_plus}      icon={Heart} color="#3b82f6" sub={`≈ R$${(m.plan_plus * 39).toLocaleString('pt-BR')}/mês`}    onClick={() => openDrawer('plan_plus', 'Plano Plus')} />
-          <Card label="Black — R$100/mês"    value={m.plan_black}     icon={Heart} color="#f59e0b" sub={`≈ R$${(m.plan_black * 100).toLocaleString('pt-BR')}/mês`}  onClick={() => openDrawer('plan_black', 'Plano Black')} />
+          <Card label="Essencial (R$10/mês)" value={m.plan_essencial} icon={Heart} color="#6b7280" sub={`≈ R$${(m.plan_essencial * 10).toLocaleString('pt-BR')}/mês`} onClick={() => openDrawer('plan_essencial', 'Plano Essencial')} />
+          <Card label="Plus (R$39/mês)"      value={m.plan_plus}      icon={Heart} color="#3b82f6" sub={`≈ R$${(m.plan_plus * 39).toLocaleString('pt-BR')}/mês`}    onClick={() => openDrawer('plan_plus', 'Plano Plus')} />
+          <Card label="Black (R$100/mês)"    value={m.plan_black}     icon={Heart} color="#f59e0b" sub={`≈ R$${(m.plan_black * 100).toLocaleString('pt-BR')}/mês`}  onClick={() => openDrawer('plan_black', 'Plano Black')} />
           <Card label="Receita estimada/mês" value={`R$${receita.toLocaleString('pt-BR')}`} icon={TrendingUp} color="#22c55e" />
         </div>
       </Section>
@@ -340,7 +340,7 @@ export default function AdminDashboard() {
       <Section title="📹 Videochamadas (últimos 30 dias)">
         <div style={grid}>
           <Card label="Sessões realizadas" value={extra.video_sessions} icon={Video} color="#3b82f6" />
-          <Card label="Minutos totais"     value={extra.video_minutes > 0 ? extra.video_minutes.toLocaleString('pt-BR') : '—'} icon={Video} color="#a855f7" sub={extra.video_minutes > 0 ? `≈ ${Math.round(extra.video_minutes / 60)}h` : undefined} />
+          <Card label="Minutos totais"     value={extra.video_minutes > 0 ? extra.video_minutes.toLocaleString('pt-BR') : '-'} icon={Video} color="#a855f7" sub={extra.video_minutes > 0 ? `≈ ${Math.round(extra.video_minutes / 60)}h` : undefined} />
         </div>
       </Section>
 
@@ -349,7 +349,7 @@ export default function AdminDashboard() {
           <Card label="Receita estimada/mês"  value={`R$${receita.toLocaleString('pt-BR')}`}    icon={DollarSign} color="#22c55e" />
           <Card label="Ticket médio"           value={`R$${ticketMedio}`}                         icon={DollarSign} color="#3b82f6" sub="entre assinantes" />
           <Card label="Valor médio por usuário" value={`R$${valorPorUsuario}`}                   icon={DollarSign} color="#a855f7" sub="receita / total de usuários" />
-          <Card label="Taxa de conversão"      value={m.total_users > 0 ? `${((totalAssinantes / m.total_users) * 100).toFixed(1)}%` : '—'} icon={TrendingUp} color="#f59e0b" sub="usuários → assinantes" />
+          <Card label="Taxa de conversão"      value={m.total_users > 0 ? `${((totalAssinantes / m.total_users) * 100).toFixed(1)}%` : '-'} icon={TrendingUp} color="#f59e0b" sub="usuários → assinantes" />
         </div>
       </Section>
 

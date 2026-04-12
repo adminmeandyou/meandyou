@@ -446,7 +446,7 @@ function BoostActiveBanner({ until }: { until: Date }) {
   return (
     <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, padding: '8px 14px', flexShrink: 0 }}>
       <Zap size={13} strokeWidth={1.5} style={{ color: '#F59E0B' }} />
-      <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600 }}>Boost ativo — você está em destaque</span>
+      <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600 }}>Boost ativo: você está em destaque</span>
       <span style={{ fontSize: 11, color: 'rgba(245,158,11,0.70)', marginLeft: 4 }}>{timeLeft}</span>
     </div>
   )

@@ -228,7 +228,7 @@ export default function InsightsPage() {
           <BarChart2 size={20} color="#e11d48" />
           <h1 style={{ fontSize: '24px', fontWeight: '700', fontFamily: 'var(--font-fraunces)' }}>Perfil de Clientes</h1>
         </div>
-        <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px' }}>Distribuição demográfica dos usuários pagantes — clique em qualquer barra para ver os usuários</p>
+        <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px' }}>Distribuição demográfica dos usuários pagantes. Clique em qualquer barra para ver os usuários.</p>
       </div>
 
       {/* Filtros de plano */}
@@ -260,8 +260,8 @@ export default function InsightsPage() {
         {[
           { label: 'Clientes neste filtro', value: filtered.length.toString() },
           { label: 'Receita estimada/mês',  value: `R$${totalReceita.toLocaleString('pt-BR')}` },
-          { label: 'Ticket médio',          value: filtered.length > 0 ? `R$${(totalReceita / filtered.length).toFixed(0)}` : '—' },
-          { label: 'Taxa verificados',      value: filtered.length > 0 ? `${Math.round((filtered.filter(c => c.verified).length / filtered.length) * 100)}%` : '—' },
+          { label: 'Ticket médio',          value: filtered.length > 0 ? `R$${(totalReceita / filtered.length).toFixed(0)}` : '-' },
+          { label: 'Taxa verificados',      value: filtered.length > 0 ? `${Math.round((filtered.filter(c => c.verified).length / filtered.length) * 100)}%` : '-' },
         ].map(k => (
           <div key={k.label} style={{ backgroundColor: '#0F1117', border: '1px solid #1e1e1e', borderRadius: '14px', padding: '16px 20px' }}>
             <p style={{ fontSize: '12px', color: 'rgba(248,249,250,0.40)', marginBottom: '6px' }}>{k.label}</p>
@@ -281,7 +281,7 @@ export default function InsightsPage() {
       {allDrawer && (
         <ClientDrawer
           clients={filtered}
-          title={`Clientes — ${FILTERS.find(f => f.key === planFilter)?.label}`}
+          title={`Clientes: ${FILTERS.find(f => f.key === planFilter)?.label}`}
           onClose={() => setAllDrawer(false)}
         />
       )}

@@ -64,7 +64,7 @@ const CONDITION_TYPES: ConditionType[] = [
   { value: 'on_join',            label: 'Ao criar conta',                                group: 'Básico',        hasCount: false, hasDate: false, hasItem: false },
   { value: 'on_verify',          label: 'Ao verificar identidade',                       group: 'Básico',        hasCount: false, hasDate: false, hasItem: false },
   { value: 'profile_complete',   label: 'Perfil 100% completo (foto + bio)',             group: 'Básico',        hasCount: false, hasDate: false, hasItem: false },
-  { value: 'early_adopter',      label: 'Pioneiro — entrou antes de uma data',           group: 'Básico',        hasCount: false, hasDate: true,  hasItem: false },
+  { value: 'early_adopter',      label: 'Pioneiro: entrou antes de uma data',            group: 'Básico',        hasCount: false, hasDate: true,  hasItem: false },
   // Curtidas
   { value: 'likes_received_gte', label: 'Recebeu X+ curtidas',                           group: 'Curtidas',      hasCount: true,  countLabel: 'Curtidas recebidas (mínimo)', hasDate: false, hasItem: false },
   { value: 'likes_sent_gte',     label: 'Enviou X+ curtidas',                            group: 'Curtidas',      hasCount: true,  countLabel: 'Curtidas enviadas (mínimo)',  hasDate: false, hasItem: false },
@@ -368,7 +368,7 @@ export default function AdminEmblemas() {
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '28px' }}>
         <div>
           <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '28px', color: '#fff', margin: '0 0 4px' }}>Emblemas</h1>
-          <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', margin: 0 }}>{badges.length} emblemas cadastrados — apenas os existentes no banco são exibidos</p>
+          <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '14px', margin: 0 }}>{badges.length} emblemas cadastrados. Apenas os existentes no banco são exibidos.</p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={loadBadges} style={{ padding: '9px 14px', backgroundColor: 'transparent', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', color: 'rgba(248,249,250,0.40)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6, fontSize: 13 }}>
@@ -444,7 +444,7 @@ export default function AdminEmblemas() {
                   </div>
                   <p style={{ color: 'rgba(248,249,250,0.40)', fontSize: '12px', margin: '0 0 3px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{b.description}</p>
                   <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: 'rgba(248,249,250,0.40)', flexWrap: 'wrap' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Users size={10} /> {b.user_count ?? '—'} usuários</span>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: 3 }}><Users size={10} /> {b.user_count ?? '-'} usuários</span>
                     <span style={{ color: 'rgba(248,249,250,0.20)' }}>&#x25B8; {condLabel}</span>
                     {b.condition_value?.count != null && <span style={{ color: 'rgba(248,249,250,0.20)' }}>min: {b.condition_value.count}</span>}
                     {b.condition_value?.item && <span style={{ color: 'rgba(248,249,250,0.20)' }}>item: {b.condition_value.item}</span>}
@@ -523,7 +523,7 @@ export default function AdminEmblemas() {
                       ? <><div style={{ width: 14, height: 14, border: '2px solid #e11d48', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} /> Enviando...</>
                       : <><Upload size={14} /> Fazer upload (JPG/PNG)</>}
                   </button>
-                  <p style={{ fontSize: 11, color: 'rgba(248,249,250,0.40)', margin: '5px 0 0' }}>Qualquer tamanho — será cortado e redimensionado para 72x72 px automaticamente</p>
+                  <p style={{ fontSize: 11, color: 'rgba(248,249,250,0.40)', margin: '5px 0 0' }}>Qualquer tamanho: será cortado e redimensionado para 72x72 px automaticamente</p>
                   <input ref={fileInputRef} type="file" accept="image/jpeg,image/png" onChange={handleImageUpload} style={{ display: 'none' }} />
 
                   {/* Gerador IA */}
@@ -549,7 +549,7 @@ export default function AdminEmblemas() {
                         {gerandoIA ? 'Gerando...' : 'Gerar'}
                       </button>
                     </div>
-                    <p style={{ fontSize: 10, color: 'rgba(167,139,250,0.50)', margin: '4px 0 0' }}>~10-20s por imagem — gratis no plano free do HuggingFace</p>
+                    <p style={{ fontSize: 10, color: 'rgba(167,139,250,0.50)', margin: '4px 0 0' }}>~10-20s por imagem, gratis no plano free do HuggingFace</p>
                   </div>
                 </div>
 

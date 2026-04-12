@@ -653,7 +653,7 @@ export default function RoletaPage() {
             ) : tickets === 0 ? (
               <><Ticket size={16} strokeWidth={1.5} />Próximo giro em {countdown}</>
             ) : spinsLeft === 0 ? (
-              <><Ticket size={16} strokeWidth={1.5} />Limite diário — renova em {countdown}</>
+              <><Ticket size={16} strokeWidth={1.5} />Limite diário, renova em {countdown}</>
             ) : (
               <><Zap size={16} strokeWidth={2} />Girar (1 ficha)</>
             )}

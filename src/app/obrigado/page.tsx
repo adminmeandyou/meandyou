@@ -127,7 +127,7 @@ function ObrigadoContent() {
           <ol style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {[
               { num: '1', text: 'Acesse sua conta e aproveite os novos recursos' },
-              { num: '2', text: 'Seu plano já está ativo — sem necessidade de nenhuma ação adicional' },
+              { num: '2', text: 'Seu plano já está ativo, sem necessidade de nenhuma ação adicional' },
               { num: '3', text: 'Explore os recursos desbloqueados e descubra novas conexões' },
             ].map(({ num, text }) => (
               <li key={num} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>

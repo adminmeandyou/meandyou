@@ -80,8 +80,8 @@ export default function AdminBugs() {
               <tr key={b.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', cursor: 'pointer' }} onClick={() => setSelectedBug(b)}>
                 <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.40)', fontSize: '13px' }}>{new Date(b.created_at).toLocaleDateString('pt-BR')}</td>
                 <td style={{ padding: '12px 16px' }}>
-                  <p style={{ color: '#fff', margin: 0, fontSize: '14px' }}>{b.user?.name ?? '—'}</p>
-                  <p style={{ color: 'rgba(248,249,250,0.40)', margin: 0, fontSize: '12px' }}>{b.user?.plan ?? '—'}</p>
+                  <p style={{ color: '#fff', margin: 0, fontSize: '14px' }}>{b.user?.name ?? '-'}</p>
+                  <p style={{ color: 'rgba(248,249,250,0.40)', margin: 0, fontSize: '12px' }}>{b.user?.plan ?? '-'}</p>
                 </td>
                 <td style={{ padding: '12px 16px', color: 'rgba(248,249,250,0.50)', maxWidth: '300px' }}>
                   <span style={{ display: 'block', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -89,7 +89,7 @@ export default function AdminBugs() {
                   </span>
                 </td>
                 <td style={{ padding: '12px 16px' }}>
-                  {b.screenshot_url ? <ImageIcon size={16} color="#3b82f6" /> : <span style={{ color: 'rgba(248,249,250,0.20)' }}>—</span>}
+                  {b.screenshot_url ? <ImageIcon size={16} color="#3b82f6" /> : <span style={{ color: 'rgba(248,249,250,0.20)' }}>-</span>}
                 </td>
                 <td style={{ padding: '12px 16px' }}>
                   <span style={{

@@ -275,8 +275,8 @@ export default function PlanosPage() {
             { label: 'Lupas',         values: ['1/dia', '1/dia', '2/dia'] },
             { label: 'Tickets',       values: ['1/dia', '2/dia', '3/dia'] },
             { label: 'Vídeo',         values: ['1h/dia', '5h/dia', '10h/dia'] },
-            { label: 'Quem curtiu',   values: ['—', 'Sim', 'Sim'] },
-            { label: 'Backstage',     values: ['—', '—', 'Sim'] },
+            { label: 'Quem curtiu',   values: ['Não', 'Sim', 'Sim'] },
+            { label: 'Backstage',     values: ['Não', 'Não', 'Sim'] },
           ].map((row, i) => (
             <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', textAlign: 'center', fontSize: '11px', backgroundColor: i % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}>
               <div style={{ padding: '10px 8px', color: 'rgba(248,249,250,0.40)', textAlign: 'left' }}>{row.label}</div>

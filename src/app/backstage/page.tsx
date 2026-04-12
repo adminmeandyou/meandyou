@@ -722,7 +722,7 @@ function CamaroteVitrine({
             {/* Faixa etaria */}
             <div style={{ marginBottom: 24 }}>
               <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 8 }}>
-                Idade — {localFilters.ageMin} a {localFilters.ageMax} anos
+                Idade: {localFilters.ageMin} a {localFilters.ageMax} anos
               </label>
               <div style={{ display: 'flex', gap: 12 }}>
                 <div style={{ flex: 1 }}>
@@ -1087,7 +1087,7 @@ function ResgatesSection() {
       {/* Nota explicativa */}
       <div style={{ marginTop: 24, padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.30)', lineHeight: 1.6, margin: 0 }}>
-          Ao resgatar, você paga R$ 49,90 para iniciar uma conversa por 30 dias. Isso não é garantia de encontro — apenas o início de uma conversa.
+          Ao resgatar, você paga R$ 49,90 para iniciar uma conversa por 30 dias. Isso não é garantia de encontro, apenas o início de uma conversa.
         </p>
       </div>
 
@@ -1097,7 +1097,7 @@ function ResgatesSection() {
           open={camaroteCheckoutOpen}
           onClose={() => setCamaroteCheckoutOpen(false)}
           type="camarote"
-          description="Camarote Black — Acesso por 30 dias"
+          description="Camarote Black: Acesso por 30 dias"
           metadata={{ resgatado_id: user.id }}
         />
       )}
@@ -1305,7 +1305,7 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
             href="/planos"
             style={{ display: 'block', width: '100%', padding: '15px', borderRadius: 16, textAlign: 'center', fontWeight: 700, fontSize: 15, fontFamily: 'var(--font-jakarta)', textDecoration: 'none', background: `linear-gradient(135deg, #c9a84c, ${G}, #fbbf24)`, color: '#fff', boxSizing: 'border-box' }}
           >
-            Assinar Black — R$ 99,97/mes
+            Assinar Black por R$ 99,97/mes
           </a>
           <button
             onClick={() => setShowModal(true)}
@@ -1432,9 +1432,9 @@ function CamaroteAccessModal({
                   {[
                     'Um assinante Black paga R$ 15 para iniciar uma conversa com você',
                     'Você e o resgatador terão acesso ao chat exclusivo do Camarote por 30 dias',
-                    'O que acontece depende da conversa entre vocês — não é garantia de nada',
+                    'O que acontece depende da conversa entre vocês, não é garantia de nada',
                     'Assinantes Black da sua categoria são notificados assim que você pede acesso',
-                    'Quem pagar primeiro tem acesso — os demais não veem mais o seu pedido',
+                    'Quem pagar primeiro tem acesso: os demais não veem mais o seu pedido',
                   ].map((item, i) => (
                     <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                       <CheckCircle size={14} color={G} strokeWidth={2} style={{ flexShrink: 0, marginTop: 2 }} />
@@ -1468,7 +1468,7 @@ function CamaroteAccessModal({
               <div style={{ padding: '12px 14px', borderRadius: 12, background: 'rgba(245,158,11,0.07)', border: `1px solid ${G_BORDER}`, marginBottom: 20, display: 'flex', gap: 10 }}>
                 <AlertTriangle size={15} color={G} strokeWidth={1.5} style={{ flexShrink: 0, marginTop: 1 }} />
                 <p style={{ fontSize: 12, color: 'rgba(245,158,11,0.80)', lineHeight: 1.55, margin: 0 }}>
-                  <strong>Importante:</strong> isso não é uma compra de serviço. O assinante está pagando para iniciar uma conversa, não por qualquer ato. O que acontece entre vocês é resultado da troca e da conexão — não de uma transação.
+                  <strong>Importante:</strong> isso não é uma compra de serviço. O assinante está pagando para iniciar uma conversa, não por qualquer ato. O que acontece entre vocês é resultado da troca e da conexão, não de uma transação.
                 </p>
               </div>
 
