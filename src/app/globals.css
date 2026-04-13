@@ -459,6 +459,16 @@ button:active:not(:disabled) {
   transition: transform 0.12s cubic-bezier(0.4,0,0.2,1);
 }
 
+/* ── Páginas de conteúdo: no desktop ocupa toda a largura disponível ──
+   Aplique className="page-content" na div wrapper principal das páginas.
+   O !important é necessário para sobrescrever o maxWidth inline. ── */
+@media (min-width: 768px) {
+  .page-content {
+    max-width: none !important;
+    width: 100% !important;
+  }
+}
+
 /* ── Melhoria de acessibilidade: focus visivel ── */
 button:focus-visible,
 a:focus-visible {

@@ -75,7 +75,7 @@ export default function AlterarEmailPage() {
         <h1 style={{ fontFamily: 'var(--font-fraunces)', color: '#fff', fontSize: '20px', margin: 0 }}>Alterar email</h1>
       </div>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 20px' }}>
+      <div className="page-content" style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 20px' }}>
 
         {sucesso ? (
           <div style={{ backgroundColor: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.25)', borderRadius: '16px', padding: '28px', textAlign: 'center' }}>

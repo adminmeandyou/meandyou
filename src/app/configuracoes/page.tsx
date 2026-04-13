@@ -262,7 +262,7 @@ export default function ConfiguracoesPage() {
         <h1 style={{ fontFamily: 'var(--font-fraunces)', color: 'var(--text)', fontSize: '20px', margin: 0 }}>Configurações</h1>
       </div>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', paddingTop: '20px' }}>
+      <div className="page-content" style={{ maxWidth: '480px', margin: '0 auto', paddingTop: '20px' }}>
 
         {/* ── Avatar + nome (editorial centrado) ── */}
         {profile && (

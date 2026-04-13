@@ -124,7 +124,7 @@ export default function SuportePage() {
         )}
       </header>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div className="page-content" style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
         {/* Badge plano */}
         <div style={{

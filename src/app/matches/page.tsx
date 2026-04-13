@@ -155,7 +155,7 @@ export default function MatchesPage() {
             margin: 0,
             letterSpacing: '-0.02em',
           }}>
-            ME&amp;YOU
+            Matches
           </h1>
           {totalUnread > 0 && (
             <span style={{

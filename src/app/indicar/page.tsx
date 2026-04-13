@@ -103,7 +103,7 @@ export default function IndicarPage() {
         </div>
       </header>
 
-      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '480px', margin: '0 auto' }}>
+      <div className="page-content" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', maxWidth: '480px', margin: '0 auto' }}>
 
         {/* O que voces ganham */}
         <div style={{ borderRadius: '16px', padding: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>

@@ -130,7 +130,7 @@ export default function MinhaAssinaturaPage() {
         <h1 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', margin: 0 }}>Minha assinatura</h1>
       </header>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <div className="page-content" style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
         {/* Mensagem de feedback */}
         {msg && (

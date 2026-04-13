@@ -95,7 +95,7 @@ export default function Page2FA() {
         <h1 style={{ fontFamily: 'var(--font-fraunces)', color: '#fff', fontSize: '20px', margin: 0 }}>Verificação em dois fatores</h1>
       </div>
 
-      <div style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 20px' }}>
+      <div className="page-content" style={{ maxWidth: '480px', margin: '0 auto', padding: '24px 20px' }}>
 
         {etapa === 'loading' && (
           <div style={{ display: 'flex', justifyContent: 'center', paddingTop: '60px' }}>
