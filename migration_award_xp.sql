@@ -6,6 +6,8 @@
 -- Execute no Supabase SQL Editor
 -- =============================================
 
+DROP FUNCTION IF EXISTS public.award_xp(uuid, text, integer);
+
 CREATE OR REPLACE FUNCTION public.award_xp(
   p_user_id    uuid,
   p_event_type text,
