@@ -171,7 +171,7 @@ export function CamaroteBadge() {
 
 export function LocationLabel({ city, state, distance, fontSize = '10px' }: { city: string | null; state: string | null; distance: number | null; fontSize?: string }) {
   return (
-    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'rgba(255,255,255,0.55)', fontSize, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase' }}>
+    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: 'rgba(255,255,255,0.55)', fontSize, fontWeight: 700, letterSpacing: '0.05em' }}>
       <MapPin size={fontSize === '10px' ? 9 : 12} strokeWidth={2} />
       {distance !== null ? (distance < 1 ? 'Menos de 1 km' : `${distance.toFixed(1)} km`) : ''}
       {distance !== null && city ? ' · ' : ''}
