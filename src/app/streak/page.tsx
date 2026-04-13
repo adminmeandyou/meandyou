@@ -307,7 +307,7 @@ export default function StreakPage() {
                         }}>
                           {reached
                             ? (claimable ? 'Coletar' : cfg.label)
-                            : '???'
+                            : 'Surpresa'
                           }
                         </span>
                       )}
