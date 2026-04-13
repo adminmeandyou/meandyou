@@ -96,9 +96,9 @@ const STORE_ITEMS: StoreItem[] = [
     new: true,
   },
   {
-    key: 'xp_bonus_3d', label: 'Bônus de XP (3 dias)', description: 'Ganhe o dobro de XP no streak por 3 dias',
+    key: 'xp_bonus_3d', label: 'Bônus de XP (7 dias)', description: 'Ganhe o dobro de XP em tudo por 7 dias',
     unit: 'ativação',
-    icon: <TrendingUp size={20} strokeWidth={1.5} />, baseFichas: 50, maxQty: 1,
+    icon: <TrendingUp size={20} strokeWidth={1.5} />, baseFichas: 100, maxQty: 1,
     accentColor: '#10b981', accentBg: 'rgba(16,185,129,0.10)', accentBorder: 'rgba(16,185,129,0.25)',
     new: true,
   },

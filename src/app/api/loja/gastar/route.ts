@@ -15,7 +15,7 @@ const ITEM_CONFIG: Record<string, { fichasPorUnidade: number; label: string }> =
   ghost_7d:      { fichasPorUnidade: 60,   label: 'Fantasma 7 dias' },
   ghost_35d:     { fichasPorUnidade: 220,  label: 'Fantasma 35 dias' },
   reveals_5:     { fichasPorUnidade: 50,   label: 'Ver quem curtiu (24h)' },
-  xp_bonus_3d:   { fichasPorUnidade: 50,   label: 'Bonus de XP (3 dias)' },
+  xp_bonus_3d:   { fichasPorUnidade: 100,  label: 'Bonus de XP (7 dias)' },
   verified_plus: { fichasPorUnidade: 200,  label: 'Selo Verificado Plus' },
   caixa_surpresa:{ fichasPorUnidade: 35,   label: 'Caixa Surpresa' },
   caixa_lendaria:{ fichasPorUnidade: 2250, label: 'Caixa Super Lendaria' },
@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
       await atualizarProfile(user.id, { curtidas_reveals_until: until })
 
     } else if (item_key === 'xp_bonus_3d') {
-      const until = new Date(Date.now() + 3 * 86400000).toISOString()
+      const until = new Date(Date.now() + 7 * 86400000).toISOString()
       await atualizarProfile(user.id, { xp_bonus_until: until })
 
     } else if (item_key === 'verified_plus') {

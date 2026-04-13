@@ -3,17 +3,36 @@ import { createClient } from '@/lib/supabase/server'
 
 // Mapa de XP base por tipo de evento
 const XP_TABLE: Record<string, number> = {
-  like:              5,
-  dislike:           1,
-  superlike:         15,
-  match:             25,
-  message_sent:      3,
-  profile_complete:  150,
-  photo_added:       10,
-  purchase:          50,
-  spin_roleta:       5,
-  login_streak:      10,
-  invite_friend:     100,
+  // Ações cotidianas
+  like:                  5,
+  dislike:               1,
+  superlike:             15,
+  message_sent:          3,
+  spin_roleta:           10,
+  login_streak:          10,
+  streak_claim:          15,
+  room_joined:           5,
+  boost_activated:       20,
+  // Ações sociais
+  match:                 25,
+  first_match:           100,
+  video_call:            30,
+  meeting_registered:    50,
+  // Perfil e crescimento
+  photo_added:           10,
+  profile_complete:      150,
+  onboarding_complete:   100,
+  identity_verified:     200,
+  invite_friend:         100,
+  // Loja
+  purchase:              50,
+  caixa_surpresa:        15,
+  caixa_lendaria:        100,
+  // Emblemas por raridade
+  badge_comum:           25,
+  badge_incomum:         75,
+  badge_raro:            200,
+  badge_lendario:        500,
 }
 
 export async function POST(req: NextRequest) {
