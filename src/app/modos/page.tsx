@@ -818,6 +818,7 @@ const MODES_CONFIG = [
     subtitle: 'Novos olhares, sem filtros.',
     bg: '#0d0810',
     img: '/images/modos/descobrir.jpg',
+    imgPosition: 'center center',
     accent: 'rgba(225,29,72,0.15)',
   },
   {
@@ -826,6 +827,7 @@ const MODES_CONFIG = [
     subtitle: 'Encontre a peca que falta.',
     bg: '#080a10',
     img: '/images/modos/busca.jpg',
+    imgPosition: 'center top',
     accent: 'rgba(96,165,250,0.10)',
     badge: null as string | null,
   },
@@ -835,6 +837,7 @@ const MODES_CONFIG = [
     subtitle: 'Conversas coletivas ao vivo.',
     bg: '#060e0a',
     img: '/images/modos/salas.jpg',
+    imgPosition: 'center center',
     accent: 'rgba(46,196,160,0.10)',
     badge: 'Plus+' as string | null,
   },
@@ -844,6 +847,7 @@ const MODES_CONFIG = [
     subtitle: 'A nossa recomendação fatal.',
     bg: '#100900',
     img: '/images/modos/match-dia.jpg',
+    imgPosition: 'center center',
     accent: 'rgba(245,158,11,0.12)',
     badge: null as string | null,
   },
@@ -902,7 +906,7 @@ function ModesHubView({ userPlan, onSelect, onCamarote }: {
             <img
               src={m.img}
               alt={m.label}
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: 'grayscale(0.2)' }}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: m.imgPosition ?? 'center center', filter: 'grayscale(0.2)' }}
             />
             {/* Vinheta noir na base */}
             <div style={{
