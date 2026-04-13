@@ -1963,7 +1963,7 @@ function BuscaInner() {
       const data = await res.json()
       if (data?.success) {
         haptics.success()
-        toast.success('Boost ativado! Você está em destaque por 30 minutos.')
+        toast.success('Boost ativado! Você está em destaque por 1 hora.')
         setBoostUntil(new Date(data.active_until))
         setBoostAmount(b => b - 1)
       } else if (data?.reason === 'already_active') {

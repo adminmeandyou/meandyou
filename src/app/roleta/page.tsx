@@ -6,7 +6,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Ticket, Loader2, Star, Zap, Search, RotateCcw, Gift, Crown, Trophy, TrendingUp, Eye, X } from 'lucide-react'
+import { ArrowLeft, Ticket, Loader2, Star, Zap, Search, RotateCcw, Gift, Crown, Trophy, TrendingUp, Eye, X, Flame } from 'lucide-react'
 import { useAppHeader } from '@/contexts/AppHeaderContext'
 import { useToast } from '@/components/Toast'
 
@@ -135,6 +135,7 @@ export default function RoletaPage() {
   const [userXp, setUserXp]               = useState(0)
   const [userLevel, setUserLevel]         = useState(0)
   const [xpBonusActive, setXpBonusActive] = useState(false)
+  const [currentStreak, setCurrentStreak] = useState(0)
   const [spinning, setSpinning]           = useState(false)
   const [result, setResult]               = useState<SpinResult | null>(null)
   const [history, setHistory]             = useState<any[]>([])
@@ -183,10 +184,11 @@ export default function RoletaPage() {
   async function loadData() {
     setLoading(true)
     const today = new Date().toISOString().split('T')[0]
-    const [{ data: tk }, { data: hist }, { data: profile }] = await Promise.all([
+    const [{ data: tk }, { data: hist }, { data: profile }, { data: streakData }] = await Promise.all([
       supabase.from('user_tickets').select('amount').eq('user_id', user!.id).single(),
       supabase.from('roleta_history').select('reward_type, reward_amount, created_at').eq('user_id', user!.id).order('created_at', { ascending: false }).limit(10),
       supabase.from('profiles').select('xp, xp_level, xp_bonus_until').eq('id', user!.id).single(),
+      supabase.from('daily_streaks').select('current_streak').eq('user_id', user!.id).single(),
     ])
     const { count } = await supabase.from('roleta_history').select('*', { count: 'exact', head: true }).eq('user_id', user!.id).gte('created_at', `${today}T00:00:00`)
     setTickets(tk?.amount ?? 0)
@@ -195,6 +197,7 @@ export default function RoletaPage() {
     setUserXp(profile?.xp ?? 0)
     setUserLevel(profile?.xp_level ?? 0)
     setXpBonusActive(profile?.xp_bonus_until ? new Date(profile.xp_bonus_until) > new Date() : false)
+    setCurrentStreak(streakData?.current_streak ?? 0)
     setLoading(false)
   }
 
@@ -603,6 +606,17 @@ export default function RoletaPage() {
         )
       })()}
 
+      {/* Streak */}
+      {!loading && currentStreak > 0 && (
+        <div style={{ margin: '8px 20px 0', padding: '11px 16px', backgroundColor: 'rgba(245,158,11,0.07)', border: '1px solid rgba(245,158,11,0.20)', borderRadius: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <Flame size={15} color="#F59E0B" strokeWidth={1.5} />
+            <span style={{ fontSize: 13, fontWeight: 700, color: '#F59E0B' }}>{currentStreak} dias seguidos</span>
+          </div>
+          <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.40)' }}>streak ativo — mais chances de raros</span>
+        </div>
+      )}
+
       <div style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '28px', maxWidth: '600px', margin: '0 auto' }}>
 
         {/* ── Roleta ─────────────────────────────────────────────────── */}
@@ -656,7 +670,7 @@ export default function RoletaPage() {
             ) : spinsLeft === 0 ? (
               <><Ticket size={16} strokeWidth={1.5} />Limite diário, renova em {countdown}</>
             ) : (
-              <><Zap size={16} strokeWidth={2} />Girar (1 ficha)</>
+              <><Zap size={16} strokeWidth={2} />Girar (1 ticket)</>
             )}
           </button>
 
@@ -724,7 +738,7 @@ export default function RoletaPage() {
           <p style={{ fontSize: '13px', color: 'var(--muted)', margin: '0 0 14px' }}>Quer mais giros?</p>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
             <a href="/indicar" style={{ padding: '9px 18px', borderRadius: '12px', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', color: 'var(--muted)', fontSize: '13px', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', fontWeight: 600 }}>
-              Indicar amigos (+5 fichas)
+              Indicar amigos (+5 tickets)
             </a>
             <a href="/streak" style={{ padding: '9px 18px', borderRadius: '12px', backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', color: 'var(--accent)', fontSize: '13px', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', fontWeight: 600 }}>
               Prêmios diários

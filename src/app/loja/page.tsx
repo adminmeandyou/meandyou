@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import {
   Star, Zap, ArrowLeft, CheckCircle, Loader2, ShoppingBag,
   Search, RotateCcw, Coins, Plus, Ghost, Eye, Gift, BadgeCheck,
-  TrendingUp, X, Package, ChevronRight, ChevronDown, Backpack, Crown,
+  TrendingUp, X, Package, ChevronRight, ChevronDown, Backpack, Crown, Ticket,
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
@@ -54,7 +54,7 @@ const STORE_ITEMS: StoreItem[] = [
     balanceKey: 'superlikes',
   },
   {
-    key: 'boost', label: 'Boost', description: '30 min em destaque na sua região',
+    key: 'boost', label: 'Boost', description: '1 hora em destaque na sua região',
     unit: 'Boost',
     icon: <Zap size={20} strokeWidth={1.5} />, baseFichas: 40, maxQty: 5,
     accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
@@ -135,8 +135,9 @@ const STORE_ITEMS: StoreItem[] = [
 
 // ─── Config visual dos premios da caixa surpresa ─────────────────────────
 const SURPRESA_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  ticket:        { label: 'Ficha da Roleta', color: '#a855f7', bg: 'rgba(168,85,247,0.15)', icon: <Gift size={44} color="#a855f7" strokeWidth={1.5} /> },
-  supercurtida:  { label: 'SuperCurtida',        color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <Star size={44} color="#F59E0B" strokeWidth={1.5} /> },
+  fichas:        { label: 'Fichas',           color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <Coins size={44} color="#F59E0B" strokeWidth={1.5} /> },
+  ticket:        { label: 'Fichas',           color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <Coins size={44} color="#F59E0B" strokeWidth={1.5} /> },
+  supercurtida:  { label: 'SuperCurtida',     color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <Star size={44} color="#F59E0B" strokeWidth={1.5} /> },
   boost:         { label: 'Boost',            color: '#E11D48', bg: 'rgba(225,29,72,0.15)',  icon: <Zap  size={44} color="#E11D48" strokeWidth={1.5} /> },
   lupa:          { label: 'Lupa',             color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: <Search size={44} color="#3b82f6" strokeWidth={1.5} /> },
   rewind:        { label: 'Desfazer',         color: '#a855f7', bg: 'rgba(168,85,247,0.15)', icon: <RotateCcw size={44} color="#a855f7" strokeWidth={1.5} /> },
@@ -284,6 +285,7 @@ export default function LojaPage() {
   const haptics = useHaptics()
 
   const [fichas, setFichas]               = useState(0)
+  const [tickets, setTickets]             = useState(0)
   const [superlikes, setSuperlikes]       = useState(0)
   const [boosts, setBoosts]               = useState(0)
   const [lupas, setLupas]                 = useState(0)
@@ -316,9 +318,10 @@ export default function LojaPage() {
   }, [user])
 
   async function loadBalance() {
-    const [{ data: fc }, { data: sl }, { data: bo }, { data: lp }, { data: rw }, { data: gh }] =
+    const [{ data: fc }, { data: tk }, { data: sl }, { data: bo }, { data: lp }, { data: rw }, { data: gh }] =
       await Promise.all([
         supabase.from('user_fichas').select('amount').eq('user_id', user!.id).single(),
+        supabase.from('user_tickets').select('amount').eq('user_id', user!.id).single(),
         supabase.from('user_superlikes').select('amount').eq('user_id', user!.id).single(),
         supabase.from('user_boosts').select('amount, active_until').eq('user_id', user!.id).single(),
         supabase.from('user_lupas').select('amount').eq('user_id', user!.id).single(),
@@ -327,6 +330,7 @@ export default function LojaPage() {
       ])
 
     setFichas(fc?.amount ?? 0)
+    setTickets(tk?.amount ?? 0)
     setSuperlikes(sl?.amount ?? 0)
     setBoosts(bo?.amount ?? 0)
     setBoostActiveUntil(bo?.active_until ?? null)
@@ -349,7 +353,7 @@ export default function LojaPage() {
     const data = await res.json()
     if (data?.success) {
       haptics.success()
-      toast.success('Boost ativado! Você está em destaque por 30 minutos')
+      toast.success('Boost ativado! Você está em destaque por 1 hora')
       setBoostActiveUntil(data.active_until)
       setBoosts((b) => b - 1)
     } else if (data?.reason === 'no_boosts') {
@@ -501,8 +505,9 @@ export default function LojaPage() {
             <div style={{ padding: '0 16px 16px', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', paddingTop: '12px' }}>
                 <BalanceItem icon={<Coins size={16} strokeWidth={1.5} color="#F59E0B" />} label="Fichas" value={fichas} />
+                <BalanceItem icon={<Ticket size={16} strokeWidth={1.5} color="#eab308" />} label="Tickets" value={tickets} />
                 <BalanceItem icon={<Star size={16} strokeWidth={1.5} color="#F59E0B" />} label="SuperCurtidas" value={superlikes} />
-                <BalanceItem icon={<Zap size={16} strokeWidth={1.5} color="var(--accent)" />} label="Boosts" value={boosts} active={!!boostIsActive} countdown={boostIsActive && boostActiveUntil ? boostActiveUntil : undefined} />
+                <BalanceItem icon={<Zap size={16} strokeWidth={1.5} color="var(--accent)" />} label="Boosts" value={boosts} active={!!boostIsActive} countdown={boostIsActive && boostActiveUntil ? boostActiveUntil : undefined} onActivate={handleActivateBoost} activating={activating} />
                 <BalanceItem icon={<Search size={16} strokeWidth={1.5} color="#3b82f6" />} label="Lupas" value={lupas} />
                 <BalanceItem icon={<RotateCcw size={16} strokeWidth={1.5} color="#a855f7" />} label="Rewinds" value={rewinds} />
                 <BalanceItem icon={<Ghost size={16} strokeWidth={1.5} color="#6b7280" />} label="Fantasma" value={ghostDaysLeft} suffix="d" active={!!ghostIsActive} countdown={ghostIsActive && ghostModeUntil ? ghostModeUntil : undefined} />
@@ -916,13 +921,15 @@ function useCountdownStr(until?: string): string {
   return str
 }
 
-function BalanceItem({ icon, label, value, active, suffix, countdown }: {
+function BalanceItem({ icon, label, value, active, suffix, countdown, onActivate, activating }: {
   icon: React.ReactNode
   label: string
   value: number
   active?: boolean
   suffix?: string
   countdown?: string
+  onActivate?: () => void
+  activating?: boolean
 }) {
   const timeLeft = useCountdownStr(countdown)
   return (
@@ -934,6 +941,15 @@ function BalanceItem({ icon, label, value, active, suffix, countdown }: {
       <p style={{ fontSize: '10px', color: 'var(--muted)', margin: 0, marginTop: '3px', textAlign: 'center', lineHeight: 1.2 }}>{label}</p>
       {active && timeLeft && (
         <p style={{ fontSize: '9px', color: active ? 'var(--accent)' : '#6b7280', margin: 0, marginTop: '2px', textAlign: 'center', fontWeight: 600, letterSpacing: '0.02em' }}>{timeLeft}</p>
+      )}
+      {onActivate && !active && value > 0 && (
+        <button
+          onClick={onActivate}
+          disabled={activating}
+          style={{ marginTop: '6px', padding: '3px 10px', borderRadius: '100px', border: 'none', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: '9px', fontWeight: 700, cursor: activating ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', opacity: activating ? 0.6 : 1 }}
+        >
+          {activating ? '...' : 'Ativar'}
+        </button>
       )}
     </div>
   )
