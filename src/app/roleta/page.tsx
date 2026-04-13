@@ -684,7 +684,7 @@ export default function RoletaPage() {
               ))}
             </div>
             <span style={{ fontSize: '12px', color: spinsLeft > 0 ? '#eab308' : 'var(--muted)' }}>
-              {spinsLeft > 0 ? `${spinsLeft} disponível${spinsLeft > 1 ? 'is' : ''}` : 'Esgotados'}
+              {spinsLeft > 0 ? `${spinsLeft} disponível${spinsLeft > 1 ? 'veis' : ''}` : 'Esgotados'}
             </span>
           </div>
         </div>
