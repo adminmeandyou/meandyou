@@ -88,6 +88,13 @@ export function useSwipe(profiles: ProfileResult[], onRefresh: () => void) {
 
       if (data?.is_match) {
         awardXp(user.id, 'match')
+        // Verifica se é o primeiro match — dá XP extra uma única vez
+        supabase
+          .from('matches')
+          .select('id', { count: 'exact', head: true })
+          .or(`user1.eq.${user.id},user2.eq.${user.id}`)
+          .eq('status', 'matched')
+          .then(({ count }) => { if (count === 1) awardXp(user.id, 'first_match') })
         setMatchResult({
           isMatch:        true,
           matchId:        data.match_id,
