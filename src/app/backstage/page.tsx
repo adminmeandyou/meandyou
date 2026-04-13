@@ -1087,7 +1087,7 @@ function ResgatesSection() {
       {/* Nota explicativa */}
       <div style={{ marginTop: 24, padding: '12px 14px', borderRadius: 12, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)' }}>
         <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.30)', lineHeight: 1.6, margin: 0 }}>
-          Ao resgatar, você paga R$ 49,90 para iniciar uma conversa por 30 dias. Isso não é garantia de encontro, apenas o início de uma conversa.
+          Ao resgatar, você usa 70 fichas para iniciar uma conversa por 30 dias. Isso não é garantia de encontro, apenas o início de uma conversa.
         </p>
       </div>
 
