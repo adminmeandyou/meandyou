@@ -14,8 +14,8 @@ const GENDER_LABELS: Record<string, string> = {
   trans_woman: 'Mulher Trans',
   nonbinary:   'Não-binário',
   fluid:       'Gênero Fluido',
-  masculino:   'Masculino',
-  feminino:    'Feminino',
+  masculino:   'Homem',
+  feminino:    'Mulher',
 }
 function formatGender(g: string) {
   return GENDER_LABELS[g] ?? g.charAt(0).toUpperCase() + g.slice(1)
