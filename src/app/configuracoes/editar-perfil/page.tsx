@@ -727,7 +727,7 @@ function TagsDestaqueSection({ userId, emblemasTitulos, tagsSelecionadas, bloque
   return (
     <div style={{ padding: '16px' }}>
       <p style={{ color: 'rgba(248,249,250,0.50)', fontSize: '13px', margin: '0 0 4px' }}>
-        Escolha <strong style={{ color: '#E11D48' }}>1 título</strong> de emblema conquistado para exibir no seu card. Assim como no Valorant, você pode usar o título de um emblema diferente do que exibe.
+        Escolha <strong style={{ color: '#E11D48' }}>1 título</strong> de emblema conquistado para exibir no seu card. Você pode usar o título de um emblema diferente do que exibe.
       </p>
       <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', margin: '0 0 16px' }}>
         {selecionadas.length}/1 selecionado
