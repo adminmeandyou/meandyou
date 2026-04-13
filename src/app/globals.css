@@ -417,26 +417,16 @@ html:has(.app-shell-outer) body {
   display: none;
 }
 
-/* ── TABLET/DESKTOP (768px+) — frame expande mas continua fixo na tela ── */
+/* ── TABLET/DESKTOP (768px+) — frame ocupa toda a largura disponível entre sidebar e painel direito ── */
 @media (min-width: 768px) {
   .app-frame {
-    max-width: 680px;
-  }
-}
-
-/* ── DESKTOP (1024px+) — sidebar ainda icon-only, frame maior ── */
-@media (min-width: 1024px) {
-  .app-frame {
-    max-width: 900px;
+    max-width: none;
+    width: 100%;
   }
 }
 
 /* ── DESKTOP LARGO (1280px+) — sidebar expande com labels ── */
 @media (min-width: 1280px) {
-  .app-frame {
-    max-width: 840px;
-  }
-
   .app-sidebar {
     width: 220px;
     align-items: flex-start;
@@ -455,13 +445,6 @@ html:has(.app-shell-outer) body {
 
   .sidebar-link {
     justify-content: flex-start !important;
-  }
-}
-
-/* ── DESKTOP EXTRA (1536px+) ── */
-@media (min-width: 1536px) {
-  .app-frame {
-    max-width: 960px;
   }
 }
 

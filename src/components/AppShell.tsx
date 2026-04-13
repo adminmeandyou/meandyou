@@ -84,7 +84,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           style={{
             flex: '1 1 0',
             display: 'flex',
-            justifyContent: 'center',
             minWidth: 0,
           }}
         >
