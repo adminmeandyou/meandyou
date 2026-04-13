@@ -85,12 +85,33 @@ export async function POST(req: NextRequest) {
       .eq('id', user.id)
       .single()
 
+    const newLevel: number = profile?.xp_level ?? 0
+    const levelUp: boolean = result?.level_up ?? false
+
+    // Se subiu de nível, verificar se é um marco e conceder o emblema (fire-and-forget)
+    const MILESTONE_LEVELS = [10, 25, 50, 100, 200, 300, 500]
+    if (levelUp && MILESTONE_LEVELS.includes(newLevel)) {
+      supabase
+        .from('badges')
+        .select('id')
+        .eq('condition_type', 'level_milestone')
+        .eq('is_active', true)
+        .contains('condition_value', { level: newLevel })
+        .maybeSingle()
+        .then(({ data: badge }) => {
+          if (!badge?.id) return
+          supabase
+            .from('user_badges')
+            .upsert({ user_id: user.id, badge_id: badge.id }, { onConflict: 'user_id,badge_id', ignoreDuplicates: true })
+        })
+    }
+
     return NextResponse.json({
       success: true,
       xp_awarded: result?.xp_awarded ?? finalXp,
       xp_total: profile?.xp ?? 0,
-      xp_level: profile?.xp_level ?? 0,
-      level_up: result?.level_up ?? false,
+      xp_level: newLevel,
+      level_up: levelUp,
       tickets_ganhos: result?.tickets_ganhos ?? 0,
     })
   } catch (e) {

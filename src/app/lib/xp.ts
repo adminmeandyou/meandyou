@@ -13,6 +13,18 @@ export function awardXp(userId: string, eventType: string): void {
         Authorization: `Bearer ${session.access_token}`,
       },
       body: JSON.stringify({ event_type: eventType }),
-    }).catch(() => {})
+    })
+      .then(res => res.json())
+      .then(data => {
+        if (data?.level_up && typeof window !== 'undefined') {
+          window.dispatchEvent(new CustomEvent('xp:levelup', {
+            detail: {
+              level:   data.xp_level   ?? 0,
+              tickets: data.tickets_ganhos ?? 0,
+            },
+          }))
+        }
+      })
+      .catch(() => {})
   }).catch(() => {})
 }
