@@ -165,8 +165,6 @@ export default function EditarPerfilPage() {
         <Acordeao
           id="status-hoje"
           titulo="Status de hoje"
-          badge="Livre"
-          badgeCor="#10b981"
           aberto={secaoAberta === 'status-hoje'}
           onToggle={() => toggle('status-hoje')}
         >
@@ -184,8 +182,6 @@ export default function EditarPerfilPage() {
         <Acordeao
           id="fotos-bio"
           titulo="Fotos e bio"
-          badge="Livre"
-          badgeCor="#10b981"
           aberto={secaoAberta === 'fotos-bio'}
           onToggle={() => toggle('fotos-bio')}
         >
@@ -202,8 +198,8 @@ export default function EditarPerfilPage() {
         <Acordeao
           id="tags-destaque"
           titulo="Tags de destaque"
-          badge={horasTagsBloqueadas > 0 ? `${horasTagsBloqueadas}h` : 'Livre agora'}
-          badgeCor={horasTagsBloqueadas > 0 ? '#f59e0b' : '#10b981'}
+          badge={horasTagsBloqueadas > 0 ? `${horasTagsBloqueadas}h` : undefined}
+          badgeCor={horasTagsBloqueadas > 0 ? '#f59e0b' : undefined}
           aberto={secaoAberta === 'tags-destaque'}
           onToggle={() => toggle('tags-destaque')}
         >
@@ -231,8 +227,8 @@ export default function EditarPerfilPage() {
         <Acordeao
           id="status-civil"
           titulo="Status civil"
-          badge={diasCamposBloqueados > 0 ? `${diasCamposBloqueados}d` : 'Livre agora'}
-          badgeCor={diasCamposBloqueados > 0 ? '#f59e0b' : '#10b981'}
+          badge={diasCamposBloqueados > 0 ? `${diasCamposBloqueados}d` : undefined}
+          badgeCor={diasCamposBloqueados > 0 ? '#f59e0b' : undefined}
           aberto={secaoAberta === 'status-civil'}
           onToggle={() => toggle('status-civil')}
         >
@@ -249,8 +245,8 @@ export default function EditarPerfilPage() {
         <Acordeao
           id="fisico"
           titulo="Características físicas"
-          badge={diasCamposBloqueados > 0 ? `${diasCamposBloqueados}d` : 'Livre agora'}
-          badgeCor={diasCamposBloqueados > 0 ? '#f59e0b' : '#10b981'}
+          badge={diasCamposBloqueados > 0 ? `${diasCamposBloqueados}d` : undefined}
+          badgeCor={diasCamposBloqueados > 0 ? '#f59e0b' : undefined}
           aberto={secaoAberta === 'fisico'}
           onToggle={() => toggle('fisico')}
         >
@@ -267,8 +263,8 @@ export default function EditarPerfilPage() {
         <Acordeao
           id="estilo-vida"
           titulo="Estilo de vida"
-          badge={diasCamposBloqueados > 0 ? `${diasCamposBloqueados}d` : 'Livre agora'}
-          badgeCor={diasCamposBloqueados > 0 ? '#f59e0b' : '#10b981'}
+          badge={diasCamposBloqueados > 0 ? `${diasCamposBloqueados}d` : undefined}
+          badgeCor={diasCamposBloqueados > 0 ? '#f59e0b' : undefined}
           aberto={secaoAberta === 'estilo-vida'}
           onToggle={() => toggle('estilo-vida')}
         >
@@ -285,8 +281,8 @@ export default function EditarPerfilPage() {
         <Acordeao
           id="valores"
           titulo="Valores e contexto"
-          badge={diasCamposBloqueados > 0 ? `${diasCamposBloqueados}d` : 'Livre agora'}
-          badgeCor={diasCamposBloqueados > 0 ? '#f59e0b' : '#10b981'}
+          badge={diasCamposBloqueados > 0 ? `${diasCamposBloqueados}d` : undefined}
+          badgeCor={diasCamposBloqueados > 0 ? '#f59e0b' : undefined}
           aberto={secaoAberta === 'valores'}
           onToggle={() => toggle('valores')}
         >
@@ -303,8 +299,8 @@ export default function EditarPerfilPage() {
         <Acordeao
           id="objetivos"
           titulo="O que busco"
-          badge={diasCamposBloqueados > 0 ? `${diasCamposBloqueados}d` : 'Livre agora'}
-          badgeCor={diasCamposBloqueados > 0 ? '#f59e0b' : '#10b981'}
+          badge={diasCamposBloqueados > 0 ? `${diasCamposBloqueados}d` : undefined}
+          badgeCor={diasCamposBloqueados > 0 ? '#f59e0b' : undefined}
           aberto={secaoAberta === 'objetivos'}
           onToggle={() => toggle('objetivos')}
         >
@@ -372,7 +368,7 @@ export default function EditarPerfilPage() {
 // ─── Acordeão ────────────────────────────────────────────────────────────────
 
 function Acordeao({ id, titulo, badge, badgeCor, aberto, onToggle, children }: {
-  id: string; titulo: string; badge: string; badgeCor: string
+  id: string; titulo: string; badge?: string; badgeCor?: string
   aberto: boolean; onToggle: () => void; children: React.ReactNode
 }) {
   return (
@@ -382,9 +378,11 @@ function Acordeao({ id, titulo, badge, badgeCor, aberto, onToggle, children }: {
         style={{ width: '100%', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', backgroundColor: aberto ? 'rgba(255,255,255,0.02)' : 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left', transition: 'background-color 0.15s' }}
       >
         <span style={{ color: '#F8F9FA', fontSize: '15px', fontWeight: 600, flex: 1 }}>{titulo}</span>
-        <span style={{ padding: '3px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, backgroundColor: `${badgeCor}18`, color: badgeCor, border: `1px solid ${badgeCor}30` }}>
-          {badge}
-        </span>
+        {badge && (
+          <span style={{ padding: '3px 10px', borderRadius: '100px', fontSize: '11px', fontWeight: 700, backgroundColor: `${badgeCor}18`, color: badgeCor, border: `1px solid ${badgeCor}30` }}>
+            {badge}
+          </span>
+        )}
         {aberto ? <ChevronUp size={16} color="rgba(255,255,255,0.35)" /> : <ChevronDown size={16} color="rgba(255,255,255,0.35)" />}
       </button>
       {aberto && <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)' }}>{children}</div>}
@@ -519,7 +517,7 @@ function FotosBioSection({ userId, profileData, onSaved }: {
       {/* Instrucao de fotos */}
       <div style={{ marginBottom: '12px', padding: '10px 12px', backgroundColor: 'rgba(225,29,72,0.06)', border: '1px solid rgba(225,29,72,0.15)', borderRadius: '12px' }}>
         <p style={{ color: 'rgba(248,249,250,0.65)', fontSize: '12px', lineHeight: '1.5', margin: 0 }}>
-          <strong style={{ color: '#F8F9FA' }}>Adicione até 6 fotos.</strong> As 3 primeiras são sugeridas: rosto, corpo inteiro de frente e corpo inteiro de lado. As demais são opcionais.
+          <strong style={{ color: '#F8F9FA' }}>Adicione até 6 fotos.</strong> Escolha as fotos que quiser. Conteúdo explícito não é permitido.
         </p>
       </div>
 

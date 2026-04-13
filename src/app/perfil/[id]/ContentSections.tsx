@@ -7,6 +7,18 @@ import {
 import type { EmblemaDef, StatusChip, DbBadge } from './types'
 import { getAparenciaTags, getEstiloTags, getPersonalidadeTags, getObjetivosTags } from './utils'
 
+const GENDER_LABELS: Record<string, string> = {
+  cis_man:     'Homem',
+  cis_woman:   'Mulher',
+  trans_man:   'Homem Trans',
+  trans_woman: 'Mulher Trans',
+  nonbinary:   'Não-binário',
+  fluid:       'Gênero Fluido',
+}
+function formatGender(g: string) {
+  return GENDER_LABELS[g] ?? g.charAt(0).toUpperCase() + g.slice(1).toLowerCase()
+}
+
 // ─── Status Chips ────────────────────────────────────────────────────────────
 
 export function StatusChips({ chips }: { chips: StatusChip[] }) {
@@ -93,7 +105,7 @@ export function InfoGrid({ age, city, state, gender, heightCm, weightKg, isOwnPr
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
         {age && <StatCard icon={<Calendar size={14} strokeWidth={1.5} />} label="Idade" value={`${age} anos`} />}
         {city && <StatCard icon={<MapPin size={14} strokeWidth={1.5} />} label="Cidade" value={`${city}${state ? `, ${state}` : ''}`} />}
-        {gender && <StatCard icon={<Eye size={14} strokeWidth={1.5} />} label="Gênero" value={gender} />}
+        {gender && <StatCard icon={<Eye size={14} strokeWidth={1.5} />} label="Gênero" value={formatGender(gender)} />}
         {heightCm && <StatCard icon={<Ruler size={14} strokeWidth={1.5} />} label="Altura" value={`${heightCm} cm`} />}
         {weightKg && <StatCard icon={<Weight size={14} strokeWidth={1.5} />} label="Peso" value={`${weightKg} kg`} />}
       </div>
