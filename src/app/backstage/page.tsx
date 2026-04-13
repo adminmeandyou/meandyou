@@ -1421,7 +1421,7 @@ function CamaroteAccessModal({
                 <p style={{ fontSize: 12, fontWeight: 700, color: G, letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 12px' }}>O que você recebe sendo resgatado</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {[
-                    'Um assinante Black paga R$ 15 para iniciar uma conversa com você',
+                    'Um assinante Black usa fichas para iniciar uma conversa com você',
                     'Você e o resgatador terão acesso ao chat exclusivo do Camarote por 30 dias',
                     'O que acontece depende da conversa entre vocês, não é garantia de nada',
                     'Assinantes Black da sua categoria são notificados assim que você pede acesso',
