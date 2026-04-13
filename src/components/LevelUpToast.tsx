@@ -84,8 +84,8 @@ function SingleLevelUpToast({ level, tickets, onDismiss }: LevelUpEvent & { onDi
             flexDirection: 'column',
             gap: 0,
           }}>
-            <span style={{ fontSize: 22, lineHeight: 1 }}>⭐</span>
-            <span style={{ fontSize: 13, fontWeight: 800, color: '#F59E0B', lineHeight: 1.2, fontFamily: 'var(--font-jakarta)' }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: '#F59E0B', lineHeight: 1, fontFamily: 'var(--font-jakarta)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>LVL</span>
+            <span style={{ fontSize: 22, fontWeight: 800, color: '#F59E0B', lineHeight: 1.1, fontFamily: 'var(--font-fraunces)' }}>
               {level}
             </span>
           </div>
