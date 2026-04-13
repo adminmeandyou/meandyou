@@ -873,7 +873,8 @@ function ResgatesSection() {
   const [ratingFor, setRatingFor] = useState<{ id: string; otherId: string } | null>(null)
   const [ratingSubmitting, setRatingSubmitting] = useState(false)
   const [ratedIds, setRatedIds] = useState<Set<string>>(new Set())
-  const [camaroteCheckoutOpen, setCamaroteCheckoutOpen] = useState(false)
+  const [resgateLoading, setResgateLoading] = useState<string | null>(null)
+  const [resgateErro, setResgateErro] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) return
@@ -917,8 +918,26 @@ function ResgatesSection() {
     setRatingSubmitting(false)
   }
 
-  function handleResgate(_req: AccessRequest) {
-    setCamaroteCheckoutOpen(true)
+  async function handleResgate(req: AccessRequest) {
+    if (!user || resgateLoading) return
+    setResgateLoading(req.id)
+    setResgateErro(null)
+    const { data, error } = await supabase.rpc('rescue_access_request', {
+      p_rescuer_id: user.id,
+      p_request_id: req.id,
+    })
+    setResgateLoading(null)
+    if (error || !data?.ok) {
+      const msg = data?.error === 'fichas_insuficientes'
+        ? 'Fichas insuficientes. Compre mais na loja.'
+        : data?.error === 'pedido_ja_resgatado'
+        ? 'Este pedido já foi resgatado por outra pessoa.'
+        : 'Erro ao resgatar. Tente novamente.'
+      setResgateErro(msg)
+      return
+    }
+    // Atualiza a lista
+    load()
   }
 
   function daysLeft(expiresAt: string) {
@@ -1008,23 +1027,32 @@ function ResgatesSection() {
               {/* Botao de resgate */}
               <button
                 onClick={() => handleResgate(req)}
+                disabled={!!resgateLoading}
                 style={{
                   flexShrink: 0,
                   padding: '8px 12px',
                   borderRadius: 12,
                   border: 'none',
-                  background: `linear-gradient(135deg, #c9a84c, ${G})`,
+                  background: resgateLoading === req.id ? 'rgba(245,158,11,0.4)' : `linear-gradient(135deg, #c9a84c, ${G})`,
                   color: '#fff',
                   fontFamily: 'var(--font-jakarta)',
                   fontWeight: 700,
                   fontSize: 11,
-                  cursor: 'pointer',
+                  cursor: resgateLoading ? 'default' : 'pointer',
                   textAlign: 'center',
                   lineHeight: 1.4,
+                  minWidth: 72,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 2,
                 }}
               >
-                Resgatar<br />
-                <span style={{ fontWeight: 500 }}>R$ 15,00</span>
+                {resgateLoading === req.id
+                  ? <Loader2 size={14} style={{ animation: 'ui-spin 1s linear infinite' }} />
+                  : <><span>Resgatar</span><span style={{ fontWeight: 500 }}>70 fichas</span></>
+                }
               </button>
             </div>
           ))}
@@ -1091,15 +1119,14 @@ function ResgatesSection() {
         </p>
       </div>
 
-      {/* Checkout Camarote */}
-      {camaroteCheckoutOpen && user && (
-        <CheckoutModal
-          open={camaroteCheckoutOpen}
-          onClose={() => setCamaroteCheckoutOpen(false)}
-          type="camarote"
-          description="Camarote Black: Acesso por 30 dias"
-          metadata={{ resgatado_id: user.id }}
-        />
+      {/* Erro de resgate */}
+      {resgateErro && (
+        <div style={{ margin: '12px 0', padding: '12px 14px', borderRadius: 12, background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
+          <p style={{ fontSize: 13, color: '#f87171', margin: 0, lineHeight: 1.5 }}>{resgateErro}</p>
+          <button onClick={() => setResgateErro(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
+            <X size={14} color="#f87171" />
+          </button>
+        </div>
       )}
 
       {/* Overlay de avaliacao */}
@@ -1374,15 +1401,13 @@ function CamaroteAccessModal({
     if (!user || !selectedCat || !accepted) return
     setLoading(true)
     try {
-      await supabase.rpc('create_access_request', {
+      const { error } = await supabase.rpc('create_access_request', {
         p_requester_id: user.id,
-        p_target_id: null,
-        p_type: selectedCat,
+        p_category: selectedCat,
         p_tier: plan === 'plus' ? 'premium' : 'basic',
       })
-      setSent(true)
+      if (!error) setSent(true)
     } catch {
-      // RPC pode nao existir ainda (Fase 2)
       setSent(true)
     }
     setLoading(false)
