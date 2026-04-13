@@ -88,6 +88,10 @@ export async function POST(req: NextRequest) {
       awardBadges(matchData.user1, ['video_calls_gte', 'video_minutes_gte']).catch(() => {})
       awardBadges(matchData.user2, ['video_calls_gte', 'video_minutes_gte']).catch(() => {})
 
+      // XP: videochamada realizada (fire-and-forget para ambos)
+      void supabaseAdmin.rpc('award_xp', { p_user_id: matchData.user1, p_event_type: 'video_call', p_base_xp: 30 }).then(() => {})
+      void supabaseAdmin.rpc('award_xp', { p_user_id: matchData.user2, p_event_type: 'video_call', p_base_xp: 30 }).then(() => {})
+
       console.log(`Videochamada finalizada — match ${matchId}, ${duracaoMinutos} min`)
       return NextResponse.json({ success: true })
     }

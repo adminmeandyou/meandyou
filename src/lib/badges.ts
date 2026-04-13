@@ -210,13 +210,27 @@ export async function awardBadges(userId: string, triggers: BadgeTrigger | Badge
 
   const awarded: any[] = []
 
+  // Mapa de raridade → { event_type, base_xp }
+  const RARITY_XP: Record<string, { event: string; xp: number }> = {
+    comum:    { event: 'badge_comum',    xp: 25  },
+    incomum:  { event: 'badge_incomum',  xp: 75  },
+    raro:     { event: 'badge_raro',     xp: 200 },
+    lendario: { event: 'badge_lendario', xp: 500 },
+  }
+
   for (const badge of toCheck) {
     const qualifies = await meetsCondition(userId, badge.condition_type, badge.condition_value, badge.condition_extra, profile)
     if (qualifies) {
       const { error } = await supabase
         .from('user_badges')
         .insert({ user_id: userId, badge_id: badge.id })
-      if (!error) awarded.push(badge)
+      if (!error) {
+        awarded.push(badge)
+        // XP pelo emblema (fire-and-forget por raridade)
+        const rarity: string = badge.rarity?.toLowerCase?.() ?? 'comum'
+        const { event: xpEvent, xp: xpBase } = RARITY_XP[rarity] ?? RARITY_XP['comum']
+        void supabase.rpc('award_xp', { p_user_id: userId, p_event_type: xpEvent, p_base_xp: xpBase }).then(() => {})
+      }
     }
   }
 

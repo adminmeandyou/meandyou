@@ -26,6 +26,12 @@ export async function POST(req: NextRequest) {
     }
 
     const result = Array.isArray(data) ? data[0] : data
+
+    // XP: resgate de streak (fire-and-forget — só se o resgate teve sucesso)
+    if (result?.success) {
+      void supabaseAdmin.rpc('award_xp', { p_user_id: user.id, p_event_type: 'streak_claim', p_base_xp: 15 }).then(() => {})
+    }
+
     return NextResponse.json(result ?? { success: false, reason: 'sem_resultado' })
   } catch (err) {
     console.error('[streak/resgatar] erro interno:', err)

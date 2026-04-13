@@ -155,6 +155,8 @@ export async function POST(req: NextRequest) {
       else if (chosen.reward_type === 'boost') await incrementarSaldo('user_boosts', user.id, chosen.reward_amount)
       else if (chosen.reward_type === 'lupa') await incrementarSaldo('user_lupas', user.id, chosen.reward_amount)
       else if (chosen.reward_type === 'rewind') await incrementarSaldo('user_rewinds', user.id, chosen.reward_amount)
+      // XP: abriu caixa surpresa
+      void supabaseAdmin.rpc('award_xp', { p_user_id: user.id, p_event_type: 'caixa_surpresa', p_base_xp: 15 }).then(() => {})
       return NextResponse.json({ success: true, surpresa: { reward_type: chosen.reward_type, reward_amount: chosen.reward_amount } })
 
     } else if (item_key === 'caixa_lendaria') {
@@ -186,6 +188,8 @@ export async function POST(req: NextRequest) {
         .from('user_badges')
         .upsert({ user_id: user.id, badge_id: badge.id }, { onConflict: 'user_id,badge_id', ignoreDuplicates: true })
 
+      // XP: abriu caixa lendaria
+      void supabaseAdmin.rpc('award_xp', { p_user_id: user.id, p_event_type: 'caixa_lendaria', p_base_xp: 100 }).then(() => {})
       return NextResponse.json({ success: true, caixa_lendaria: { type: 'badge', badge_id: badge.id, badge_name: badge.name, badge_icon: badge.icon_url } })
     }
     } catch (creditErr) {

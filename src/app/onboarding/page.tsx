@@ -56,6 +56,19 @@ export default function OnboardingPage() {
       }
       // Garante localização salva mesmo se o usuário pulou o passo de GPS
       saveUserLocation(user.id)
+
+      // XP: onboarding concluído (fire-and-forget)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.access_token) {
+          fetch('/api/xp/award', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ event_type: 'onboarding_complete' }),
+          }).catch(() => {})
+        }
+      } catch { /* silencioso */ }
+
       // Mostra o tutorial de modos antes de ir para editar-perfil
       window.location.href = '/modos-guia?next=/configuracoes/editar-perfil'
     } catch {

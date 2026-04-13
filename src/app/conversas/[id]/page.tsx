@@ -478,6 +478,18 @@ export default function ChatPage() {
       localStorage.setItem('meandyou_meetings', JSON.stringify([...existing, record]))
     } catch { /* ignore */ }
 
+    // XP: encontro registrado (fire-and-forget)
+    try {
+      const { data: { session: xpSession } } = await supabase.auth.getSession()
+      if (xpSession?.access_token) {
+        fetch('/api/xp/award', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${xpSession.access_token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event_type: 'meeting_registered' }),
+        }).catch(() => {})
+      }
+    } catch { /* silencioso */ }
+
     setMeetingSaved(true)
     setTimeout(() => {
       setShowMeetingModal(false)

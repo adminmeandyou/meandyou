@@ -42,5 +42,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Erro ao ativar boost' }, { status: 500 })
   }
 
+  // XP: boost ativado
+  void supabaseAdmin.rpc('award_xp', { p_user_id: user.id, p_event_type: 'boost_activated', p_base_xp: 20 }).then(() => {})
+
   return NextResponse.json(data)
 }

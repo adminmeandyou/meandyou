@@ -65,7 +65,7 @@ export async function POST(req: NextRequest) {
     const bonusAtivo = profileBonus?.xp_bonus_until && new Date(profileBonus.xp_bonus_until) > new Date()
     const finalXp = bonusAtivo ? baseXp * 2 : baseXp
 
-    const { data: xpAwarded, error } = await supabase.rpc('award_xp', {
+    const { data: rpcResult, error } = await supabase.rpc('award_xp', {
       p_user_id:    user.id,
       p_event_type: event_type,
       p_base_xp:    finalXp,
@@ -74,6 +74,9 @@ export async function POST(req: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    // award_xp retorna objeto com xp_awarded, level_up, tickets_ganhos
+    const result = Array.isArray(rpcResult) ? rpcResult[0] : rpcResult
 
     // Buscar dados atualizados
     const { data: profile } = await supabase
@@ -84,9 +87,11 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      xp_awarded: xpAwarded,
+      xp_awarded: result?.xp_awarded ?? finalXp,
       xp_total: profile?.xp ?? 0,
       xp_level: profile?.xp_level ?? 0,
+      level_up: result?.level_up ?? false,
+      tickets_ganhos: result?.tickets_ganhos ?? 0,
     })
   } catch (e) {
     console.error('[XP Award]', e)

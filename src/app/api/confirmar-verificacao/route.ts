@@ -124,6 +124,9 @@ export async function POST(req: NextRequest) {
     // Concede emblema Identidade Verificada imediatamente
     awardBadges(userId, 'on_verify').catch(() => {})
 
+    // XP: identidade verificada
+    void supabase.rpc('award_xp', { p_user_id: userId, p_event_type: 'identity_verified', p_base_xp: 200 }).then(() => {})
+
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error('Erro em confirmar-verificacao:', err)

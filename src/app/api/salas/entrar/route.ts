@@ -104,5 +104,8 @@ export async function POST(req: NextRequest) {
   // Verifica emblemas Visita → Ímã Social (salas únicas visitadas) — fire-and-forget
   awardBadges(user.id, 'sala_unique_gte').catch(() => {})
 
+  // XP: entrou em uma sala
+  void supabaseAdmin.rpc('award_xp', { p_user_id: user.id, p_event_type: 'room_joined', p_base_xp: 5 }).then(() => {})
+
   return NextResponse.json({ ok: true, nickname: res.nickname })
 }
