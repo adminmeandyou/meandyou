@@ -27,9 +27,14 @@ export async function POST(req: NextRequest) {
 
     const result = Array.isArray(data) ? data[0] : data
 
-    // XP: resgate de streak (fire-and-forget — só se o resgate teve sucesso)
     if (result?.success) {
-      void supabaseAdmin.rpc('award_xp', { p_user_id: user.id, p_event_type: 'streak_claim', p_base_xp: 15 }).then(() => {})
+      if (result.reward_type === 'xp') {
+        // Tipo xp: usa reward_amount do calendário (ex: 50 XP nos dias finais)
+        void supabaseAdmin.rpc('award_xp', { p_user_id: user.id, p_event_type: 'streak_claim', p_base_xp: result.reward_amount ?? 50 }).then(() => {})
+      } else {
+        // Outros tipos: XP fixo de 15 por manter o streak
+        void supabaseAdmin.rpc('award_xp', { p_user_id: user.id, p_event_type: 'streak_claim', p_base_xp: 15 }).then(() => {})
+      }
     }
 
     return NextResponse.json(result ?? { success: false, reason: 'sem_resultado' })
