@@ -590,7 +590,7 @@ export default function RoletaPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <TrendingUp size={14} color="#10b981" strokeWidth={1.5} />
                 <span style={{ fontSize: 12, fontWeight: 700, color: '#10b981' }}>
-                  Nivel {userLevel}{userLevel < 500 ? ` → ${userLevel + 1}` : ' MAX'}
+                  Nível {userLevel}{userLevel < 500 ? ` → ${userLevel + 1}` : ' MAX'}
                 </span>
                 {xpBonusActive && <span style={{ fontSize: 10, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.30)', borderRadius: 100, padding: '1px 7px' }}>XP x2</span>}
               </div>
@@ -601,7 +601,7 @@ export default function RoletaPage() {
             </div>
             {userLevel < 500 && (
               <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.30)', margin: '6px 0 0', textAlign: 'right' }}>
-                {(levelXpEnd - userXp).toLocaleString('pt-BR')} XP para nivel {userLevel + 1}
+                {(levelXpEnd - userXp).toLocaleString('pt-BR')} XP para nível {userLevel + 1}
               </p>
             )}
           </div>
@@ -717,7 +717,7 @@ export default function RoletaPage() {
         {/* ── Histórico ───────────────────────────────────────────────── */}
         {history.length > 0 && (
           <div style={{ width: '100%' }}>
-            <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '10px' }}>Ultimos giros</p>
+            <p style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--muted)', marginBottom: '10px' }}>Últimos giros</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {history.map((h, i) => {
                 const cfg = PRIZE_CONFIG[h.reward_type] ?? PRIZE_CONFIG['fichas']
