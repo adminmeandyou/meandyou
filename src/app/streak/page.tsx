@@ -17,7 +17,7 @@ const REWARD_CONFIG: Record<string, {
   boost:         { color: '#b8f542', bg: 'rgba(184,245,66,0.10)',  border: 'rgba(184,245,66,0.30)',  label: 'Boost',           icon: <Zap size={18} strokeWidth={1.5} /> },
   lupa:          { color: '#3b82f6', bg: 'rgba(59,130,246,0.10)',  border: 'rgba(59,130,246,0.30)',  label: 'Lupa',            icon: <Search size={18} strokeWidth={1.5} /> },
   rewind:        { color: '#a855f7', bg: 'rgba(168,85,247,0.10)',  border: 'rgba(168,85,247,0.30)',  label: 'Desfazer',        icon: <RotateCcw size={18} strokeWidth={1.5} /> },
-  invisivel_1d:  { color: '#9ca3af', bg: 'rgba(156,163,175,0.10)', border: 'rgba(156,163,175,0.30)', label: 'Invisivel 1d',    icon: <Ghost size={18} strokeWidth={1.5} /> },
+  invisivel_1d:  { color: '#9ca3af', bg: 'rgba(156,163,175,0.10)', border: 'rgba(156,163,175,0.30)', label: 'Invisível 1d',    icon: <Ghost size={18} strokeWidth={1.5} /> },
   plan_plus_1d:  { color: '#8b5cf6', bg: 'rgba(139,92,246,0.15)',  border: 'rgba(139,92,246,0.40)',  label: '1 dia Plus',      icon: <Crown size={18} strokeWidth={1.5} /> },
   plan_black_1d: { color: '#F8F9FA', bg: 'rgba(255,255,255,0.10)', border: 'rgba(255,255,255,0.30)', label: '1 dia Black',     icon: <Crown size={18} strokeWidth={1.5} /> },
   fichas:        { color: '#F59E0B', bg: 'rgba(245,158,11,0.10)',  border: 'rgba(245,158,11,0.30)',  label: 'Fichas',          icon: <Coins size={18} strokeWidth={1.5} /> },
@@ -28,7 +28,7 @@ type CalendarEntry = { day_number: number; reward_type: string; reward_amount: n
 type StreakData = { current_streak: number; longest_streak: number; last_login_date: string | null }
 
 function getPhaseInfo(day: number): { label: string; color: string; icon: React.ReactNode } {
-  if (day >= 30) return { label: 'Lendario',  color: '#f97316', icon: <Flame size={13} strokeWidth={1.5} /> }
+  if (day >= 30) return { label: 'Lendário',  color: '#f97316', icon: <Flame size={13} strokeWidth={1.5} /> }
   if (day >= 21) return { label: 'Dedicado',  color: '#8b5cf6', icon: <Dumbbell size={13} strokeWidth={1.5} /> }
   if (day >= 14) return { label: 'Em forma',  color: '#b8f542', icon: <Zap size={13} strokeWidth={1.5} /> }
   if (day >= 7)  return { label: 'Crescendo', color: '#3b82f6', icon: <TrendingUp size={13} strokeWidth={1.5} /> }
@@ -83,8 +83,8 @@ export default function StreakPage() {
     })
     const result = res.ok ? await res.json().catch(() => null) : null
     if (!res.ok || !result?.success) {
-      const msgs: Record<string, string> = { already_claimed: 'Ja resgatado hoje', not_reached: 'Voce ainda nao chegou neste dia.', streak_reset: 'Seu streak foi zerado. Continue assim!' }
-      setClaimMsg({ day: dayNumber, text: msgs[result?.reason ?? ''] ?? 'Nao foi possivel resgatar.' })
+      const msgs: Record<string, string> = { already_claimed: 'Já resgatado hoje', not_reached: 'Você ainda não chegou neste dia.', streak_reset: 'Seu streak foi zerado. Continue assim!' }
+      setClaimMsg({ day: dayNumber, text: msgs[result?.reason ?? ''] ?? 'Não foi possível resgatar.' })
     } else {
       setCalendar((prev) => prev.map((e) => (e.day_number === dayNumber ? { ...e, claimed: true } : e)))
       const entry = calendar.find((e) => e.day_number === dayNumber)
@@ -136,7 +136,7 @@ export default function StreakPage() {
             <Heart size={13} color="#E11D48" strokeWidth={2} fill="rgba(225,29,72,0.3)" />
           </div>
           <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: '17px', fontWeight: 700, color: '#F8F9FA', letterSpacing: '-0.01em', lineHeight: 1 }}>
-            <span style={{ color: '#F8F9FA' }}>ME&amp;</span><span style={{ color: '#E11D48' }}>YOU</span>
+            MeAnd<span style={{ color: '#E11D48' }}>You</span>
           </span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 11px', borderRadius: '100px', backgroundColor: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.18)', flexShrink: 0 }}>
@@ -180,7 +180,7 @@ export default function StreakPage() {
               <span style={{ fontSize: 11, color: phase.color, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{phase.label}</span>
             </div>
             <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.55)', marginTop: 12, fontFamily: 'var(--font-jakarta)' }}>
-              Continue a chama acesa para premios exclusivos.
+              Continue a chama acesa para prêmios exclusivos.
             </p>
             {/* Barra de progresso */}
             <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center' }}>
@@ -207,7 +207,7 @@ export default function StreakPage() {
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
               <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, fontWeight: 700, color: '#F8F9FA', margin: 0, letterSpacing: '-0.01em' }}>
-                Premios diarios
+                Prêmios diários
               </h2>
               <span style={{ fontSize: 9, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: '#F59E0B', fontFamily: 'var(--font-jakarta)', padding: '3px 8px', borderRadius: '100px', backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.20)' }}>
                 {monthLabel.toUpperCase()}
@@ -218,7 +218,7 @@ export default function StreakPage() {
               <div style={{ textAlign: 'center', padding: '40px 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
                 <Lock size={28} color="rgba(255,255,255,0.15)" strokeWidth={1.5} />
                 <p style={{ color: 'var(--muted)', fontSize: '14px', margin: 0 }}>Continue entrando no app todo dia</p>
-                <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '12px', margin: 0 }}>Seu calendario sera gerado automaticamente</p>
+                <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: '12px', margin: 0 }}>Seu calendário será gerado automaticamente</p>
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
@@ -328,13 +328,13 @@ export default function StreakPage() {
           {/* Motivacao por fase */}
           {(() => {
             const msgs = [
-              { min: 0,  max: 1,  text: 'Primeiro passo dado! Volte amanha para manter sua sequencia.', color: 'rgba(248,249,250,0.40)' },
-              { min: 2,  max: 3,  text: 'Voce esta construindo um habito! Continue assim.', color: '#3b82f6' },
-              { min: 4,  max: 6,  text: 'Quase uma semana! Sua dedicacao esta rendendo frutos.', color: '#3b82f6' },
-              { min: 7,  max: 13, text: 'Uma semana completa! Voce esta entrando no ritmo.', color: '#ec4899' },
-              { min: 14, max: 20, text: 'Duas semanas! Os melhores premios estao chegando: fichas e muito mais.', color: '#b8f542' },
-              { min: 21, max: 29, text: 'Tres semanas seguidas! Poucos chegam ate aqui. Continue!', color: '#8b5cf6' },
-              { min: 30, max: 999, text: 'Um mes completo! Voce esta no grupo mais dedicado do app.', color: '#f97316' },
+              { min: 0,  max: 1,  text: 'Primeiro passo dado! Volte amanhã para manter sua sequência.', color: 'rgba(248,249,250,0.40)' },
+              { min: 2,  max: 3,  text: 'Você está construindo um hábito! Continue assim.', color: '#3b82f6' },
+              { min: 4,  max: 6,  text: 'Quase uma semana! Sua dedicação está rendendo frutos.', color: '#3b82f6' },
+              { min: 7,  max: 13, text: 'Uma semana completa! Você está entrando no ritmo.', color: '#ec4899' },
+              { min: 14, max: 20, text: 'Duas semanas! Os melhores prêmios estão chegando: fichas e muito mais.', color: '#b8f542' },
+              { min: 21, max: 29, text: 'Três semanas seguidas! Poucos chegam até aqui. Continue!', color: '#8b5cf6' },
+              { min: 30, max: 999, text: 'Um mês completo! Você está no grupo mais dedicado do app.', color: '#f97316' },
             ]
             const msg = msgs.find(m => currentDay >= m.min && currentDay <= m.max) ?? msgs[0]
             return (
@@ -348,7 +348,7 @@ export default function StreakPage() {
           {/* CTA roleta */}
           <div style={{ borderRadius: '14px', padding: '14px 16px', backgroundColor: 'rgba(234,179,8,0.04)', border: '1px solid rgba(234,179,8,0.15)', display: 'flex', alignItems: 'center', gap: '12px' }}>
             <Ticket size={22} color="#eab308" strokeWidth={1.5} style={{ flexShrink: 0 }} />
-            <p style={{ fontSize: '13px', color: 'rgba(248,249,250,0.50)', flex: 1, margin: 0 }}>Use seus tickets na roleta para ganhar ainda mais premios!</p>
+            <p style={{ fontSize: '13px', color: 'rgba(248,249,250,0.50)', flex: 1, margin: 0 }}>Use seus tickets na roleta para ganhar ainda mais prêmios!</p>
             <a href="/roleta" style={{ padding: '7px 12px', borderRadius: '9999px', backgroundColor: 'rgba(234,179,8,0.15)', color: '#eab308', fontSize: '11px', fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', fontFamily: 'var(--font-jakarta)' }}>
               Roleta
             </a>
