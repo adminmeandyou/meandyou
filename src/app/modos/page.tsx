@@ -962,19 +962,19 @@ function ModesHubView({ userPlan, onSelect, onCamarote }: {
           border: '1px solid rgba(255,255,255,0.05)',
           boxShadow: '0 0 50px rgba(245,158,11,0.08)',
           padding: 0,
-          background: 'linear-gradient(135deg, #0d0900 0%, #1a1000 40%, #120c00 70%, #0d0900 100%)',
+          background: '#0d0900',
         }}
       >
+        {/* Foto de fundo */}
+        <img
+          src="/images/camarote-bg.jpg"
+          alt=""
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.35 }}
+        />
         {/* Gradiente dourado sobreposição lateral */}
         <div style={{
           position: 'absolute', inset: 0,
           background: 'linear-gradient(to right, rgba(8,9,14,0.95) 0%, rgba(8,9,14,0.75) 50%, rgba(8,9,14,0.3) 100%)',
-        }} />
-        {/* Luz dourada de fundo */}
-        <div style={{
-          position: 'absolute', right: 0, top: 0, bottom: 0,
-          width: '60%',
-          background: 'radial-gradient(ellipse at right center, rgba(245,158,11,0.12) 0%, transparent 70%)',
         }} />
         <div style={{
           position: 'relative',

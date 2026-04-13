@@ -1204,6 +1204,16 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
   return (
     <div style={{ minHeight: '100vh', background: BG_DARK, fontFamily: 'var(--font-jakarta)', overflow: 'hidden', position: 'relative' }}>
 
+      {/* Foto de fundo */}
+      <img
+        src="/images/camarote-bg.jpg"
+        alt=""
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.25, filter: 'blur(2px)', pointerEvents: 'none' }}
+      />
+
+      {/* Overlay escuro */}
+      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(5,6,8,0.4) 0%, rgba(5,6,8,0.88) 60%, rgba(5,6,8,0.98) 100%)' }} />
+
       {/* Header */}
       <header style={{ position: 'relative', zIndex: 10, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 12 }}>
         <button onClick={onBack} style={{ width: 36, height: 36, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.08)', background: 'rgba(255,255,255,0.04)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
@@ -1212,25 +1222,6 @@ function CamaroteBlocked({ plan, onBack }: { plan: 'plus' | 'essencial'; onBack:
         <Crown size={18} color={G} strokeWidth={1.5} />
         <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: '#fff' }}>Camarote Black</span>
       </header>
-
-      {/* Grade borrada de preview */}
-      <div style={{ position: 'absolute', inset: 0, top: 68, filter: 'blur(16px)', opacity: 0.18, pointerEvents: 'none', userSelect: 'none' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, padding: '8px 12px' }}>
-          {[
-            'linear-gradient(160deg,#3d1520,#1a0a0f)',
-            'linear-gradient(160deg,#1a1a0a,#3d3010)',
-            'linear-gradient(160deg,#0a1a3d,#0d2040)',
-            'linear-gradient(160deg,#2a0a3d,#1a0828)',
-            'linear-gradient(160deg,#3d1a0a,#2a1005)',
-            'linear-gradient(160deg,#0a3d1a,#082a10)',
-          ].map((bg, i) => (
-            <div key={i} style={{ borderRadius: 16, aspectRatio: '3/4', background: bg }} />
-          ))}
-        </div>
-      </div>
-
-      {/* Overlay escuro */}
-      <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(5,6,8,0.3) 0%, rgba(5,6,8,0.85) 60%, rgba(5,6,8,0.98) 100%)' }} />
 
       {/* Conteudo principal */}
       <div style={{ position: 'relative', zIndex: 5, padding: '40px 24px 40px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
