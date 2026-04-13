@@ -59,7 +59,7 @@ export default function VerPerfilPage() {
 
     let { data: profileData } = await supabase
       .from('profiles')
-      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_best, photo_extra1, photo_extra2, photo_extra3, highlight_tags, status_temp, status_temp_expires_at, profile_question, profile_question_answer, badge_showcase, verified, last_seen, created_at, verified_plus')
+      .select('id, name, birthdate, bio, gender, pronouns, city, state, photo_face, photo_body, photo_side, photo_best, photo_extra1, photo_extra2, photo_extra3, highlight_tags, status_temp, status_temp_expires_at, profile_question, profile_question_answer, badge_showcase, verified, last_seen, created_at, verified_plus, xp_level')
       .eq('id', profileId)
       .single()
 
@@ -221,11 +221,31 @@ export default function VerPerfilPage() {
 
   const statusTempVivo = !!(profile?.status_temp && profile?.status_temp_expires_at && new Date(profile.status_temp_expires_at) > new Date())
 
+  // Pill de nível com cor baseada na faixa de raridade
+  function getLevelChip(level: number): { label: string; bg: string; color: string; border: string } | null {
+    if (!level || level < 1) return null
+    let color: string
+    if (level >= 500)      color = '#E11D48' // super_lendario
+    else if (level >= 200) color = '#F59E0B' // lendario
+    else if (level >= 100) color = '#F97316' // epico
+    else if (level >= 50)  color = '#A855F7' // super_raro
+    else if (level >= 10)  color = '#22C55E' // raro
+    else                   color = '#9CA3AF' // comum
+    return {
+      label: `Nível ${level}`,
+      bg: `${color}18`,
+      color,
+      border: `${color}40`,
+    }
+  }
+
   const statusChips: { label: string; bg: string; color: string; border: string }[] = []
   if (userRow?.verified) statusChips.push({ label: 'Verificado', bg: 'rgba(225,29,72,0.18)', color: '#F43F5E', border: 'rgba(225,29,72,0.35)' })
   if (userRow?.verified_plus) statusChips.push({ label: 'Verificado Plus', bg: 'rgba(245,158,11,0.14)', color: '#F59E0B', border: 'rgba(245,158,11,0.30)' })
   if (viewerIsBlack && viewedPlan === 'black') statusChips.push({ label: 'Black', bg: 'rgba(245,158,11,0.10)', color: '#F59E0B', border: 'rgba(245,158,11,0.25)' })
   if (statusTempVivo) statusChips.push({ label: STATUS_TEMP_LABELS[profile.status_temp as string] ?? profile.status_temp, bg: 'rgba(96,165,250,0.12)', color: '#60a5fa', border: 'rgba(96,165,250,0.25)' })
+  const levelChip = getLevelChip((profile as any)?.xp_level ?? 0)
+  if (levelChip) statusChips.push(levelChip)
 
   const unlockedStatic = emblemas.filter(e => e.desbloqueado)
   const badgeShowcaseList = isOwnProfile ? badgeShowcase : ((profile?.badge_showcase as string[]) ?? [])
