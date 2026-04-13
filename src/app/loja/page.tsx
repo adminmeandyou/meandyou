@@ -605,13 +605,13 @@ export default function LojaPage() {
             <Coins size={15} strokeWidth={1.5} color="#F59E0B" />
             <p style={{ fontSize: '11px', fontWeight: '600', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: 0 }}>Selecione um pacote</p>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16, paddingTop: 4 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16, paddingTop: 16 }}>
             {FICHAS_PACKAGES.map((pkg) => {
               const isSelected = selectedPackage?.label === pkg.label
               return (
-                <div key={pkg.label} style={{ position: 'relative', paddingTop: pkg.tag ? 14 : 0 }}>
+                <div key={pkg.label} style={{ position: 'relative', paddingTop: pkg.tag ? 18 : 0 }}>
                   {pkg.tag && (
-                    <span style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', fontSize: 10, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', borderRadius: 100, padding: '2px 10px', whiteSpace: 'nowrap', zIndex: 1 }}>
+                    <span style={{ position: 'absolute', top: -1, left: '50%', transform: 'translateX(-50%)', fontSize: 10, fontWeight: 700, color: '#F59E0B', backgroundColor: 'rgba(245,158,11,0.15)', border: '1px solid rgba(245,158,11,0.35)', borderRadius: 100, padding: '2px 10px', whiteSpace: 'nowrap', zIndex: 1 }}>
                       {pkg.tag}
                     </span>
                   )}
