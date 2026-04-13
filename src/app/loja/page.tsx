@@ -26,7 +26,7 @@ const FICHAS_PACKAGES = [
 type ItemKey =
   | 'superlike' | 'boost' | 'lupa' | 'rewind'
   | 'ghost_7d' | 'ghost_35d'
-  | 'reveals_5' | 'xp_bonus_3d' | 'caixa_surpresa' | 'caixa_lendaria'
+  | 'reveals_5' | 'xp_bonus_3d' | 'verified_plus' | 'caixa_surpresa' | 'caixa_lendaria'
   | 'passaporte_camarote'
 
 interface StoreItem {
@@ -100,6 +100,13 @@ const STORE_ITEMS: StoreItem[] = [
     unit: 'ativação',
     icon: <TrendingUp size={20} strokeWidth={1.5} />, baseFichas: 100, maxQty: 1,
     accentColor: '#10b981', accentBg: 'rgba(16,185,129,0.10)', accentBorder: 'rgba(16,185,129,0.25)',
+    new: true,
+  },
+  {
+    key: 'verified_plus', label: 'Selo Verificado Plus', description: 'Selo especial exibido no seu perfil para sempre',
+    unit: 'ativação',
+    icon: <BadgeCheck size={20} strokeWidth={1.5} />, baseFichas: 200, maxQty: 1,
+    accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.25)',
     new: true,
   },
   {
