@@ -541,9 +541,10 @@ export default function RoletaPage() {
   }
 
   function formatPrize(type: string, amount: number) {
-    const config = PRIZE_CONFIG[type]
-    if (!config) return `${amount}x ${type}`
-    if (type === 'plan_plus_1d' || type === 'plan_black_1d') return config.label
+    const normalizedType = type === 'ticket' ? 'fichas' : type
+    const config = PRIZE_CONFIG[normalizedType]
+    if (!config) return `${amount}x ${normalizedType}`
+    if (normalizedType === 'plan_plus_1d' || normalizedType === 'plan_black_1d') return config.label
     return `${amount}x ${config.label}`
   }
 
