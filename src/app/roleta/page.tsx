@@ -615,7 +615,7 @@ export default function RoletaPage() {
             <Flame size={15} color="#F59E0B" strokeWidth={1.5} />
             <span style={{ fontSize: 13, fontWeight: 700, color: '#F59E0B' }}>{currentStreak} dias seguidos</span>
           </div>
-          <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.40)' }}>streak ativo — mais chances de raros</span>
+          <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.40)' }}>streak ativo, mais chances de raros</span>
         </div>
       )}
 

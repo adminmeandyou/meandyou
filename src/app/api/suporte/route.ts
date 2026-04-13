@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
     await resend.emails.send({
       from: 'MeAndYou Suporte <noreply@meandyou.com.br>',
       to: user.email!,
-      subject: 'Recebemos sua mensagem — MeAndYou',
+      subject: 'Recebemos sua mensagem | MeAndYou',
       html: `
         <div style="font-family: sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; background: #0e0b14; color: #fff;">
           <h2 style="color: #b8f542;">Ola, ${nomeSafe}!</h2>

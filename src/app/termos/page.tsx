@@ -2,7 +2,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Termos de Uso — MeAndYou',
+  title: 'Termos de Uso | MeAndYou',
   description: 'Termos de uso da plataforma MeAndYou',
 }
 
@@ -81,7 +81,7 @@ export default function Termos() {
         </Section>
 
         <Section titulo="7. Privacidade e dados">
-          O tratamento dos seus dados pessoais é regido pela nossa <Link href="/privacidade" style={{ color: 'var(--accent)' }}>Política de Privacidade</Link>, em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018 — LGPD). Dados biométricos coletados na verificação são utilizados exclusivamente para confirmação de identidade e nunca compartilhados com terceiros.
+          O tratamento dos seus dados pessoais é regido pela nossa <Link href="/privacidade" style={{ color: 'var(--accent)' }}>Política de Privacidade</Link>, em conformidade com a Lei Geral de Proteção de Dados (Lei nº 13.709/2018, LGPD). Dados biométricos coletados na verificação são utilizados exclusivamente para confirmação de identidade e nunca compartilhados com terceiros.
         </Section>
 
         <Section titulo="8. Limitação de responsabilidade">

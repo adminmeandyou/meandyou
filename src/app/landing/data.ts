@@ -8,7 +8,7 @@ export const swipeCards = [
   {
     name: 'Roberto, 55', photo: '/Roberto.jpg',
     tags: ['Eletricista', 'RJ', 'Fuma'],
-    bio: 'Eletricista de mão cheia, churrasco todo fim de semana e uma cerveja gelada. Direto ao ponto e sem enrolação — vida é curta demais.',
+    bio: 'Eletricista de mão cheia, churrasco todo fim de semana e uma cerveja gelada. Direto ao ponto e sem enrolação. Vida é curta demais.',
     placeholder: 'linear-gradient(160deg,#0a1020 0%,#1a2a4a 50%,#0d1830 100%)',
   },
   {

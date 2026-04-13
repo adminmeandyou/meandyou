@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import { FileText } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Política de Privacidade — MeAndYou',
+  title: 'Política de Privacidade | MeAndYou',
   description: 'Política de privacidade e proteção de dados da plataforma MeAndYou',
 }
 

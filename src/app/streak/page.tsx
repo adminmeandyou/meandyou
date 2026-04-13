@@ -332,7 +332,7 @@ export default function StreakPage() {
               { min: 2,  max: 3,  text: 'Voce esta construindo um habito! Continue assim.', color: '#3b82f6' },
               { min: 4,  max: 6,  text: 'Quase uma semana! Sua dedicacao esta rendendo frutos.', color: '#3b82f6' },
               { min: 7,  max: 13, text: 'Uma semana completa! Voce esta entrando no ritmo.', color: '#ec4899' },
-              { min: 14, max: 20, text: 'Duas semanas! Os melhores premios estao chegando — fichas e muito mais.', color: '#b8f542' },
+              { min: 14, max: 20, text: 'Duas semanas! Os melhores premios estao chegando: fichas e muito mais.', color: '#b8f542' },
               { min: 21, max: 29, text: 'Tres semanas seguidas! Poucos chegam ate aqui. Continue!', color: '#8b5cf6' },
               { min: 30, max: 999, text: 'Um mes completo! Voce esta no grupo mais dedicado do app.', color: '#f97316' },
             ]

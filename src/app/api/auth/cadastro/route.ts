@@ -271,7 +271,7 @@ export async function POST(req: NextRequest) {
       nomeExibicao,
       'Confirme seu email - MeAndYou',
       'Confirme seu email',
-      'Para acessar o MeAndYou, precisamos confirmar seu endereço de email. Clique no botão abaixo — o link expira em 30 minutos.',
+      'Para acessar o MeAndYou, precisamos confirmar seu endereço de email. Clique no botão abaixo. O link expira em 30 minutos.',
       'Verificar email',
       verifyLink
     ).catch(err => console.error('[cadastro] Falha ao enviar email de verificacao:', err))
