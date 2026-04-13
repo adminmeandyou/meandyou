@@ -6,6 +6,13 @@
 -- Execute no Supabase SQL Editor
 -- =============================================
 
+-- Drop funcoes existentes que podem ter tipos de retorno diferentes
+DROP FUNCTION IF EXISTS public.claim_streak_reward(uuid, integer);
+DROP FUNCTION IF EXISTS public.generate_streak_calendar(uuid);
+DROP FUNCTION IF EXISTS public.extend_streak_calendar(uuid);
+DROP FUNCTION IF EXISTS public._streak_pick_reward(integer);
+DROP FUNCTION IF EXISTS public._streak_rand(int, int);
+
 -- Helper: inteiro aleatorio em [lo, hi]
 CREATE OR REPLACE FUNCTION public._streak_rand(lo int, hi int)
 RETURNS int LANGUAGE sql SECURITY DEFINER AS $$
