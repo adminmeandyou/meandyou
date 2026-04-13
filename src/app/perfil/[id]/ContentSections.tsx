@@ -7,16 +7,8 @@ import {
 import type { EmblemaDef, StatusChip, DbBadge } from './types'
 import { getAparenciaTags, getEstiloTags, getPersonalidadeTags, getObjetivosTags } from './utils'
 
-const GENDER_LABELS: Record<string, string> = {
-  cis_man:     'Homem',
-  cis_woman:   'Mulher',
-  trans_man:   'Homem Trans',
-  trans_woman: 'Mulher Trans',
-  nonbinary:   'Não-binário',
-  fluid:       'Gênero Fluido',
-}
 function formatGender(g: string) {
-  return GENDER_LABELS[g] ?? g.charAt(0).toUpperCase() + g.slice(1).toLowerCase()
+  return g.charAt(0).toUpperCase() + g.slice(1)
 }
 
 // ─── Status Chips ────────────────────────────────────────────────────────────
