@@ -140,7 +140,13 @@ export default function RoletaPage() {
   const [result, setResult]               = useState<SpinResult | null>(null)
   const [history, setHistory]             = useState<any[]>([])
   const [showCelebration, setShowCelebration] = useState(false)
-  const [wheelSize, setWheelSize]         = useState(300)
+  const [wheelSize, setWheelSize]         = useState(() => {
+    if (typeof window === 'undefined') return 280
+    const w = window.innerWidth
+    if (w >= 1024) return 400
+    if (w >= 768) return 360
+    return Math.min(280, w - 60)
+  })
   const [countdown, setCountdown]         = useState('')
 
   useEffect(() => {

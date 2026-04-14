@@ -538,6 +538,16 @@ function calcCompatibility(myFilters: Record<string, boolean>, theirFilters: Rec
   return Math.round((matches / myKeys.length) * 100)
 }
 
+async function requestLocation(): Promise<{ lat: number; lng: number } | null> {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) { resolve(null); return }
+    navigator.geolocation.getCurrentPosition(
+      (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
+      () => resolve(null), { timeout: 5000 }
+    )
+  })
+}
+
 function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | null; localFilters: FiltersState; userPlan: string }) {
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
@@ -1699,16 +1709,6 @@ function BuscaInner() {
     } catch { setError('Erro ao carregar.'); setLoadingDeck(false) }
   }
 
-  async function requestLocation(): Promise<{ lat: number; lng: number } | null> {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) { resolve(null); return }
-      navigator.geolocation.getCurrentPosition(
-        (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
-        () => resolve(null), { timeout: 5000 }
-      )
-    })
-  }
-
   async function loadDeck(filters: FiltersState, uid?: string, searchMode = false) {
     setLoadingDeck(true)
     try {
@@ -2141,7 +2141,7 @@ function BuscaInner() {
             )}
 
             {/* Stack de cards */}
-            <div style={{ flex: 1, width: '100%', position: 'relative', minHeight: 0 }}>
+            <div style={{ flex: 1, width: '100%', position: 'relative', minHeight: 0, overflow: 'hidden' }}>
 
               {/* Card de trás */}
               {deck[currentIdx + 1] && (
