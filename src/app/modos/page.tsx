@@ -571,10 +571,14 @@ function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | n
     if (!daily.length) {
       try {
         const matchGender = localFilters.search_gender && localFilters.search_gender !== 'all' ? localFilters.search_gender : null
+        const dailyLoc = await requestLocation()
+        if (dailyLoc && userId) {
+          await supabase.from('profiles').update({ lat: dailyLoc.lat, lng: dailyLoc.lng }).eq('id', userId)
+        }
         const { data } = await supabase.rpc('search_profiles', {
           p_user_id:         userId,
-          p_lat:             null,
-          p_lng:             null,
+          p_lat:             dailyLoc?.lat ?? null,
+          p_lng:             dailyLoc?.lng ?? null,
           p_max_distance_km: (localFilters.search_max_distance_km as number) >= 500 ? 9999 : localFilters.search_max_distance_km,
           p_min_age:         localFilters.search_min_age,
           p_max_age:         localFilters.search_max_age >= 60 ? 120 : localFilters.search_max_age,
