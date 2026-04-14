@@ -61,7 +61,7 @@ type ViewMode = 'discovery' | 'search' | 'rooms' | 'daily'
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const DEFAULT_FILTERS: FiltersState = {
-  search_max_distance_km: 100,
+  search_max_distance_km: 50,
   search_min_age: 18,
   search_max_age: 60,
   search_gender: 'all',
