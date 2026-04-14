@@ -61,7 +61,7 @@ type ViewMode = 'discovery' | 'search' | 'rooms' | 'daily'
 // ─── Constants ───────────────────────────────────────────────────────────────
 
 const DEFAULT_FILTERS: FiltersState = {
-  search_max_distance_km: 40,
+  search_max_distance_km: 100,
   search_min_age: 18,
   search_max_age: 60,
   search_gender: 'all',
@@ -575,7 +575,7 @@ function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | n
           p_user_id:         userId,
           p_lat:             null,
           p_lng:             null,
-          p_max_distance_km: localFilters.search_max_distance_km,
+          p_max_distance_km: (localFilters.search_max_distance_km as number) >= 500 ? 9999 : localFilters.search_max_distance_km,
           p_min_age:         localFilters.search_min_age,
           p_max_age:         localFilters.search_max_age >= 60 ? 120 : localFilters.search_max_age,
           p_gender:          matchGender,
@@ -1718,7 +1718,7 @@ function BuscaInner() {
         p_user_id:         id,
         p_lat:             loc?.lat ?? null,
         p_lng:             loc?.lng ?? null,
-        p_max_distance_km: filters.search_max_distance_km,
+        p_max_distance_km: (filters.search_max_distance_km as number) >= 500 ? 9999 : filters.search_max_distance_km,
         p_min_age:         filters.search_min_age,
         p_max_age:         filters.search_max_age >= 60 ? 120 : filters.search_max_age,
         p_gender:          genderParam,
@@ -2574,7 +2574,7 @@ function BuscaInner() {
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
               <span style={{ fontSize: 13, color: 'var(--muted)' }}>Distância máxima</span>
               <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent)' }}>
-                {localFilters.search_max_distance_km} km
+                {(localFilters.search_max_distance_km as number) >= 500 ? 'Todo o Brasil' : `${localFilters.search_max_distance_km} km`}
               </span>
             </div>
             {/* Container position:relative é obrigatório para ui-range-input funcionar corretamente */}
@@ -2583,17 +2583,17 @@ function BuscaInner() {
               <div style={{
                 position: 'absolute', left: 0, height: 4, borderRadius: 100,
                 backgroundColor: 'var(--accent)',
-                width: `${((localFilters.search_max_distance_km as number - 5) / (150 - 5)) * 100}%`,
+                width: `${Math.min(((localFilters.search_max_distance_km as number - 5) / (500 - 5)) * 100, 100)}%`,
               }} />
               <input
-                type="range" min={5} max={150} step={5}
+                type="range" min={5} max={500} step={25}
                 value={localFilters.search_max_distance_km as number}
                 onChange={(e) => setLocalFilters(p => ({ ...p, search_max_distance_km: Number(e.target.value) }))}
                 className="ui-range-input"
               />
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: 'var(--muted-2)', marginTop: 4 }}>
-              <span>5 km</span><span>150 km</span>
+              <span>5 km</span><span>Todo o Brasil</span>
             </div>
           </div>
 
