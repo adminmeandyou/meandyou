@@ -476,7 +476,6 @@ function getNivel(matchedAt: string, lastMessageAt: string | null): { label: str
 
 function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: string | null) => string }) {
   const expiry = getExpiryInfo(match.matched_at, match.last_message_at)
-  const nivel = null
   return (
     <Link
       href={`/conversas/${match.match_id}`}
@@ -558,16 +557,6 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
                 border: `1px solid ${expiry.urgent ? 'rgba(225,29,72,0.30)' : 'rgba(225,29,72,0.15)'}`,
               }}>
                 {expiry.label}
-              </span>
-            )}
-            {!expiry && nivel && (
-              <span style={{
-                fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 100, flexShrink: 0,
-                background: `${nivel.color}18`,
-                color: nivel.color,
-                border: `1px solid ${nivel.color}35`,
-              }}>
-                {nivel.label}
               </span>
             )}
           </div>
