@@ -27,19 +27,42 @@ function ActiveCall({ matchId, otherName, onEnd }: {
   const [remainingMinutes, setRemainingMinutes] = useState(0)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [permissionDenied, setPermissionDenied] = useState(false)
   const [limitReached, setLimitReached] = useState(false)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const startTimeRef = useRef<number | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    fetchToken()
+    start()
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchId])
 
-  async function fetchToken() {
+  async function start() {
     setLoading(true)
     setError(null)
+    setPermissionDenied(false)
+
+    // Preflight: pedir permissao de camera/microfone antes de conectar.
+    // Se o browser recusar, exibimos erro claro em vez de conectar sem tracks
+    // (o que deixa o LiveKit derrubar a sala por timeout de idle).
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      // Libera o device pro LiveKit capturar em seguida.
+      stream.getTracks().forEach(t => t.stop())
+    } catch (e) {
+      console.error('getUserMedia denied', e)
+      setPermissionDenied(true)
+      setError('Permita o acesso à câmera e ao microfone para iniciar a chamada.')
+      setLoading(false)
+      return
+    }
+
+    await fetchToken()
+  }
+
+  async function fetchToken() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/livekit/token', {
@@ -97,13 +120,23 @@ function ActiveCall({ matchId, otherName, onEnd }: {
   if (error) return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, padding: '0 32px', textAlign: 'center' }}>
       <AlertCircle size={32} color={limitReached ? '#F59E0B' : '#F43F5E'} />
-      <p style={{ fontSize: 14, color: limitReached ? '#F59E0B' : '#F43F5E' }}>{error}</p>
+      <p style={{ fontSize: 14, color: limitReached ? '#F59E0B' : '#F43F5E', maxWidth: 320, lineHeight: 1.5 }}>{error}</p>
       {limitReached && (
         <p style={{ fontSize: 12, color: 'var(--muted-2)' }}>Faça upgrade para ter mais tempo de chamada.</p>
       )}
-      <button onClick={onEnd} style={{ padding: '10px 20px', borderRadius: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text)', fontSize: 14, cursor: 'pointer' }}>
-        Voltar para o chat
-      </button>
+      {permissionDenied && (
+        <p style={{ fontSize: 11, color: 'var(--muted-2)', maxWidth: 280, lineHeight: 1.55 }}>Abra as configurações do navegador e libere câmera e microfone para o MeAndYou, depois tente novamente.</p>
+      )}
+      <div style={{ display: 'flex', gap: 10 }}>
+        {permissionDenied && (
+          <button onClick={start} style={{ padding: '10px 18px', borderRadius: 10, background: 'linear-gradient(135deg, #E11D48, #be123c)', border: 'none', color: '#fff', fontSize: 13, fontWeight: 600, cursor: 'pointer' }}>
+            Tentar de novo
+          </button>
+        )}
+        <button onClick={onEnd} style={{ padding: '10px 18px', borderRadius: 10, background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--text)', fontSize: 13, cursor: 'pointer' }}>
+          Voltar para o chat
+        </button>
+      </div>
     </div>
   )
 
@@ -118,6 +151,7 @@ function ActiveCall({ matchId, otherName, onEnd }: {
       audio={true}
       onConnected={handleConnected}
       onDisconnected={handleDisconnected}
+      onError={(err) => console.error('LiveKit error:', err)}
       style={{ height: '100%', background: '#08090E' }}
     >
       <CallView
@@ -147,10 +181,28 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd }: {
   const [camOn, setCamOn] = useState(true)
   const [facing, setFacing] = useState<'user' | 'environment'>('user')
 
+  // Fallback: garante que camera e microfone sao ativados apos conectar,
+  // mesmo se o `video audio` do LiveKitRoom nao disparar sozinho.
   useEffect(() => {
     if (!localParticipant) return
-    setMicOn(localParticipant.isMicrophoneEnabled)
-    setCamOn(localParticipant.isCameraEnabled)
+    let cancelled = false
+    ;(async () => {
+      try {
+        if (!localParticipant.isMicrophoneEnabled) {
+          await localParticipant.setMicrophoneEnabled(true)
+        }
+        if (!localParticipant.isCameraEnabled) {
+          await localParticipant.setCameraEnabled(true)
+        }
+      } catch (e) {
+        console.error('enable mic/cam failed', e)
+      }
+      if (!cancelled) {
+        setMicOn(localParticipant.isMicrophoneEnabled)
+        setCamOn(localParticipant.isCameraEnabled)
+      }
+    })()
+    return () => { cancelled = true }
   }, [localParticipant])
 
   async function toggleMic() {
