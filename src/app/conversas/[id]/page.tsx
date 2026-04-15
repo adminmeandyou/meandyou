@@ -15,6 +15,7 @@ import { ChatBubble } from '@/components/ui/ChatBubble'
 import { ReportModal } from '@/components/ReportModal'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { useToast } from '@/components/Toast'
+import { pickRandomIcebreakers } from '@/lib/icebreakers'
 
 interface Message {
   id: string
@@ -37,14 +38,6 @@ const MAX_CHARS = 500
 const CONVITE_PREFIX = '__CONVITE__:'
 const NUDGE_TOKEN = '__NUDGE__'
 
-const ICEBREAKERS = [
-  'Qual o melhor lugar que você já visitou?',
-  'Se pudesse viajar agora, para onde iria?',
-  'O que você faria num sábado perfeito?',
-  'Séries ou filmes? Qual recomenda?',
-  'Qual superpoder você escolheria?',
-  'Café da manhã ou jantar romântico?',
-]
 
 export default function ChatPage() {
   const params = useParams()
@@ -65,6 +58,7 @@ export default function ChatPage() {
   // Novas features
   const [showMenu, setShowMenu] = useState(false)
   const [showIcebreakers, setShowIcebreakers] = useState(false)
+  const [icebreakerList, setIcebreakerList] = useState<string[]>(() => pickRandomIcebreakers(6))
   const [showConvite, setShowConvite] = useState(false)
   const [showEmojis, setShowEmojis] = useState(false)
   const [conviteText, setConviteText] = useState('')
@@ -869,7 +863,7 @@ export default function ChatPage() {
             animation: 'ui-slide-up 0.18s ease',
           }}>
             {[
-              { icon: <Sparkles size={16} strokeWidth={1.5} />, label: 'Quebra-gelo', sub: 'Sugestões para começar', onClick: () => { setShowMenu(false); setShowConvite(false); setShowIcebreakers(v => !v) }, active: showIcebreakers },
+              { icon: <Sparkles size={16} strokeWidth={1.5} />, label: 'Quebra-gelo', sub: 'Sugestões para começar', onClick: () => { setShowMenu(false); setShowConvite(false); setIcebreakerList(pickRandomIcebreakers(6)); setShowIcebreakers(v => !v) }, active: showIcebreakers },
               { icon: <CalendarPlus size={16} strokeWidth={1.5} />, label: 'Chamar para Encontro', sub: 'Proponha um encontro', onClick: () => { setShowMenu(false); setShowIcebreakers(false); setShowConvite(v => !v) }, active: showConvite },
               { icon: <MapPin size={16} strokeWidth={1.5} />, label: 'Registrar Encontro', sub: 'Salvar local e horário', onClick: () => { setShowMenu(false); setShowMeetingModal(true) } },
               { icon: <Zap size={16} strokeWidth={1.5} />, label: 'Nudge', sub: 'Chame a atenção da pessoa', onClick: () => { setShowMenu(false); handleNudge() } },
@@ -1018,12 +1012,30 @@ export default function ChatPage() {
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Puxando assunto</span>
-              <button onClick={() => setShowIcebreakers(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
-                <X size={13} color="var(--muted)" />
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                <button
+                  onClick={() => setIcebreakerList(pickRandomIcebreakers(6))}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 4,
+                    padding: '4px 10px', borderRadius: 100,
+                    background: 'rgba(225,29,72,0.10)',
+                    border: '1px solid rgba(225,29,72,0.20)',
+                    cursor: 'pointer', color: 'var(--accent)',
+                    fontFamily: 'var(--font-jakarta)', fontSize: 10, fontWeight: 700,
+                    letterSpacing: '0.05em',
+                  }}
+                  title="Trocar sugestões"
+                >
+                  <Sparkles size={10} strokeWidth={2} />
+                  Trocar
+                </button>
+                <button onClick={() => setShowIcebreakers(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                  <X size={13} color="var(--muted)" />
+                </button>
+              </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {ICEBREAKERS.map((q, i) => (
+              {icebreakerList.map((q, i) => (
                 <button
                   key={i}
                   onClick={() => { setInput(q); setShowIcebreakers(false); inputRef.current?.focus() }}
