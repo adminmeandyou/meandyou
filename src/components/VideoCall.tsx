@@ -14,7 +14,7 @@ import { Track } from 'livekit-client'
 import '@livekit/components-styles'
 import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { Phone, PhoneOff, PhoneIncoming, AlertCircle, Loader2, Video, VideoOff, Mic, MicOff, ArrowLeft, RotateCcw, FlipHorizontal2 } from 'lucide-react'
+import { Phone, PhoneOff, PhoneIncoming, AlertCircle, Loader2, Video, VideoOff, Mic, MicOff, ArrowLeft, RotateCcw, FlipHorizontal2, Volume2, VolumeX } from 'lucide-react'
 import Image from 'next/image'
 
 // ─── Tela de chamada ativa (LiveKit) ─────────────────────────────────────────
@@ -26,17 +26,23 @@ function ActiveCall({ matchId, otherName, onEnd }: {
   const [token, setToken] = useState<string | null>(null)
   const [livekitUrl, setLivekitUrl] = useState<string | null>(null)
   const [remainingMinutes, setRemainingMinutes] = useState(0)
+  const [plan, setPlan] = useState<string>('essencial')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [permissionDenied, setPermissionDenied] = useState(false)
   const [limitReached, setLimitReached] = useState(false)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const [remoteMuted, setRemoteMuted] = useState(false)
   const startTimeRef = useRef<number | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
+  const heartbeatRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     start()
-    return () => { if (timerRef.current) clearInterval(timerRef.current) }
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+      if (heartbeatRef.current) clearInterval(heartbeatRef.current)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchId])
 
@@ -79,10 +85,32 @@ function ActiveCall({ matchId, otherName, onEnd }: {
       setToken(data.token)
       setLivekitUrl(data.livekit_url)
       setRemainingMinutes(data.remaining_minutes)
+      if (data.plan) setPlan(data.plan)
     } catch {
       setError('Erro ao conectar. Verifique sua conexão.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function sendHeartbeat() {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/livekit/heartbeat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({ matchId }),
+      })
+      if (!res.ok) return
+      const data = await res.json()
+      if (typeof data.remaining_minutes === 'number') setRemainingMinutes(data.remaining_minutes)
+      if (data.plan) setPlan(data.plan)
+      if (data.limit_reached) handleDisconnected()
+    } catch {
+      // silencioso — heartbeat perde 1 ping nao e critico
     }
   }
 
@@ -91,12 +119,15 @@ function ActiveCall({ matchId, otherName, onEnd }: {
     timerRef.current = setInterval(() =>
       setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current!) / 1000)), 1000
     )
+    // Heartbeat: debita 1 min imediatamente (cobre o primeiro minuto da chamada)
+    // e depois a cada 60s enquanto a chamada estiver ativa.
+    sendHeartbeat()
+    heartbeatRef.current = setInterval(sendHeartbeat, 60000)
   }
 
   function handleDisconnected() {
-    // ⚠️ NUNCA registrar minutos aqui no client-side.
-    // O webhook LiveKit (room_finished) é a única fonte de verdade para debitar minutos.
     if (timerRef.current) clearInterval(timerRef.current)
+    if (heartbeatRef.current) clearInterval(heartbeatRef.current)
     onEnd()
   }
 
@@ -155,22 +186,34 @@ function ActiveCall({ matchId, otherName, onEnd }: {
         otherName={otherName}
         elapsedSeconds={elapsedSeconds}
         remainingMinutes={remainingMinutes}
+        plan={plan}
+        remoteMuted={remoteMuted}
+        onToggleRemoteMute={() => setRemoteMuted(v => !v)}
         onEnd={handleDisconnected}
         onMediaError={handleMediaError}
       />
-      <RoomAudioRenderer />
+      <RoomAudioRenderer volume={remoteMuted ? 0 : 1} />
     </LiveKitRoom>
   )
 }
 
 // ─── Tela "em chamada" editorial (LiveKit custom) ───────────────────────────
-function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd, onMediaError }: {
+function CallView({ otherName, elapsedSeconds, remainingMinutes, plan, remoteMuted, onToggleRemoteMute, onEnd, onMediaError }: {
   otherName: string
   elapsedSeconds: number
   remainingMinutes: number
+  plan: string
+  remoteMuted: boolean
+  onToggleRemoteMute: () => void
   onEnd: () => void
   onMediaError: (err: unknown) => void
 }) {
+  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1)
+  const minutesCritical = remainingMinutes > 0 && remainingMinutes <= 3
+  const minutesLow = remainingMinutes > 3 && remainingMinutes <= 10
+  const minutesColor = minutesCritical ? '#F43F5E' : minutesLow ? '#F59E0B' : 'rgba(255,255,255,0.55)'
+  const minutesBg = minutesCritical ? 'rgba(244,63,94,0.14)' : minutesLow ? 'rgba(245,158,11,0.14)' : 'rgba(15,17,23,0.7)'
+  const minutesBorder = minutesCritical ? 'rgba(244,63,94,0.35)' : minutesLow ? 'rgba(245,158,11,0.35)' : 'rgba(255,255,255,0.05)'
   const { localParticipant } = useLocalParticipant()
   const tracks = useTracks([Track.Source.Camera], { onlySubscribed: false })
   const remoteCam = tracks.find(t => !t.participant.isLocal)
@@ -294,11 +337,22 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd, onMediaE
             <div style={{ height: 3, width: 24, borderRadius: 2, background: '#E11D48' }} />
             <div style={{ height: 3, width: 24, borderRadius: 2, background: 'rgba(255,255,255,0.18)' }} />
           </div>
-          {remainingMinutes > 0 && (
-            <p style={{ fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', margin: '8px 0 0', fontWeight: 600 }}>{remainingMinutes} min restantes</p>
-          )}
         </div>
       </div>
+
+      {/* Pill discreto: minutos restantes hoje no plano */}
+      {remainingMinutes > 0 && (
+        <div style={{ position: 'absolute', top: 96, right: 20, zIndex: 30, pointerEvents: 'none' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 10px', borderRadius: 100, background: minutesBg, backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: `1px solid ${minutesBorder}` }}>
+            <span style={{ fontSize: 10, fontWeight: 600, color: minutesColor, letterSpacing: '0.04em' }}>
+              {remainingMinutes} min hoje · {planLabel}
+            </span>
+          </div>
+          {minutesCritical && (
+            <p style={{ fontSize: 9, color: '#F43F5E', margin: '6px 0 0', textAlign: 'right', fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase' }}>Últimos minutos</p>
+          )}
+        </div>
+      )}
 
       {/* PIP — self */}
       <section style={{ position: 'absolute', right: 20, bottom: 148, width: 104, aspectRatio: '3/4', zIndex: 35, borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.10)', background: '#13161f' }}>
@@ -346,6 +400,12 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd, onMediaE
             label="Espelho"
             onClick={toggleMirror}
             active={!mirrored}
+          />
+          <ControlButton
+            icon={remoteMuted ? <VolumeX size={20} strokeWidth={1.5} /> : <Volume2 size={20} strokeWidth={1.5} />}
+            label="Som"
+            onClick={onToggleRemoteMute}
+            active={remoteMuted}
           />
         </div>
       </nav>

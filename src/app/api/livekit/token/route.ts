@@ -111,6 +111,8 @@ export async function POST(req: NextRequest) {
       room:              roomName,
       livekit_url:       process.env.NEXT_PUBLIC_LIVEKIT_URL,
       remaining_minutes: minutosRestantes,
+      plan:              plano,
+      daily_limit:       limiteMinutos,
     })
 
   } catch (err) {
