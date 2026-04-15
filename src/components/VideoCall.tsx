@@ -137,39 +137,62 @@ function ActiveCall({ matchId, otherName, onEnd }: {
   )
 }
 
-// ─── Tela de chamando ─────────────────────────────────────────────────────────
+// ─── Tela de chamando (editorial) ────────────────────────────────────────────
 function CallingScreen({ otherName, otherPhoto, onCancel }: {
   otherName: string
   otherPhoto?: string | null
   onCancel: () => void
 }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 24, background: 'var(--bg)' }}>
-      <div style={{ position: 'relative', width: 96, height: 96 }}>
-        <div style={{ width: 96, height: 96, borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(225,29,72,0.30)', position: 'relative' }}>
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', background: 'radial-gradient(ellipse at center, rgba(225,29,72,0.10) 0%, #08090E 60%)', fontFamily: 'var(--font-jakarta)', padding: '0 24px' }}>
+      {/* Status "CONEXÃO ESTÁVEL" top-right */}
+      <div style={{ position: 'absolute', top: 'max(20px, env(safe-area-inset-top, 20px))', right: 20, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 100, background: 'rgba(15,17,23,0.70)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.05)' }}>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px rgba(16,185,129,0.6)' }} />
+        <span style={{ fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--text)', fontWeight: 600 }}>Conexão estável</span>
+      </div>
+
+      {/* Foto com auras pulsantes */}
+      <div style={{ position: 'relative', width: 156, height: 156, marginBottom: 32 }}>
+        <div style={{ position: 'absolute', inset: -28, borderRadius: '50%', border: '1px solid rgba(225,29,72,0.08)', animation: 'calling-pulse 2s ease-out infinite' }} />
+        <div style={{ position: 'absolute', inset: -16, borderRadius: '50%', border: '1.5px solid rgba(225,29,72,0.18)', animation: 'calling-pulse 2s ease-out infinite', animationDelay: '0.5s' }} />
+        <div style={{ width: 156, height: 156, borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(225,29,72,0.45)', boxShadow: '0 0 60px rgba(225,29,72,0.25)', position: 'relative', background: 'var(--bg-card2)' }}>
           {otherPhoto
-            ? <Image src={otherPhoto} alt={otherName} fill style={{ objectFit: 'cover' }} />
-            : <div style={{ width: '100%', height: '100%', background: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-fraunces)', fontSize: 32, color: 'var(--muted)' }}>{otherName[0]}</div>
+            ? <Image src={otherPhoto} alt={otherName} fill style={{ objectFit: 'cover' }} sizes="156px" />
+            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-fraunces)', fontSize: 56, color: 'var(--muted)' }}>{otherName[0]}</div>
           }
         </div>
-        <div style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(225,29,72,0.20)', animation: 'ping 1.5s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', inset: -14, borderRadius: '50%', border: '1px solid rgba(225,29,72,0.10)', animation: 'ping 1.5s ease-in-out infinite', animationDelay: '0.4s' }} />
       </div>
-      <div style={{ textAlign: 'center' }}>
-        <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 6, letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-jakarta)', fontWeight: 600 }}>Chamando…</p>
-        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 24, color: 'var(--text)', margin: 0 }}>{otherName}</p>
+
+      {/* "Chamando Nome…" editorial */}
+      <div style={{ textAlign: 'center', marginBottom: 10 }}>
+        <p style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', fontSize: 30, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em', lineHeight: 1.1 }}>
+          Chamando <span style={{ color: '#F43F5E' }}>{otherName}</span>…
+        </p>
       </div>
+      <p style={{ fontSize: 10, color: 'rgba(248,249,250,0.50)', letterSpacing: '0.20em', textTransform: 'uppercase', fontWeight: 600, margin: '0 0 48px' }}>Iniciando vídeo seguro</p>
+
+      {/* Botão cancelar grande */}
       <button
         onClick={onCancel}
-        style={{ width: 60, height: 60, borderRadius: '50%', background: 'var(--accent)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 24px rgba(225,29,72,0.35)' }}
+        style={{ width: 76, height: 76, borderRadius: '50%', background: 'linear-gradient(135deg, #E11D48, #be123c)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 12px 32px rgba(225,29,72,0.45), 0 0 0 8px rgba(225,29,72,0.08)', transition: 'transform 0.2s' }}
+        onMouseDown={e => (e.currentTarget.style.transform = 'scale(0.92)')}
+        onMouseUp={e => (e.currentTarget.style.transform = 'scale(1)')}
       >
-        <PhoneOff size={22} color="#fff" />
+        <PhoneOff size={28} color="#fff" strokeWidth={1.8} />
       </button>
+      <span style={{ fontSize: 10, color: 'rgba(248,249,250,0.50)', letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 700, marginTop: 14 }}>Cancelar</span>
+
+      <style>{`
+        @keyframes calling-pulse {
+          0%   { opacity: 0.9; transform: scale(0.95); }
+          100% { opacity: 0;   transform: scale(1.25); }
+        }
+      `}</style>
     </div>
   )
 }
 
-// ─── Tela de chamada recebida ─────────────────────────────────────────────────
+// ─── Tela de chamada recebida (editorial) ────────────────────────────────────
 function IncomingCallScreen({ callerName, callerPhoto, onAccept, onReject }: {
   callerName: string
   callerPhoto?: string | null
@@ -177,35 +200,49 @@ function IncomingCallScreen({ callerName, callerPhoto, onAccept, onReject }: {
   onReject: () => void
 }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 24, background: 'var(--bg)' }}>
-      <div style={{ position: 'relative', width: 96, height: 96 }}>
-        <div style={{ width: 96, height: 96, borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(225,29,72,0.30)', position: 'relative' }}>
+    <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', background: 'radial-gradient(ellipse at center, rgba(225,29,72,0.12) 0%, #08090E 60%)', fontFamily: 'var(--font-jakarta)', padding: '0 24px' }}>
+      <div style={{ position: 'relative', width: 156, height: 156, marginBottom: 32 }}>
+        <div style={{ position: 'absolute', inset: -28, borderRadius: '50%', border: '1px solid rgba(225,29,72,0.08)', animation: 'calling-pulse 2s ease-out infinite' }} />
+        <div style={{ position: 'absolute', inset: -16, borderRadius: '50%', border: '1.5px solid rgba(225,29,72,0.20)', animation: 'calling-pulse 2s ease-out infinite', animationDelay: '0.5s' }} />
+        <div style={{ width: 156, height: 156, borderRadius: '50%', overflow: 'hidden', border: '3px solid rgba(225,29,72,0.50)', boxShadow: '0 0 60px rgba(225,29,72,0.30)', position: 'relative', background: 'var(--bg-card2)' }}>
           {callerPhoto
-            ? <Image src={callerPhoto} alt={callerName} fill style={{ objectFit: 'cover' }} />
-            : <div style={{ width: '100%', height: '100%', background: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-fraunces)', fontSize: 32, color: 'var(--muted)' }}>{callerName[0]}</div>
+            ? <Image src={callerPhoto} alt={callerName} fill style={{ objectFit: 'cover' }} sizes="156px" />
+            : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-fraunces)', fontSize: 56, color: 'var(--muted)' }}>{callerName[0]}</div>
           }
         </div>
-        <div style={{ position: 'absolute', inset: -6, borderRadius: '50%', border: '2px solid rgba(225,29,72,0.20)', animation: 'ping 1.5s ease-in-out infinite' }} />
-        <div style={{ position: 'absolute', inset: -14, borderRadius: '50%', border: '1px solid rgba(225,29,72,0.10)', animation: 'ping 1.5s ease-in-out infinite', animationDelay: '0.4s' }} />
       </div>
-      <div style={{ textAlign: 'center' }}>
-        <p style={{ fontSize: 12, color: 'var(--accent)', marginBottom: 6, letterSpacing: '0.08em', textTransform: 'uppercase', fontFamily: 'var(--font-jakarta)', fontWeight: 700 }}>Chamada de vídeo</p>
-        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 24, color: 'var(--text)', margin: 0 }}>{callerName}</p>
+
+      <p style={{ fontSize: 10, color: '#F43F5E', letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 700, margin: '0 0 8px' }}>Chamada de vídeo</p>
+      <p style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', fontSize: 30, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em' }}>{callerName}</p>
+      <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.50)', margin: '8px 0 48px' }}>Está te chamando…</p>
+
+      <div style={{ display: 'flex', gap: 56, alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={onReject}
+            style={{ width: 76, height: 76, borderRadius: '50%', background: 'linear-gradient(135deg, #E11D48, #be123c)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 12px 32px rgba(225,29,72,0.45)' }}
+          >
+            <PhoneOff size={28} color="#fff" strokeWidth={1.8} />
+          </button>
+          <span style={{ fontSize: 10, color: 'rgba(248,249,250,0.50)', letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 700 }}>Recusar</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+          <button
+            onClick={onAccept}
+            style={{ width: 76, height: 76, borderRadius: '50%', background: '#10b981', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 12px 32px rgba(16,185,129,0.45), 0 0 0 8px rgba(16,185,129,0.08)' }}
+          >
+            <Phone size={28} color="#fff" strokeWidth={1.8} />
+          </button>
+          <span style={{ fontSize: 10, color: 'rgba(248,249,250,0.50)', letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 700 }}>Atender</span>
+        </div>
       </div>
-      <div style={{ display: 'flex', gap: 32 }}>
-        <button
-          onClick={onReject}
-          style={{ width: 60, height: 60, borderRadius: '50%', background: 'rgba(244,63,94,0.15)', border: '1px solid rgba(244,63,94,0.30)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-        >
-          <PhoneOff size={22} color="#F43F5E" />
-        </button>
-        <button
-          onClick={onAccept}
-          style={{ width: 60, height: 60, borderRadius: '50%', background: '#10b981', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 8px 24px rgba(16,185,129,0.35)' }}
-        >
-          <Phone size={22} color="#fff" />
-        </button>
-      </div>
+
+      <style>{`
+        @keyframes calling-pulse {
+          0%   { opacity: 0.9; transform: scale(0.95); }
+          100% { opacity: 0;   transform: scale(1.25); }
+        }
+      `}</style>
     </div>
   )
 }

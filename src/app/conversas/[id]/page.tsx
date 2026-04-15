@@ -75,6 +75,14 @@ export default function ChatPage() {
   const [meetingDateVal, setMeetingDateVal]     = useState('')
   const [meetingTimeVal, setMeetingTimeVal]     = useState('')
   const [meetingSaved, setMeetingSaved]         = useState(false)
+  const [meetingCep, setMeetingCep]             = useState('')
+  const [meetingRua, setMeetingRua]             = useState('')
+  const [meetingNumero, setMeetingNumero]       = useState('')
+  const [meetingBairro, setMeetingBairro]       = useState('')
+  const [meetingCidade, setMeetingCidade]       = useState('')
+  const [meetingUf, setMeetingUf]               = useState('')
+  const [cepLoading, setCepLoading]             = useState(false)
+  const [cepError, setCepError]                 = useState('')
   // Check-in pós-encontro (bloqueante)
   const [checkinMeeting, setCheckinMeeting] = useState<{ id: string; local: string; date: string } | null>(null)
   const [checkinRecordId, setCheckinRecordId] = useState<string | null>(null)
@@ -513,9 +521,42 @@ export default function ChatPage() {
 
   // ── Fase 8: handlers ─────────────────────────────────────────────────────────
 
+  async function handleCepLookup(raw: string) {
+    const cep = raw.replace(/\D/g, '').slice(0, 8)
+    setMeetingCep(cep.length > 5 ? `${cep.slice(0,5)}-${cep.slice(5)}` : cep)
+    setCepError('')
+    if (cep.length !== 8) return
+    setCepLoading(true)
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+      const data = await res.json()
+      if (data.erro) {
+        setCepError('CEP não encontrado')
+      } else {
+        setMeetingRua(data.logradouro ?? '')
+        setMeetingBairro(data.bairro ?? '')
+        setMeetingCidade(data.localidade ?? '')
+        setMeetingUf(data.uf ?? '')
+      }
+    } catch {
+      setCepError('Erro ao buscar CEP')
+    } finally {
+      setCepLoading(false)
+    }
+  }
+
   async function handleSaveMeeting() {
     if (!meetingLocal.trim() || !meetingDateVal || !meetingTimeVal) return
     const meetingDate = `${meetingDateVal}T${meetingTimeVal}`
+    const enderecoCompleto = [
+      meetingRua && meetingNumero ? `${meetingRua}, ${meetingNumero}` : meetingRua,
+      meetingBairro,
+      meetingCidade && meetingUf ? `${meetingCidade}/${meetingUf}` : meetingCidade,
+      meetingCep,
+    ].filter(Boolean).join(' · ')
+    const localFinal = enderecoCompleto
+      ? `${meetingLocal.trim()} — ${enderecoCompleto}`
+      : meetingLocal.trim()
 
     // Salva no banco (privado — o match não vê)
     try {
@@ -523,7 +564,7 @@ export default function ChatPage() {
       const res = await fetch('/api/safety/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session?.access_token}` },
-        body: JSON.stringify({ matchId, matchName: otherUser?.name ?? 'Match', local: meetingLocal.trim(), meetingDate }),
+        body: JSON.stringify({ matchId, matchName: otherUser?.name ?? 'Match', local: localFinal, meetingDate }),
       })
       const json = await res.json()
       if (json.id) setCheckinRecordId(json.id)
@@ -531,7 +572,7 @@ export default function ChatPage() {
 
     // Mantém também localStorage como fallback
     try {
-      const record = { id: String(Date.now()), matchId, matchName: otherUser?.name ?? 'Match', local: meetingLocal.trim(), date: meetingDate, checkedIn: false }
+      const record = { id: String(Date.now()), matchId, matchName: otherUser?.name ?? 'Match', local: localFinal, date: meetingDate, checkedIn: false }
       const existing: any[] = JSON.parse(localStorage.getItem('meandyou_meetings') ?? '[]')
       localStorage.setItem('meandyou_meetings', JSON.stringify([...existing, record]))
     } catch { /* ignore */ }
@@ -555,6 +596,13 @@ export default function ChatPage() {
       setMeetingLocal('')
       setMeetingDateVal('')
       setMeetingTimeVal('')
+      setMeetingCep('')
+      setMeetingRua('')
+      setMeetingNumero('')
+      setMeetingBairro('')
+      setMeetingCidade('')
+      setMeetingUf('')
+      setCepError('')
     }, 1500)
   }
 
@@ -1395,8 +1443,36 @@ export default function ChatPage() {
                     <input value={otherUser?.name ?? ''} readOnly style={{ width:'100%',background:'rgba(255,255,255,0.04)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--muted)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const }} />
                   </div>
                   <div>
-                    <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Local *</label>
+                    <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Nome do local *</label>
                     <input value={meetingLocal} onChange={e => setMeetingLocal(e.target.value)} placeholder="Ex: Café Central, Shopping Norte..." autoFocus style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
+                  </div>
+                  <div>
+                    <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>CEP {cepLoading && <span style={{ color:'var(--accent)',marginLeft:6 }}>buscando…</span>}{cepError && <span style={{ color:'#F43F5E',marginLeft:6 }}>{cepError}</span>}</label>
+                    <input value={meetingCep} onChange={e => handleCepLookup(e.target.value)} placeholder="00000-000" inputMode="numeric" maxLength={9} style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
+                  </div>
+                  <div style={{ display:'flex',gap:10 }}>
+                    <div style={{ flex:2 }}>
+                      <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Rua</label>
+                      <input value={meetingRua} onChange={e => setMeetingRua(e.target.value)} placeholder="Rua / Avenida" style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Número</label>
+                      <input value={meetingNumero} onChange={e => setMeetingNumero(e.target.value)} placeholder="123" inputMode="numeric" style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Bairro</label>
+                    <input value={meetingBairro} onChange={e => setMeetingBairro(e.target.value)} placeholder="Bairro" style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
+                  </div>
+                  <div style={{ display:'flex',gap:10 }}>
+                    <div style={{ flex:2 }}>
+                      <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Cidade</label>
+                      <input value={meetingCidade} onChange={e => setMeetingCidade(e.target.value)} placeholder="Cidade" style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
+                    </div>
+                    <div style={{ flex:1 }}>
+                      <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>UF</label>
+                      <input value={meetingUf} onChange={e => setMeetingUf(e.target.value.toUpperCase().slice(0,2))} placeholder="SP" maxLength={2} style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none',textTransform:'uppercase' }} />
+                    </div>
                   </div>
                   <div style={{ display:'flex',gap:10 }}>
                     <div style={{ flex:1 }}>
