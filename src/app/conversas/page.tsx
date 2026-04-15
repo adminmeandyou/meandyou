@@ -338,7 +338,7 @@ export default function MatchesHubPage() {
           </div>
         ) : aba === 'conversas' ? (
           <AbaConversas
-            conversations={convsAtivas}
+            conversations={conversations.filter(c => c.otherName.toLowerCase().includes(searchTerm.toLowerCase()))}
             currentUserId={userId ?? ''}
             archivedIds={archivedIds}
             onArchive={handleArchive}
@@ -367,6 +367,85 @@ export default function MatchesHubPage() {
 
 // ─── Aba Conversas ─────────────────────────────────────────────────────────────
 
+function ConvRow({ conv, currentUserId, isArchived, onArchive }: {
+  conv: Conversation
+  currentUserId: string
+  isArchived: boolean
+  onArchive: (matchId: string) => void
+}) {
+  const isMyMessage = conv.lastSenderId === currentUserId
+  return (
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
+      <button
+        onClick={() => onArchive(conv.matchId)}
+        style={{
+          position: 'absolute', right: 0, top: 0, bottom: 0, width: 80,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: isArchived ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)',
+          border: 'none', cursor: 'pointer', flexDirection: 'column', gap: 4,
+          borderLeft: '1px solid var(--border-soft)',
+        }}
+      >
+        <Archive size={16} color={isArchived ? '#10b981' : 'rgba(248,249,250,0.4)'} strokeWidth={1.5} />
+        <span style={{ fontSize: 10, color: isArchived ? '#10b981' : 'rgba(248,249,250,0.4)', fontWeight: 600 }}>
+          {isArchived ? 'Restaurar' : 'Arquivar'}
+        </span>
+      </button>
+
+      <Link
+        href={`/conversas/${conv.matchId}`}
+        style={{
+          display: 'flex', alignItems: 'center', gap: 14,
+          padding: '12px 20px', borderBottom: '1px solid var(--border-soft)',
+          textDecoration: 'none', background: isArchived ? 'rgba(255,255,255,0.015)' : 'var(--bg)',
+          position: 'relative', zIndex: 1, marginRight: 80,
+          opacity: isArchived ? 0.65 : 1,
+        }}
+      >
+        <div style={{ position: 'relative', flexShrink: 0 }}>
+          <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)' }}>
+            {conv.otherPhoto ? (
+              <Image src={conv.otherPhoto} alt={conv.otherName} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
+            ) : (
+              <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{conv.otherName[0]}</span>
+              </div>
+            )}
+          </div>
+          {conv.unreadCount === 0 && (
+            <div style={{ position: 'absolute', bottom: 1, right: 1 }}>
+              <OnlineIndicator lastActiveAt={conv.lastActiveAt} showLastActive={conv.showLastActive} mode="dot" size={12} />
+            </div>
+          )}
+          {conv.unreadCount > 0 && (
+            <div style={{ position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 100, background: 'var(--accent)', border: '2px solid var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
+              <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>{conv.unreadCount > 9 ? '9+' : conv.unreadCount}</span>
+            </div>
+          )}
+        </div>
+
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
+            <p style={{ fontSize: 14, fontWeight: conv.unreadCount > 0 ? 700 : 500, color: conv.unreadCount > 0 ? 'var(--text)' : 'rgba(248,249,250,0.80)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {conv.otherName}
+            </p>
+            {conv.lastMessageAt && (
+              <span style={{ fontSize: 12, color: 'rgba(248,249,250,0.30)', flexShrink: 0, marginLeft: 8 }}>
+                {formatTime(conv.lastMessageAt)}
+              </span>
+            )}
+          </div>
+          <p style={{ fontSize: 13, margin: 0, color: conv.unreadCount > 0 ? 'rgba(248,249,250,0.65)' : 'rgba(248,249,250,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {conv.lastMessage
+              ? `${isMyMessage ? 'Você: ' : ''}${conv.lastMessage}`
+              : 'Nenhuma mensagem ainda'}
+          </p>
+        </div>
+      </Link>
+    </div>
+  )
+}
+
 function AbaConversas({
   conversations, currentUserId, archivedIds, onArchive, onEmpty, searchTerm,
 }: {
@@ -377,7 +456,12 @@ function AbaConversas({
   onEmpty: () => void
   searchTerm: string
 }) {
-  if (conversations.length === 0) {
+  const [showArchived, setShowArchived] = useState(false)
+
+  const active = conversations.filter(c => !archivedIds.has(c.matchId))
+  const archived = conversations.filter(c => archivedIds.has(c.matchId))
+
+  if (active.length === 0 && archived.length === 0) {
     return (
       <EmptyState
         icon={<MessageCircle size={28} />}
@@ -388,81 +472,66 @@ function AbaConversas({
     )
   }
 
+  if (active.length === 0 && archived.length > 0 && !searchTerm) {
+    return (
+      <div>
+        <div style={{ padding: '32px 20px 16px', textAlign: 'center' }}>
+          <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0 }}>Nenhuma conversa ativa</p>
+        </div>
+        <button
+          onClick={() => setShowArchived(v => !v)}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+            padding: '12px 20px', background: 'none', border: 'none',
+            borderTop: '1px solid var(--border-soft)',
+            cursor: 'pointer', color: 'rgba(248,249,250,0.35)',
+            fontFamily: 'var(--font-jakarta)', fontSize: 12, fontWeight: 600,
+            letterSpacing: '0.05em', textTransform: 'uppercase',
+          }}
+        >
+          <Archive size={13} strokeWidth={1.5} />
+          Arquivadas ({archived.length})
+          <span style={{ marginLeft: 'auto', fontSize: 10, opacity: 0.6 }}>
+            {showArchived ? 'Ocultar' : 'Ver'}
+          </span>
+        </button>
+        {showArchived && archived.map(conv => (
+          <ConvRow key={conv.matchId} conv={conv} currentUserId={currentUserId} isArchived onArchive={onArchive} />
+        ))}
+      </div>
+    )
+  }
+
   return (
     <div>
-      {conversations.map((conv) => {
-        const isMyMessage = conv.lastSenderId === currentUserId
-        const isArchived = archivedIds.has(conv.matchId)
-        return (
-          <div key={conv.matchId} style={{ position: 'relative', overflow: 'hidden' }}>
-            <button
-              onClick={() => onArchive(conv.matchId)}
-              style={{
-                position: 'absolute', right: 0, top: 0, bottom: 0, width: 80,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: isArchived ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)',
-                border: 'none', cursor: 'pointer', flexDirection: 'column', gap: 4,
-                borderLeft: '1px solid var(--border-soft)',
-              }}
-            >
-              <Archive size={16} color={isArchived ? '#10b981' : 'rgba(248,249,250,0.4)'} strokeWidth={1.5} />
-              <span style={{ fontSize: 10, color: isArchived ? '#10b981' : 'rgba(248,249,250,0.4)', fontWeight: 600 }}>
-                {isArchived ? 'Restaurar' : 'Arquivar'}
-              </span>
-            </button>
+      {active.map(conv => (
+        <ConvRow key={conv.matchId} conv={conv} currentUserId={currentUserId} isArchived={false} onArchive={onArchive} />
+      ))}
 
-            <Link
-              href={`/conversas/${conv.matchId}`}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                padding: '12px 20px', borderBottom: '1px solid var(--border-soft)',
-                textDecoration: 'none', background: 'var(--bg)',
-                position: 'relative', zIndex: 1, marginRight: 80,
-              }}
-            >
-              <div style={{ position: 'relative', flexShrink: 0 }}>
-                <div style={{ width: 56, height: 56, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)' }}>
-                  {conv.otherPhoto ? (
-                    <Image src={conv.otherPhoto} alt={conv.otherName} width={56} height={56} style={{ objectFit: 'cover', width: '100%', height: '100%' }} />
-                  ) : (
-                    <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      <span style={{ color: 'var(--muted)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>{conv.otherName[0]}</span>
-                    </div>
-                  )}
-                </div>
-                {conv.unreadCount === 0 && (
-                  <div style={{ position: 'absolute', bottom: 1, right: 1 }}>
-                    <OnlineIndicator lastActiveAt={conv.lastActiveAt} showLastActive={conv.showLastActive} mode="dot" size={12} />
-                  </div>
-                )}
-                {conv.unreadCount > 0 && (
-                  <div style={{ position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 100, background: 'var(--accent)', border: '2px solid var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#fff' }}>{conv.unreadCount > 9 ? '9+' : conv.unreadCount}</span>
-                  </div>
-                )}
-              </div>
-
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 3 }}>
-                  <p style={{ fontSize: 14, fontWeight: conv.unreadCount > 0 ? 700 : 500, color: conv.unreadCount > 0 ? 'var(--text)' : 'rgba(248,249,250,0.80)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {conv.otherName}
-                  </p>
-                  {conv.lastMessageAt && (
-                    <span style={{ fontSize: 12, color: 'rgba(248,249,250,0.30)', flexShrink: 0, marginLeft: 8 }}>
-                      {formatTime(conv.lastMessageAt)}
-                    </span>
-                  )}
-                </div>
-                <p style={{ fontSize: 13, margin: 0, color: conv.unreadCount > 0 ? 'rgba(248,249,250,0.65)' : 'rgba(248,249,250,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {conv.lastMessage
-                    ? `${isMyMessage ? 'Você: ' : ''}${conv.lastMessage}`
-                    : 'Nenhuma mensagem ainda'}
-                </p>
-              </div>
-            </Link>
-          </div>
-        )
-      })}
+      {archived.length > 0 && (
+        <>
+          <button
+            onClick={() => setShowArchived(v => !v)}
+            style={{
+              width: '100%', display: 'flex', alignItems: 'center', gap: 8,
+              padding: '12px 20px', background: 'none', border: 'none',
+              borderTop: '1px solid var(--border-soft)',
+              cursor: 'pointer', color: 'rgba(248,249,250,0.35)',
+              fontFamily: 'var(--font-jakarta)', fontSize: 12, fontWeight: 600,
+              letterSpacing: '0.05em', textTransform: 'uppercase',
+            }}
+          >
+            <Archive size={13} strokeWidth={1.5} />
+            Arquivadas ({archived.length})
+            <span style={{ marginLeft: 'auto', fontSize: 10, opacity: 0.6 }}>
+              {showArchived ? 'Ocultar' : 'Ver'}
+            </span>
+          </button>
+          {showArchived && archived.map(conv => (
+            <ConvRow key={conv.matchId} conv={conv} currentUserId={currentUserId} isArchived onArchive={onArchive} />
+          ))}
+        </>
+      )}
     </div>
   )
 }

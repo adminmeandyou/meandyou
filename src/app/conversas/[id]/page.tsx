@@ -219,6 +219,11 @@ export default function ChatPage() {
           if (newMsg.content.startsWith(CONVITE_PREFIX)) {
             setPendingConvite(newMsg.content.slice(CONVITE_PREFIX.length))
           }
+          // Vibração leve ao receber mensagem nova
+          if (typeof navigator !== 'undefined' && navigator.vibrate) {
+            navigator.vibrate(15)
+          }
+
           // Nudge recebido: haptics + shake
           if (newMsg.content === NUDGE_TOKEN) {
             if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -725,7 +730,7 @@ export default function ChatPage() {
         .chat-shake { animation: nudge-shake 0.65s ease; }
       `}</style>
 
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', overscrollBehavior: 'none', background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', zIndex: 50 }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', overscrollBehavior: 'none', touchAction: 'none', background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', zIndex: 50 }}>
 
         {/* ── Header glass ── */}
         <header style={{
@@ -964,7 +969,7 @@ export default function ChatPage() {
         {/* ── Mensagens ── */}
         <div
           className={shake ? 'chat-shake' : ''}
-          style={{ flex: 1, overflowY: 'scroll', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', padding: '4px 14px 8px' }}
+          style={{ flex: 1, overflowY: 'scroll', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', touchAction: 'pan-y', padding: '4px 14px 8px' }}
         >
           {messages.length === 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 14, color: 'var(--muted-2)' }}>
