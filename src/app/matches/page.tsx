@@ -1,15 +1,15 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
-import { MessageCircle, Heart, Loader2, UserPlus, Check } from 'lucide-react'
+import { MessageCircle, Heart, Loader2, UserPlus, Check, User, HeartCrack, ShieldAlert, Archive, X } from 'lucide-react'
 import { SkeletonList } from '@/components/Skeleton'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
+import { ReportModal } from '@/components/ReportModal'
 
 type Match = {
   match_id: string
@@ -58,6 +58,53 @@ export default function MatchesPage() {
   const [userId, setUserId] = useState<string | null>(null)
   const [matches, setMatches] = useState<Match[]>([])
   const [loading, setLoading] = useState(true)
+  const [actionsFor, setActionsFor] = useState<Match | null>(null)
+  const [reportFor, setReportFor] = useState<{ id: string; name: string } | null>(null)
+  const [unmatchConfirm, setUnmatchConfirm] = useState(false)
+
+  async function actionAddFriend(m: Match) {
+    if (!userId) return
+    try {
+      const res = await fetch('/api/amigos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiverId: m.other_user_id }),
+      })
+      if (res.ok) toast.success('Solicitação enviada')
+      else toast.error('Erro ao enviar solicitação')
+    } catch { toast.error('Erro ao enviar solicitação') }
+    setActionsFor(null)
+  }
+
+  async function actionUnmatch(m: Match) {
+    try {
+      await supabase.from('matches').update({ status: 'blocked' }).eq('id', m.match_id)
+      toast.success('Match desfeito')
+      if (userId) loadMatches(userId)
+    } catch { toast.error('Erro ao desfazer') }
+    setUnmatchConfirm(false)
+    setActionsFor(null)
+  }
+
+  function actionVerPerfil(m: Match) {
+    setActionsFor(null)
+    router.push(`/perfil/${m.other_user_id}`)
+  }
+
+  function actionAvaliar(m: Match) {
+    setActionsFor(null)
+    router.push(`/conversas/${m.match_id}?avaliar=1`)
+  }
+
+  function actionReport(m: Match) {
+    setActionsFor(null)
+    setReportFor({ id: m.other_user_id, name: m.name })
+  }
+
+  function actionArquivar() {
+    setActionsFor(null)
+    toast.info('Arquivamento em breve')
+  }
 
   useEffect(() => {
     let channel: ReturnType<typeof supabase.channel> | null = null
@@ -317,7 +364,12 @@ export default function MatchesPage() {
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '0 12px' }}>
                   {matchesComConversa.map(match => (
-                    <ConversaItem key={match.match_id} match={match} formatTempo={formatTempo} />
+                    <ConversaItem
+                      key={match.match_id}
+                      match={match}
+                      formatTempo={formatTempo}
+                      onLongPress={(m) => { haptics.medium(); setActionsFor(m); setUnmatchConfirm(false) }}
+                    />
                   ))}
                 </div>
               </div>
@@ -346,6 +398,104 @@ export default function MatchesPage() {
           </>
         )}
       </main>
+
+      {/* ── Action Sheet (long-press) ── */}
+      {actionsFor && (
+        <div
+          onClick={() => { setActionsFor(null); setUnmatchConfirm(false) }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 100,
+            background: 'rgba(8,9,14,0.75)', backdropFilter: 'blur(12px)',
+            display: 'flex', alignItems: 'flex-end', justifyContent: 'center',
+            animation: 'ui-fade-in 0.18s ease',
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: '100%', maxWidth: 430,
+              background: 'rgba(15,17,23,0.98)',
+              borderTop: '1px solid rgba(255,255,255,0.07)',
+              borderTopLeftRadius: 24, borderTopRightRadius: 24,
+              padding: '12px 12px calc(24px + env(safe-area-inset-bottom))',
+              animation: 'ui-slide-up 0.22s ease',
+            }}
+          >
+            {/* handle */}
+            <div style={{ width: 40, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.12)', margin: '4px auto 14px' }} />
+
+            {/* título */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 12px 14px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: 8 }}>
+              <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, background: '#13161F', border: '1px solid rgba(255,255,255,0.06)' }}>
+                {actionsFor.photo_best ? (
+                  <Image src={actionsFor.photo_best} alt={actionsFor.name} fill className="object-cover" sizes="44px" />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(248,249,250,0.5)', fontFamily: 'var(--font-fraunces)', fontSize: 18 }}>{actionsFor.name[0]}</div>
+                )}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: 0, fontFamily: 'var(--font-fraunces)', fontSize: 16, fontWeight: 700, color: '#F8F9FA', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{actionsFor.name}</p>
+                <p style={{ margin: 0, fontSize: 11, color: 'rgba(248,249,250,0.40)' }}>Escolha uma ação</p>
+              </div>
+              <button onClick={() => { setActionsFor(null); setUnmatchConfirm(false) }} style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                <X size={16} color="rgba(248,249,250,0.6)" strokeWidth={1.5} />
+              </button>
+            </div>
+
+            {unmatchConfirm ? (
+              <div style={{ padding: '12px' }}>
+                <p style={{ margin: '0 0 14px', fontSize: 13, color: 'rgba(248,249,250,0.70)', lineHeight: 1.5, textAlign: 'center' }}>
+                  Desfazer o match com <strong style={{ color: '#F8F9FA' }}>{actionsFor.name}</strong>? Essa ação não pode ser desfeita.
+                </p>
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <button onClick={() => setUnmatchConfirm(false)} style={{ flex: 1, padding: '12px', borderRadius: 12, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(248,249,250,0.75)', fontSize: 13, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>Cancelar</button>
+                  <button onClick={() => actionUnmatch(actionsFor)} style={{ flex: 1, padding: '12px', borderRadius: 12, background: '#E11D48', border: 'none', color: '#fff', fontSize: 13, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>Desfazer</button>
+                </div>
+              </div>
+            ) : (
+              <>
+                {[
+                  { icon: <User size={18} strokeWidth={1.5} />, label: 'Ver perfil', onClick: () => actionVerPerfil(actionsFor) },
+                  { icon: <UserPlus size={18} strokeWidth={1.5} />, label: 'Adicionar como amigo', onClick: () => actionAddFriend(actionsFor) },
+                  { icon: <MessageCircle size={18} strokeWidth={1.5} />, label: 'Avaliar conversa', onClick: () => actionAvaliar(actionsFor) },
+                  { icon: <Archive size={18} strokeWidth={1.5} />, label: 'Arquivar conversa', onClick: () => actionArquivar() },
+                  { icon: <ShieldAlert size={18} strokeWidth={1.5} />, label: 'Reportar', onClick: () => actionReport(actionsFor), danger: true },
+                  { icon: <HeartCrack size={18} strokeWidth={1.5} />, label: 'Desfazer match', onClick: () => setUnmatchConfirm(true), danger: true },
+                ].map((item, i) => (
+                  <button key={i} onClick={item.onClick} style={{
+                    width: '100%', display: 'flex', alignItems: 'center', gap: 14,
+                    padding: '14px 12px', borderRadius: 12, border: 'none',
+                    background: 'transparent', cursor: 'pointer',
+                    color: item.danger ? '#F43F5E' : 'rgba(248,249,250,0.85)',
+                    fontFamily: 'var(--font-jakarta)', fontSize: 14, fontWeight: 600,
+                    textAlign: 'left',
+                  }}>
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10,
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      background: item.danger ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${item.danger ? 'rgba(225,29,72,0.20)' : 'rgba(255,255,255,0.06)'}`,
+                      flexShrink: 0,
+                    }}>
+                      {item.icon}
+                    </div>
+                    {item.label}
+                  </button>
+                ))}
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Report Modal ── */}
+      {reportFor && (
+        <ReportModal
+          reportedId={reportFor.id}
+          reportedName={reportFor.name}
+          onClose={() => setReportFor(null)}
+        />
+      )}
     </div>
   )
 }
@@ -474,11 +624,35 @@ function getNivel(matchedAt: string, lastMessageAt: string | null): { label: str
 
 // ─── Item de conversa ─────────────────────────────────────────────────────────
 
-function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: string | null) => string }) {
+function ConversaItem({ match, formatTempo, onLongPress }: { match: Match; formatTempo: (d: string | null) => string; onLongPress: (m: Match) => void }) {
+  const router = useRouter()
   const expiry = getExpiryInfo(match.matched_at, match.last_message_at)
+  const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const triggered = useRef(false)
+
+  function startPress() {
+    triggered.current = false
+    pressTimer.current = setTimeout(() => {
+      triggered.current = true
+      onLongPress(match)
+    }, 500)
+  }
+  function cancelPress() {
+    if (pressTimer.current) clearTimeout(pressTimer.current)
+  }
+  function handleClick() {
+    if (triggered.current) return
+    router.push(`/conversas/${match.match_id}`)
+  }
+
   return (
-    <Link
-      href={`/conversas/${match.match_id}`}
+    <div
+      onPointerDown={startPress}
+      onPointerUp={cancelPress}
+      onPointerLeave={cancelPress}
+      onPointerCancel={cancelPress}
+      onContextMenu={(e) => { e.preventDefault(); triggered.current = true; onLongPress(match) }}
+      onClick={handleClick}
       style={{
         display: 'flex', alignItems: 'center', gap: 14,
         padding: '14px 16px',
@@ -487,6 +661,8 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
         border: '1px solid rgba(255,255,255,0.04)',
         textDecoration: 'none',
         transition: 'background 0.15s ease',
+        cursor: 'pointer', userSelect: 'none',
+        WebkitTouchCallout: 'none',
       }}
     >
       <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -576,6 +752,6 @@ function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: s
           {match.last_message || 'Iniciar conversa...'}
         </p>
       </div>
-    </Link>
+    </div>
   )
 }

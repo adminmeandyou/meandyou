@@ -858,6 +858,15 @@ export default function ChatPage() {
             />
           )}
 
+          {/* Nudge — tremer a tela do outro (estilo MSN) */}
+          <button
+            onClick={handleNudge}
+            style={{ width: 36, height: 36, borderRadius: '50%', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+            title="Dar um nudge"
+          >
+            <Zap size={18} color="rgba(248,249,250,0.40)" strokeWidth={1.5} />
+          </button>
+
           {/* Ícone info / Central de Segurança */}
           <button
             onClick={() => setShowSecuritySheet(true)}
