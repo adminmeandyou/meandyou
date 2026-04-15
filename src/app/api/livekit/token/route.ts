@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
         .select('minutes')
         .eq('user_id', user.id)
         .eq('date', new Date().toISOString().split('T')[0])
-        .single(),
+        .maybeSingle(),
     ])
 
     const plano = profileResult.data?.plan ?? 'essencial'
@@ -76,12 +76,21 @@ export async function POST(req: NextRequest) {
     }
 
     // 4. Gerar token LiveKit
+    if (!process.env.LIVEKIT_API_KEY || !process.env.LIVEKIT_API_SECRET || !process.env.NEXT_PUBLIC_LIVEKIT_URL) {
+      console.error('LiveKit env vars ausentes:', {
+        hasKey: !!process.env.LIVEKIT_API_KEY,
+        hasSecret: !!process.env.LIVEKIT_API_SECRET,
+        hasUrl: !!process.env.NEXT_PUBLIC_LIVEKIT_URL,
+      })
+      return NextResponse.json({ error: 'Videochamada não configurada no servidor' }, { status: 500 })
+    }
+
     // Nome da sala inclui matchId para o webhook conseguir identificar o match
     const roomName = `match-${matchId}`
 
     const lkToken = new AccessToken(
-      process.env.LIVEKIT_API_KEY!,
-      process.env.LIVEKIT_API_SECRET!,
+      process.env.LIVEKIT_API_KEY,
+      process.env.LIVEKIT_API_SECRET,
       {
         identity: user.id,
         ttl: '2h',
@@ -106,6 +115,7 @@ export async function POST(req: NextRequest) {
 
   } catch (err) {
     console.error('Erro ao gerar token LiveKit:', err)
-    return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
+    const msg = err instanceof Error ? err.message : 'Erro interno'
+    return NextResponse.json({ error: `Erro interno: ${msg}` }, { status: 500 })
   }
 }
