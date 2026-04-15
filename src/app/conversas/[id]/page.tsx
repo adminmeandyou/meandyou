@@ -685,7 +685,7 @@ export default function ChatPage() {
         .chat-shake { animation: nudge-shake 0.65s ease; }
       `}</style>
 
-      <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', zIndex: 50 }}>
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', zIndex: 50 }}>
 
         {/* ── Header glass ── */}
         <header style={{
@@ -802,7 +802,56 @@ export default function ChatPage() {
           flexShrink: 0,
           display: 'flex', gap: 8, overflowX: 'auto', padding: '8px 16px',
           borderBottom: '1px solid rgba(255,255,255,0.03)',
+          scrollbarWidth: 'none',
         }}>
+          {/* Quebra-gelo */}
+          <button
+            onClick={() => { setShowConvite(false); setShowIcebreakers(v => !v) }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '6px 14px', borderRadius: 100, flexShrink: 0,
+              background: showIcebreakers ? 'rgba(225,29,72,0.10)' : '#0F1117',
+              border: showIcebreakers ? '1px solid rgba(225,29,72,0.30)' : '1px solid rgba(255,255,255,0.05)',
+              color: showIcebreakers ? 'var(--accent)' : 'rgba(248,249,250,0.50)',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+              cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.2s',
+            }}
+          >
+            <Sparkles size={12} strokeWidth={1.5} />
+            Quebra-gelo
+          </button>
+          {/* Nudge */}
+          <button
+            onClick={handleNudge}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '6px 14px', borderRadius: 100, flexShrink: 0,
+              background: '#0F1117',
+              border: '1px solid rgba(255,255,255,0.05)',
+              color: 'rgba(248,249,250,0.50)',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+              cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.2s',
+            }}
+          >
+            <Zap size={12} strokeWidth={1.5} />
+            Nudge
+          </button>
+          {/* Amigo */}
+          <button
+            onClick={handleAddFriend}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '6px 14px', borderRadius: 100, flexShrink: 0,
+              background: friendSent ? 'rgba(16,185,129,0.10)' : '#0F1117',
+              border: friendSent ? '1px solid rgba(16,185,129,0.30)' : '1px solid rgba(255,255,255,0.05)',
+              color: friendSent ? '#10b981' : 'rgba(248,249,250,0.50)',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase',
+              cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.2s',
+            }}
+          >
+            {friendSent ? <Check size={12} strokeWidth={1.5} /> : <UserPlus size={12} strokeWidth={1.5} />}
+            {friendSent ? 'Enviado' : 'Amigo'}
+          </button>
           <button
             onClick={() => { setShowIcebreakers(false); setShowConvite(v => !v) }}
             style={{
@@ -1083,31 +1132,6 @@ export default function ChatPage() {
           paddingRight: '14px',
           paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))',
         }}>
-          {/* Botões secundários compactos */}
-          <div style={{ display: 'flex', gap: 6, marginBottom: 10, overflowX: 'auto' }}>
-            {/* Quebra-gelo */}
-            <ActionBtn
-              icon={<Sparkles size={13} strokeWidth={1.5} />}
-              label="Quebra-gelo"
-              onClick={() => { setShowConvite(false); setShowIcebreakers(v => !v) }}
-              active={showIcebreakers}
-            />
-            {/* Nudge */}
-            <ActionBtn
-              icon={<Zap size={13} strokeWidth={1.5} />}
-              label="Nudge"
-              onClick={handleNudge}
-              accent
-            />
-            {/* Adicionar como amigo */}
-            <ActionBtn
-              icon={friendSent ? <Check size={13} strokeWidth={1.5} /> : <UserPlus size={13} strokeWidth={1.5} />}
-              label={friendSent ? 'Enviado' : 'Amigo'}
-              onClick={handleAddFriend}
-              success={friendSent}
-            />
-          </div>
-
           {/* Emoji picker */}
           {showEmojis && (
             <div style={{ marginBottom: 8, padding: '10px', background: 'var(--bg-card2)', borderRadius: 12, border: '1px solid var(--border)', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
