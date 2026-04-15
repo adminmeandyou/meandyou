@@ -106,6 +106,24 @@ export default function ChatPage() {
 
   // Listener de chamada de vídeo — ativo enquanto o chat estiver aberto
   useEffect(() => {
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null
+    if (!vv) return
+    const apply = () => {
+      document.documentElement.style.setProperty('--chat-vh', `${vv.height}px`)
+      document.documentElement.style.setProperty('--chat-vo', `${vv.offsetTop}px`)
+    }
+    apply()
+    vv.addEventListener('resize', apply)
+    vv.addEventListener('scroll', apply)
+    return () => {
+      vv.removeEventListener('resize', apply)
+      vv.removeEventListener('scroll', apply)
+      document.documentElement.style.removeProperty('--chat-vh')
+      document.documentElement.style.removeProperty('--chat-vo')
+    }
+  }, [])
+
+  useEffect(() => {
     let uid: string
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
@@ -724,7 +742,7 @@ export default function ChatPage() {
         .chat-shake { animation: nudge-shake 0.65s ease; }
       `}</style>
 
-      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden', overscrollBehavior: 'none', touchAction: 'none', background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', zIndex: 50 }}>
+      <div style={{ position: 'fixed', top: 'var(--chat-vo, 0px)', left: 0, right: 0, height: 'var(--chat-vh, 100dvh)', overflow: 'hidden', overscrollBehavior: 'none', touchAction: 'none', background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', zIndex: 50 }}>
 
         {/* ── Header glass ── */}
         <header style={{
