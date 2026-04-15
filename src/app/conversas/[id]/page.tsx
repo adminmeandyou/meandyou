@@ -7,7 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {
   ArrowLeft, Send, Video, ShieldAlert,
-  Loader2, AlertCircle, Lock, Mic,
+  Loader2, AlertCircle, Lock,
   Sparkles, CalendarPlus, Zap, X, CalendarCheck, Star, Coffee,
   MapPin, Shield, HeartCrack, Ghost, Phone, CheckCircle2, UserPlus, Check, Smile
 } from 'lucide-react'
@@ -1105,12 +1105,6 @@ export default function ChatPage() {
               label={friendSent ? 'Enviado' : 'Amigo'}
               onClick={handleAddFriend}
               success={friendSent}
-            />
-            {/* Mic placeholder */}
-            <ActionBtn
-              icon={<Mic size={13} strokeWidth={1.5} />}
-              label="Áudio"
-              onClick={() => setError('Recurso de áudio em breve.')}
             />
           </div>
 
