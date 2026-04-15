@@ -61,6 +61,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const shell = usesShell(pathname)
 
+  // Rotas de chat individual: sem header/nav do shell (a página tem seu próprio chrome full-screen)
+  const isFullscreenChat = /^\/conversas\/.+/.test(pathname)
+
   // Rotas sem shell: renderiza children diretamente (sem ToastProvider — pages auth têm o próprio)
   if (!shell) return <ToastProvider>{children}</ToastProvider>
 
@@ -88,10 +91,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           }}
         >
           <div className="app-frame">
-            {/* Header — visível apenas em mobile (< md) */}
-            <div className="block md:hidden">
-              <AppHeaderConnected />
-            </div>
+            {/* Header — visível apenas em mobile (< md), escondido no chat individual */}
+            {!isFullscreenChat && (
+              <div className="block md:hidden">
+                <AppHeaderConnected />
+              </div>
+            )}
 
             {/* Área de conteúdo — scroll interno no mobile, scroll da janela no desktop */}
             <main
@@ -101,10 +106,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <PlanGuard>{children}</PlanGuard>
             </main>
 
-            {/* Bottom Nav — visível apenas em mobile (< md) */}
-            <div className="block md:hidden">
-              <AppBottomNav />
-            </div>
+            {/* Bottom Nav — visível apenas em mobile (< md), escondido no chat individual */}
+            {!isFullscreenChat && (
+              <div className="block md:hidden">
+                <AppBottomNav />
+              </div>
+            )}
           </div>
         </div>
 

@@ -664,7 +664,7 @@ export default function ChatPage() {
 
   if (loading) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
         <Loader2 size={28} color="rgba(248,249,250,0.3)" className="animate-spin" />
       </div>
     )
@@ -685,15 +685,18 @@ export default function ChatPage() {
         .chat-shake { animation: nudge-shake 0.65s ease; }
       `}</style>
 
-      <div style={{ height: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', position: 'relative' }}>
+      <div style={{ position: 'fixed', inset: 0, background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', zIndex: 50 }}>
 
         {/* ── Header glass ── */}
         <header style={{
           flexShrink: 0,
-          background: 'rgba(8,9,14,0.85)', backdropFilter: 'blur(16px) saturate(1.2)',
+          background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(20px) saturate(1.3)',
           borderBottom: '1px solid rgba(255,255,255,0.04)',
-          padding: '10px 16px',
-          display: 'flex', alignItems: 'center', gap: 12, zIndex: 10,
+          paddingTop: 'max(10px, env(safe-area-inset-top, 0px))',
+          paddingBottom: '10px',
+          paddingLeft: '12px',
+          paddingRight: '12px',
+          display: 'flex', alignItems: 'center', gap: 10, zIndex: 10,
         }}>
           <button
             onClick={() => router.push('/conversas')}
@@ -1073,9 +1076,12 @@ export default function ChatPage() {
         {/* ── Barra de entrada glass ── */}
         <div style={{
           flexShrink: 0,
-          background: 'rgba(8,9,14,0.88)', backdropFilter: 'blur(20px) saturate(1.2)',
+          background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(20px) saturate(1.3)',
           borderTop: '1px solid rgba(255,255,255,0.04)',
-          padding: '10px 14px 14px',
+          paddingTop: '10px',
+          paddingLeft: '14px',
+          paddingRight: '14px',
+          paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))',
         }}>
           {/* Botões secundários compactos */}
           <div style={{ display: 'flex', gap: 6, marginBottom: 10, overflowX: 'auto' }}>
