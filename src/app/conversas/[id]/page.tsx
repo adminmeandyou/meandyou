@@ -7,7 +7,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import {
   ArrowLeft, Send, Video, ShieldAlert,
-  Loader2, AlertCircle, Lock,
+  Loader2, AlertCircle, Lock, Menu,
   Sparkles, CalendarPlus, Zap, X, CalendarCheck, Star, Coffee,
   MapPin, Shield, HeartCrack, Ghost, Phone, CheckCircle2, UserPlus, Check, Smile
 } from 'lucide-react'
@@ -796,7 +796,66 @@ export default function ChatPage() {
           >
             <Shield size={18} color="rgba(248,249,250,0.25)" strokeWidth={1.5} />
           </button>
+
+          {/* Hamburguer — abre menu de ações */}
+          <button
+            onClick={() => setShowMenu(v => !v)}
+            style={{
+              width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: showMenu ? 'rgba(225,29,72,0.12)' : 'transparent',
+              color: showMenu ? 'var(--accent)' : 'rgba(248,249,250,0.40)',
+              transition: 'all 0.2s',
+            }}
+            title="Ações"
+          >
+            <Menu size={18} strokeWidth={1.5} />
+          </button>
         </header>
+
+        {/* ── Menu de ações (dropdown abaixo do header) ── */}
+        {showMenu && (
+          <div style={{
+            position: 'absolute', top: 60, right: 12, zIndex: 40,
+            width: 260,
+            background: 'rgba(15,17,23,0.98)', backdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16,
+            padding: '8px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            animation: 'ui-slide-up 0.18s ease',
+          }}>
+            {[
+              { icon: <Sparkles size={16} strokeWidth={1.5} />, label: 'Quebra-gelo', sub: 'Sugestões para começar', onClick: () => { setShowMenu(false); setShowConvite(false); setShowIcebreakers(v => !v) }, active: showIcebreakers },
+              { icon: <CalendarPlus size={16} strokeWidth={1.5} />, label: 'Chamar para Encontro', sub: 'Proponha um encontro', onClick: () => { setShowMenu(false); setShowIcebreakers(false); setShowConvite(v => !v) }, active: showConvite },
+              { icon: <MapPin size={16} strokeWidth={1.5} />, label: 'Registrar Encontro', sub: 'Salvar local e horário', onClick: () => { setShowMenu(false); setShowMeetingModal(true) } },
+              { icon: <Zap size={16} strokeWidth={1.5} />, label: 'Nudge', sub: 'Chame a atenção da pessoa', onClick: () => { setShowMenu(false); handleNudge() } },
+              { icon: friendSent ? <Check size={16} strokeWidth={1.5} /> : <UserPlus size={16} strokeWidth={1.5} />, label: friendSent ? 'Amigo adicionado' : 'Adicionar como amigo', sub: friendSent ? 'Solicitação enviada' : 'Conectem-se fora do app', onClick: () => { setShowMenu(false); handleAddFriend() }, success: friendSent },
+              ...(messages.length >= 5 && !ratingDone ? [{ icon: <Star size={16} strokeWidth={1.5} />, label: 'Avaliar conversa', sub: 'Avaliação anônima', onClick: () => { setShowMenu(false); setShowRatingModal(true) } }] : []),
+              ...(boloOportunidade && !boloDone ? [{ icon: <Coffee size={16} strokeWidth={1.5} />, label: 'O encontro aconteceu?', sub: 'Conte como foi', onClick: () => { setShowMenu(false); setShowBoloModal(true) } }] : []),
+            ].map((item, i, arr) => (
+              <button key={i} onClick={item.onClick} style={{
+                width: '100%', display: 'flex', alignItems: 'center', gap: 12,
+                padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
+                background: item.active ? 'rgba(225,29,72,0.08)' : (item as {success?: boolean}).success ? 'rgba(16,185,129,0.08)' : 'transparent',
+                borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                transition: 'background 0.15s',
+              }}>
+                <div style={{
+                  width: 34, height: 34, borderRadius: 10, flexShrink: 0,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  background: item.active ? 'rgba(225,29,72,0.15)' : (item as {success?: boolean}).success ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)',
+                  color: item.active ? 'var(--accent)' : (item as {success?: boolean}).success ? '#10b981' : 'rgba(248,249,250,0.60)',
+                }}>
+                  {item.icon}
+                </div>
+                <div style={{ textAlign: 'left' }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: item.active ? 'var(--accent)' : (item as {success?: boolean}).success ? '#10b981' : 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>{item.label}</p>
+                  <p style={{ margin: 0, fontSize: 11, color: 'var(--muted-2)', fontFamily: 'var(--font-jakarta)' }}>{item.sub}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        )}
 
 
         {/* ── Banner convite pendente ── */}
@@ -1012,50 +1071,7 @@ export default function ChatPage() {
           paddingLeft: '14px',
           paddingRight: '14px',
           paddingBottom: 'max(14px, env(safe-area-inset-bottom, 14px))',
-          position: 'relative',
         }}>
-          {/* ── Menu de ações (abre ao clicar +) ── */}
-          {showMenu && (
-            <div style={{
-              position: 'absolute', bottom: 'calc(100% + 8px)', left: 14, right: 14,
-              background: 'rgba(15,17,23,0.98)', backdropFilter: 'blur(24px)',
-              border: '1px solid rgba(255,255,255,0.07)', borderRadius: 16,
-              padding: '8px', zIndex: 20,
-              animation: 'ui-slide-up 0.18s ease',
-            }}>
-              {[
-                { icon: <Sparkles size={16} strokeWidth={1.5} />, label: 'Quebra-gelo', sub: 'Sugestões para começar', onClick: () => { setShowMenu(false); setShowConvite(false); setShowIcebreakers(v => !v) }, active: showIcebreakers },
-                { icon: <CalendarPlus size={16} strokeWidth={1.5} />, label: 'Chamar para Encontro', sub: 'Proponha um encontro', onClick: () => { setShowMenu(false); setShowIcebreakers(false); setShowConvite(v => !v) }, active: showConvite },
-                { icon: <MapPin size={16} strokeWidth={1.5} />, label: 'Registrar Encontro', sub: 'Salvar local e horário', onClick: () => { setShowMenu(false); setShowMeetingModal(true) } },
-                { icon: <Zap size={16} strokeWidth={1.5} />, label: 'Nudge', sub: 'Chame a atenção da pessoa', onClick: () => { setShowMenu(false); handleNudge() } },
-                { icon: friendSent ? <Check size={16} strokeWidth={1.5} /> : <UserPlus size={16} strokeWidth={1.5} />, label: friendSent ? 'Amigo adicionado' : 'Adicionar como amigo', sub: friendSent ? 'Solicitação enviada' : 'Conectem-se fora do app', onClick: () => { setShowMenu(false); handleAddFriend() }, success: friendSent },
-                ...(messages.length >= 5 && !ratingDone ? [{ icon: <Star size={16} strokeWidth={1.5} />, label: 'Avaliar conversa', sub: 'Avaliação anônima', onClick: () => { setShowMenu(false); setShowRatingModal(true) } }] : []),
-                ...(boloOportunidade && !boloDone ? [{ icon: <Coffee size={16} strokeWidth={1.5} />, label: 'O encontro aconteceu?', sub: 'Conte como foi', onClick: () => { setShowMenu(false); setShowBoloModal(true) } }] : []),
-              ].map((item, i, arr) => (
-                <button key={i} onClick={item.onClick} style={{
-                  width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '10px 12px', borderRadius: 10, border: 'none', cursor: 'pointer',
-                  background: item.active ? 'rgba(225,29,72,0.08)' : (item as {success?: boolean}).success ? 'rgba(16,185,129,0.08)' : 'transparent',
-                  borderBottom: i < arr.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                  transition: 'background 0.15s',
-                }}>
-                  <div style={{
-                    width: 36, height: 36, borderRadius: 10, flexShrink: 0,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    background: item.active ? 'rgba(225,29,72,0.15)' : (item as {success?: boolean}).success ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.06)',
-                    color: item.active ? 'var(--accent)' : (item as {success?: boolean}).success ? '#10b981' : 'rgba(248,249,250,0.60)',
-                  }}>
-                    {item.icon}
-                  </div>
-                  <div style={{ textAlign: 'left' }}>
-                    <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: item.active ? 'var(--accent)' : (item as {success?: boolean}).success ? '#10b981' : 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>{item.label}</p>
-                    <p style={{ margin: 0, fontSize: 11, color: 'var(--muted-2)', fontFamily: 'var(--font-jakarta)' }}>{item.sub}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-
           {/* Emoji picker */}
           {showEmojis && (
             <div style={{ marginBottom: 8, padding: '10px', background: 'var(--bg-card2)', borderRadius: 12, border: '1px solid var(--border)', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
@@ -1069,20 +1085,6 @@ export default function ChatPage() {
 
           {/* Input + send */}
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 8 }}>
-            {/* Botão + (abre menu) */}
-            <button
-              onClick={() => { setShowMenu(v => !v); setShowEmojis(false) }}
-              style={{
-                width: 34, height: 34, borderRadius: 10, border: 'none', flexShrink: 0,
-                background: showMenu ? 'var(--accent)' : 'rgba(255,255,255,0.06)',
-                color: showMenu ? '#fff' : 'rgba(248,249,250,0.50)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
-                fontSize: 20, fontWeight: 300, lineHeight: 1, transition: 'all 0.2s',
-                transform: showMenu ? 'rotate(45deg)' : 'none',
-              }}
-            >
-              +
-            </button>
             <button
               onClick={() => setShowEmojis(v => !v)}
               style={{ width: 34, height: 34, borderRadius: 8, border: 'none', background: showEmojis ? 'rgba(225,29,72,0.10)' : 'transparent', color: showEmojis ? 'var(--accent)' : 'rgba(248,249,250,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
