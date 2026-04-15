@@ -30,6 +30,8 @@ export default function VerPerfilPage() {
   const [loading, setLoading] = useState(true)
   const [activePhoto, setActivePhoto] = useState(0)
   const [swipeAction, setSwipeAction] = useState<'like' | 'dislike' | 'superlike' | null>(null)
+  const [hasMatch, setHasMatch] = useState(false)
+  const [existingMatchId, setExistingMatchId] = useState<string | null>(null)
   const [distance, setDistance] = useState<number | null>(null)
   const [viewedPlan, setViewedPlan] = useState<string | null>(null)
   const [viewerIsBlack, setViewerIsBlack] = useState(false)
@@ -131,6 +133,19 @@ export default function VerPerfilPage() {
           .eq('status', 'active')
           .single()
         setViewedPlan(targetSub?.plan ?? null)
+      }
+    }
+
+    if (userId && profileId && userId !== profileId) {
+      const { data: matchData } = await supabase
+        .from('matches')
+        .select('id')
+        .eq('status', 'active')
+        .or(`and(user1.eq.${userId},user2.eq.${profileId}),and(user1.eq.${profileId},user2.eq.${userId})`)
+        .single()
+      if (matchData) {
+        setHasMatch(true)
+        setExistingMatchId(matchData.id)
       }
     }
 
@@ -297,7 +312,7 @@ export default function VerPerfilPage() {
         {/* ══ Coluna info ══ */}
         <div className="perfil-col-info">
           <DesktopHeader profileName={profile.name} age={age} city={profile.city} state={profile.state} distance={distance} verifiedPlus={!!userRow?.verified_plus} viewerIsBlack={viewerIsBlack} viewedPlan={viewedPlan} />
-          <DesktopActions isOwnProfile={isOwnProfile} onEditProfile={goEdit} onSwipe={handleSwipe} />
+          <DesktopActions isOwnProfile={isOwnProfile} onEditProfile={goEdit} onSwipe={handleSwipe} hasMatch={hasMatch} matchId={existingMatchId} />
 
           <div className="perfil-content-inner" style={{ display: 'flex', flexDirection: 'column', gap: '28px', position: 'relative', zIndex: 2 }}>
             <StatusChips chips={statusChips} />
@@ -334,7 +349,7 @@ export default function VerPerfilPage() {
         </div>
 
         {/* ── Action bar mobile ── */}
-        <MobileActionBar isOwnProfile={isOwnProfile} onEditProfile={goEdit} onSwipe={handleSwipe} />
+        <MobileActionBar isOwnProfile={isOwnProfile} onEditProfile={goEdit} onSwipe={handleSwipe} hasMatch={hasMatch} matchId={existingMatchId} />
 
         {/* ── Modais ── */}
         {selectedBadge && <BadgeModal badge={selectedBadge} onClose={() => setSelectedBadge(null)} />}
