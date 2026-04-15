@@ -1,15 +1,19 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import type { ReactNode } from 'react'
 import {
   LiveKitRoom,
-  VideoConference,
   RoomAudioRenderer,
+  VideoTrack,
+  useLocalParticipant,
+  useTracks,
 } from '@livekit/components-react'
+import { Track } from 'livekit-client'
 import '@livekit/components-styles'
 import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { Phone, PhoneOff, PhoneIncoming, Clock, AlertCircle, Loader2, Video } from 'lucide-react'
+import { Phone, PhoneOff, PhoneIncoming, AlertCircle, Loader2, Video, VideoOff, Mic, MicOff, ArrowLeft, RotateCcw } from 'lucide-react'
 import Image from 'next/image'
 
 // ─── Tela de chamada ativa (LiveKit) ─────────────────────────────────────────
@@ -106,34 +110,193 @@ function ActiveCall({ matchId, otherName, onEnd }: {
   if (!token || !livekitUrl) return null
 
   return (
-    <div style={{ position: 'relative', height: '100%' }}>
-      {/* Timer */}
-      <div style={{
-        position: 'absolute', top: 16, left: '50%', transform: 'translateX(-50%)', zIndex: 20,
-        display: 'flex', alignItems: 'center', gap: 8,
-        padding: '6px 16px', borderRadius: 100,
-        background: 'rgba(8,9,14,0.80)', backdropFilter: 'blur(12px)',
-        border: '1px solid rgba(255,255,255,0.07)',
-        color: 'var(--text)', fontSize: 13,
-      }}>
-        <Clock size={13} color="var(--accent)" />
-        <span>{formatSeconds(elapsedSeconds)}</span>
-        <span style={{ color: 'var(--muted-2)' }}>·</span>
-        <span style={{ color: 'var(--muted)' }}>{remainingMinutes} min restantes</span>
+    <LiveKitRoom
+      token={token}
+      serverUrl={livekitUrl}
+      connect={true}
+      video={true}
+      audio={true}
+      onConnected={handleConnected}
+      onDisconnected={handleDisconnected}
+      style={{ height: '100%', background: '#08090E' }}
+    >
+      <CallView
+        otherName={otherName}
+        elapsedSeconds={elapsedSeconds}
+        remainingMinutes={remainingMinutes}
+        onEnd={handleDisconnected}
+      />
+      <RoomAudioRenderer />
+    </LiveKitRoom>
+  )
+}
+
+// ─── Tela "em chamada" editorial (LiveKit custom) ───────────────────────────
+function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd }: {
+  otherName: string
+  elapsedSeconds: number
+  remainingMinutes: number
+  onEnd: () => void
+}) {
+  const { localParticipant } = useLocalParticipant()
+  const tracks = useTracks([Track.Source.Camera], { onlySubscribed: false })
+  const remoteCam = tracks.find(t => !t.participant.isLocal)
+  const localCam = tracks.find(t => t.participant.isLocal)
+
+  const [micOn, setMicOn] = useState(true)
+  const [camOn, setCamOn] = useState(true)
+  const [facing, setFacing] = useState<'user' | 'environment'>('user')
+
+  useEffect(() => {
+    if (!localParticipant) return
+    setMicOn(localParticipant.isMicrophoneEnabled)
+    setCamOn(localParticipant.isCameraEnabled)
+  }, [localParticipant])
+
+  async function toggleMic() {
+    if (!localParticipant) return
+    const next = !micOn
+    await localParticipant.setMicrophoneEnabled(next)
+    setMicOn(next)
+  }
+
+  async function toggleCam() {
+    if (!localParticipant) return
+    const next = !camOn
+    await localParticipant.setCameraEnabled(next)
+    setCamOn(next)
+  }
+
+  async function flipCam() {
+    if (!localParticipant) return
+    const next: 'user' | 'environment' = facing === 'user' ? 'environment' : 'user'
+    try {
+      await localParticipant.setCameraEnabled(true, { facingMode: next })
+      setFacing(next)
+      setCamOn(true)
+    } catch (e) {
+      console.warn('flip camera failed', e)
+    }
+  }
+
+  return (
+    <div style={{ position: 'relative', width: '100%', height: '100%', background: '#08090E', fontFamily: 'var(--font-jakarta)', overflow: 'hidden' }}>
+      {/* Remote video (full screen) */}
+      <div style={{ position: 'absolute', inset: 0, background: '#0d0e13' }}>
+        {remoteCam?.publication?.track ? (
+          <VideoTrack trackRef={remoteCam} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>
+            Aguardando vídeo de {otherName}…
+          </div>
+        )}
       </div>
 
-      <LiveKitRoom
-        token={token}
-        serverUrl={livekitUrl}
-        connect={true}
-        onConnected={handleConnected}
-        onDisconnected={handleDisconnected}
-        style={{ height: '100%' }}
-      >
-        <VideoConference />
-        <RoomAudioRenderer />
-      </LiveKitRoom>
+      {/* Vignettes */}
+      <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 160, background: 'linear-gradient(to bottom, rgba(8,9,14,0.7) 0%, rgba(8,9,14,0) 100%)', pointerEvents: 'none', zIndex: 10 }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 240, background: 'linear-gradient(to top, rgba(8,9,14,0.92) 0%, rgba(8,9,14,0) 100%)', pointerEvents: 'none', zIndex: 10 }} />
+
+      {/* Header */}
+      <header style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', paddingTop: 'max(16px, env(safe-area-inset-top, 16px))' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
+          <button
+            onClick={onEnd}
+            aria-label="Voltar"
+            style={{ flexShrink: 0, width: 40, height: 40, borderRadius: '50%', background: 'rgba(15,17,23,0.5)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}
+          >
+            <ArrowLeft size={18} color="#fff" strokeWidth={1.5} />
+          </button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }}>
+            <h1 style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', fontSize: 20, fontWeight: 400, color: '#fff', margin: 0, letterSpacing: '-0.01em', lineHeight: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{otherName}</h1>
+            <span style={{ fontSize: 9, textTransform: 'uppercase', letterSpacing: '0.20em', color: 'rgba(255,255,255,0.55)', fontWeight: 600 }}>Em chamada</span>
+          </div>
+        </div>
+
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 100, background: 'rgba(15,17,23,0.7)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.05)' }}>
+          <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#E11D48', boxShadow: '0 0 8px rgba(225,29,72,0.6)', animation: 'ui-pulse 2s ease-in-out infinite' }} />
+          <span style={{ fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace', fontSize: 13, letterSpacing: '0.08em', color: '#fff' }}>{formatSeconds(elapsedSeconds)}</span>
+        </div>
+      </header>
+
+      {/* Conexão estável card */}
+      <div style={{ position: 'absolute', top: 96, left: 20, zIndex: 30, pointerEvents: 'none' }}>
+        <div style={{ background: 'rgba(15,17,23,0.7)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', padding: '12px 14px', maxWidth: 200 }}>
+          <p style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', fontSize: 15, color: '#fff', margin: '0 0 8px', lineHeight: 1.15 }}>Conexão estável</p>
+          <div style={{ display: 'flex', gap: 3 }}>
+            <div style={{ height: 3, width: 24, borderRadius: 2, background: '#E11D48' }} />
+            <div style={{ height: 3, width: 24, borderRadius: 2, background: '#E11D48' }} />
+            <div style={{ height: 3, width: 24, borderRadius: 2, background: '#E11D48' }} />
+            <div style={{ height: 3, width: 24, borderRadius: 2, background: 'rgba(255,255,255,0.18)' }} />
+          </div>
+          {remainingMinutes > 0 && (
+            <p style={{ fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.45)', margin: '8px 0 0', fontWeight: 600 }}>{remainingMinutes} min restantes</p>
+          )}
+        </div>
+      </div>
+
+      {/* PIP — self */}
+      <section style={{ position: 'absolute', right: 20, bottom: 148, width: 104, aspectRatio: '3/4', zIndex: 35, borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.10)', background: '#13161f' }}>
+        {localCam?.publication?.track && camOn ? (
+          <VideoTrack trackRef={localCam} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <VideoOff size={20} color="rgba(255,255,255,0.4)" strokeWidth={1.5} />
+          </div>
+        )}
+      </section>
+
+      {/* Control bar */}
+      <nav style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', paddingTop: 16, paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))', pointerEvents: 'none' }}>
+        <div style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 20, padding: '16px 24px', borderRadius: 100, background: 'rgba(15,17,23,0.78)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 -10px 30px rgba(0,0,0,0.5)' }}>
+          <ControlButton
+            icon={micOn ? <Mic size={20} strokeWidth={1.5} /> : <MicOff size={20} strokeWidth={1.5} />}
+            label="Mudo"
+            onClick={toggleMic}
+            active={!micOn}
+          />
+          <ControlButton
+            icon={camOn ? <Video size={20} strokeWidth={1.5} /> : <VideoOff size={20} strokeWidth={1.5} />}
+            label="Vídeo"
+            onClick={toggleCam}
+            active={!camOn}
+          />
+          <button
+            onClick={onEnd}
+            aria-label="Encerrar chamada"
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+          >
+            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #E11D48, #be123c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 32px rgba(225,29,72,0.45), 0 0 0 6px rgba(225,29,72,0.08)' }}>
+              <PhoneOff size={26} color="#fff" strokeWidth={1.8} />
+            </div>
+            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#F43F5E' }}>Encerrar</span>
+          </button>
+          <ControlButton
+            icon={<RotateCcw size={20} strokeWidth={1.5} />}
+            label="Girar"
+            onClick={flipCam}
+          />
+        </div>
+      </nav>
     </div>
+  )
+}
+
+function ControlButton({ icon, label, onClick, active = false }: {
+  icon: ReactNode
+  label: string
+  onClick: () => void
+  active?: boolean
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: active ? '#F43F5E' : 'rgba(255,255,255,0.88)' }}
+    >
+      <div style={{ width: 48, height: 48, borderRadius: '50%', background: active ? 'rgba(225,29,72,0.18)' : 'rgba(52,52,58,0.6)', border: active ? '1px solid rgba(225,29,72,0.35)' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 180ms cubic-bezier(0.19,1,0.22,1)' }}>
+        {icon}
+      </div>
+      <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: active ? '#F43F5E' : 'rgba(255,255,255,0.55)' }}>{label}</span>
+    </button>
   )
 }
 
