@@ -161,16 +161,11 @@ export default function ChatPage() {
     // Detecta convite pendente não respondido
     detectPendingConvite(uid)
 
-    // Realtime: escuta novas mensagens deste match
+    // Realtime: Broadcast (gratuito no plano free — não usa postgres_changes com filtro)
     channelRef.current = supabase
       .channel(`chat-${matchId}`)
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `match_id=eq.${matchId}`,
-      }, async (payload) => {
-        const newMsg = payload.new as Message
+      .on('broadcast', { event: 'new_message' }, ({ payload }) => {
+        const newMsg = payload as Message
 
         // Adiciona mensagem com dedup (evita duplicatas do optimistic update)
         setMessages(prev => {
@@ -329,6 +324,12 @@ export default function ChatPage() {
         // Substitui a mensagem otimista pela real (com id do banco)
         if (json.message) {
           setMessages(prev => prev.map(m => m.id === tempId ? json.message : m))
+          // Broadcast para o outro usuário (gratuito no plano free)
+          channelRef.current?.send({
+            type: 'broadcast',
+            event: 'new_message',
+            payload: json.message,
+          })
         }
       }
     } catch {
