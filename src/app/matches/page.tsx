@@ -476,7 +476,7 @@ function getNivel(matchedAt: string, lastMessageAt: string | null): { label: str
 
 function ConversaItem({ match, formatTempo }: { match: Match; formatTempo: (d: string | null) => string }) {
   const expiry = getExpiryInfo(match.matched_at, match.last_message_at)
-  const nivel = getNivel(match.matched_at, match.last_message_at)
+  const nivel = null
   return (
     <Link
       href={`/conversas/${match.match_id}`}
