@@ -106,6 +106,13 @@ export default function ChatPage() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
+  // Trava o scroll do body enquanto o chat está aberto — resolve bounce no iOS
+  useEffect(() => {
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = prev }
+  }, [])
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) { router.push('/login'); return }
