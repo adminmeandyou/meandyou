@@ -4,7 +4,8 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabase'
 import { VideoCallButton } from '@/components/VideoCall'
-import { ArrowLeft, Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2, Video } from 'lucide-react'
+import Image from 'next/image'
 
 export default function VideochamadaPage() {
   const { matchId } = useParams<{ matchId: string }>()
@@ -25,7 +26,6 @@ export default function VideochamadaPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.replace('/login'); return }
 
-    // Busca o match para descobrir o outro participante
     const { data: match, error: matchErr } = await supabase
       .from('matches')
       .select('user1, user2')
@@ -38,7 +38,6 @@ export default function VideochamadaPage() {
       return
     }
 
-    // Garante que o usuário logado faz parte deste match
     if (match.user1 !== user.id && match.user2 !== user.id) {
       setError('Acesso não autorizado.')
       setLoading(false)
@@ -58,17 +57,17 @@ export default function VideochamadaPage() {
   }
 
   if (loading) return (
-    <div className="min-h-screen bg-[var(--bg)] flex items-center justify-center">
-      <Loader2 size={28} className="animate-spin text-white/20" />
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Loader2 size={28} color="rgba(255,255,255,0.20)" style={{ animation: 'spin 1s linear infinite' }} />
     </div>
   )
 
   if (error) return (
-    <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center gap-4 px-8 text-center">
-      <p className="text-white/40 text-sm">{error}</p>
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '0 32px', textAlign: 'center' }}>
+      <p style={{ color: 'var(--muted)', fontSize: 14 }}>{error}</p>
       <button
         onClick={() => router.back()}
-        className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white/60 text-sm hover:bg-white/10 transition"
+        style={{ padding: '10px 20px', borderRadius: 10, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)', color: 'var(--muted)', fontSize: 14, cursor: 'pointer' }}
       >
         Voltar
       </button>
@@ -76,22 +75,38 @@ export default function VideochamadaPage() {
   )
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] font-jakarta">
+    <div style={{ minHeight: '100vh', background: 'var(--bg)', fontFamily: 'var(--font-jakarta)', display: 'flex', flexDirection: 'column' }}>
 
       {/* Header */}
-      <header className="sticky top-0 z-30 bg-[var(--bg)]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
+      <header style={{
+        position: 'sticky', top: 0, zIndex: 30,
+        background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(20px)',
+        borderBottom: '1px solid rgba(255,255,255,0.04)',
+        padding: 'max(12px, env(safe-area-inset-top, 12px)) 16px 12px',
+        display: 'flex', alignItems: 'center', gap: 12,
+      }}>
         <button
           onClick={() => router.back()}
-          className="w-9 h-9 rounded-full bg-white/5 border border-white/10 flex items-center justify-center"
+          style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
         >
-          <ArrowLeft size={18} className="text-white/60" />
+          <ArrowLeft size={18} color="rgba(248,249,250,0.60)" strokeWidth={1.5} />
         </button>
-        <div className="flex-1">
-          <h1 className="font-fraunces text-lg text-white">{otherProfile?.name}</h1>
-          <p className="text-white/30 text-xs">Videochamada</p>
+
+        {/* Avatar + nome */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+          <div style={{ width: 36, height: 36, borderRadius: '50%', overflow: 'hidden', background: 'var(--bg-card2)', position: 'relative', flexShrink: 0, border: '2px solid rgba(255,255,255,0.07)' }}>
+            {otherProfile?.photo_best
+              ? <Image src={otherProfile.photo_best} alt={otherProfile.name} fill style={{ objectFit: 'cover' }} sizes="36px" />
+              : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-fraunces)', fontSize: 16, color: 'var(--muted)' }}>{otherProfile?.name[0]}</div>
+            }
+          </div>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-fraunces)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{otherProfile?.name}</p>
+            <p style={{ margin: 0, fontSize: 11, color: 'var(--muted-2)' }}>Videochamada</p>
+          </div>
         </div>
 
-        {/* Botão que controla toda a lógica da chamada */}
+        {/* Botão que controla toda a lógica */}
         {otherProfile && (
           <VideoCallButton
             matchId={matchId}
@@ -101,21 +116,21 @@ export default function VideochamadaPage() {
         )}
       </header>
 
-      {/* Instruções enquanto não há chamada ativa */}
-      <div className="flex flex-col items-center justify-center min-h-[70vh] gap-5 px-8 text-center">
-        <div className="w-20 h-20 rounded-full bg-[#b8f542]/10 border border-[#b8f542]/20 flex items-center justify-center">
-          <span className="text-4xl">📹</span>
+      {/* Corpo — instruções */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 20, padding: '0 32px', textAlign: 'center' }}>
+        <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Video size={28} color="var(--accent)" strokeWidth={1.5} />
         </div>
         <div>
-          <h2 className="font-fraunces text-xl text-white mb-2">
-            Pronto para chamar {otherProfile?.name}?
+          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>
+            Chamar {otherProfile?.name}?
           </h2>
-          <p className="text-white/30 text-sm leading-relaxed max-w-xs">
-            Toque no ícone de vídeo no canto superior direito para iniciar a chamada. A outra pessoa precisará aceitar.
+          <p style={{ fontSize: 13, color: 'var(--muted-2)', lineHeight: 1.6, margin: 0, maxWidth: 280 }}>
+            Toque no ícone de vídeo acima para iniciar. A outra pessoa precisará aceitar a chamada.
           </p>
         </div>
-        <p className="text-white/20 text-xs">
-          Os minutos serão descontados automaticamente ao encerrar.
+        <p style={{ fontSize: 11, color: 'rgba(248,249,250,0.15)', margin: 0 }}>
+          Os minutos são descontados ao encerrar.
         </p>
       </div>
 
