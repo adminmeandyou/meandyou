@@ -1418,82 +1418,265 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* ── Modal Registro Privado ── */}
-        {showMeetingModal && (
-          <div style={{ position:'fixed',inset:0,zIndex:60,display:'flex',alignItems:'flex-end',justifyContent:'center',background:'rgba(0,0,0,0.80)',backdropFilter:'blur(8px)' }} onClick={() => setShowMeetingModal(false)}>
-            <div style={{ background:'var(--bg-card)',border:'1px solid var(--border)',borderRadius:'24px 24px 0 0',padding:'24px 20px 40px',width:'100%',maxWidth:480 }} onClick={e => e.stopPropagation()}>
-              <div style={{ width:40,height:4,borderRadius:4,background:'rgba(255,255,255,0.15)',margin:'0 auto 20px' }} />
-              <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20 }}>
-                <div style={{ display:'flex',alignItems:'center',gap:8 }}>
-                  <MapPin size={16} color="var(--accent)" strokeWidth={1.5} />
-                  <span style={{ fontFamily:'var(--font-fraunces)',fontSize:18,color:'var(--text)' }}>Registrar encontro</span>
-                </div>
-                <button onClick={() => setShowMeetingModal(false)} style={{ background:'none',border:'none',cursor:'pointer',padding:4 }}><X size={16} color="var(--muted)" /></button>
+        {/* ── Modal Registro Privado (Midnight Editorial) ── */}
+        {showMeetingModal && (() => {
+          const canSave = meetingLocal.trim() && meetingDateVal && meetingTimeVal
+          const inputStyle: React.CSSProperties = {
+            width:'100%',
+            background:'transparent',
+            border:'none',
+            borderBottom:'1px solid rgba(255,255,255,0.12)',
+            borderRadius:0,
+            padding:'10px 2px',
+            fontSize:15,
+            color:'var(--text)',
+            fontFamily:'var(--font-jakarta)',
+            boxSizing:'border-box',
+            outline:'none',
+            transition:'border-color 220ms cubic-bezier(0.4,0,0.2,1)',
+          }
+          const onFocusInput = (e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderBottomColor = 'var(--accent)' }
+          const onBlurInput = (e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderBottomColor = 'rgba(255,255,255,0.12)' }
+          const labelStyle: React.CSSProperties = {
+            fontSize:10,
+            color:'rgba(255,255,255,0.45)',
+            display:'block',
+            marginBottom:8,
+            fontFamily:'var(--font-jakarta)',
+            fontWeight:600,
+            textTransform:'uppercase',
+            letterSpacing:'0.16em',
+          }
+          return (
+            <div
+              style={{
+                position:'fixed',inset:0,zIndex:60,
+                display:'flex',alignItems:'center',justifyContent:'center',
+                padding:20,
+                background:'radial-gradient(ellipse at center, rgba(225,29,72,0.18), rgba(0,0,0,0.92) 65%)',
+                backdropFilter:'blur(12px)',
+                WebkitBackdropFilter:'blur(12px)',
+                animation:'ui-fade-in 260ms cubic-bezier(0.4,0,0.2,1)',
+              }}
+              onClick={() => setShowMeetingModal(false)}
+            >
+              <div
+                style={{
+                  position:'relative',
+                  background:'rgba(15,17,23,0.95)',
+                  border:'1px solid rgba(255,255,255,0.05)',
+                  borderRadius:24,
+                  padding:'32px 26px 28px',
+                  width:'100%',
+                  maxWidth:440,
+                  maxHeight:'calc(100vh - 40px)',
+                  overflowY:'auto',
+                  boxShadow:'0 20px 40px rgba(0,0,0,0.6)',
+                }}
+                onClick={e => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => setShowMeetingModal(false)}
+                  aria-label="Fechar"
+                  style={{
+                    position:'absolute',top:16,right:16,
+                    width:32,height:32,borderRadius:'50%',
+                    background:'rgba(255,255,255,0.04)',
+                    border:'1px solid rgba(255,255,255,0.06)',
+                    display:'flex',alignItems:'center',justifyContent:'center',
+                    cursor:'pointer',padding:0,
+                  }}
+                >
+                  <X size={14} color="rgba(255,255,255,0.5)" strokeWidth={1.5} />
+                </button>
+
+                {meetingSaved ? (
+                  <div style={{ textAlign:'center',padding:'28px 8px 8px' }}>
+                    <CheckCircle2 size={44} color="#10b981" strokeWidth={1.5} style={{ margin:'0 auto 18px' }} />
+                    <h3 style={{ fontFamily:'var(--font-fraunces)',fontStyle:'italic',fontSize:28,fontWeight:400,color:'var(--text)',margin:'0 0 10px',lineHeight:1.15 }}>
+                      Registro <span style={{ color:'#F43F5E' }}>salvo</span>.
+                    </h3>
+                    <p style={{ fontSize:13,color:'rgba(255,255,255,0.5)',margin:0,lineHeight:1.6 }}>Faremos um check-in com você depois do horário marcado.</p>
+                  </div>
+                ) : (
+                  <>
+                    <h2 style={{
+                      fontFamily:'var(--font-fraunces)',
+                      fontStyle:'italic',
+                      fontSize:32,
+                      fontWeight:400,
+                      color:'var(--text)',
+                      margin:'4px 0 6px',
+                      lineHeight:1.1,
+                      letterSpacing:'-0.01em',
+                    }}>
+                      Registrar <span style={{ color:'#F43F5E' }}>encontro</span>?
+                    </h2>
+                    <p style={{
+                      fontSize:13,
+                      color:'rgba(255,255,255,0.45)',
+                      margin:'0 0 28px',
+                      lineHeight:1.55,
+                      fontFamily:'var(--font-jakarta)',
+                    }}>
+                      Com <span style={{ color:'rgba(255,255,255,0.75)' }}>{otherUser?.name ?? 'essa pessoa'}</span>. Fica só no seu dispositivo.
+                    </p>
+
+                    <div style={{ marginBottom:24 }}>
+                      <div style={labelStyle}>Onde?</div>
+                      <div style={{ display:'flex',flexDirection:'column',gap:14 }}>
+                        <input
+                          value={meetingLocal}
+                          onChange={e => setMeetingLocal(e.target.value)}
+                          placeholder="Nome do local"
+                          autoFocus
+                          style={inputStyle}
+                          onFocus={onFocusInput}
+                          onBlur={onBlurInput}
+                        />
+                        <input
+                          value={meetingCep}
+                          onChange={e => handleCepLookup(e.target.value)}
+                          placeholder={cepLoading ? 'Buscando CEP…' : cepError ? cepError : 'CEP'}
+                          inputMode="numeric"
+                          maxLength={9}
+                          style={{
+                            ...inputStyle,
+                            color: cepError ? '#F43F5E' : cepLoading ? 'var(--accent)' : 'var(--text)',
+                          }}
+                          onFocus={onFocusInput}
+                          onBlur={onBlurInput}
+                        />
+                        <div style={{ display:'flex',gap:14 }}>
+                          <input
+                            value={meetingRua}
+                            onChange={e => setMeetingRua(e.target.value)}
+                            placeholder="Rua / Avenida"
+                            style={{ ...inputStyle, flex:2 }}
+                            onFocus={onFocusInput}
+                            onBlur={onBlurInput}
+                          />
+                          <input
+                            value={meetingNumero}
+                            onChange={e => setMeetingNumero(e.target.value)}
+                            placeholder="Nº"
+                            inputMode="numeric"
+                            style={{ ...inputStyle, flex:1 }}
+                            onFocus={onFocusInput}
+                            onBlur={onBlurInput}
+                          />
+                        </div>
+                        <input
+                          value={meetingBairro}
+                          onChange={e => setMeetingBairro(e.target.value)}
+                          placeholder="Bairro"
+                          style={inputStyle}
+                          onFocus={onFocusInput}
+                          onBlur={onBlurInput}
+                        />
+                        <div style={{ display:'flex',gap:14 }}>
+                          <input
+                            value={meetingCidade}
+                            onChange={e => setMeetingCidade(e.target.value)}
+                            placeholder="Cidade"
+                            style={{ ...inputStyle, flex:2 }}
+                            onFocus={onFocusInput}
+                            onBlur={onBlurInput}
+                          />
+                          <input
+                            value={meetingUf}
+                            onChange={e => setMeetingUf(e.target.value.toUpperCase().slice(0,2))}
+                            placeholder="UF"
+                            maxLength={2}
+                            style={{ ...inputStyle, flex:1, textTransform:'uppercase' }}
+                            onFocus={onFocusInput}
+                            onBlur={onBlurInput}
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom:28 }}>
+                      <div style={labelStyle}>Quando?</div>
+                      <div style={{ display:'flex',gap:14 }}>
+                        <input
+                          type="date"
+                          value={meetingDateVal}
+                          onChange={e => setMeetingDateVal(e.target.value)}
+                          style={{ ...inputStyle, flex:1, colorScheme:'dark' }}
+                          onFocus={onFocusInput}
+                          onBlur={onBlurInput}
+                        />
+                        <input
+                          type="time"
+                          value={meetingTimeVal}
+                          onChange={e => setMeetingTimeVal(e.target.value)}
+                          style={{ ...inputStyle, flex:1, colorScheme:'dark' }}
+                          onFocus={onFocusInput}
+                          onBlur={onBlurInput}
+                        />
+                      </div>
+                    </div>
+
+                    <p style={{
+                      fontSize:11,
+                      color:'rgba(255,255,255,0.35)',
+                      lineHeight:1.6,
+                      margin:'0 0 22px',
+                      fontFamily:'var(--font-jakarta)',
+                      textAlign:'center',
+                    }}>
+                      Faremos um check-in 2h após o horário marcado.
+                    </p>
+
+                    <button
+                      onClick={handleSaveMeeting}
+                      disabled={!canSave}
+                      style={{
+                        width:'100%',
+                        padding:'16px 0',
+                        borderRadius:100,
+                        background: canSave ? 'linear-gradient(135deg, #E11D48, #be123c)' : 'rgba(255,255,255,0.06)',
+                        border:'none',
+                        color: canSave ? '#fff' : 'rgba(255,255,255,0.35)',
+                        fontFamily:'var(--font-jakarta)',
+                        fontSize:12,
+                        fontWeight:700,
+                        letterSpacing:'0.22em',
+                        textTransform:'uppercase',
+                        cursor: canSave ? 'pointer' : 'not-allowed',
+                        boxShadow: canSave ? '0 12px 32px rgba(225,29,72,0.35)' : 'none',
+                        transition:'all 220ms cubic-bezier(0.4,0,0.2,1)',
+                      }}
+                    >
+                      Salvar registro
+                    </button>
+
+                    <button
+                      onClick={() => setShowMeetingModal(false)}
+                      style={{
+                        width:'100%',
+                        marginTop:16,
+                        background:'none',
+                        border:'none',
+                        color:'rgba(255,255,255,0.4)',
+                        fontFamily:'var(--font-jakarta)',
+                        fontSize:11,
+                        fontWeight:600,
+                        letterSpacing:'0.22em',
+                        textTransform:'uppercase',
+                        cursor:'pointer',
+                        padding:'4px 0',
+                      }}
+                    >
+                      Agora não
+                    </button>
+                  </>
+                )}
               </div>
-              {meetingSaved ? (
-                <div style={{ textAlign:'center',padding:'20px 0' }}>
-                  <CheckCircle2 size={40} color="#10b981" style={{ margin:'0 auto 12px' }} />
-                  <p style={{ color:'var(--text)',fontSize:14,fontWeight:600 }}>Encontro registrado!</p>
-                  <p style={{ color:'var(--muted-2)',fontSize:12,marginTop:4 }}>Faremos um check-in com você depois.</p>
-                </div>
-              ) : (
-                <div style={{ display:'flex',flexDirection:'column',gap:12 }}>
-                  <div>
-                    <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Com quem</label>
-                    <input value={otherUser?.name ?? ''} readOnly style={{ width:'100%',background:'rgba(255,255,255,0.04)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--muted)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Nome do local *</label>
-                    <input value={meetingLocal} onChange={e => setMeetingLocal(e.target.value)} placeholder="Ex: Café Central, Shopping Norte..." autoFocus style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
-                  </div>
-                  <div>
-                    <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>CEP {cepLoading && <span style={{ color:'var(--accent)',marginLeft:6 }}>buscando…</span>}{cepError && <span style={{ color:'#F43F5E',marginLeft:6 }}>{cepError}</span>}</label>
-                    <input value={meetingCep} onChange={e => handleCepLookup(e.target.value)} placeholder="00000-000" inputMode="numeric" maxLength={9} style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
-                  </div>
-                  <div style={{ display:'flex',gap:10 }}>
-                    <div style={{ flex:2 }}>
-                      <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Rua</label>
-                      <input value={meetingRua} onChange={e => setMeetingRua(e.target.value)} placeholder="Rua / Avenida" style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
-                    </div>
-                    <div style={{ flex:1 }}>
-                      <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Número</label>
-                      <input value={meetingNumero} onChange={e => setMeetingNumero(e.target.value)} placeholder="123" inputMode="numeric" style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
-                    </div>
-                  </div>
-                  <div>
-                    <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Bairro</label>
-                    <input value={meetingBairro} onChange={e => setMeetingBairro(e.target.value)} placeholder="Bairro" style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
-                  </div>
-                  <div style={{ display:'flex',gap:10 }}>
-                    <div style={{ flex:2 }}>
-                      <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Cidade</label>
-                      <input value={meetingCidade} onChange={e => setMeetingCidade(e.target.value)} placeholder="Cidade" style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none' }} />
-                    </div>
-                    <div style={{ flex:1 }}>
-                      <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>UF</label>
-                      <input value={meetingUf} onChange={e => setMeetingUf(e.target.value.toUpperCase().slice(0,2))} placeholder="SP" maxLength={2} style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none',textTransform:'uppercase' }} />
-                    </div>
-                  </div>
-                  <div style={{ display:'flex',gap:10 }}>
-                    <div style={{ flex:1 }}>
-                      <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Data *</label>
-                      <input type="date" value={meetingDateVal} onChange={e => setMeetingDateVal(e.target.value)} style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none',colorScheme:'dark' }} />
-                    </div>
-                    <div style={{ flex:1 }}>
-                      <label style={{ fontSize:12,color:'var(--muted-2)',display:'block',marginBottom:6 }}>Hora *</label>
-                      <input type="time" value={meetingTimeVal} onChange={e => setMeetingTimeVal(e.target.value)} style={{ width:'100%',background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',borderRadius:12,padding:'11px 14px',fontSize:14,color:'var(--text)',fontFamily:'var(--font-jakarta)',boxSizing:'border-box' as const,outline:'none',colorScheme:'dark' }} />
-                    </div>
-                  </div>
-                  <p style={{ fontSize:11,color:'var(--muted-2)',lineHeight:1.5,margin:0 }}>Este registro fica somente no seu dispositivo. Faremos um check-in 2h após o horário marcado.</p>
-                  <button onClick={handleSaveMeeting} disabled={!meetingLocal.trim()||!meetingDateVal||!meetingTimeVal} style={{ width:'100%',padding:'13px 0',borderRadius:12,background:meetingLocal.trim()&&meetingDateVal&&meetingTimeVal?'var(--accent)':'rgba(255,255,255,0.08)',border:'none',color:meetingLocal.trim()&&meetingDateVal&&meetingTimeVal?'#fff':'var(--muted)',fontFamily:'var(--font-jakarta)',fontSize:14,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:8 }}>
-                    <MapPin size={14} />
-                    Salvar registro
-                  </button>
-                </div>
-              )}
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {/* ── Modal Check-in Pós-Encontro (BLOQUEANTE) ── */}
         {checkinMeeting && (
