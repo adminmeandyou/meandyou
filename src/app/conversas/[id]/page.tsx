@@ -102,9 +102,48 @@ export default function ChatPage() {
   // Adicionar como amigo (M4)
   const [friendSent, setFriendSent] = useState(false)
 
+  // Chamada de vídeo recebida no chat
+  const [incomingCall, setIncomingCall] = useState<{ callId: string; callerId: string } | null>(null)
+  const videoChannelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
+
   const bottomRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
+
+  // Listener de chamada de vídeo — ativo enquanto o chat estiver aberto
+  useEffect(() => {
+    let uid: string
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      uid = user.id
+      const ch = supabase.channel(`videocall:${matchId}`)
+        .on('broadcast', { event: 'call_signal' }, ({ payload }) => {
+          if (!payload) return
+          if (payload.type === 'ringing' && payload.callee_id === uid) {
+            setIncomingCall({ callId: payload.call_id, callerId: payload.caller_id })
+          }
+          if (payload.type === 'ended') {
+            setIncomingCall(null)
+          }
+        })
+        .subscribe()
+      videoChannelRef.current = ch
+    })
+    return () => {
+      videoChannelRef.current?.unsubscribe()
+      videoChannelRef.current = null
+    }
+  }, [matchId])
+
+  async function handleRejectIncomingCall() {
+    if (!incomingCall) return
+    await supabase.from('video_calls').update({ status: 'rejected' }).eq('id', incomingCall.callId)
+    await videoChannelRef.current?.send({
+      type: 'broadcast', event: 'call_signal',
+      payload: { type: 'rejected', call_id: incomingCall.callId, caller_id: incomingCall.callerId },
+    })
+    setIncomingCall(null)
+  }
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -857,6 +896,34 @@ export default function ChatPage() {
           </div>
         )}
 
+
+        {/* ── Banner chamada de vídeo recebida ── */}
+        {incomingCall && (
+          <div style={{
+            flexShrink: 0, display: 'flex', alignItems: 'center', gap: 12,
+            padding: '12px 16px',
+            background: 'rgba(225,29,72,0.10)',
+            borderBottom: '1px solid rgba(225,29,72,0.20)',
+            animation: 'ui-fade-in 0.2s ease',
+          }}>
+            <Video size={18} color="var(--accent)" strokeWidth={1.5} style={{ flexShrink: 0 }} />
+            <p style={{ flex: 1, margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--text)', fontFamily: 'var(--font-jakarta)' }}>
+              {otherUser?.name} está te chamando…
+            </p>
+            <button
+              onClick={handleRejectIncomingCall}
+              style={{ padding: '6px 14px', borderRadius: 100, background: 'rgba(244,63,94,0.15)', border: '1px solid rgba(244,63,94,0.25)', color: '#F43F5E', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+            >
+              Recusar
+            </button>
+            <button
+              onClick={() => { setIncomingCall(null); router.push(`/videochamada/${matchId}`) }}
+              style={{ padding: '6px 14px', borderRadius: 100, background: 'var(--accent)', border: 'none', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+            >
+              Atender
+            </button>
+          </div>
+        )}
 
         {/* ── Banner convite pendente ── */}
         {pendingConvite && (
