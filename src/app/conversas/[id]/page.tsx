@@ -14,6 +14,7 @@ import {
 import { ChatBubble } from '@/components/ui/ChatBubble'
 import { ReportModal } from '@/components/ReportModal'
 import { VideoCallButton } from '@/components/VideoCall'
+import { EmojiPicker } from '@/components/EmojiPicker'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { useToast } from '@/components/Toast'
 import { pickRandomIcebreakers } from '@/lib/icebreakers'
@@ -1214,12 +1215,8 @@ export default function ChatPage() {
         }}>
           {/* Emoji picker */}
           {showEmojis && (
-            <div style={{ marginBottom: 8, padding: '10px', background: 'var(--bg-card2)', borderRadius: 12, border: '1px solid var(--border)', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-              {['😊','😂','🥰','😍','🔥','💕','❤️','✨','😘','🥺','😭','💀','😅','🤣','😉','😏','🤍','💯','🙏','👀','🫶','😈','💋','🥹','😇','🤗','😌','🫠','💫','🎉'].map(e => (
-                <button key={e} onClick={() => { setInput(v => v + e); setShowEmojis(false) }}
-                  style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', padding: '2px 4px', borderRadius: 6 }}
-                >{e}</button>
-              ))}
+            <div style={{ marginBottom: 8 }}>
+              <EmojiPicker onPick={(e) => setInput(v => v + e)} />
             </div>
           )}
 

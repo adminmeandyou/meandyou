@@ -14,7 +14,7 @@ import { Track } from 'livekit-client'
 import '@livekit/components-styles'
 import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { Phone, PhoneOff, PhoneIncoming, AlertCircle, Loader2, Video, VideoOff, Mic, MicOff, ArrowLeft, RotateCcw } from 'lucide-react'
+import { Phone, PhoneOff, PhoneIncoming, AlertCircle, Loader2, Video, VideoOff, Mic, MicOff, ArrowLeft, RotateCcw, FlipHorizontal2 } from 'lucide-react'
 import Image from 'next/image'
 
 // ─── Tela de chamada ativa (LiveKit) ─────────────────────────────────────────
@@ -44,23 +44,19 @@ function ActiveCall({ matchId, otherName, onEnd }: {
     setLoading(true)
     setError(null)
     setPermissionDenied(false)
+    await fetchToken()
+  }
 
-    // Preflight: pedir permissao de camera/microfone antes de conectar.
-    // Se o browser recusar, exibimos erro claro em vez de conectar sem tracks
-    // (o que deixa o LiveKit derrubar a sala por timeout de idle).
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
-      // Libera o device pro LiveKit capturar em seguida.
-      stream.getTracks().forEach(t => t.stop())
-    } catch (e) {
-      console.error('getUserMedia denied', e)
+  function handleMediaError(err: unknown) {
+    const name = (err as { name?: string })?.name ?? ''
+    if (name === 'NotAllowedError' || name === 'PermissionDeniedError') {
       setPermissionDenied(true)
       setError('Permita o acesso à câmera e ao microfone para iniciar a chamada.')
-      setLoading(false)
-      return
+    } else if (name === 'NotFoundError' || name === 'DevicesNotFoundError') {
+      setError('Câmera ou microfone não encontrados no dispositivo.')
+    } else {
+      setError('Erro ao acessar câmera ou microfone.')
     }
-
-    await fetchToken()
   }
 
   async function fetchToken() {
@@ -148,8 +144,8 @@ function ActiveCall({ matchId, otherName, onEnd }: {
       token={token}
       serverUrl={livekitUrl}
       connect={true}
-      video={true}
-      audio={true}
+      video={false}
+      audio={false}
       onConnected={handleConnected}
       onDisconnected={handleDisconnected}
       onError={(err) => console.error('LiveKit error:', err)}
@@ -160,6 +156,7 @@ function ActiveCall({ matchId, otherName, onEnd }: {
         elapsedSeconds={elapsedSeconds}
         remainingMinutes={remainingMinutes}
         onEnd={handleDisconnected}
+        onMediaError={handleMediaError}
       />
       <RoomAudioRenderer />
     </LiveKitRoom>
@@ -167,11 +164,12 @@ function ActiveCall({ matchId, otherName, onEnd }: {
 }
 
 // ─── Tela "em chamada" editorial (LiveKit custom) ───────────────────────────
-function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd }: {
+function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd, onMediaError }: {
   otherName: string
   elapsedSeconds: number
   remainingMinutes: number
   onEnd: () => void
+  onMediaError: (err: unknown) => void
 }) {
   const { localParticipant } = useLocalParticipant()
   const tracks = useTracks([Track.Source.Camera], { onlySubscribed: false })
@@ -181,9 +179,10 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd }: {
   const [micOn, setMicOn] = useState(true)
   const [camOn, setCamOn] = useState(true)
   const [facing, setFacing] = useState<'user' | 'environment'>('user')
+  const [mirrored, setMirrored] = useState(true)
 
-  // Fallback: garante que camera e microfone sao ativados apos conectar,
-  // mesmo se o `video audio` do LiveKitRoom nao disparar sozinho.
+  // Habilita camera e microfone manualmente apos conectar.
+  // Faz de forma serial (mic primeiro) para evitar race no iOS Safari.
   useEffect(() => {
     if (!localParticipant) return
     let cancelled = false
@@ -192,11 +191,14 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd }: {
         if (!localParticipant.isMicrophoneEnabled) {
           await localParticipant.setMicrophoneEnabled(true)
         }
+        if (cancelled) return
         if (!localParticipant.isCameraEnabled) {
-          await localParticipant.setCameraEnabled(true)
+          await localParticipant.setCameraEnabled(true, { facingMode: 'user' })
         }
       } catch (e) {
         console.error('enable mic/cam failed', e)
+        if (!cancelled) onMediaError(e)
+        return
       }
       if (!cancelled) {
         setMicOn(localParticipant.isMicrophoneEnabled)
@@ -204,7 +206,7 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd }: {
       }
     })()
     return () => { cancelled = true }
-  }, [localParticipant])
+  }, [localParticipant, onMediaError])
 
   async function toggleMic() {
     if (!localParticipant) return
@@ -224,12 +226,23 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd }: {
     if (!localParticipant) return
     const next: 'user' | 'environment' = facing === 'user' ? 'environment' : 'user'
     try {
+      // Precisa desligar antes de religar pra forcar o browser
+      // a pegar a outra camera (frontal <-> traseira).
+      await localParticipant.setCameraEnabled(false)
       await localParticipant.setCameraEnabled(true, { facingMode: next })
       setFacing(next)
       setCamOn(true)
+      // Camera traseira nao precisa de espelhamento, frontal sim por padrao
+      setMirrored(next === 'user')
     } catch (e) {
       console.warn('flip camera failed', e)
+      // Fallback: tenta voltar a ligar o que tinha
+      try { await localParticipant.setCameraEnabled(true, { facingMode: facing }) } catch {}
     }
+  }
+
+  function toggleMirror() {
+    setMirrored(v => !v)
   }
 
   return (
@@ -290,7 +303,7 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd }: {
       {/* PIP — self */}
       <section style={{ position: 'absolute', right: 20, bottom: 148, width: 104, aspectRatio: '3/4', zIndex: 35, borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.10)', background: '#13161f' }}>
         {localCam?.publication?.track && camOn ? (
-          <VideoTrack trackRef={localCam} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: 'scaleX(-1)' }} />
+          <VideoTrack trackRef={localCam} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: mirrored ? 'scaleX(-1)' : 'none' }} />
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <VideoOff size={20} color="rgba(255,255,255,0.4)" strokeWidth={1.5} />
@@ -327,6 +340,12 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, onEnd }: {
             icon={<RotateCcw size={20} strokeWidth={1.5} />}
             label="Girar"
             onClick={flipCam}
+          />
+          <ControlButton
+            icon={<FlipHorizontal2 size={20} strokeWidth={1.5} />}
+            label="Espelho"
+            onClick={toggleMirror}
+            active={!mirrored}
           />
         </div>
       </nav>
