@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import type { ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import {
   LiveKitRoom,
   RoomAudioRenderer,
@@ -611,48 +612,60 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
     setCallState('idle')
   }
 
-  if (callState === 'calling') return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50 }}>
-      <CallingScreen otherName={otherName} otherPhoto={otherPhoto} onCancel={handleCancelCall} />
-    </div>
-  )
-  if (callState === 'incoming') return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50 }}>
-      <IncomingCallScreen callerName={callerName} callerPhoto={callerPhoto} onAccept={handleAccept} onReject={handleReject} />
-    </div>
-  )
-  if (callState === 'active') return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'var(--bg)' }}>
-      <ActiveCall matchId={matchId} otherName={otherName} onEnd={handleEndCall} />
-    </div>
-  )
-  if (callState === 'rejected') return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)' }}>
-      <div style={{ textAlign: 'center' }}>
-        <PhoneOff size={32} color="#F43F5E" style={{ margin: '0 auto 12px' }} />
-        <p style={{ color: 'var(--muted)', fontSize: 14 }}>Chamada recusada</p>
+  const overlayBase: React.CSSProperties = {
+    position: 'fixed', inset: 0, zIndex: 9999,
+    background: 'var(--bg)',
+    width: '100vw', height: '100dvh',
+  }
+
+  const overlay = (() => {
+    if (callState === 'calling') return (
+      <div style={overlayBase}>
+        <CallingScreen otherName={otherName} otherPhoto={otherPhoto} onCancel={handleCancelCall} />
       </div>
-    </div>
-  )
-  if (callState === 'missed') return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)' }}>
-      <div style={{ textAlign: 'center' }}>
-        <PhoneIncoming size={32} color="#F59E0B" style={{ margin: '0 auto 12px' }} />
-        <p style={{ color: 'var(--muted)', fontSize: 14 }}>Chamada sem resposta</p>
+    )
+    if (callState === 'incoming') return (
+      <div style={overlayBase}>
+        <IncomingCallScreen callerName={callerName} callerPhoto={callerPhoto} onAccept={handleAccept} onReject={handleReject} />
       </div>
-    </div>
-  )
+    )
+    if (callState === 'active') return (
+      <div style={overlayBase}>
+        <ActiveCall matchId={matchId} otherName={otherName} onEnd={handleEndCall} />
+      </div>
+    )
+    if (callState === 'rejected') return (
+      <div style={{ ...overlayBase, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)' }}>
+        <div style={{ textAlign: 'center' }}>
+          <PhoneOff size={32} color="#F43F5E" style={{ margin: '0 auto 12px' }} />
+          <p style={{ color: 'var(--muted)', fontSize: 14 }}>Chamada recusada</p>
+        </div>
+      </div>
+    )
+    if (callState === 'missed') return (
+      <div style={{ ...overlayBase, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)' }}>
+        <div style={{ textAlign: 'center' }}>
+          <PhoneIncoming size={32} color="#F59E0B" style={{ margin: '0 auto 12px' }} />
+          <p style={{ color: 'var(--muted)', fontSize: 14 }}>Chamada sem resposta</p>
+        </div>
+      </div>
+    )
+    return null
+  })()
 
   return (
-    <button
-      onClick={handleCall}
-      style={{ width: 36, height: 36, borderRadius: '50%', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(248,249,250,0.40)', transition: 'color 0.2s' }}
-      title="Iniciar videochamada"
-      onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
-      onMouseLeave={e => (e.currentTarget.style.color = 'rgba(248,249,250,0.40)')}
-    >
-      <Video size={18} strokeWidth={1.5} />
-    </button>
+    <>
+      <button
+        onClick={handleCall}
+        style={{ width: 36, height: 36, borderRadius: '50%', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(248,249,250,0.40)', transition: 'color 0.2s' }}
+        title="Iniciar videochamada"
+        onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(248,249,250,0.40)')}
+      >
+        <Video size={18} strokeWidth={1.5} />
+      </button>
+      {overlay && typeof document !== 'undefined' && createPortal(overlay, document.body)}
+    </>
   )
 }
 
