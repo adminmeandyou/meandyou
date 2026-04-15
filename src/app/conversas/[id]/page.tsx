@@ -1046,89 +1046,132 @@ export default function ChatPage() {
         {/* ── Painel Convite Encontro ── */}
         {showConvite && (
           <div style={{
-            flexShrink: 0, margin: '0 16px 8px',
-            background: 'var(--bg-card)',
-            border: '1px solid var(--border)',
-            borderRadius: 16, padding: '14px 12px',
+            flexShrink: 0, margin: '0 14px 10px',
+            background: 'rgba(15,17,23,0.96)',
+            border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: 16, padding: '16px 14px',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <CalendarPlus size={14} color="var(--accent)" strokeWidth={1.5} />
-                <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>Convite de Encontro</span>
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <CalendarPlus size={15} color="var(--accent)" strokeWidth={1.5} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-jakarta)', letterSpacing: '0.02em' }}>
+                  Chamar para um encontro
+                </span>
               </div>
-              <button onClick={() => setShowConvite(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
-                <X size={14} color="var(--muted)" />
+              <button onClick={() => setShowConvite(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                <X size={15} color="var(--muted)" />
               </button>
             </div>
-            {/* Local (obrigatório para convite estruturado) */}
-            <input
-              type="text"
-              value={conviteLocal}
-              onChange={e => setConviteLocal(e.target.value)}
-              placeholder="Local (ex: Café do Centro, Praia do Gonzaga)"
-              maxLength={100}
-              autoFocus
-              style={{
-                width: '100%', background: 'rgba(255,255,255,0.05)',
-                border: '1px solid var(--border)', borderRadius: 12,
-                padding: '10px 14px', fontSize: 14, color: 'var(--text)',
-                outline: 'none', boxSizing: 'border-box',
-                fontFamily: 'var(--font-jakarta)', marginBottom: 8,
-              }}
-            />
-            <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+
+            {/* Local */}
+            <div style={{ marginBottom: 12 }}>
+              <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+                Onde?
+              </label>
               <input
-                type="date"
-                value={conviteDate}
-                onChange={e => setConviteDate(e.target.value)}
+                type="text"
+                value={conviteLocal}
+                onChange={e => setConviteLocal(e.target.value)}
+                placeholder="Ex: Café do Centro, Praia do Gonzaga..."
+                maxLength={100}
+                autoFocus
                 style={{
-                  flex: 1, background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid var(--border)', borderRadius: 12,
-                  padding: '10px 14px', fontSize: 13, color: 'var(--text)',
-                  outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-jakarta)',
-                  colorScheme: 'dark',
-                }}
-              />
-              <input
-                type="time"
-                value={conviteTime}
-                onChange={e => setConviteTime(e.target.value)}
-                style={{
-                  flex: 1, background: 'rgba(255,255,255,0.05)',
-                  border: '1px solid var(--border)', borderRadius: 12,
-                  padding: '10px 14px', fontSize: 13, color: 'var(--text)',
-                  outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-jakarta)',
-                  colorScheme: 'dark',
+                  width: '100%', background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
+                  padding: '11px 14px', fontSize: 14, color: 'var(--text)',
+                  outline: 'none', boxSizing: 'border-box',
+                  fontFamily: 'var(--font-jakarta)',
                 }}
               />
             </div>
-            <input
-              type="text"
-              value={conviteText}
-              onChange={e => setConviteText(e.target.value)}
-              placeholder="Mensagem opcional..."
-              maxLength={200}
-              style={{
-                width: '100%', background: 'rgba(255,255,255,0.05)',
-                border: '1px solid var(--border)', borderRadius: 12,
-                padding: '10px 14px', fontSize: 14, color: 'var(--text)',
-                outline: 'none', boxSizing: 'border-box',
-                fontFamily: 'var(--font-jakarta)', marginBottom: 10,
-              }}
-            />
+
+            {/* Data + Hora lado a lado */}
+            <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+                  Quando?
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="date"
+                    value={conviteDate}
+                    onChange={e => setConviteDate(e.target.value)}
+                    style={{
+                      width: '100%', background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
+                      padding: '11px 12px', fontSize: 13,
+                      color: conviteDate ? 'var(--text)' : 'rgba(248,249,250,0.4)',
+                      outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-jakarta)',
+                      colorScheme: 'dark',
+                      WebkitAppearance: 'none',
+                      appearance: 'none',
+                      minHeight: 42,
+                    }}
+                  />
+                </div>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+                  Que horas?
+                </label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="time"
+                    value={conviteTime}
+                    onChange={e => setConviteTime(e.target.value)}
+                    style={{
+                      width: '100%', background: 'rgba(255,255,255,0.04)',
+                      border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
+                      padding: '11px 12px', fontSize: 13,
+                      color: conviteTime ? 'var(--text)' : 'rgba(248,249,250,0.4)',
+                      outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-jakarta)',
+                      colorScheme: 'dark',
+                      WebkitAppearance: 'none',
+                      appearance: 'none',
+                      minHeight: 42,
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Mensagem opcional */}
+            <div style={{ marginBottom: 14 }}>
+              <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+                Mensagem <span style={{ opacity: 0.5, textTransform: 'none', letterSpacing: 0 }}>(opcional)</span>
+              </label>
+              <input
+                type="text"
+                value={conviteText}
+                onChange={e => setConviteText(e.target.value)}
+                placeholder="Adicione um recado..."
+                maxLength={200}
+                style={{
+                  width: '100%', background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
+                  padding: '11px 14px', fontSize: 14, color: 'var(--text)',
+                  outline: 'none', boxSizing: 'border-box',
+                  fontFamily: 'var(--font-jakarta)',
+                }}
+              />
+            </div>
+
+            {/* Botão enviar */}
             <button
               onClick={handleSendConvite}
-              disabled={(!conviteLocal.trim() && !conviteText.trim()) || sending}
+              disabled={!conviteLocal.trim() || sending}
               style={{
-                width: '100%', padding: '11px 0', borderRadius: 12,
-                background: (conviteLocal.trim() || conviteText.trim()) ? 'var(--accent)' : 'rgba(255,255,255,0.08)',
-                border: 'none', cursor: (conviteLocal.trim() || conviteText.trim()) ? 'pointer' : 'default',
-                color: (conviteLocal.trim() || conviteText.trim()) ? '#fff' : 'var(--muted)',
+                width: '100%', padding: '13px 0', borderRadius: 12,
+                background: conviteLocal.trim() ? 'var(--accent)' : 'rgba(255,255,255,0.06)',
+                border: 'none', cursor: conviteLocal.trim() ? 'pointer' : 'default',
+                color: conviteLocal.trim() ? '#fff' : 'rgba(248,249,250,0.35)',
                 fontFamily: 'var(--font-jakarta)', fontSize: 14, fontWeight: 700,
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                transition: 'all 0.2s',
               }}
             >
-              <CalendarPlus size={14} />
+              <CalendarPlus size={15} strokeWidth={2} />
               Enviar convite
             </button>
           </div>
