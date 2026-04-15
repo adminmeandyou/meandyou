@@ -1517,7 +1517,7 @@ function BuscaInner() {
   const [dragY, setDragY] = useState(0)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradeReason, setUpgradeReason] = useState<'superlike' | 'fetiche'>('superlike')
-  const [matchResult, setMatchResult] = useState<{ name: string; photo?: string; otherUserId?: string } | null>(null)
+  const [matchResult, setMatchResult] = useState<{ name: string; photo?: string; otherUserId?: string; matchId?: string } | null>(null)
   const [matchFriendSent, setMatchFriendSent] = useState(false)
   const [lastSwipe, setLastSwipe] = useState<{ dir: 'left' | 'right' | 'up'; profileId: string } | null>(null)
 
@@ -1878,7 +1878,7 @@ function BuscaInner() {
         })
         if (data?.is_match) {
           setMatchFriendSent(false)
-          setMatchResult({ ...savedProfile, otherUserId: profileId })
+          setMatchResult({ ...savedProfile, otherUserId: profileId, matchId: data.match_id })
           supabase.auth.getSession().then(({ data: s }) => {
             const token = s.session?.access_token
             if (token) {
@@ -2844,7 +2844,7 @@ function BuscaInner() {
               Você e <strong style={{ color: 'var(--text)' }}>{matchResult.name}</strong> se curtiram mutuamente.
             </p>
             <Link
-              href="/matches"
+              href={matchResult.matchId ? `/conversas/${matchResult.matchId}` : '/matches'}
               onClick={() => setMatchResult(null)}
               style={{
                 display: 'block',
@@ -2859,8 +2859,26 @@ function BuscaInner() {
                 marginBottom: 10,
               }}
             >
-              Ver matches
+              Enviar mensagem
             </Link>
+            <button
+              onClick={() => setMatchResult(null)}
+              style={{
+                display: 'block',
+                width: '100%',
+                padding: '12px 0',
+                borderRadius: 14,
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.10)',
+                color: 'var(--muted)',
+                fontWeight: 500,
+                fontSize: 14,
+                cursor: 'pointer',
+                marginBottom: 10,
+              }}
+            >
+              Continuar explorando
+            </button>
             {matchResult.otherUserId && !matchFriendSent && (
               <button
                 onClick={async () => {
