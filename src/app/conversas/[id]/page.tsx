@@ -767,7 +767,10 @@ export default function ChatPage() {
           display: 'flex', alignItems: 'center', gap: 10, zIndex: 10,
         }}>
           <button
-            onClick={() => router.push('/conversas')}
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.history.length > 1) router.back()
+              else router.push('/conversas')
+            }}
             style={{
               width: 36, height: 36, borderRadius: '50%',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
