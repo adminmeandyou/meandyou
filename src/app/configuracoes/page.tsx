@@ -8,10 +8,11 @@ import Image from 'next/image'
 import {
   ArrowLeft, ChevronRight, User, HelpCircle, FileText, Shield, Trash2,
   LogOut, CreditCard, Headphones, ShieldCheck, Monitor, Mail, Bell,
-  Eye, EyeOff, Lock, Smartphone, Bug, Paperclip, X, Heart, Users, Crown, Compass,
+  Eye, EyeOff, Lock, Smartphone, Bug, Paperclip, X, Heart, Users, Crown, Compass, Volume2,
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
+import { useSoundPref, useSounds } from '@/hooks/useSounds'
 
 // ─── Toggle Switch ─────────────────────────────────────────────────────────────
 function ToggleSwitch({ ativo, onChange, loading }: { ativo: boolean; onChange: () => void; loading?: boolean }) {
@@ -132,6 +133,8 @@ export default function ConfiguracoesPage() {
   const [savingLastActive, setSavingLastActive]     = useState(false)
   const [savingNotifEmail, setSavingNotifEmail]     = useState(false)
   const [savingPush, setSavingPush]                 = useState(false)
+  const [soundsEnabled, setSoundsEnabled]           = useSoundPref()
+  const sounds                                       = useSounds()
 
   useEffect(() => {
     supabase.auth.getUser().then(async ({ data: { user } }) => {
@@ -394,6 +397,18 @@ export default function ConfiguracoesPage() {
             ativo={notifPush}
             onChange={toggleNotifPush}
             loading={savingPush}
+          />
+          <ToggleRow
+            icon={<Volume2 size={17} />}
+            label="Sons do app"
+            sub="Cliques, notificações e efeitos sonoros"
+            ativo={soundsEnabled}
+            onChange={() => {
+              const next = !soundsEnabled
+              setSoundsEnabled(next)
+              if (next) setTimeout(() => sounds.play('success'), 60)
+              toast.success(next ? 'Sons ativados.' : 'Sons desativados.')
+            }}
             last
           />
         </CardSection>

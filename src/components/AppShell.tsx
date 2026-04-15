@@ -10,6 +10,7 @@ import { ToastProvider } from './Toast'
 import { PlanGuard } from './PlanGuard'
 import { BadgeWatcher } from './BadgeWatcher'
 import { LevelUpToast } from './LevelUpToast'
+import { AttentionProvider } from './AttentionProvider'
 
 /**
  * Rotas que recebem o shell do app (header + bottom nav + sidebar).
@@ -65,10 +66,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isFullscreenChat = /^\/conversas\/.+/.test(pathname)
 
   // Rotas sem shell: renderiza children diretamente (sem ToastProvider — pages auth têm o próprio)
-  if (!shell) return <ToastProvider>{children}</ToastProvider>
+  if (!shell) return <ToastProvider><AttentionProvider>{children}</AttentionProvider></ToastProvider>
 
   return (
     <ToastProvider>
+    <AttentionProvider>
     <BadgeWatcher />
     <LevelUpToast />
     <AppHeaderProvider>
@@ -184,6 +186,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       </div>
     </AppHeaderProvider>
+    </AttentionProvider>
     </ToastProvider>
   )
 }

@@ -15,6 +15,7 @@ import { ChatBubble } from '@/components/ui/ChatBubble'
 import { ReportModal } from '@/components/ReportModal'
 import { VideoCallButton } from '@/components/VideoCall'
 import { EmojiPicker } from '@/components/EmojiPicker'
+import { useSounds } from '@/hooks/useSounds'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { useToast } from '@/components/Toast'
 import { pickRandomIcebreakers } from '@/lib/icebreakers'
@@ -46,6 +47,7 @@ export default function ChatPage() {
   const matchId = params.id as string
   const router = useRouter()
   const toast = useToast()
+  const sounds = useSounds()
 
   const [userId, setUserId] = useState<string | null>(null)
   const [otherUser, setOtherUser] = useState<OtherUser | null>(null)
@@ -208,13 +210,16 @@ export default function ChatPage() {
             navigator.vibrate(15)
           }
 
-          // Nudge recebido: haptics + shake
+          // Chamar atenção recebido: 3 bips + tremida longa
           if (newMsg.content === NUDGE_TOKEN) {
             if (typeof navigator !== 'undefined' && navigator.vibrate) {
-              navigator.vibrate([200, 100, 200])
+              navigator.vibrate([250, 120, 250, 120, 250])
             }
+            sounds.play('attention')
             setShake(true)
-            setTimeout(() => setShake(false), 700)
+            setTimeout(() => setShake(false), 1850)
+          } else {
+            sounds.play('receive')
           }
           // Marca como lida automaticamente
           supabase
@@ -331,6 +336,8 @@ export default function ChatPage() {
     }
     setMessages(prev => [...prev, tempMsg])
     scrollToBottom()
+    // Som de envio (exceto para tokens internos sem feedback visual direto)
+    if (content !== NUDGE_TOKEN) sounds.play('send')
 
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -394,12 +401,13 @@ export default function ChatPage() {
       const diff = Date.now() - parseInt(last)
       if (diff < 60 * 60 * 1000) {
         const mins = Math.ceil((60 * 60 * 1000 - diff) / 60000)
-        toast.info(`Aguarde ${mins} min para dar outro nudge.`)
+        toast.info(`Aguarde ${mins} min para chamar a atenção de novo.`)
         return
       }
     }
     localStorage.setItem(nudgeKey, Date.now().toString())
-    if (navigator.vibrate) navigator.vibrate([100, 50, 150])
+    if (navigator.vibrate) navigator.vibrate([250, 120, 250, 120, 250])
+    sounds.play('attention')
     await sendMessage(NUDGE_TOKEN)
   }
 
@@ -636,16 +644,16 @@ export default function ChatPage() {
     return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })
   }
 
-  // Renderiza uma mensagem (normal, nudge ou convite)
+  // Renderiza uma mensagem (normal, chamar atenção ou convite)
   function renderMsg(msg: Message, isMe: boolean) {
-    // Nudge
+    // Chamar atenção
     if (msg.content === NUDGE_TOKEN) {
       return (
         <div key={msg.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '12px 0', gap: 8 }}>
           <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
           <span style={{ fontSize: 12, color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 5 }}>
             <Zap size={12} color="var(--accent)" />
-            {isMe ? 'Você deu um nudge!' : `${otherUser?.name} deu um nudge!`}
+            {isMe ? 'Você chamou a atenção!' : `${otherUser?.name} chamou sua atenção!`}
           </span>
           <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
         </div>
@@ -743,15 +751,26 @@ export default function ChatPage() {
     <>
       <style>{`
         @keyframes nudge-shake {
-          0%, 100% { transform: translateX(0); }
-          15%       { transform: translateX(-6px); }
-          30%       { transform: translateX(6px); }
-          45%       { transform: translateX(-5px); }
-          60%       { transform: translateX(5px); }
-          75%       { transform: translateX(-3px); }
-          90%       { transform: translateX(3px); }
+          0%, 100%  { transform: translate3d(0, 0, 0); }
+          4%        { transform: translate3d(-14px, 0, 0); }
+          10%       { transform: translate3d(14px, 0, 0); }
+          16%       { transform: translate3d(-12px, 0, 0); }
+          22%       { transform: translate3d(12px, 0, 0); }
+          28%       { transform: translate3d(-8px, 0, 0); }
+          33%       { transform: translate3d(0, 0, 0); }
+          38%       { transform: translate3d(-14px, 0, 0); }
+          44%       { transform: translate3d(14px, 0, 0); }
+          50%       { transform: translate3d(-12px, 0, 0); }
+          56%       { transform: translate3d(12px, 0, 0); }
+          62%       { transform: translate3d(-8px, 0, 0); }
+          66%       { transform: translate3d(0, 0, 0); }
+          71%       { transform: translate3d(-14px, 0, 0); }
+          78%       { transform: translate3d(14px, 0, 0); }
+          84%       { transform: translate3d(-12px, 0, 0); }
+          90%       { transform: translate3d(12px, 0, 0); }
+          95%       { transform: translate3d(-6px, 0, 0); }
         }
-        .chat-shake { animation: nudge-shake 0.65s ease; }
+        .chat-shake { animation: nudge-shake 1.8s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
       `}</style>
 
       <div style={{ position: 'fixed', top: 'var(--chat-vo, 0px)', left: 0, right: 0, height: 'var(--chat-vh, 100dvh)', overflow: 'hidden', overscrollBehavior: 'none', touchAction: 'none', background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', zIndex: 50 }}>
@@ -859,11 +878,11 @@ export default function ChatPage() {
             />
           )}
 
-          {/* Nudge — tremer a tela do outro (estilo MSN) */}
+          {/* Chamar atenção — tremer a tela do outro (estilo MSN) */}
           <button
             onClick={handleNudge}
             style={{ width: 36, height: 36, borderRadius: '50%', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-            title="Dar um nudge"
+            title="Chamar atenção"
           >
             <Zap size={18} color="rgba(248,249,250,0.40)" strokeWidth={1.5} />
           </button>
@@ -908,7 +927,7 @@ export default function ChatPage() {
               { icon: <Sparkles size={16} strokeWidth={1.5} />, label: 'Quebra-gelo', sub: 'Sugestões para começar', onClick: () => { setShowMenu(false); setShowConvite(false); setIcebreakerList(pickRandomIcebreakers(6)); setShowIcebreakers(v => !v) }, active: showIcebreakers },
               { icon: <CalendarPlus size={16} strokeWidth={1.5} />, label: 'Chamar para Encontro', sub: 'Proponha um encontro', onClick: () => { setShowMenu(false); setShowIcebreakers(false); setShowConvite(v => !v) }, active: showConvite },
               { icon: <MapPin size={16} strokeWidth={1.5} />, label: 'Registrar Encontro', sub: 'Salvar local e horário', onClick: () => { setShowMenu(false); setShowMeetingModal(true) } },
-              { icon: <Zap size={16} strokeWidth={1.5} />, label: 'Nudge', sub: 'Chame a atenção da pessoa', onClick: () => { setShowMenu(false); handleNudge() } },
+              { icon: <Zap size={16} strokeWidth={1.5} />, label: 'Chamar atenção', sub: 'Faz a tela da pessoa tremer', onClick: () => { setShowMenu(false); handleNudge() } },
               { icon: friendSent ? <Check size={16} strokeWidth={1.5} /> : <UserPlus size={16} strokeWidth={1.5} />, label: friendSent ? 'Amigo adicionado' : 'Adicionar como amigo', sub: friendSent ? 'Solicitação enviada' : 'Conectem-se fora do app', onClick: () => { setShowMenu(false); handleAddFriend() }, success: friendSent },
               ...(messages.length >= 5 && !ratingDone ? [{ icon: <Star size={16} strokeWidth={1.5} />, label: 'Avaliar conversa', sub: 'Avaliação anônima', onClick: () => { setShowMenu(false); setShowRatingModal(true) } }] : []),
               ...(boloOportunidade && !boloDone ? [{ icon: <Coffee size={16} strokeWidth={1.5} />, label: 'O encontro aconteceu?', sub: 'Conte como foi', onClick: () => { setShowMenu(false); setShowBoloModal(true) } }] : []),
