@@ -10,7 +10,6 @@ import {
   SlidersHorizontal, X, Heart, Star, Search, AlertCircle,
   Loader2, Lock, Check, MapPin, RotateCcw, Zap, Undo2,
   ChevronDown, ChevronUp, Users, Info, Crown, Compass,
-  Target, IdCard, Sparkles, Wind, Eye, Palette, Music, Home, Briefcase,
 } from 'lucide-react'
 import { SkeletonCard, skeletonCss } from '@/components/Skeleton'
 import { useToast } from '@/components/Toast'
@@ -22,1473 +21,19 @@ import { SliderRange } from '@/components/ui/SliderRange'
 import { SwipeButton } from '@/components/ui/SwipeButton'
 import { useAppHeader } from '@/contexts/AppHeaderContext'
 
-// ─── Types ──────────────────────────────────────────────────────────────────
-
-interface Profile {
-  id: string
-  name: string
-  age?: number
-  photo_best?: string
-  photos?: string[]
-  city?: string
-  bio?: string
-  distance_km?: number
-  gender?: string
-}
-
-interface Room {
-  id: string
-  name: string
-  type: 'public' | 'private' | 'black'
-  description: string | null
-  emoji: string
-  max_members: number
-  created_by: string | null
-  is_active: boolean
-  member_count?: number
-}
-
-interface FiltersState {
-  search_max_distance_km: number
-  search_min_age: number
-  search_max_age: number
-  search_gender: string
-  search_state: string
-  [key: string]: boolean | number | string
-}
-
-type ViewMode = 'discovery' | 'search' | 'rooms' | 'daily'
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const DEFAULT_FILTERS: FiltersState = {
-  search_max_distance_km: 50,
-  search_min_age: 18,
-  search_max_age: 60,
-  search_gender: 'all',
-  search_state: '',
-}
-
-const GENDER_OPTIONS = [
-  { value: 'all', label: 'Todos' },
-  { value: 'cis_woman', label: 'Mulher' },
-  { value: 'cis_man', label: 'Homem' },
-  { value: 'trans_woman', label: 'Mulher Trans' },
-  { value: 'trans_man', label: 'Homem Trans' },
-  { value: 'nonbinary', label: 'Não-binário' },
-  { value: 'fluid', label: 'Gênero Fluido' },
-]
-
-const STATE_NAMES: Record<string, string> = {
-  AC: 'Acre', AL: 'Alagoas', AM: 'Amazonas', AP: 'Amapá', BA: 'Bahia',
-  CE: 'Ceará', DF: 'Distrito Federal', ES: 'Espírito Santo', GO: 'Goiás',
-  MA: 'Maranhão', MG: 'Minas Gerais', MS: 'Mato Grosso do Sul', MT: 'Mato Grosso',
-  PA: 'Pará', PB: 'Paraíba', PE: 'Pernambuco', PI: 'Piauí', PR: 'Paraná',
-  RJ: 'Rio de Janeiro', RN: 'Rio Grande do Norte', RO: 'Rondônia', RR: 'Roraima',
-  RS: 'Rio Grande do Sul', SC: 'Santa Catarina', SE: 'Sergipe', SP: 'São Paulo', TO: 'Tocantins',
-}
-
-const FILTER_CATEGORIES = [
-  {
-    id: 'objetivos', label: 'O que busca', icon: Target, locked: false, required: true,
-    groups: [{ label: 'Objetivos', options: [
-      { key: 'obj_serious', label: 'Relacionamento sério' },
-      { key: 'obj_casual', label: 'Relacionamento casual' },
-      { key: 'obj_friendship', label: 'Amizade' },
-      { key: 'obj_events', label: 'Companhia para eventos' },
-      { key: 'obj_conjugal', label: 'Relação conjugal' },
-      { key: 'obj_open', label: 'Aberto(a) a experiências' },
-      { key: 'obj_undefined', label: 'Qualquer / Ainda definindo' },
-    ]}]
-  },
-  {
-    id: 'orientacao', label: 'Identidade', icon: IdCard, locked: false, required: true,
-    groups: [
-      { label: 'Orientação sexual aceita', options: [
-        { key: 'sex_hetero', label: 'Heterossexual' }, { key: 'sex_homo', label: 'Homossexual' },
-        { key: 'sex_bi', label: 'Bissexual' }, { key: 'sex_pan', label: 'Pansexual' },
-        { key: 'sex_asex', label: 'Assexual' }, { key: 'sex_demi', label: 'Demissexual' },
-        { key: 'sex_queer', label: 'Queer' },
-      ]},
-      { label: 'Status civil aceito', options: [
-        { key: 'civil_single', label: 'Solteiro(a)' }, { key: 'civil_complicated', label: 'Complicado' },
-        { key: 'civil_married', label: 'Casado(a)' }, { key: 'civil_divorcing', label: 'Divorciando' },
-        { key: 'civil_divorced', label: 'Divorciado(a)' }, { key: 'civil_widowed', label: 'Viúvo(a)' },
-        { key: 'civil_open', label: 'Relacionamento aberto' },
-      ]},
-    ]
-  },
-  {
-    id: 'religiao', label: 'Religião', icon: Sparkles, locked: false, required: true,
-    groups: [{ label: 'Religião aceita', options: [
-      { key: 'rel_evangelical', label: 'Evangélico(a)' }, { key: 'rel_catholic', label: 'Católico(a)' },
-      { key: 'rel_spiritist', label: 'Espírita' }, { key: 'rel_umbanda', label: 'Umbanda' },
-      { key: 'rel_candomble', label: 'Candomblé' }, { key: 'rel_buddhist', label: 'Budista' },
-      { key: 'rel_jewish', label: 'Judaico(a)' }, { key: 'rel_islamic', label: 'Islâmico(a)' },
-      { key: 'rel_hindu', label: 'Hindu' }, { key: 'rel_agnostic', label: 'Agnóstico(a)' },
-      { key: 'rel_atheist', label: 'Ateu/Ateísta' }, { key: 'rel_spiritual', label: 'Espiritualizado(a) sem religião' },
-    ]}]
-  },
-  {
-    id: 'vicios', label: 'Vícios', icon: Wind, locked: false, required: true,
-    groups: [
-      { label: 'Fumo', options: [
-        { key: 'smoke_yes', label: 'Fuma' }, { key: 'smoke_occasionally', label: 'Ocasionalmente' },
-        { key: 'smoke_no', label: 'Não fuma' },
-      ]},
-      { label: 'Bebida', options: [
-        { key: 'drink_yes', label: 'Bebe' }, { key: 'drink_socially', label: 'Socialmente' },
-        { key: 'drink_no', label: 'Não bebe' },
-      ]},
-    ]
-  },
-  {
-    id: 'aparencia', label: 'Aparência', icon: Eye, locked: false, required: false,
-    groups: [
-      { label: 'Cor dos olhos', options: [
-        { key: 'eye_black', label: 'Pretos' }, { key: 'eye_brown', label: 'Castanhos' },
-        { key: 'eye_green', label: 'Verdes' }, { key: 'eye_blue', label: 'Azuis' },
-        { key: 'eye_honey', label: 'Mel' }, { key: 'eye_gray', label: 'Cinzas' },
-        { key: 'eye_heterochromia', label: 'Heterocromia' },
-      ]},
-      { label: 'Cor do cabelo', options: [
-        { key: 'hair_black', label: 'Preto' }, { key: 'hair_brown', label: 'Castanho' },
-        { key: 'hair_blonde', label: 'Loiro' }, { key: 'hair_red', label: 'Ruivo' },
-        { key: 'hair_colored', label: 'Colorido' }, { key: 'hair_gray', label: 'Grisalho' },
-        { key: 'hair_bald', label: 'Careca' },
-      ]},
-      { label: 'Tipo de cabelo', options: [
-        { key: 'hair_short', label: 'Curto' }, { key: 'hair_medium', label: 'Médio' },
-        { key: 'hair_long', label: 'Longo' }, { key: 'hair_straight', label: 'Liso' },
-        { key: 'hair_wavy', label: 'Ondulado' }, { key: 'hair_curly', label: 'Cacheado' },
-        { key: 'hair_coily', label: 'Crespo' },
-      ]},
-      { label: 'Cor de pele / etnia', options: [
-        { key: 'skin_white', label: 'Branca' }, { key: 'skin_mixed', label: 'Parda' },
-        { key: 'skin_black', label: 'Negra' }, { key: 'skin_asian', label: 'Asiática' },
-        { key: 'skin_indigenous', label: 'Indígena' }, { key: 'skin_latin', label: 'Latina' },
-        { key: 'skin_mediterranean', label: 'Mediterrânea' }, { key: 'skin_vitiligo', label: 'Vitiligo' },
-      ]},
-      { label: 'Corpo', options: [
-        { key: 'body_underweight', label: 'Abaixo do peso' }, { key: 'body_healthy', label: 'Peso saudável' },
-        { key: 'body_overweight', label: 'Acima do peso' }, { key: 'body_obese_mild', label: 'Obeso(a) leve' },
-        { key: 'body_obese_severe', label: 'Obeso(a) grave' },
-      ]},
-      { label: 'Características', options: [
-        { key: 'feat_freckles', label: 'Sardas' }, { key: 'feat_tattoo', label: 'Tatuagem' },
-        { key: 'feat_piercing', label: 'Piercing' }, { key: 'feat_scar', label: 'Cicatriz' },
-        { key: 'feat_glasses', label: 'Óculos' }, { key: 'feat_braces', label: 'Aparelho' },
-        { key: 'feat_beard', label: 'Barba' },
-      ]},
-    ]
-  },
-  {
-    id: 'estilo', label: 'Estilo de vida', icon: Palette, locked: false, required: false,
-    groups: [
-      { label: 'Rotina', options: [
-        { key: 'routine_gym', label: 'Academia' }, { key: 'routine_sports', label: 'Esportes' },
-        { key: 'routine_sedentary', label: 'Sedentário(a)' }, { key: 'routine_homebody', label: 'Caseiro(a)' },
-        { key: 'routine_goes_out', label: 'Gosta de sair' }, { key: 'routine_party', label: 'Festeiro(a)' },
-        { key: 'routine_night_owl', label: 'Noturno(a)' }, { key: 'routine_morning', label: 'Matutino(a)' },
-        { key: 'routine_workaholic', label: 'Workaholic' }, { key: 'routine_balanced', label: 'Equilibrado(a)' },
-      ]},
-      { label: 'Personalidade', options: [
-        { key: 'pers_extrovert', label: 'Extrovertido(a)' }, { key: 'pers_introvert', label: 'Introvertido(a)' },
-        { key: 'pers_ambivert', label: 'Ambivertido(a)' }, { key: 'pers_shy', label: 'Tímido(a)' },
-        { key: 'pers_communicative', label: 'Comunicativo(a)' }, { key: 'pers_antisocial', label: 'Antissocial' },
-        { key: 'pers_calm', label: 'Calmo(a)' }, { key: 'pers_intense', label: 'Intenso(a)' },
-      ]},
-      { label: 'Alimentação', options: [
-        { key: 'diet_vegan', label: 'Vegano(a)' }, { key: 'diet_vegetarian', label: 'Vegetariano(a)' },
-        { key: 'diet_carnivore', label: 'Carnívoro(a)' }, { key: 'diet_everything', label: 'Come de tudo' },
-        { key: 'food_cooks', label: 'Cozinha' }, { key: 'food_no_cook', label: 'Não cozinha' },
-      ]},
-    ]
-  },
-  {
-    id: 'hobbies', label: 'Hobbies e música', icon: Music, locked: false, required: false,
-    groups: [
-      { label: 'Hobbies', options: [
-        { key: 'hob_gamer', label: 'Gamer' }, { key: 'hob_reader', label: 'Leitor(a)' },
-        { key: 'hob_movies', label: 'Cinéfilo(a)' }, { key: 'hob_series', label: 'Séries' },
-        { key: 'hob_anime', label: 'Anime' }, { key: 'hob_photography', label: 'Fotografia' },
-        { key: 'hob_art', label: 'Arte' }, { key: 'hob_dance', label: 'Dança' },
-        { key: 'hob_travel', label: 'Viagens' }, { key: 'hob_hiking', label: 'Trilhas' },
-        { key: 'hob_meditation', label: 'Meditação' }, { key: 'hob_kpop', label: 'K-pop' },
-      ]},
-      { label: 'Música', options: [
-        { key: 'music_funk', label: 'Funk' }, { key: 'music_sertanejo', label: 'Sertanejo' },
-        { key: 'music_pagode', label: 'Pagode' }, { key: 'music_rock', label: 'Rock' },
-        { key: 'music_pop', label: 'Pop' }, { key: 'music_electronic', label: 'Eletrônica' },
-        { key: 'music_hiphop', label: 'Hip-hop' }, { key: 'music_mpb', label: 'MPB' },
-        { key: 'music_gospel', label: 'Gospel' }, { key: 'music_eclectic', label: 'Eclético' },
-      ]},
-    ]
-  },
-  {
-    id: 'familia', label: 'Família', icon: Home, locked: false, required: false,
-    groups: [
-      { label: 'Filhos', options: [
-        { key: 'kids_has', label: 'Tem filhos' }, { key: 'kids_no', label: 'Não tem filhos' },
-        { key: 'kids_wants', label: 'Quer ter filhos' }, { key: 'kids_no_want', label: 'Não quer' },
-        { key: 'kids_adoption', label: 'Aberto à adoção' }, { key: 'kids_undecided', label: 'Ainda decidindo' },
-      ]},
-      { label: 'Pets', options: [
-        { key: 'pet_dog', label: 'Tem cachorro' }, { key: 'pet_cat', label: 'Tem gato' },
-        { key: 'pet_loves', label: 'Ama animais' }, { key: 'pet_none', label: 'Sem pets' },
-        { key: 'pet_allergy', label: 'Alergia a animais' },
-      ]},
-    ]
-  },
-  {
-    id: 'profissional', label: 'Profissional', icon: Briefcase, locked: false, required: false,
-    groups: [
-      { label: 'Escolaridade', options: [
-        { key: 'edu_highschool', label: 'Ensino médio' }, { key: 'edu_college_incomplete', label: 'Superior incompleto' },
-        { key: 'edu_college_complete', label: 'Superior completo' }, { key: 'edu_postgrad', label: 'Pós-graduação' },
-        { key: 'edu_masters', label: 'Mestrado' }, { key: 'edu_phd', label: 'Doutorado' },
-        { key: 'edu_civil_servant', label: 'Concursado(a)' }, { key: 'edu_student', label: 'Estudante' },
-      ]},
-      { label: 'Trabalho', options: [
-        { key: 'work_clt', label: 'CLT' }, { key: 'work_entrepreneur', label: 'Empresário(a)' },
-        { key: 'work_freelancer', label: 'Freelancer' }, { key: 'work_autonomous', label: 'Autônomo(a)' },
-        { key: 'work_remote', label: 'Remoto' }, { key: 'work_unemployed', label: 'Desempregado(a)' },
-      ]},
-    ]
-  },
-  {
-    id: 'fetiche', label: 'Fetiche & Sugar', icon: Lock, locked: true, required: false,
-    groups: [{ label: 'Dinâmicas', options: [
-      { key: 'disc_throuple', label: 'Trisal' }, { key: 'disc_swing', label: 'Swing' },
-      { key: 'disc_polyamory', label: 'Poliamor' }, { key: 'disc_bdsm', label: 'BDSM' },
-      { key: 'obj_sugar_baby', label: 'Sugar Baby' }, { key: 'obj_sugar_daddy', label: 'Sugar Daddy/Mommy' },
-    ]}]
-  },
-]
-
-// ─── Location Autocomplete ────────────────────────────────────────────────────
-
-type IbgeMunicipio = { nome: string; microrregiao: { mesorregiao: { UF: { sigla: string; nome: string } } } }
-let ibgeCache: IbgeMunicipio[] | null = null
-
-async function buscarMunicipios(query: string): Promise<{ label: string; city: string; state: string }[]> {
-  if (!ibgeCache) {
-    try {
-      const r = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/municipios?orderBy=nome')
-      ibgeCache = await r.json()
-    } catch { return [] }
-  }
-  const q = query.toLowerCase().trim()
-  if (!q) return []
-  return (ibgeCache ?? [])
-    .filter(m => m.nome.toLowerCase().startsWith(q) || m.nome.toLowerCase().includes(q))
-    .slice(0, 7)
-    .map(m => ({
-      city: m.nome,
-      state: m.microrregiao.mesorregiao.UF.sigla,
-      label: `${m.nome}, ${m.microrregiao.mesorregiao.UF.nome}`,
-    }))
-}
-
-function LocationAutocomplete({
-  displayValue,
-  onSelect,
-}: {
-  displayValue: string
-  onSelect: (city: string, state: string, display: string) => void
-}) {
-  const [query, setQuery] = useState(displayValue)
-  const [suggestions, setSuggestions] = useState<{ label: string; city: string; state: string }[]>([])
-  const [loadingLoc, setLoadingLoc] = useState(false)
-  const [open, setOpen] = useState(false)
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-
-  useEffect(() => { setQuery(displayValue) }, [displayValue])
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const q = e.target.value
-    setQuery(q)
-    setOpen(false)
-    if (timerRef.current) clearTimeout(timerRef.current)
-    if (!q.trim()) {
-      setSuggestions([])
-      onSelect('', '', '')
-      return
-    }
-    timerRef.current = setTimeout(async () => {
-      setLoadingLoc(true)
-      const results = await buscarMunicipios(q)
-      setSuggestions(results)
-      setOpen(results.length > 0)
-      setLoadingLoc(false)
-    }, 300)
-  }
-
-  function handleSelect(s: { label: string; city: string; state: string }) {
-    setQuery(s.label)
-    setSuggestions([])
-    setOpen(false)
-    onSelect(s.city, s.state, s.label)
-  }
-
-  return (
-    <div style={{ position: 'relative' }}>
-      <div style={{ position: 'relative' }}>
-        <MapPin size={15} strokeWidth={1.5} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }} />
-        <input
-          value={query}
-          onChange={handleChange}
-          onFocus={() => suggestions.length > 0 && setOpen(true)}
-          onBlur={() => setTimeout(() => setOpen(false), 150)}
-          placeholder="Buscar cidade ou estado..."
-          style={{
-            width: '100%', paddingLeft: 36, paddingRight: query ? 32 : 12,
-            paddingTop: 10, paddingBottom: 10,
-            borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)',
-            background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', color: 'var(--text)',
-            fontSize: 14, fontFamily: 'var(--font-jakarta)', outline: 'none',
-          }}
-        />
-        {loadingLoc && (
-          <div className="ui-spinner" style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', width: 14, height: 14, color: 'var(--muted)' }} />
-        )}
-        {!loadingLoc && query && (
-          <button
-            onMouseDown={() => { setQuery(''); setSuggestions([]); setOpen(false); onSelect('', '', '') }}
-            style={{ position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}
-          >
-            <X size={13} color="var(--muted)" strokeWidth={1.5} />
-          </button>
-        )}
-      </div>
-      {open && suggestions.length > 0 && (
-        <div style={{
-          position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 200,
-          background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)',
-          borderRadius: 12, marginTop: 4, overflow: 'hidden',
-        }}>
-          {suggestions.map((s, i) => (
-            <div
-              key={`${s.city}-${s.state}`}
-              onMouseDown={() => handleSelect(s)}
-              style={{
-                padding: '10px 14px', cursor: 'pointer',
-                display: 'flex', alignItems: 'center', gap: 8,
-                fontSize: 13, color: 'var(--text)',
-                borderBottom: i < suggestions.length - 1 ? '1px solid var(--border-soft)' : 'none',
-              }}
-              onMouseEnter={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'rgba(255,255,255,0.05)'}
-              onMouseLeave={e => (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'}
-            >
-              <MapPin size={13} color="var(--muted)" strokeWidth={1.5} />
-              {s.label}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function getModeLimit(plan: string, mode: ViewMode): number {
-  // Match do dia: limite e o tamanho do deck (controlado em loadDaily)
-  if (mode === 'daily' || mode === 'rooms') return Infinity
-  // Descobrir e Busca Avancada: limite por plano
-  if (plan === 'black') return Infinity
-  if (plan === 'plus') return 50
-  return 20
-}
-
-function getDailyMatchLimit(plan: string): number {
-  if (plan === 'black') return 8
-  if (plan === 'plus') return 3
-  return 1
-}
-
-function getSuperlikeLimit(plan: string) {
-  if (plan === 'black') return 10
-  if (plan === 'plus') return 5
-  return 1
-}
-
-function useCountdown() {
-  const [timeLeft, setTimeLeft] = useState('')
-  useEffect(() => {
-    const tick = () => {
-      const now = new Date()
-      const midnight = new Date(); midnight.setHours(24, 0, 0, 0)
-      const diff = midnight.getTime() - now.getTime()
-      const h = Math.floor(diff / 3600000)
-      const m = Math.floor((diff % 3600000) / 60000)
-      const s = Math.floor((diff % 60000) / 1000)
-      setTimeLeft(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`)
-    }
-    tick(); const id = setInterval(tick, 1000); return () => clearInterval(id)
-  }, [])
-  return timeLeft
-}
-
-// ─── Boost Active Banner ─────────────────────────────────────────────────────
-
-function BoostActiveBanner({ until }: { until: Date }) {
-  const [timeLeft, setTimeLeft] = useState('')
-  useEffect(() => {
-    const tick = () => {
-      const diff = until.getTime() - Date.now()
-      if (diff <= 0) { setTimeLeft('00:00'); return }
-      const m = Math.floor(diff / 60000)
-      const s = Math.floor((diff % 60000) / 1000)
-      setTimeLeft(`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`)
-    }
-    tick(); const id = setInterval(tick, 1000); return () => clearInterval(id)
-  }, [until])
-  return (
-    <div style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: 12, padding: '8px 14px', flexShrink: 0 }}>
-      <Zap size={13} strokeWidth={1.5} style={{ color: '#F59E0B' }} />
-      <span style={{ fontSize: 12, color: '#F59E0B', fontWeight: 600 }}>Boost ativo: você está em destaque</span>
-      <span style={{ fontSize: 11, color: 'rgba(245,158,11,0.70)', marginLeft: 4 }}>{timeLeft}</span>
-    </div>
-  )
-}
-
-// ─── Mode Selector (injetado no AppHeader) ───────────────────────────────────
-
-const MODE_LABELS: Record<ViewMode, string> = {
-  discovery: 'Descobrir',
-  search: 'Busca',
-  daily: 'Match do dia',
-  rooms: 'Salas',
-}
-
-function ModeSelectorTabs({
-  viewMode,
-  onChange,
-}: {
-  viewMode: ViewMode
-  onChange: (m: ViewMode) => void
-}) {
-  const [open, setOpen] = useState(false)
-
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-      {/* Botão Modos com dropdown */}
-      <div style={{ position: 'relative' }}>
-        <button
-          onClick={() => setOpen(o => !o)}
-          style={{
-            display: 'flex', alignItems: 'center', gap: 5,
-            padding: '5px 12px', borderRadius: 100,
-            border: '1px solid rgba(255,255,255,0.10)',
-            backgroundColor: 'rgba(255,255,255,0.05)',
-            color: 'var(--text)', fontSize: 13, fontWeight: 500,
-            fontFamily: 'var(--font-jakarta)', cursor: 'pointer',
-          }}
-        >
-          <span>Modos</span>
-          <ChevronDown size={13} strokeWidth={1.5} color="var(--muted)" style={{ transition: 'transform 0.2s', transform: open ? 'rotate(180deg)' : 'none' }} />
-        </button>
-
-        {open && (
-          <>
-            <div onClick={() => setOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 99 }} />
-            <div style={{
-              position: 'absolute', top: 'calc(100% + 8px)', left: '50%',
-              transform: 'translateX(-50%)', zIndex: 100,
-              background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)',
-              borderRadius: 14, padding: 6, minWidth: 160,
-            }}>
-              {(Object.keys(MODE_LABELS) as ViewMode[]).map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => { onChange(mode); setOpen(false) }}
-                  style={{
-                    width: '100%', padding: '9px 14px', borderRadius: 10,
-                    border: 'none',
-                    backgroundColor: viewMode === mode ? 'var(--accent-light)' : 'transparent',
-                    color: viewMode === mode ? 'var(--accent)' : 'var(--muted)',
-                    fontSize: 14, fontWeight: viewMode === mode ? 600 : 400,
-                    cursor: 'pointer', textAlign: 'left',
-                    fontFamily: 'var(--font-jakarta)',
-                    transition: 'background-color 0.15s',
-                  }}
-                >
-                  {MODE_LABELS[mode]}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-    </div>
-  )
-}
-
-// ─── Match do dia ─────────────────────────────────────────────────────────────
-
-// Todas as chaves de filtro de compatibilidade (exceto search_* e campos de controle)
-const COMPAT_KEYS = FILTER_CATEGORIES.flatMap(cat =>
-  cat.groups.flatMap(g => g.options.map(o => o.key))
-)
-
-function calcCompatibility(myFilters: Record<string, boolean>, theirFilters: Record<string, boolean>): number {
-  const myKeys = COMPAT_KEYS.filter(k => myFilters[k] === true)
-  if (myKeys.length === 0) return 0
-  const matches = myKeys.filter(k => theirFilters[k] === true).length
-  return Math.round((matches / myKeys.length) * 100)
-}
-
-async function requestLocation(): Promise<{ lat: number; lng: number } | null> {
-  return new Promise((resolve) => {
-    if (!navigator.geolocation) { resolve(null); return }
-    navigator.geolocation.getCurrentPosition(
-      (p) => resolve({ lat: p.coords.latitude, lng: p.coords.longitude }),
-      () => resolve(null), { timeout: 5000 }
-    )
-  })
-}
-
-function DailyMatchView({ userId, localFilters, userPlan }: { userId: string | null; localFilters: FiltersState; userPlan: string }) {
-  const [profiles, setProfiles] = useState<Profile[]>([])
-  const [loading, setLoading] = useState(true)
-  const [flipped, setFlipped] = useState<Set<string>>(new Set())
-  const [liked, setLiked] = useState<Set<string>>(new Set())
-  const [passed, setPassed] = useState<Set<string>>(new Set())
-  const [scores, setScores] = useState<Record<string, number>>({})
-  const toast = useToast()
-  const haptics = useHaptics()
-
-  useEffect(() => {
-    if (!userId) return
-    loadDaily()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userId, localFilters])
-
-  async function loadDaily() {
-    setLoading(true)
-    const today = new Date().toISOString().slice(0, 10)
-    const cacheKey = `daily_match_${userId}_${today}`
-    const cached = localStorage.getItem(cacheKey)
-    let daily: Profile[] = []
-
-    if (cached) {
-      try {
-        daily = JSON.parse(cached)
-        setProfiles(daily)
-      } catch {}
-    }
-
-    if (!daily.length) {
-      try {
-        const matchGender = localFilters.search_gender && localFilters.search_gender !== 'all' ? localFilters.search_gender : null
-        const dailyLoc = await requestLocation()
-        if (dailyLoc && userId) {
-          await supabase.from('profiles').update({ lat: dailyLoc.lat, lng: dailyLoc.lng }).eq('id', userId)
-        }
-        const { data } = await supabase.rpc('search_profiles', {
-          p_user_id:         userId,
-          p_lat:             dailyLoc?.lat ?? null,
-          p_lng:             dailyLoc?.lng ?? null,
-          p_max_distance_km: (localFilters.search_max_distance_km as number) >= 500 ? 9999 : localFilters.search_max_distance_km,
-          p_min_age:         localFilters.search_min_age,
-          p_max_age:         localFilters.search_max_age >= 60 ? 120 : localFilters.search_max_age,
-          p_gender:          matchGender,
-        })
-        // Busca candidatos para filtrar por compatibilidade mútua
-        const candidates = (data ?? []).slice(0, 20) as Profile[]
-
-        // Calcular compatibilidade mútua para filtrar >= 59%
-        try {
-          const candidateIds = candidates.map((p: Profile) => p.id)
-          const [myRes, theirRes] = await Promise.all([
-            supabase.from('filters').select('*').eq('user_id', userId).single(),
-            supabase.from('filters').select('*').in('user_id', candidateIds),
-          ])
-          if (myRes.data && theirRes.data) {
-            const myFilters = myRes.data as Record<string, boolean>
-            const scoreMap: Record<string, number> = {}
-            for (const row of theirRes.data) {
-              const scoreAtoB = calcCompatibility(myFilters, row as Record<string, boolean>)
-              const scoreBtoA = calcCompatibility(row as Record<string, boolean>, myFilters)
-              scoreMap[row.user_id] = Math.round((scoreAtoB + scoreBtoA) / 2)
-            }
-            // Filtra mínimo 59% de compatibilidade mútua, pega os melhores por plano
-            daily = candidates
-              .filter(p => (scoreMap[p.id] ?? 0) >= 59)
-              .sort((a, b) => (scoreMap[b.id] ?? 0) - (scoreMap[a.id] ?? 0))
-              .slice(0, getDailyMatchLimit(userPlan))
-            setScores(scoreMap)
-          } else {
-            daily = candidates.slice(0, getDailyMatchLimit(userPlan))
-          }
-        } catch {
-          daily = candidates.slice(0, getDailyMatchLimit(userPlan))
-        }
-
-        setProfiles(daily)
-        localStorage.setItem(cacheKey, JSON.stringify(daily))
-      } catch {}
-    }
-
-    // Calcular scores de compatibilidade (para perfis vindos do cache)
-    if (daily.length && userId && Object.keys(scores).length === 0) {
-      try {
-        const profileIds = daily.map(p => p.id)
-        const [myRes, theirRes] = await Promise.all([
-          supabase.from('filters').select('*').eq('user_id', userId).single(),
-          supabase.from('filters').select('*').in('user_id', profileIds),
-        ])
-        if (myRes.data && theirRes.data) {
-          const myFilters = myRes.data as Record<string, boolean>
-          const scoreMap: Record<string, number> = {}
-          for (const row of theirRes.data) {
-            const scoreAtoB = calcCompatibility(myFilters, row as Record<string, boolean>)
-            const scoreBtoA = calcCompatibility(row as Record<string, boolean>, myFilters)
-            scoreMap[row.user_id] = Math.round((scoreAtoB + scoreBtoA) / 2)
-          }
-          setScores(scoreMap)
-        }
-      } catch {}
-    }
-
-    setLoading(false)
-  }
-
-  async function handleLike(profile: Profile) {
-    if (!userId) return
-    setLiked(prev => new Set(prev).add(profile.id))
-    haptics.medium()
-    try {
-      await supabase.rpc('process_like', {
-        p_user_id: userId, p_target_id: profile.id, p_is_superlike: false,
-      })
-      toast.success('Curtida enviada!')
-    } catch {
-      toast.error('Erro ao curtir. Tente novamente.')
-    }
-  }
-
-  function handlePass(profileId: string) {
-    setPassed(prev => new Set(prev).add(profileId))
-    haptics.tap()
-    // Gravar dislike no banco para não reaparecer por 30 dias
-    if (userId) {
-      supabase
-        .from('dislikes')
-        .upsert(
-          { from_user: userId, to_user: profileId },
-          { onConflict: 'from_user,to_user' }
-        )
-        .then(({ error }) => { if (error) console.error('Erro ao gravar dislike:', error) })
-    }
-  }
-
-  function handleFlip(profileId: string) {
-    haptics.tap()
-    setFlipped(prev => new Set(prev).add(profileId))
-  }
-
-  const todayLabel = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
-  const allActed = profiles.length > 0 && profiles.every(p => liked.has(p.id) || passed.has(p.id))
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-        <Loader2 size={24} style={{ color: 'var(--accent)', animation: 'spin 1s linear infinite' }} />
-      </div>
-    )
-  }
-
-  if (!profiles.length) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, padding: 24, textAlign: 'center' }}>
-        <Heart size={40} color="rgba(255,255,255,0.20)" strokeWidth={1} />
-        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Sem sugestões hoje</p>
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>Volte amanhã ou ajuste seus filtros para ver mais pessoas.</p>
-      </div>
-    )
-  }
-
-  return (
-    <div style={{ padding: '16px 16px 20px', overflowY: 'auto', height: '100%' }}>
-      <div style={{ marginBottom: 20 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-          <Sparkles size={15} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
-          <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)' }}>Match do dia</span>
-        </div>
-        <p style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'capitalize', marginBottom: 4 }}>{todayLabel}</p>
-        <p style={{ fontSize: 12, color: 'var(--muted-2)' }}>
-          {allActed
-            ? 'Você já agiu em todas as sugestões de hoje!'
-            : 'Escolha uma carta na sorte e descubra quem pode ser seu match'}
-        </p>
-      </div>
-
-      {allActed ? (
-        <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)', borderRadius: 16, padding: '24px 20px', textAlign: 'center' }}>
-          <p style={{ fontSize: 15, color: 'var(--text)', fontWeight: 600, marginBottom: 8 }}>Volte amanhã!</p>
-          <p style={{ fontSize: 13, color: 'var(--muted)' }}>Novas sugestões aparecem todo dia às 00:00.</p>
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: 10 }}>
-          {profiles.map((profile, idx) => {
-            const isFlipped = flipped.has(profile.id)
-            const isLiked = liked.has(profile.id)
-            const isPassed = passed.has(profile.id)
-            const isActed = isLiked || isPassed
-            const photo = profile.photos?.[0] ?? profile.photo_best
-            const score = scores[profile.id]
-
-            if (!isFlipped) {
-              return (
-                <div
-                  key={profile.id}
-                  onClick={() => handleFlip(profile.id)}
-                  style={{
-                    aspectRatio: '3/4', borderRadius: 16, cursor: 'pointer',
-                    background: 'linear-gradient(160deg, var(--bg-card2) 0%, var(--bg-card) 100%)',
-                    border: '1px solid rgba(225,29,72,0.20)',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8,
-                    userSelect: 'none', position: 'relative', overflow: 'hidden',
-                    transition: 'transform 0.12s, border-color 0.12s',
-                  }}
-                >
-                  <div style={{ position: 'absolute', inset: 0, backgroundImage: 'radial-gradient(circle at 30% 30%, rgba(225,29,72,0.07) 0%, transparent 60%), radial-gradient(circle at 70% 70%, rgba(225,29,72,0.04) 0%, transparent 60%)', pointerEvents: 'none' }} />
-                  <div style={{ width: 44, height: 44, borderRadius: '50%', border: '2px solid rgba(225,29,72,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Heart size={20} color="rgba(225,29,72,0.45)" strokeWidth={1.5} />
-                  </div>
-                  <p style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 600 }}>Carta {idx + 1}</p>
-                  <p style={{ fontSize: 10, color: 'var(--muted-2)' }}>Toque para revelar</p>
-                </div>
-              )
-            }
-
-            return (
-              <div
-                key={profile.id}
-                style={{
-                  aspectRatio: '3/4', borderRadius: 16, overflow: 'hidden', position: 'relative',
-                  border: isLiked ? '1px solid rgba(16,185,129,0.35)' : isPassed ? '1px solid rgba(255,255,255,0.06)' : '1px solid rgba(225,29,72,0.25)',
-                  opacity: isActed ? 0.65 : 1, transition: 'opacity 0.2s',
-                  background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
-                }}
-              >
-                {photo ? (
-                  <Image src={photo} alt={profile.name} fill style={{ objectFit: 'cover' }} sizes="200px" />
-                ) : (
-                  <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Heart size={28} color="rgba(255,255,255,0.10)" strokeWidth={1} />
-                  </div>
-                )}
-                <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(8,9,14,0.95) 0%, rgba(8,9,14,0.15) 55%, transparent 100%)' }} />
-
-                {score !== undefined && (
-                  <div style={{ position: 'absolute', top: 7, left: 7, padding: '2px 7px', borderRadius: 100, background: 'rgba(8,9,14,0.85)', border: '1px solid rgba(225,29,72,0.25)', display: 'flex', alignItems: 'center', gap: 3 }}>
-                    <Heart size={8} strokeWidth={2} color="var(--accent)" fill="var(--accent)" />
-                    <span style={{ fontSize: 9, fontWeight: 700, color: 'var(--accent)' }}>{score}%</span>
-                  </div>
-                )}
-
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '8px 8px 6px' }}>
-                  <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 12, color: '#fff', margin: '0 0 6px', lineHeight: 1.2 }}>
-                    {profile.name}{profile.age ? `, ${profile.age}` : ''}
-                  </p>
-                  {!isActed ? (
-                    <div style={{ display: 'flex', gap: 5 }}>
-                      <button
-                        onClick={() => handleLike(profile)}
-                        style={{ flex: 1, padding: '6px', borderRadius: 8, border: 'none', background: 'rgba(16,185,129,0.20)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <Heart size={13} color="#10b981" strokeWidth={2} />
-                      </button>
-                      <button
-                        onClick={() => handlePass(profile.id)}
-                        style={{ flex: 1, padding: '6px', borderRadius: 8, border: 'none', background: 'rgba(255,255,255,0.07)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                      >
-                        <X size={13} color="rgba(255,255,255,0.45)" strokeWidth={2} />
-                      </button>
-                    </div>
-                  ) : (
-                    <p style={{ fontSize: 10, color: isLiked ? '#10b981' : 'rgba(255,255,255,0.30)', fontWeight: 600, margin: 0 }}>
-                      {isLiked ? 'Curtido' : 'Passado'}
-                    </p>
-                  )}
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Hub de Modos ─────────────────────────────────────────────────────────────
-
-const MODES_CONFIG = [
-  {
-    key: 'discovery' as ViewMode,
-    label: 'Descobrir',
-    subtitle: 'Novos olhares, sem filtros.',
-    bg: '#0d0810',
-    img: '/images/modos/descobrir.jpg',
-    imgPosition: 'center center',
-    accent: 'rgba(225,29,72,0.15)',
-  },
-  {
-    key: 'search' as ViewMode,
-    label: 'Busca Avancada',
-    subtitle: 'Encontre a peca que falta.',
-    bg: '#080a10',
-    img: '/images/modos/busca.jpg',
-    imgPosition: 'center top',
-    accent: 'rgba(96,165,250,0.10)',
-    badge: null as string | null,
-  },
-  {
-    key: 'rooms' as ViewMode,
-    label: 'Salas',
-    subtitle: 'Conversas coletivas ao vivo.',
-    bg: '#060e0a',
-    img: '/images/modos/salas.jpg',
-    imgPosition: 'center center',
-    accent: 'rgba(46,196,160,0.10)',
-    badge: 'Plus+' as string | null,
-  },
-  {
-    key: 'daily' as ViewMode,
-    label: 'Match do dia',
-    subtitle: 'A nossa recomendação fatal.',
-    bg: '#100900',
-    img: '/images/modos/match-dia.jpg',
-    imgPosition: 'center center',
-    accent: 'rgba(245,158,11,0.12)',
-    badge: null as string | null,
-  },
-]
-
-function ModesHubView({ userPlan, onSelect, onCamarote }: {
-  userPlan: string
-  onSelect: (m: ViewMode) => void
-  onCamarote: () => void
-}) {
-  return (
-    <div style={{ overflowY: 'auto', height: '100%', scrollbarWidth: 'none' }}>
-      <div style={{ maxWidth: 480, margin: '0 auto', padding: '20px 16px 24px' }}>
-      {/* Label + título editorial */}
-      <div style={{ marginBottom: 20 }}>
-        <p style={{
-          fontSize: 10, fontWeight: 700,
-          letterSpacing: '0.2em', textTransform: 'uppercase',
-          color: 'rgba(248,249,250,0.35)',
-          fontFamily: 'var(--font-jakarta)',
-          margin: '0 0 6px',
-        }}>
-          Conexões curadas
-        </p>
-        <h2 style={{
-          fontFamily: 'var(--font-fraunces)',
-          fontSize: 32, fontWeight: 700,
-          color: '#F8F9FA',
-          margin: 0,
-          letterSpacing: '-0.02em',
-          lineHeight: 1.15,
-        }}>
-          Escolha seu{' '}
-          <br />
-          <span style={{ color: '#E11D48' }}>ritmo</span> hoje.
-        </h2>
-      </div>
-
-      {/* Grid 2x2 de modos */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
-        {MODES_CONFIG.map((m) => (
-          <button
-            key={m.key}
-            onClick={() => onSelect(m.key)}
-            style={{
-              aspectRatio: '3/4',
-              borderRadius: 10, overflow: 'hidden',
-              position: 'relative', cursor: 'pointer',
-              background: m.bg,
-              border: '1px solid rgba(255,255,255,0.04)',
-              padding: 0,
-              transition: 'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
-            }}
-          >
-            {/* Foto de fundo */}
-            <img
-              src={m.img}
-              alt={m.label}
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: m.imgPosition ?? 'center center', filter: 'grayscale(0.2)' }}
-            />
-            {/* Vinheta noir na base */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: 'linear-gradient(to bottom, rgba(8,9,14,0.15) 0%, rgba(8,9,14,0.92) 100%)',
-            }} />
-            {/* Conteúdo na base */}
-            <div style={{
-              position: 'absolute', bottom: 0, left: 0, right: 0,
-              padding: '12px 14px 14px',
-              display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 0,
-            }}>
-              {m.badge && (
-                <span style={{
-                  fontSize: 9, fontWeight: 700,
-                  padding: '2px 6px', borderRadius: 100,
-                  background: 'rgba(46,196,160,0.15)',
-                  color: '#2ec4a0',
-                  border: '1px solid rgba(46,196,160,0.25)',
-                  fontFamily: 'var(--font-jakarta)',
-                  marginBottom: 6,
-                }}>
-                  {m.badge}
-                </span>
-              )}
-              <p style={{
-                margin: '0 0 3px', fontSize: 15, fontWeight: 700,
-                color: '#F8F9FA',
-                fontFamily: 'var(--font-fraunces)',
-                letterSpacing: '-0.01em',
-              }}>
-                {m.label}
-              </p>
-              <p style={{
-                margin: 0, fontSize: 11,
-                color: 'rgba(248,249,250,0.50)',
-                fontFamily: 'var(--font-jakarta)',
-                fontWeight: 400,
-                lineHeight: 1.4,
-              }}>
-                {m.subtitle}
-              </p>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      {/* Camarote Black — banner editorial */}
-      <button
-        onClick={onCamarote}
-        style={{
-          width: '100%',
-          borderRadius: 14,
-          overflow: 'hidden',
-          position: 'relative',
-          cursor: 'pointer',
-          border: '1px solid rgba(255,255,255,0.05)',
-          boxShadow: '0 0 50px rgba(245,158,11,0.08)',
-          padding: 0,
-          background: '#0d0900',
-        }}
-      >
-        {/* Foto de fundo */}
-        <img
-          src="/images/camarote-bg.jpg"
-          alt=""
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', opacity: 0.35 }}
-        />
-        {/* Gradiente dourado sobreposição lateral */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(to right, rgba(8,9,14,0.95) 0%, rgba(8,9,14,0.75) 50%, rgba(8,9,14,0.3) 100%)',
-        }} />
-        <div style={{
-          position: 'relative',
-          padding: '22px 20px',
-          display: 'flex', flexDirection: 'column', alignItems: 'flex-start',
-          minHeight: 130,
-          justifyContent: 'center',
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 6 }}>
-            <Crown size={13} strokeWidth={1.5} color="#F59E0B" />
-            <span style={{
-              fontSize: 9, fontWeight: 800,
-              letterSpacing: '0.3em', textTransform: 'uppercase',
-              color: '#F59E0B',
-              fontFamily: 'var(--font-jakarta)',
-            }}>
-              Exclusivo VIP
-            </span>
-          </div>
-          <h3 style={{
-            fontFamily: 'var(--font-fraunces)',
-            fontSize: 26, fontWeight: 700,
-            fontStyle: 'italic',
-            color: '#F8F9FA',
-            margin: '0 0 6px',
-            letterSpacing: '-0.02em',
-          }}>
-            Camarote Black
-          </h3>
-          <p style={{
-            fontSize: 12, color: 'rgba(248,249,250,0.60)',
-            margin: '0 0 14px',
-            maxWidth: '65%',
-            fontFamily: 'var(--font-jakarta)',
-            lineHeight: 1.5,
-          }}>
-            Acesso prioritario e perfis verificados de alta relevancia.
-          </p>
-          <div style={{
-            padding: '7px 16px', borderRadius: 9999,
-            background: 'linear-gradient(135deg, #F59E0B 0%, #B47B00 100%)',
-            boxShadow: '0 4px 15px rgba(245,158,11,0.35)',
-            display: 'inline-flex',
-          }}>
-            <span style={{
-              fontSize: 10, fontWeight: 800,
-              letterSpacing: '0.12em', textTransform: 'uppercase',
-              color: '#000',
-              fontFamily: 'var(--font-jakarta)',
-            }}>
-              Entrar agora
-            </span>
-          </div>
-        </div>
-      </button>
-      </div>{/* fim maxWidth wrapper */}
-    </div>
-  )
-}
-
-// ─── Modal Camarote ────────────────────────────────────────────────────────────
-
-function CamaroteModal({ onClose }: { onClose: () => void }) {
-  return (
-    <div
-      onClick={onClose}
-      style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
-    >
-      <div
-        onClick={(e) => e.stopPropagation()}
-        style={{ width: '100%', maxWidth: 430, background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '24px 24px 0 0', padding: '28px 24px 40px', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
-          <div style={{ width: 52, height: 52, borderRadius: 14, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <Crown size={26} strokeWidth={1.5} color="#F59E0B" />
-          </div>
-          <div>
-            <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: 0 }}>Camarote</h2>
-            <p style={{ fontSize: 12, color: '#F59E0B', margin: '2px 0 0', fontWeight: 600 }}>Exclusivo para assinantes Black</p>
-          </div>
-        </div>
-
-        <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 20px' }}>
-          Um ambiente reservado para quem busca experiências além do convencional. Dentro do Camarote você encontra perfis e filtros que não existem em nenhum outro lugar do app.
-        </p>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-          {[
-            { label: 'Sugar', desc: 'Encontros com beneficios mutuos', color: '#ec4899' },
-            { label: 'Fetiche', desc: 'Interesses e estilos de vida alternativos', color: '#a855f7' },
-            { label: 'Chat VIP', desc: 'Salas exclusivas para assinantes Black', color: '#F59E0B' },
-          ].map((item) => (
-            <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, background: 'var(--bg-card2)', border: '1px solid rgba(255,255,255,0.06)' }}>
-              <div style={{ width: 8, height: 8, borderRadius: '50%', background: item.color, flexShrink: 0 }} />
-              <div>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>{item.label}</p>
-                <p style={{ margin: 0, fontSize: 12, color: 'var(--muted)' }}>{item.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <a
-          href="/planos"
-          style={{ display: 'block', width: '100%', padding: '14px', borderRadius: 14, background: 'var(--accent)', color: '#fff', fontWeight: 700, fontSize: 15, textAlign: 'center', textDecoration: 'none', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box' }}
-        >
-          Fazer upgrade para Black
-        </a>
-        <button onClick={onClose} style={{ width: '100%', marginTop: 12, background: 'none', border: 'none', color: 'var(--muted)', fontSize: 13, cursor: 'pointer' }}>
-          Fechar
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// ─── Salas de Bate-papo ───────────────────────────────────────────────────────
-
-function RoomsView({ userPlan }: { userPlan: string }) {
-  const router = useRouter()
-  const canJoin = userPlan === 'plus' || userPlan === 'black'
-  const canJoinBlack = userPlan === 'black'
-  const [rooms, setRooms] = useState<Room[]>([])
-  const [loading, setLoading] = useState(true)
-  const [joiningRoom, setJoiningRoom] = useState<Room | null>(null)
-  const [nickname, setNickname] = useState('')
-  const [joinError, setJoinError] = useState('')
-  const [joining, setJoining] = useState(false)
-
-  useEffect(() => { loadRooms() }, [])
-
-  async function loadRooms() {
-    setLoading(true)
-    const { data } = await supabase
-      .from('chat_rooms')
-      .select('id, name, type, description, emoji, max_members, created_by, is_active')
-      .eq('is_active', true)
-      .order('name')
-    if (data) {
-      const roomsWithCount = await Promise.all(
-        data.map(async (room) => {
-          const { count } = await supabase
-            .from('room_members')
-            .select('*', { count: 'exact', head: true })
-            .eq('room_id', room.id)
-          return { ...room, member_count: count ?? 0 } as Room
-        })
-      )
-      setRooms(roomsWithCount)
-    }
-    setLoading(false)
-  }
-
-  async function handleJoin() {
-    if (!joiningRoom || joining) return
-    if (nickname.trim().length < 2) { setJoinError('Nome deve ter ao menos 2 caracteres.'); return }
-    if (nickname.trim().length > 20) { setJoinError('Nome deve ter no máximo 20 caracteres.'); return }
-    setJoining(true)
-    setJoinError('')
-    try {
-      const res = await fetch('/api/salas/entrar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId: joiningRoom.id, nickname: nickname.trim() }),
-      })
-      const data = await res.json()
-      if (!res.ok) { setJoinError(data.error ?? 'Erro ao entrar na sala.'); setJoining(false); return }
-      router.push(`/salas/${joiningRoom.id}`)
-    } catch {
-      setJoinError('Erro de conexão. Tente novamente.')
-      setJoining(false)
-    }
-  }
-
-  if (!canJoin) {
-    const fakeRooms = [
-      { name: 'Paquera Livre', members: 12, max: 20, emoji: '💬' },
-      { name: 'Musica e Conversa', members: 8, max: 15, emoji: '🎵' },
-      { name: 'Noturno(a)s', members: 5, max: 10, emoji: '🌙' },
-    ]
-    return (
-      <div style={{ padding: '0 16px 20px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-        {/* Glow atmosferico */}
-        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 280, height: 280, borderRadius: '50%', background: 'radial-gradient(circle, rgba(225,29,72,0.08) 0%, transparent 70%)', pointerEvents: 'none' }} />
-
-        {/* Header */}
-        <div style={{ textAlign: 'center', paddingTop: 32, marginBottom: 24, position: 'relative', zIndex: 1 }}>
-          <div style={{ width: 64, height: 64, borderRadius: 18, background: 'linear-gradient(135deg, rgba(225,29,72,0.15) 0%, rgba(225,29,72,0.05) 100%)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-            <Users size={28} strokeWidth={1.5} style={{ color: 'var(--accent)' }} />
-          </div>
-          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 24, color: 'var(--text)', margin: '0 0 8px' }}>Salas de Bate-papo</h2>
-          <p style={{ fontSize: 14, color: 'var(--muted)', margin: 0, lineHeight: 1.6, maxWidth: 280, marginLeft: 'auto', marginRight: 'auto' }}>
-            Converse anonimamente em salas temáticas com pessoas que compartilham seus interesses.
-          </p>
-        </div>
-
-        {/* Preview de salas (blur) */}
-        <div style={{ position: 'relative', marginBottom: 24 }}>
-          <div style={{ filter: 'blur(4px)', opacity: 0.5, pointerEvents: 'none', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {fakeRooms.map((room, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 16, background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid var(--border)' }}>
-                <div style={{ width: 44, height: 44, borderRadius: 12, backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>{room.emoji}</div>
-                <div style={{ flex: 1 }}>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', margin: '0 0 2px' }}>{room.name}</p>
-                  <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>Sala ativa agora</p>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#10b981' }} />
-                  <span style={{ fontSize: 11, color: 'var(--muted)' }}>{room.members}/{room.max}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          {/* Overlay de bloqueio sobre o preview */}
-          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', borderRadius: 100, backgroundColor: 'rgba(8,9,14,0.85)', border: '1px solid rgba(225,29,72,0.25)', backdropFilter: 'blur(4px)' }}>
-              <Lock size={13} strokeWidth={2} style={{ color: 'var(--accent)' }} />
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--accent)' }}>Disponível no Plus e Black</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Beneficios */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
-          {[
-            { icon: <Users size={16} strokeWidth={1.5} />, text: 'Salas temáticas com até 20 pessoas' },
-            { icon: <Lock size={16} strokeWidth={1.5} />, text: 'Identidade protegida com apelidos' },
-            { icon: <Crown size={16} strokeWidth={1.5} />, text: 'Salas exclusivas Black com categorias VIP' },
-          ].map((item, i) => (
-            <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: 12, backgroundColor: 'rgba(255,255,255,0.02)', border: '1px solid var(--border-soft)' }}>
-              <div style={{ color: 'var(--accent)', flexShrink: 0 }}>{item.icon}</div>
-              <span style={{ fontSize: 13, color: 'rgba(248,249,250,0.70)', lineHeight: 1.4 }}>{item.text}</span>
-            </div>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <Link
-          href="/planos"
-          style={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-            width: '100%', padding: '15px', borderRadius: 14,
-            background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
-            color: '#fff', fontWeight: 700, fontSize: 15,
-            textDecoration: 'none', fontFamily: 'var(--font-jakarta)',
-            boxShadow: '0 8px 32px rgba(225,29,72,0.25)',
-          }}
-        >
-          Fazer upgrade
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-        </Link>
-        <p style={{ fontSize: 11, color: 'var(--muted-2)', textAlign: 'center', margin: '10px 0 0' }}>
-          A partir de R$9,97/mes no plano Plus
-        </p>
-      </div>
-    )
-  }
-
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-        <Loader2 size={24} style={{ color: 'var(--accent)', animation: 'ui-spin 1s linear infinite' }} />
-      </div>
-    )
-  }
-
-  // Sheet de entrada na sala
-  if (joiningRoom) {
-    const isBlack = joiningRoom.type === 'black'
-    return (
-      <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%', display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <button
-          onClick={() => { setJoiningRoom(null); setNickname(''); setJoinError('') }}
-          style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', color: 'var(--muted)', fontSize: 13, cursor: 'pointer', padding: 0, alignSelf: 'flex-start' }}
-        >
-          ← Voltar
-        </button>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px', borderRadius: 16, background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : 'var(--border)'}` }}>
-          <div style={{ width: 52, height: 52, borderRadius: 14, flexShrink: 0, backgroundColor: isBlack ? 'rgba(245,158,11,0.10)' : 'rgba(225,29,72,0.10)', border: `1px solid ${isBlack ? 'rgba(245,158,11,0.25)' : 'rgba(225,29,72,0.20)'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
-            {joiningRoom.emoji}
-          </div>
-          <div>
-            <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 15, color: 'var(--text)', margin: '0 0 2px' }}>{joiningRoom.name}</p>
-            <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0 }}>{joiningRoom.description ?? 'Sala de bate-papo'}</p>
-          </div>
-        </div>
-        <div>
-          <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>Como quer ser chamado nessa sala?</p>
-          <input
-            value={nickname}
-            onChange={e => { setNickname(e.target.value); setJoinError('') }}
-            onKeyDown={e => e.key === 'Enter' && handleJoin()}
-            placeholder="Seu apelido na sala"
-            maxLength={20}
-            autoFocus
-            style={{ width: '100%', padding: '12px 14px', borderRadius: 12, border: `1px solid ${joinError ? 'rgba(225,29,72,0.50)' : 'var(--border)'}`, background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', color: 'var(--text)', fontSize: 14, fontFamily: 'var(--font-jakarta)', outline: 'none', boxSizing: 'border-box' }}
-          />
-          {joinError && <p style={{ fontSize: 12, color: '#f87171', marginTop: 6 }}>{joinError}</p>}
-        </div>
-        <button
-          onClick={handleJoin}
-          disabled={joining}
-          style={{ width: '100%', padding: '14px', borderRadius: 14, background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: 15, fontWeight: 700, border: 'none', cursor: joining ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', opacity: joining ? 0.7 : 1 }}
-        >
-          {joining ? 'Entrando...' : 'Entrar na sala'}
-        </button>
-      </div>
-    )
-  }
-
-  const publicRooms = rooms.filter(r => r.type === 'public')
-  const blackRooms = rooms.filter(r => r.type === 'black')
-
-  return (
-    <div style={{ padding: '20px 16px', overflowY: 'auto', height: '100%' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-        <div>
-          <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 2px' }}>Salas</p>
-          <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>Bate-papo em grupo por tema</p>
-        </div>
-        <Link href="/salas" style={{ fontSize: 12, color: 'var(--accent)', textDecoration: 'none', fontWeight: 600 }}>Ver todas →</Link>
-      </div>
-
-      {publicRooms.length === 0 && blackRooms.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px 0' }}>
-          <p style={{ color: 'var(--muted)', fontSize: 14 }}>Nenhuma sala disponível no momento.</p>
-        </div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {publicRooms.length > 0 && (
-            <>
-              <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 6px' }}>Publicas</p>
-              {publicRooms.map(room => {
-                const isFull = (room.member_count ?? 0) >= room.max_members
-                return (
-                  <button
-                    key={room.id}
-                    onClick={() => { if (!isFull) { setJoiningRoom(room); setNickname('') } }}
-                    disabled={isFull}
-                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 16, width: '100%', textAlign: 'left', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)', opacity: isFull ? 0.45 : 1, cursor: isFull ? 'default' : 'pointer' }}
-                  >
-                    <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, backgroundColor: 'rgba(225,29,72,0.10)', border: '1px solid rgba(225,29,72,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{room.emoji}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, color: 'var(--text)', margin: '0 0 2px' }}>{room.name}</p>
-                      <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{isFull ? 'Sala cheia' : (room.description ?? 'Sala de bate-papo')}</p>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isFull ? '#F59E0B' : '#10b981' }} />
-                      <span style={{ fontSize: 11, color: 'var(--muted)' }}>{room.member_count ?? 0}/{room.max_members}</span>
-                    </div>
-                  </button>
-                )
-              })}
-            </>
-          )}
-
-          {blackRooms.length > 0 && (
-            <>
-              <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--muted-2)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '12px 0 6px' }}>Black</p>
-              {blackRooms.map(room => {
-                const isFull = (room.member_count ?? 0) >= room.max_members
-                const isLocked = !canJoinBlack
-                return (
-                  <button
-                    key={room.id}
-                    onClick={() => { if (!isLocked && !isFull) { setJoiningRoom(room); setNickname('') } }}
-                    disabled={isLocked || isFull}
-                    style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px', borderRadius: 16, width: '100%', textAlign: 'left', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(245,158,11,0.25)', opacity: isLocked || isFull ? 0.45 : 1, cursor: isLocked || isFull ? 'default' : 'pointer' }}
-                  >
-                    <div style={{ width: 44, height: 44, borderRadius: 12, flexShrink: 0, backgroundColor: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20 }}>{room.emoji}</div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-                        <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 14, color: 'var(--text)', margin: 0 }}>{room.name}</p>
-                        <Crown size={12} color="#F59E0B" strokeWidth={2} />
-                      </div>
-                      <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{isFull ? 'Sala cheia' : (room.description ?? 'Sala de bate-papo')}</p>
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                      {isLocked ? <Lock size={12} color="var(--muted)" strokeWidth={2} /> : (
-                        <>
-                          <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: isFull ? '#F59E0B' : '#10b981' }} />
-                          <span style={{ fontSize: 11, color: 'var(--muted)' }}>{room.member_count ?? 0}/{room.max_members}</span>
-                        </>
-                      )}
-                    </div>
-                  </button>
-                )
-              })}
-            </>
-          )}
-        </div>
-      )}
-    </div>
-  )
-}
-
-// ─── Busca Avancada: grid de perfis ──────────────────────────────────────────
-
-function SearchGrid({ deck }: { deck: Profile[] }) {
-  if (!deck.length) {
-    return (
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, padding: 24 }}>
-        <Users size={40} color="rgba(255,255,255,0.20)" strokeWidth={1} />
-        <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)' }}>Nenhum perfil encontrado</p>
-        <p style={{ fontSize: 13, color: 'var(--muted)', textAlign: 'center' }}>Tente aumentar o raio de busca ou ajustar os filtros</p>
-      </div>
-    )
-  }
-
-  return (
-    <div
-      style={{
-        padding: '12px 12px 20px',
-        overflowY: 'auto',
-        height: '100%',
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 10,
-        alignContent: 'start',
-      }}
-    >
-      {deck.map((profile) => (
-        <Link
-          key={profile.id}
-          href={`/perfil/${profile.id}`}
-          style={{ textDecoration: 'none' }}
-        >
-          <div
-            style={{
-              borderRadius: 16,
-              overflow: 'hidden',
-              background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)',
-              border: '1px solid rgba(255,255,255,0.06)',
-              aspectRatio: '3/4',
-              position: 'relative',
-            }}
-          >
-            {profile.photo_best ? (
-              <Image
-                src={profile.photo_best}
-                alt={profile.name}
-                fill
-                className="object-cover"
-                sizes="200px"
-              />
-            ) : (
-              <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 40, color: 'rgba(255,255,255,0.1)' }}>?</div>
-            )}
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(to top, rgba(8,9,14,0.95) 0%, rgba(8,9,14,0.2) 50%, transparent 100%)',
-              }}
-            />
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '10px 10px 8px' }}>
-              <p style={{ fontFamily: 'var(--font-jakarta)', fontWeight: 600, fontSize: 13, color: '#fff', lineHeight: 1.2 }}>
-                {profile.name}{profile.age ? `, ${profile.age}` : ''}
-              </p>
-              {profile.city && (
-                <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.55)', marginTop: 2, display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <MapPin size={9} /> {profile.city}
-                </p>
-              )}
-            </div>
-          </div>
-        </Link>
-      ))}
-    </div>
-  )
-}
-
-// ─── Filtro client-side para modo Busca ──────────────────────────────────────
-
-// Para cada categoria, se o usuário marcou alguma opção, o perfil precisa ter
-// pelo menos uma delas (AND entre categorias, OR dentro de cada categoria).
-function applyCompatFilters(
-  profiles: Profile[],
-  userFilters: FiltersState,
-  profileFiltersMap: Record<string, Record<string, unknown>>
-): Profile[] {
-  return profiles.filter(profile => {
-    const theirFilters = profileFiltersMap[profile.id]
-    if (!theirFilters) return true // sem dados de filtro — inclui de qualquer forma
-
-    for (const cat of FILTER_CATEGORIES) {
-      const catKeys = cat.groups.flatMap(g => g.options.map(o => o.key))
-      const userSelected = catKeys.filter(k => userFilters[k] === true)
-      if (userSelected.length === 0) continue // usuário não filtrou essa categoria
-      const hasMatch = userSelected.some(k => theirFilters[k] === true)
-      if (!hasMatch) return false
-    }
-    return true
-  })
-}
+import {
+  Profile, FiltersState, ViewMode,
+  DEFAULT_FILTERS, GENDER_OPTIONS, STATE_NAMES, FILTER_CATEGORIES,
+  getModeLimit, getSuperlikeLimit, useCountdown, requestLocation, applyCompatFilters,
+} from './_components/helpers'
+import { LocationAutocomplete } from './_components/LocationAutocomplete'
+import { BoostActiveBanner } from './_components/BoostActiveBanner'
+import { ModeSelectorTabs } from './_components/ModeSelectorTabs'
+import { DailyMatchView } from './_components/DailyMatchView'
+import { ModesHubView } from './_components/ModesHubView'
+import { CamaroteModal } from './_components/CamaroteModal'
+import { RoomsView } from './_components/RoomsView'
+import { SearchGrid } from './_components/SearchGrid'
 
 // ─── Página principal ─────────────────────────────────────────────────────────
 
@@ -1675,7 +220,6 @@ function BuscaInner() {
       setModeLikesUsed(modeUsage)
 
       if (filtersRes.data?.search_saved) {
-        // Tenta restaurar do localStorage (backup quando colunas do banco estão ausentes)
         let localBackup: Partial<FiltersState> = {}
         try {
           const saved = localStorage.getItem(`filters_${user.id}`)
@@ -1688,7 +232,6 @@ function BuscaInner() {
         if (stateCode && STATE_NAMES[stateCode]) setLocationDisplay(`${STATE_NAMES[stateCode]} - ${stateCode}`)
         await loadDeck(merged, user.id)
       } else {
-        // Verifica se tem backup local mesmo sem search_saved no banco
         let localBackup: Partial<FiltersState> = {}
         try {
           const saved = localStorage.getItem(`filters_${user.id}`)
@@ -1698,7 +241,6 @@ function BuscaInner() {
           const merged = { ...DEFAULT_FILTERS, ...filtersRes.data, ...localBackup }
           setLocalFilters(merged)
           if (Object.keys(localBackup).length > 0) {
-            // Tem backup local — considera configurado
             setFiltersConfigured(true)
             await loadDeck(merged, user.id)
             return
@@ -1744,7 +286,7 @@ function BuscaInner() {
         profiles = profiles.filter(p => !ghostIds.has(p.id))
       }
 
-      // A4 — Perfis com boost ativo sobem para o topo (mais recente primeiro)
+      // A4 — Perfis com boost ativo sobem para o topo
       if (profiles.length > 0) {
         const ids = profiles.map(p => p.id)
         const { data: boostData } = await supabase
@@ -1762,7 +304,7 @@ function BuscaInner() {
         }
       }
 
-      // Filtro de gênero client-side (fallback caso p_gender não tenha sido passado)
+      // Filtro de gênero client-side (fallback)
       if (genderParam) {
         profiles = profiles.filter(p => p.gender === genderParam)
       }
@@ -1834,7 +376,6 @@ function BuscaInner() {
       setShowProfileSheet(true)
       setDragX(0); setDragY(0)
     } else {
-      // Spring: anima de volta ao centro com overshoot
       setIsSnapping(true)
       setDragX(0); setDragY(0)
       setTimeout(() => setIsSnapping(false), 600)
@@ -1864,7 +405,6 @@ function BuscaInner() {
       if (dir === 'up') setSuperlikesUsed(v => v + 1)
       try {
         if (dir === 'left') {
-          // Gravar dislike no banco para não reaparecer por 30 dias
           supabase
             .from('dislikes')
             .upsert(
@@ -1893,7 +433,6 @@ function BuscaInner() {
             }
           })
         }
-        // Notifica superlike (fire-and-forget)
         if (dir === 'up') {
           supabase.auth.getSession().then(({ data: s }) => {
             const token = s.session?.access_token
@@ -1917,7 +456,6 @@ function BuscaInner() {
   // ── Filter handlers ───────────────────────────────────────────────────────
 
   function validateRequired(): boolean {
-    // Em modo discovery, filtros avançados não são exibidos — validação não se aplica
     if (viewMode === 'discovery') { setRequiredError(null); return true }
     for (const cat of FILTER_CATEGORIES.filter(c => c.required)) {
       const opts = cat.groups.flatMap(g => g.options)
@@ -1940,7 +478,6 @@ function BuscaInner() {
         search_max_distance_km, search_min_age, search_max_age, search_gender,
         updated_at: new Date().toISOString(),
       }, { onConflict: 'user_id' })
-      // Backup em localStorage para persistir mesmo com colunas ausentes no banco
       try { localStorage.setItem(`filters_${userId}`, JSON.stringify(localFilters)) } catch {}
       setFiltersConfigured(true); setShowFilters(false)
       await loadDeck(localFilters, undefined, viewMode === 'search')
@@ -1987,7 +524,6 @@ function BuscaInner() {
   }
 
   function openFilters() {
-    // Expande categorias que já têm seleções para o usuário ver o que foi configurado
     const expanded: Record<string, boolean> = {}
     FILTER_CATEGORIES.forEach(cat => {
       const hasAny = cat.groups.flatMap(g => g.options).some(o => localFilters[o.key])
@@ -2065,7 +601,6 @@ function BuscaInner() {
         ) : viewMode === 'search' && !loadingDeck ? (
           <SearchGrid deck={deck} />
         ) : loadingDeck ? (
-          /* Loading — skeleton deck */
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 20px', gap: 12 }}>
             <style>{skeletonCss}</style>
             <div style={{ width: '100%', maxWidth: 360 }}>
@@ -2074,7 +609,6 @@ function BuscaInner() {
             <span style={{ fontSize: 13, color: 'var(--muted-2)' }}>Buscando pessoas perto de você...</span>
           </div>
         ) : limitReached ? (
-          /* Limite de curtidas — PaywallCard com countdown */
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '0 24px', gap: 16 }}>
             <PaywallCard
               title="Curtidas esgotadas"
@@ -2090,7 +624,6 @@ function BuscaInner() {
             </button>
           </div>
         ) : !currentProfile ? (
-          /* Sem perfis — empty state com opção de recarregar */
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center' }}>
             <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
               <Compass size={28} strokeWidth={1.5} color="var(--muted)" />
@@ -2413,7 +946,6 @@ function BuscaInner() {
                 padding: '4px 0 6px',
               }}
             >
-              {/* Voltar */}
               <SwipeButton
                 variant="default"
                 size="sm"
@@ -2423,7 +955,6 @@ function BuscaInner() {
                   if (currentIdx === 0) return
                   play('tap')
                   setCurrentIdx(i => Math.max(0, i - 1))
-                  // Cancela like/superlike no banco se o último swipe foi positivo
                   if (lastSwipe && (lastSwipe.dir === 'right' || lastSwipe.dir === 'up') && userId) {
                     try {
                       await supabase
@@ -2439,8 +970,6 @@ function BuscaInner() {
                 }}
                 disabled={currentIdx === 0 || !lastSwipe}
               />
-
-              {/* Dislike */}
               <SwipeButton
                 variant="danger"
                 size="lg"
@@ -2448,8 +977,6 @@ function BuscaInner() {
                 label="Não curtir"
                 onClick={() => triggerSwipe('left')}
               />
-
-              {/* Super Like */}
               <SwipeButton
                 variant="info"
                 size="md"
@@ -2457,8 +984,6 @@ function BuscaInner() {
                 label={`SuperCurtida (${superlikesUsed}/${superlikeLimit})`}
                 onClick={() => triggerSwipe('up')}
               />
-
-              {/* Like */}
               <SwipeButton
                 variant="primary"
                 size="lg"
@@ -2466,8 +991,6 @@ function BuscaInner() {
                 label="Curtir"
                 onClick={() => triggerSwipe('right')}
               />
-
-              {/* Boost */}
               <SwipeButton
                 variant="gold"
                 size="sm"
@@ -2526,7 +1049,6 @@ function BuscaInner() {
         onClose={filtersConfigured ? () => setShowFilters(false) : () => {}}
         title={filtersConfigured ? 'Editar filtros' : undefined}
       >
-        {/* Header manual para o primeiro acesso (não configurado) */}
         {!filtersConfigured && (
           <div style={{ marginBottom: 20 }}>
             <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: '0 0 4px' }}>
@@ -2536,14 +1058,12 @@ function BuscaInner() {
           </div>
         )}
 
-        {/* Mensagem de contexto do filtro */}
         {filtersConfigured && (
           <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.40)', margin: '0 0 16px' }}>
             Configure o perfil da pessoa que você está buscando
           </p>
         )}
 
-        {/* Erro de validação */}
         {requiredError && (
           <div
             style={{
@@ -2586,7 +1106,6 @@ function BuscaInner() {
                 {(localFilters.search_max_distance_km as number) >= 500 ? 'Todo o Brasil' : `${localFilters.search_max_distance_km} km`}
               </span>
             </div>
-            {/* Container position:relative é obrigatório para ui-range-input funcionar corretamente */}
             <div style={{ position: 'relative', height: 22, display: 'flex', alignItems: 'center', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', left: 0, right: 0, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.08)' }} />
               <div style={{
@@ -2660,7 +1179,7 @@ function BuscaInner() {
           </div>
         </div>
 
-        {/* Categorias de filtros avancados — visíveis apenas no modo Busca */}
+        {/* Categorias de filtros avancados */}
         {viewMode === 'discovery' && (
           <div style={{ padding: '12px 16px', backgroundColor: 'rgba(225,29,72,0.06)', border: '1px solid rgba(225,29,72,0.15)', borderRadius: 12, marginBottom: 12 }}>
             <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.65)', margin: 0 }}>
@@ -2684,7 +1203,6 @@ function BuscaInner() {
                 overflow: 'hidden',
               }}
             >
-              {/* Header da categoria */}
               <button
                 onClick={() => isLocked
                   ? (setUpgradeReason('fetiche'), setShowUpgradeModal(true))
@@ -2732,7 +1250,6 @@ function BuscaInner() {
                 )}
               </button>
 
-              {/* Opções expandidas */}
               {!isLocked && (
                 <div style={{ display: 'grid', gridTemplateRows: isOpen ? '1fr' : '0fr', transition: 'grid-template-rows 0.25s ease' }}>
                 <div style={{ overflow: 'hidden' }}>
@@ -2769,7 +1286,7 @@ function BuscaInner() {
           Categorias sem seleção = aceita qualquer pessoa
         </p>
 
-        {/* Botão salvar — sticky no bottom do BottomSheet */}
+        {/* Botão salvar */}
         <div
           style={{
             position: 'sticky',
@@ -2921,7 +1438,6 @@ function BuscaInner() {
       )}
 
       {/* ─── Modal de Upgrade ────────────────────────────────────────────────── */}
-      {/* Modal Camarote */}
       {camaroteModal && (
         <CamaroteModal onClose={() => setCamaroteModal(false)} />
       )}
