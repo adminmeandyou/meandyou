@@ -3,8 +3,9 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { Bell, Settings, ArrowLeft } from 'lucide-react'
+import { Bell, Settings, ArrowLeft, Users } from 'lucide-react'
 import { useNotifications } from '@/contexts/NotificationContext'
+import { useFriendRequests } from '@/hooks/useFriendRequests'
 
 interface AppHeaderProps {
   modeSelector?: React.ReactNode
@@ -18,8 +19,10 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
   const pathname = usePathname()
   const router = useRouter()
   const [notifHovered, setNotifHovered] = useState(false)
+  const [friendsHovered, setFriendsHovered] = useState(false)
   const [shieldHovered, setShieldHovered] = useState(false)
   const { unreadCount } = useNotifications()
+  const { pendingCount } = useFriendRequests()
 
   return (
     <header
@@ -89,6 +92,36 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
       {/* Ícones à direita */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
         {rightActions}
+        <Link
+          href="/amigos"
+          onMouseEnter={() => setFriendsHovered(true)}
+          onMouseLeave={() => setFriendsHovered(false)}
+          style={{
+            width: 36, height: 36, borderRadius: 10,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            backgroundColor: friendsHovered ? 'rgba(255,255,255,0.07)' : 'transparent',
+            color: pathname === '/amigos' ? 'var(--accent)' : 'var(--muted)',
+            transition: 'all 0.15s',
+            textDecoration: 'none', position: 'relative',
+          }}
+          aria-label="Amigos"
+        >
+          <Users size={20} strokeWidth={1.5} />
+          {pendingCount > 0 && (
+            <span style={{
+              position: 'absolute', top: 4, right: 4,
+              minWidth: 16, height: 16, borderRadius: 100,
+              background: '#10b981', color: '#fff',
+              fontSize: 10, fontWeight: 700,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '0 4px',
+              border: '2px solid rgba(8,9,14,0.9)',
+              lineHeight: 1,
+            }}>
+              {pendingCount > 99 ? '99+' : pendingCount}
+            </span>
+          )}
+        </Link>
         <Link
           href="/notificacoes"
           onMouseEnter={() => setNotifHovered(true)}

@@ -183,6 +183,24 @@ export default function ChatPage() {
     await marcarComoLidas(uid)
     detectPendingConvite(uid)
 
+    // Carregar estado de amizade existente
+    try {
+      const friendRes = await fetch('/api/amigos')
+      if (friendRes.ok) {
+        const friendData = await friendRes.json()
+        const allFriendships = [...(friendData.friends ?? []), ...(friendData.pending ?? [])]
+        const existing = allFriendships.find(
+          (f: { requester_id: string; receiver_id: string }) =>
+            (f.requester_id === uid && f.receiver_id === otherId) ||
+            (f.requester_id === otherId && f.receiver_id === uid)
+        )
+        if (existing) {
+          setFriendSent(true)
+          setFriendshipId(existing.id)
+        }
+      }
+    } catch { /* silencioso */ }
+
     const savedRating = localStorage.getItem(`rating_${matchId}`)
     if (savedRating) setRatingDone(true)
 
