@@ -916,7 +916,7 @@ export default function MatchesPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '4px 12px 14px', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: 8 }}>
               <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0, background: '#13161F', border: '1px solid rgba(255,255,255,0.06)' }}>
                 {actionsFor.photo_best ? (
-                  <Image src={actionsFor.photo_best} alt={actionsFor.name} fill className="object-cover" sizes="44px" />
+                  <Image src={actionsFor.photo_best} alt={actionsFor.name} fill className="object-cover" sizes="44px" draggable={false} style={{ pointerEvents: 'none' }} />
                 ) : (
                   <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(248,249,250,0.5)', fontFamily: 'var(--font-fraunces)', fontSize: 18 }}>{actionsFor.name[0]}</div>
                 )}
@@ -1004,7 +1004,7 @@ export default function MatchesPage() {
                 background: '#13161F', border: '1px solid rgba(255,255,255,0.06)',
               }}>
                 {meetingAction.invite.other_photo ? (
-                  <Image src={meetingAction.invite.other_photo} alt="" fill className="object-cover" sizes="48px" />
+                  <Image src={meetingAction.invite.other_photo} alt="" fill className="object-cover" sizes="48px" draggable={false} style={{ pointerEvents: 'none' }} />
                 ) : (
                   <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(248,249,250,0.5)', fontFamily: 'var(--font-fraunces)', fontSize: 20 }}>
                     {meetingAction.invite.other_name[0]}
@@ -1269,6 +1269,8 @@ function NovoMatchCard({
         scrollSnapAlign: 'start', flexShrink: 0, width: 80,
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
         cursor: 'pointer', userSelect: 'none',
+        WebkitTapHighlightColor: 'transparent',
+        WebkitTouchCallout: 'none',
       }}
     >
       {/* Avatar com badge de expiração e botão + */}
@@ -1280,7 +1282,7 @@ function NovoMatchCard({
           boxShadow: '0 0 0 3px rgba(225,29,72,0.12), 0 4px 16px rgba(0,0,0,0.4)',
         }}>
           {match.photo_best ? (
-            <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="72px" />
+            <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="72px" draggable={false} style={{ pointerEvents: 'none' }} />
           ) : (
             <div style={{
               width: '100%', height: '100%',
@@ -1410,6 +1412,7 @@ function ConversaItem({ match, formatTempo, onLongPress }: { match: Match; forma
         transition: 'background 0.15s ease',
         cursor: 'pointer', userSelect: 'none',
         WebkitTouchCallout: 'none',
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
       <div style={{ position: 'relative', flexShrink: 0 }}>
@@ -1421,7 +1424,7 @@ function ConversaItem({ match, formatTempo, onLongPress }: { match: Match; forma
           boxShadow: '0 2px 12px rgba(0,0,0,0.4)',
         }}>
           {match.photo_best ? (
-            <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="56px" />
+            <Image src={match.photo_best} alt={match.name} fill className="object-cover" sizes="56px" draggable={false} style={{ pointerEvents: 'none' }} />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <span style={{ color: 'rgba(248,249,250,0.5)', fontFamily: 'var(--font-fraunces)', fontSize: 22 }}>
@@ -1610,7 +1613,7 @@ function MeetingCard({
           background: '#13161F', border: '1px solid rgba(255,255,255,0.06)',
         }}>
           {invite.other_photo ? (
-            <Image src={invite.other_photo} alt={invite.other_name} fill className="object-cover" sizes="44px" />
+            <Image src={invite.other_photo} alt={invite.other_name} fill className="object-cover" sizes="44px" draggable={false} style={{ pointerEvents: 'none' }} />
           ) : (
             <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(248,249,250,0.5)', fontFamily: 'var(--font-fraunces)', fontSize: 18 }}>
               {invite.other_name[0]}
