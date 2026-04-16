@@ -34,9 +34,9 @@ const CYCLE_OPTIONS = [
 ]
 
 const PLAN_PRICES: Record<string, Record<string, number>> = {
-  essencial: { monthly: 9.97, quarterly: 26.90, semiannual: 47.80, annual: 83.70 },
-  plus:      { monthly: 39.97, quarterly: 107.90, semiannual: 191.80, annual: 335.70 },
-  black:     { monthly: 99.97, quarterly: 269.90, semiannual: 479.80, annual: 839.70 },
+  essencial: { monthly: 9.90, quarterly: 26.70, semiannual: 47.50, annual: 83.20 },
+  plus:      { monthly: 39.90, quarterly: 107.70, semiannual: 191.50, annual: 335.20 },
+  black:     { monthly: 99.90, quarterly: 269.70, semiannual: 479.50, annual: 839.20 },
 }
 
 function calcPrice(plan: string, cycle: PaymentCycle): number {

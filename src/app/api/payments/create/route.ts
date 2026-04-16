@@ -11,9 +11,9 @@ const ABACATE_KEY = process.env.ABACATEPAY_API_KEY!
 
 // Valores em centavos por plano/ciclo
 const PRICES: Record<string, Record<string, number>> = {
-  essencial: { monthly: 997, quarterly: 2690, semiannual: 4780, annual: 8370 },
-  plus:      { monthly: 3997, quarterly: 10790, semiannual: 19180, annual: 33570 },
-  black:     { monthly: 9997, quarterly: 26990, semiannual: 47980, annual: 83970 },
+  essencial: { monthly: 990, quarterly: 2670, semiannual: 4750, annual: 8320 },
+  plus:      { monthly: 3990, quarterly: 10770, semiannual: 19150, annual: 33520 },
+  black:     { monthly: 9990, quarterly: 26970, semiannual: 47950, annual: 83920 },
 }
 
 // Preco fixo do camarote em centavos

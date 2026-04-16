@@ -28,7 +28,6 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
   const [limitReached, setLimitReached] = useState(false)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [remoteMuted, setRemoteMuted] = useState(false)
-  const [connected, setConnected] = useState(false)
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
 
   const startTimeRef = useRef<number | null>(null)
@@ -38,6 +37,8 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
   const remoteAudioRef = useRef<HTMLAudioElement>(null)
+  const signalQueueRef = useRef<CallSignal[]>([])
+  const managerReadyRef = useRef(false)
 
   const [micOn, setMicOn] = useState(true)
   const [camOn, setCamOn] = useState(true)
@@ -54,28 +55,38 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
     onEnd()
   }, [matchId, onEnd])
 
+  function processSignal(payload: CallSignal) {
+    if (payload.match_id !== matchId) return
+    if (!managerReadyRef.current || !managerRef.current) {
+      signalQueueRef.current.push(payload)
+      return
+    }
+    if (payload.type === 'sdp_offer' && payload.sdp) managerRef.current.handleOffer(payload.sdp)
+    if (payload.type === 'sdp_answer' && payload.sdp) managerRef.current.handleAnswer(payload.sdp)
+    if (payload.type === 'ice_candidate' && payload.candidate) managerRef.current.handleIceCandidate(payload.candidate)
+    if (payload.type === 'ended') handleEnd()
+  }
+
+  function drainSignalQueue() {
+    const queued = signalQueueRef.current.splice(0)
+    for (const s of queued) processSignal(s)
+  }
+
   useEffect(() => {
+    managerReadyRef.current = false
+    signalQueueRef.current = []
+    const unsub = onVideoCallSignal(processSignal)
     start()
     return () => {
+      unsub()
       if (timerRef.current) clearInterval(timerRef.current)
       if (heartbeatRef.current) clearInterval(heartbeatRef.current)
       managerRef.current?.destroy()
       managerRef.current = null
+      managerReadyRef.current = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchId])
-
-  useEffect(() => {
-    if (!connected) return
-    const unsub = onVideoCallSignal((payload) => {
-      if (payload.match_id !== matchId) return
-      if (payload.type === 'sdp_offer' && payload.sdp) managerRef.current?.handleOffer(payload.sdp)
-      if (payload.type === 'sdp_answer' && payload.sdp) managerRef.current?.handleAnswer(payload.sdp)
-      if (payload.type === 'ice_candidate' && payload.candidate) managerRef.current?.handleIceCandidate(payload.candidate)
-      if (payload.type === 'ended') handleEnd()
-    })
-    return unsub
-  }, [connected, matchId, handleEnd])
 
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
@@ -122,13 +133,14 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
       })
       managerRef.current = manager
       await manager.init(isCaller)
+      managerReadyRef.current = true
+      drainSignalQueue()
 
       const local = manager.getLocalStream()
       if (localVideoRef.current && local) {
         localVideoRef.current.srcObject = local
       }
 
-      setConnected(true)
       startTimeRef.current = Date.now()
       timerRef.current = setInterval(() =>
         setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current!) / 1000)), 1000
@@ -631,41 +643,54 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
   const calleeIdRef = useRef<string | null>(null)
 
   useEffect(() => {
-    if (!user) return
-    initVideoCallBus(user.id)
+    let mounted = true
+    let unsub: (() => void) | null = null
+    const userIdRef2 = { current: user?.id ?? '' }
 
-    const unsub = onVideoCallSignal((payload) => {
-      if (!payload) return
+    async function setup() {
+      if (!userIdRef2.current) {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (!mounted || !session?.user) return
+        userIdRef2.current = session.user.id
+      }
+      initVideoCallBus(userIdRef2.current)
 
-      if (payload.type === 'ringing' && payload.callee_id === user.id && payload.match_id === matchId) {
-        setCallId(payload.call_id ?? null)
-        setCallerIdState(payload.caller_id ?? null)
-        setCallState('incoming')
-        if (payload.caller_id) loadCallerProfile(payload.caller_id)
-        missedTimeout.current = setTimeout(() => {
-          setCallState('missed')
+      unsub = onVideoCallSignal((payload) => {
+        if (!payload || !mounted) return
+
+        if (payload.type === 'ringing' && payload.callee_id === userIdRef2.current && payload.match_id === matchId) {
+          setCallId(payload.call_id ?? null)
+          setCallerIdState(payload.caller_id ?? null)
+          setCallState('incoming')
+          if (payload.caller_id) loadCallerProfile(payload.caller_id)
+          missedTimeout.current = setTimeout(() => {
+            setCallState('missed')
+            setTimeout(() => setCallState('idle'), 3000)
+          }, 40000)
+        }
+
+        if (payload.type === 'accepted' && payload.match_id === matchId) {
+          if (missedTimeout.current) clearTimeout(missedTimeout.current)
+          setCallState('active')
+        }
+
+        if (payload.type === 'rejected' && payload.match_id === matchId) {
+          if (missedTimeout.current) clearTimeout(missedTimeout.current)
+          setCallState('rejected')
           setTimeout(() => setCallState('idle'), 3000)
-        }, 40000)
-      }
+        }
 
-      if (payload.type === 'accepted' && payload.match_id === matchId) {
-        if (missedTimeout.current) clearTimeout(missedTimeout.current)
-        setCallState('active')
-      }
+        if ((payload.type === 'ended' || payload.type === 'cancelled') && payload.match_id === matchId) {
+          setCallState('idle')
+        }
+      })
+    }
 
-      if (payload.type === 'rejected' && payload.match_id === matchId) {
-        if (missedTimeout.current) clearTimeout(missedTimeout.current)
-        setCallState('rejected')
-        setTimeout(() => setCallState('idle'), 3000)
-      }
-
-      if ((payload.type === 'ended' || payload.type === 'cancelled') && payload.match_id === matchId) {
-        setCallState('idle')
-      }
-    })
+    setup()
 
     return () => {
-      unsub()
+      mounted = false
+      if (unsub) unsub()
       if (missedTimeout.current) clearTimeout(missedTimeout.current)
     }
   }, [user, matchId])
@@ -680,7 +705,12 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
   }
 
   async function handleCall() {
-    if (!user) return
+    const { data: { session } } = await supabase.auth.getSession()
+    const currentUser = session?.user ?? user
+    if (!currentUser) return
+
+    initVideoCallBus(currentUser.id)
+
     const { data: match } = await supabase
       .from('matches')
       .select('user1, user2')
@@ -688,13 +718,13 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
       .single()
     if (!match) return
 
-    const calleeId = match.user1 === user.id ? match.user2 : match.user1
+    const calleeId = match.user1 === currentUser.id ? match.user2 : match.user1
     calleeIdRef.current = calleeId
     setOtherUserId(calleeId)
     setIsCaller(true)
     const { data: call } = await supabase
       .from('video_calls')
-      .insert({ match_id: matchId, caller_id: user.id, callee_id: calleeId, status: 'ringing' })
+      .insert({ match_id: matchId, caller_id: currentUser.id, callee_id: calleeId, status: 'ringing' })
       .select()
       .single()
 
@@ -706,7 +736,7 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
         type: 'ringing',
         call_id: call.id,
         match_id: matchId,
-        caller_id: user.id,
+        caller_id: currentUser.id,
         callee_id: calleeId,
         caller_name: otherName,
         caller_photo: otherPhoto ?? null,
@@ -722,7 +752,7 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
   }
 
   async function handleAccept() {
-    if (!callId || !user) return
+    if (!callId) return
     if (missedTimeout.current) clearTimeout(missedTimeout.current)
     await supabase.from('video_calls').update({ status: 'accepted' }).eq('id', callId)
     const { data: call } = await supabase.from('video_calls').select('caller_id').eq('id', callId).single()
@@ -737,7 +767,7 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
   }
 
   async function handleReject() {
-    if (!callId || !user) return
+    if (!callId) return
     if (missedTimeout.current) clearTimeout(missedTimeout.current)
     await supabase.from('video_calls').update({ status: 'rejected' }).eq('id', callId)
     const { data: call } = await supabase.from('video_calls').select('caller_id').eq('id', callId).single()
@@ -753,7 +783,9 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
     if (callId) {
       await supabase.from('video_calls').update({ status: 'ended' }).eq('id', callId)
       const { data: call } = await supabase.from('video_calls').select('caller_id, callee_id').eq('id', callId).single()
-      const otherId = call ? (call.caller_id === user?.id ? call.callee_id : call.caller_id) : calleeIdRef.current
+      const { data: { session: endSess } } = await supabase.auth.getSession()
+      const myId = endSess?.user?.id
+      const otherId = call ? (call.caller_id === myId ? call.callee_id : call.caller_id) : calleeIdRef.current
       if (otherId) {
         await sendVideoCallSignal(otherId, { type: 'ended', call_id: callId, match_id: matchId })
       }
