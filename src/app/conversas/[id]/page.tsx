@@ -344,9 +344,9 @@ export default function ChatPage() {
     }
   }, [messages, userId])
 
-  function scrollToBottom() {
+  function scrollToBottom(instant?: boolean) {
     setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+      bottomRef.current?.scrollIntoView({ behavior: instant ? 'instant' : 'smooth' })
     }, 50)
   }
 
@@ -379,7 +379,7 @@ export default function ChatPage() {
       read_at: null,
     }
     setMessages(prev => [...prev, tempMsg])
-    scrollToBottom()
+    scrollToBottom(true)
     // Som de envio (exceto para tokens internos sem feedback visual direto)
     if (content !== NUDGE_TOKEN) sounds.play('send')
 
@@ -434,8 +434,10 @@ export default function ChatPage() {
     }
 
     setInput('')
+    if (inputRef.current) {
+      inputRef.current.style.height = 'auto'
+    }
     await sendMessage(texto)
-    inputRef.current?.focus()
   }
 
   async function handleNudge() {

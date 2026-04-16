@@ -485,9 +485,7 @@ button:active:not(:disabled) {
 /* ── Melhoria de acessibilidade: focus visivel ── */
 button:focus-visible,
 a:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 8px;
+  outline: none;
 }
 
 /* ── Glow animado para botoes CTA quando ativos ── */
