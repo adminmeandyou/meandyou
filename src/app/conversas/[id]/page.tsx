@@ -67,6 +67,10 @@ export default function ChatPage() {
   const [showEmojis, setShowEmojis] = useState(false)
   const [conviteText, setConviteText] = useState('')
   const [conviteLocal, setConviteLocal] = useState('')
+  const [conviteLocalQuery, setConviteLocalQuery] = useState('')
+  const [placeSuggestions, setPlaceSuggestions] = useState<Array<{ display_name: string; name: string; address: any }>>([])
+  const [showPlaces, setShowPlaces] = useState(false)
+  const placeDebounce = useRef<NodeJS.Timeout | null>(null)
   const [conviteDate, setConviteDate] = useState('')
   const [conviteTime, setConviteTime] = useState('')
   const [shake, setShake] = useState(false)
@@ -274,6 +278,43 @@ export default function ChatPage() {
       .is('read_at', null)
   }
 
+  function handlePlaceSearch(query: string) {
+    setConviteLocalQuery(query)
+    setConviteLocal('')
+    if (placeDebounce.current) clearTimeout(placeDebounce.current)
+    if (query.length < 3) { setPlaceSuggestions([]); setShowPlaces(false); return }
+    placeDebounce.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=br&accept-language=pt-BR`, {
+          headers: { 'User-Agent': 'MeAndYou/1.0' }
+        })
+        const data = await res.json()
+        setPlaceSuggestions(data)
+        setShowPlaces(data.length > 0)
+      } catch { setPlaceSuggestions([]); setShowPlaces(false) }
+    }, 500)
+  }
+
+  function selectPlace(place: any) {
+    const addr = place.address || {}
+    const nome = place.name || ''
+    const rua = addr.road || ''
+    const numero = addr.house_number || ''
+    const bairro = addr.suburb || addr.neighbourhood || ''
+    const cidade = addr.city || addr.town || addr.village || addr.municipality || ''
+    const estado = addr.state || ''
+    const cep = addr.postcode || ''
+
+    const partes = [nome, rua && numero ? `${rua}, ${numero}` : rua, bairro, cidade && estado ? `${cidade} - ${estado}` : cidade, cep].filter(Boolean)
+    // Remove duplicatas (nome pode repetir a rua)
+    const unicas = [...new Set(partes)]
+    const formatado = unicas.join(', ')
+
+    setConviteLocal(formatado)
+    setConviteLocalQuery(formatado)
+    setShowPlaces(false)
+  }
+
   function detectPendingConvite(uid: string) {
     // Detecta se há convite recebido sem resposta (busca nas mensagens carregadas)
     // Será chamado após loadMessages, portanto precisamos passar mensagens como param ou usar state
@@ -441,6 +482,9 @@ export default function ChatPage() {
     setShowConvite(false)
     setConviteText('')
     setConviteLocal('')
+    setConviteLocalQuery('')
+    setPlaceSuggestions([])
+    setShowPlaces(false)
     setConviteDate('')
     setConviteTime('')
   }
@@ -1093,26 +1137,82 @@ export default function ChatPage() {
               </button>
             </div>
 
-            {/* Local */}
-            <div style={{ marginBottom: 12 }}>
+            {/* Local com autocomplete */}
+            <div style={{ marginBottom: 12, position: 'relative' }}>
               <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
                 Onde?
               </label>
-              <input
-                type="text"
-                value={conviteLocal}
-                onChange={e => setConviteLocal(e.target.value)}
-                placeholder="Ex: Café do Centro, Praia do Gonzaga..."
-                maxLength={100}
-                autoFocus
-                style={{
-                  width: '100%', background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
-                  padding: '11px 14px', fontSize: 14, color: 'var(--text)',
-                  outline: 'none', boxSizing: 'border-box',
-                  fontFamily: 'var(--font-jakarta)',
-                }}
-              />
+              <div style={{ position: 'relative' }}>
+                <MapPin size={15} color="var(--muted)" strokeWidth={1.5} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                <input
+                  type="text"
+                  value={conviteLocalQuery}
+                  onChange={e => handlePlaceSearch(e.target.value)}
+                  onFocus={() => { if (placeSuggestions.length > 0) setShowPlaces(true) }}
+                  placeholder="Buscar local, restaurante, shopping..."
+                  autoFocus
+                  autoComplete="off"
+                  style={{
+                    width: '100%', background: 'rgba(255,255,255,0.04)',
+                    border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
+                    padding: '11px 14px 11px 36px', fontSize: 14, color: 'var(--text)',
+                    outline: 'none', boxSizing: 'border-box',
+                    fontFamily: 'var(--font-jakarta)',
+                  }}
+                />
+              </div>
+              {/* Dropdown de sugestões */}
+              {showPlaces && placeSuggestions.length > 0 && (
+                <div style={{
+                  position: 'absolute', left: 0, right: 0, top: '100%', zIndex: 20,
+                  background: 'rgba(15,17,23,0.98)', border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: 12, marginTop: 4, overflow: 'hidden',
+                  maxHeight: 220, overflowY: 'auto',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+                }}>
+                  {placeSuggestions.map((place, i) => {
+                    const addr = place.address || {}
+                    const nome = place.name || ''
+                    const cidade = addr.city || addr.town || addr.village || addr.municipality || ''
+                    const estado = addr.state || ''
+                    const bairro = addr.suburb || addr.neighbourhood || ''
+                    const sub = [bairro, cidade, estado].filter(Boolean).join(', ')
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => selectPlace(place)}
+                        style={{
+                          width: '100%', display: 'flex', alignItems: 'flex-start', gap: 10,
+                          padding: '12px 14px', background: 'transparent',
+                          border: 'none', borderBottom: i < placeSuggestions.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                          cursor: 'pointer', textAlign: 'left',
+                          fontFamily: 'var(--font-jakarta)',
+                        }}
+                      >
+                        <MapPin size={14} color="var(--accent)" strokeWidth={1.5} style={{ flexShrink: 0, marginTop: 2 }} />
+                        <div style={{ minWidth: 0 }}>
+                          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nome || place.display_name.split(',')[0]}</p>
+                          {sub && <p style={{ fontSize: 11, color: 'var(--muted)', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</p>}
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+              {/* Local selecionado */}
+              {conviteLocal && (
+                <div style={{
+                  marginTop: 8, padding: '10px 12px', borderRadius: 10,
+                  background: 'rgba(225,29,72,0.06)', border: '1px solid rgba(225,29,72,0.15)',
+                  display: 'flex', alignItems: 'flex-start', gap: 8,
+                }}>
+                  <MapPin size={13} color="var(--accent)" strokeWidth={1.5} style={{ flexShrink: 0, marginTop: 2 }} />
+                  <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, lineHeight: 1.45, flex: 1 }}>{conviteLocal}</p>
+                  <button onClick={() => { setConviteLocal(''); setConviteLocalQuery(''); setPlaceSuggestions([]) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}>
+                    <X size={13} color="var(--muted)" />
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Data + Hora lado a lado */}
