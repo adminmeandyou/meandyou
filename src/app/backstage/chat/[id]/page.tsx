@@ -6,69 +6,15 @@ import { supabase } from '../../../lib/supabase'
 import Image from 'next/image'
 import {
   ArrowLeft, Crown, Send, Loader2, Lock, Clock,
-  Star, ThumbsUp, ThumbsDown, HeartHandshake, Trophy, Flag, X,
+  Star, X,
   MapPin, CalendarPlus, Check,
 } from 'lucide-react'
-
-// ─── Constantes ────────────────────────────────────────────────────────────────
-
-const G        = '#F59E0B'
-const G_SOFT   = 'rgba(245,158,11,0.10)'
-const G_BORDER = 'rgba(245,158,11,0.25)'
-const BG       = '#08090E'
-const BG_CARD  = '#0F1117'
-
-const CATEGORIAS: Record<string, string> = {
-  trisal: 'Trisal', menage: 'Menage', bdsm: 'BDSM',
-  sado: 'Sadomasoquismo', sugar: 'Sugar', swing: 'Swing', poliamor: 'Poliamor',
-}
-
-const MAX_CHARS = 500
-
-const RATING_OPTIONS = [
-  { key: 'bom_papo',  label: 'Bom de papo',              icon: ThumbsUp,       color: '#2ec4a0' },
-  { key: 'sairam',    label: 'Sairam para se conhecer',  icon: HeartHandshake, color: '#E11D48' },
-  { key: 'objetivo',  label: 'Alcançaram o objetivo',    icon: Trophy,         color: G         },
-  { key: 'bolo',      label: 'Levou bolo',               icon: ThumbsDown,     color: 'rgba(248,249,250,0.40)' },
-  { key: 'denuncia',  label: 'Denunciar',                icon: Flag,           color: '#f87171' },
-]
-
-const INVITE_PREFIX = '__CONVITE__:'
-const INVITE_RESPONSES = ['Aceito!', 'Não posso', 'Em breve', 'Me conta mais!']
-
-// ─── Tipos ─────────────────────────────────────────────────────────────────────
-
-interface Message {
-  id: string
-  sender_id: string
-  content: string
-  created_at: string
-  read: boolean
-}
-
-interface RequestData {
-  id: string
-  requester_id: string
-  rescued_by: string
-  category: string
-  expires_at: string
-  rescued_at: string | null
-  created_at: string
-}
-
-interface OtherProfile {
-  id: string
-  name: string
-  photo_best: string | null
-}
-
-interface MeetingForm {
-  local: string
-  date: string
-  time: string
-}
-
-// ─── Pagina ────────────────────────────────────────────────────────────────────
+import {
+  G, G_SOFT, G_BORDER, BG, BG_CARD,
+  CATEGORIAS, MAX_CHARS, INVITE_PREFIX, INVITE_RESPONSES,
+} from './_components/helpers'
+import type { Message, RequestData, OtherProfile, MeetingForm } from './_components/helpers'
+import RatingPanel from './_components/RatingPanel'
 
 export default function CamaroteChatPage() {
   const params    = useParams()
@@ -277,7 +223,6 @@ export default function CamaroteChatPage() {
     return new Date(iso).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
   }
 
-  // Avaliacao ativa apos 3 dias desde o inicio do chat
   function daysActive(): number {
     if (!request) return 0
     const start = request.rescued_at ?? request.created_at
@@ -287,13 +232,11 @@ export default function CamaroteChatPage() {
   const canRate  = daysActive() >= 3 && !ratingDone
   const showBanner = canRate && !ratingBannerDismissed
 
-  // Convite nao respondido do outro lado
   function getPendingInvite(): Message | null {
     if (!userId) return null
     for (let i = messages.length - 1; i >= 0; i--) {
       const msg = messages[i]
       if (msg.sender_id !== userId && msg.content.startsWith(INVITE_PREFIX)) {
-        // Tem alguma resposta minha depois?
         const hasReply = messages.slice(i + 1).some(m => m.sender_id === userId)
         return hasReply ? null : msg
       }
@@ -466,17 +409,14 @@ export default function CamaroteChatPage() {
             return (
               <div key={msg.id} style={{ display: 'flex', justifyContent: isMine ? 'flex-end' : 'flex-start' }}>
                 <div style={{ maxWidth: '80%', borderRadius: 16, overflow: 'hidden', border: `1px solid ${isMine ? G_BORDER : 'rgba(225,29,72,0.30)'}` }}>
-                  {/* Header do card convite */}
                   <div style={{ padding: '8px 14px', background: isMine ? G_SOFT : 'rgba(225,29,72,0.10)', display: 'flex', alignItems: 'center', gap: 7 }}>
                     <CalendarPlus size={13} color={isMine ? G : '#E11D48'} strokeWidth={1.5} />
                     <span style={{ fontSize: 11, fontWeight: 700, color: isMine ? G : '#E11D48' }}>
                       {isMine ? 'Você enviou um convite' : `${other?.name} te convidou`}
                     </span>
                   </div>
-                  {/* Texto */}
                   <div style={{ padding: '10px 14px', background: BG_CARD }}>
                     <p style={{ fontSize: 14, color: '#fff', margin: '0 0 10px', lineHeight: 1.5 }}>{text}</p>
-                    {/* Pills de resposta (so no convite recebido) */}
                     {!isMine && (
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                         {INVITE_RESPONSES.map(r => (
@@ -561,7 +501,6 @@ export default function CamaroteChatPage() {
       {/* Input */}
       <div style={{ flexShrink: 0, padding: '10px 16px 24px', borderTop: `1px solid ${G_BORDER}`, background: 'rgba(8,9,14,0.97)', backdropFilter: 'blur(12px)', display: 'flex', gap: 8, alignItems: 'flex-end' }}>
 
-        {/* Botoes de acao extras */}
         <div style={{ display: 'flex', gap: 6, flexShrink: 0, paddingBottom: 2 }}>
           <button
             onClick={() => { setShowMeetingModal(true); setShowInvitePanel(false) }}
@@ -702,97 +641,6 @@ export default function CamaroteChatPage() {
           </div>
         </>
       )}
-    </div>
-  )
-}
-
-// ─── Componente RatingPanel (reutilizado no expirado e no overlay) ─────────────
-
-function RatingPanel({
-  onSubmit,
-  onSkip,
-  submitting,
-  inline,
-  withHeader,
-  onClose,
-}: {
-  onSubmit: (key: string) => void
-  onSkip: () => void
-  submitting: boolean
-  inline?: boolean
-  withHeader?: boolean
-  onClose?: () => void
-}) {
-  const G        = '#F59E0B'
-  const G_SOFT   = 'rgba(245,158,11,0.10)'
-  const G_BORDER = 'rgba(245,158,11,0.25)'
-  const BG_CARD  = '#0F1117'
-
-  return (
-    <div style={inline ? { width: '100%', maxWidth: 360, background: BG_CARD, borderRadius: 20, border: `1px solid ${G_BORDER}`, padding: '24px 20px', marginBottom: 24 } : {}}>
-      {withHeader && (
-        <div style={{ width: 36, height: 4, borderRadius: 100, background: 'rgba(255,255,255,0.12)', margin: '0 auto 20px' }} />
-      )}
-
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <Star size={16} color={G} strokeWidth={1.5} />
-          <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: inline ? 16 : 18, color: '#fff', fontWeight: 700 }}>
-            Como foi essa conversa?
-          </span>
-        </div>
-        {onClose && (
-          <button
-            onClick={onClose}
-            style={{ width: 30, height: 30, borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-          >
-            <X size={14} color="rgba(255,255,255,0.50)" strokeWidth={1.5} />
-          </button>
-        )}
-      </div>
-
-      <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', margin: '0 0 16px' }}>
-        Sua avaliação é anônima. Ajuda outros usuários e melhora o Camarote.
-      </p>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-        {RATING_OPTIONS.map((opt) => {
-          const Icon = opt.icon
-          return (
-            <button
-              key={opt.key}
-              onClick={() => onSubmit(opt.key)}
-              disabled={submitting}
-              style={{
-                display: 'flex', alignItems: 'center', gap: inline ? 12 : 14,
-                padding: inline ? '12px 16px' : '14px 16px', borderRadius: inline ? 12 : 14,
-                background: 'rgba(255,255,255,0.03)',
-                border: opt.key === 'denuncia' ? '1px solid rgba(248,113,113,0.20)' : '1px solid rgba(255,255,255,0.07)',
-                cursor: submitting ? 'default' : 'pointer', textAlign: 'left', width: '100%',
-                opacity: submitting ? 0.5 : 1,
-              }}
-            >
-              {!inline && (
-                <div style={{ width: 36, height: 36, borderRadius: 10, background: `${opt.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                  <Icon size={18} color={opt.color} strokeWidth={1.5} />
-                </div>
-              )}
-              {inline && <Icon size={16} color={opt.color} strokeWidth={1.5} />}
-              <span style={{ fontSize: inline ? 14 : 15, color: opt.key === 'denuncia' ? '#f87171' : '#fff', fontFamily: 'var(--font-jakarta)', fontWeight: 500 }}>
-                {opt.label}
-              </span>
-              {submitting && <Loader2 size={14} className="animate-spin" style={{ color: 'rgba(255,255,255,0.30)', marginLeft: 'auto' }} />}
-            </button>
-          )
-        })}
-      </div>
-
-      <button
-        onClick={onSkip}
-        style={{ marginTop: inline ? 12 : 14, width: '100%', padding: '8px', background: 'none', border: 'none', cursor: 'pointer', fontSize: inline ? 12 : 13, color: 'rgba(255,255,255,0.30)', fontFamily: 'var(--font-jakarta)' }}
-      >
-        Agora não
-      </button>
     </div>
   )
 }

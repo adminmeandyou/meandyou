@@ -3,37 +3,13 @@
 import { useEffect, useState, useRef, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { supabase } from '../lib/supabase'
-import { ArrowLeft, ArrowRight, EyeOff, ScanFace, Smile, Camera, FolderOpen, RefreshCw, Check, AlertCircle, Lightbulb } from 'lucide-react'
-
-type Status = 'loading' | 'desktop' | 'aguardando' | 'dados' | 'doc_frente' | 'doc_verso' | 'selfie' | 'enviando' | 'sucesso' | 'erro' | 'expirado' | 'usado'
-type ModoCaptura = 'escolha' | 'camera' | 'arquivo'
-
-const PASSOS_LIVENESS = [
-  { id: 'esquerda', instrucao: 'Olhe para a esquerda'  },
-  { id: 'direita',  instrucao: 'Olhe para a direita'   },
-  { id: 'frente',   instrucao: 'Olhe para a câmera'    },
-  { id: 'piscar',   instrucao: 'Pisque uma vez'        },
-  { id: 'sorriso',  instrucao: 'Sorria!'               },
-]
-
-const LIVENESS_ICON: Record<string, React.ReactNode> = {
-  esquerda: <ArrowLeft  size={40} strokeWidth={1.5} />,
-  direita:  <ArrowRight size={40} strokeWidth={1.5} />,
-  frente:   <ScanFace   size={40} strokeWidth={1.5} />,
-  piscar:   <EyeOff     size={40} strokeWidth={1.5} />,
-  sorriso:  <Smile      size={40} strokeWidth={1.5} />,
-}
-
-const VERIF_DRAFT_KEY = 'meandyou_verif_draft'
-function salvarVerifDraft(dados: Record<string, unknown>) {
-  try { localStorage.setItem(VERIF_DRAFT_KEY, JSON.stringify(dados)) } catch {}
-}
-function carregarVerifDraft() {
-  try { const raw = localStorage.getItem(VERIF_DRAFT_KEY); return raw ? JSON.parse(raw) : null } catch { return null }
-}
-function limparVerifDraft() {
-  try { localStorage.removeItem(VERIF_DRAFT_KEY) } catch {}
-}
+import { Check, AlertCircle, Lightbulb, Camera, FolderOpen, RefreshCw, ScanFace } from 'lucide-react'
+import {
+  Status, ModoCaptura,
+  PASSOS_LIVENESS, LIVENESS_ICON, FACE_API_CDNS, VERIF_DRAFT_KEY,
+  salvarVerifDraft, carregarVerifDraft, limparVerifDraft,
+  validarCPF, formatarCPF, dist, calcularEAR, verificarNitidez, isMobile,
+} from './_components/helpers'
 
 function Verificacao() {
   const searchParams = useSearchParams()
@@ -59,7 +35,6 @@ function Verificacao() {
   const [selfiePreview, setSelfiePreview] = useState('')
   const [erroForm, setErroForm] = useState('')
 
-  // Controla upload imediato de cada documento
   const [frenteFeita, setFrenteFeita] = useState<boolean>(draft?.frenteFeita ?? false)
   const [versoFeita, setVersoFeita] = useState<boolean>(draft?.versoFeita ?? false)
   const [frenteUploadando, setFrenteUploadando] = useState(false)
@@ -81,8 +56,7 @@ function Verificacao() {
   const piscarContRef = useRef(0)
   const olhosAbertosRef = useRef(true)
   const deteccaoLoopRef = useRef<NodeJS.Timeout | null>(null)
-  const holdCountRef = useRef(0) // frames consecutivos com condicao ok
-  // ✅ CORREÇÃO AVISO 13: ref para selfie usado no auto-submit após liveness
+  const holdCountRef = useRef(0)
   const selfieFileRef = useRef<File | null>(null)
 
   const videoFrenteRef = useRef<HTMLVideoElement>(null)
@@ -97,83 +71,6 @@ function Verificacao() {
   const [cameraFrenteAtiva, setCameraFrenteAtiva] = useState(false)
   const [cameraVersoAtiva, setCameraVersoAtiva] = useState(false)
   const [cameraSelfieAtiva, setCameraSelfieAtiva] = useState(false)
-
-  // Verifica nitidez da imagem usando variância de gradiente (Laplacian approximation)
-  // Retorna true se a imagem está nítida o suficiente
-  const verificarNitidez = (canvas: HTMLCanvasElement): boolean => {
-    try {
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return true
-      const { width, height } = canvas
-      // Amostra a região central (evita bordas que podem ser pretas)
-      const sx = Math.floor(width * 0.1), sy = Math.floor(height * 0.1)
-      const sw = Math.floor(width * 0.8), sh = Math.floor(height * 0.8)
-      const data = ctx.getImageData(sx, sy, sw, sh).data
-      let sumSq = 0, count = 0
-      // Variância de diferenças horizontais entre pixels (aprox. Laplacian)
-      for (let i = 0; i < data.length - 4; i += 20) {
-        const g1 = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114
-        const g2 = data[i + 4] * 0.299 + data[i + 5] * 0.587 + data[i + 6] * 0.114
-        const diff = g1 - g2
-        sumSq += diff * diff
-        count++
-      }
-      return count > 0 ? (sumSq / count) > 40 : true
-    } catch {
-      return true // em caso de erro, não bloqueia
-    }
-  }
-
-  const isMobile = () => {
-    if (typeof window === 'undefined') return false
-    const ua = navigator.userAgent.toLowerCase()
-    const isEmulator = /bluestacks|nox|memu|ldplayer|gameloop|android.*sdk|sdk.*android/i.test(ua)
-    if (isEmulator) return false
-    const uaIsMobile = /android|iphone|ipad|ipod|mobile/i.test(ua)
-    if (!uaIsMobile) return false
-    // ✅ CORREÇÃO: verificar DeviceMotionEvent além do User Agent
-    // DevTools com device emulation (F12) falsifica o UA mas NÃO tem acelerômetro real.
-    // Em desktop com UA falsificado, window.DeviceMotionEvent existe mas é undefined/não-chamável.
-    const hasMotionApi = typeof window.DeviceMotionEvent !== 'undefined'
-    if (!hasMotionApi) return false
-    // Verificar se o TouchEvent nativo está presente (desktops não têm, mesmo com UA mobile)
-    const hasTouchApi = 'ontouchstart' in window || navigator.maxTouchPoints > 0
-    return hasTouchApi
-  }
-
-  const validarCPF = (cpfRaw: string): boolean => {
-    const c = cpfRaw.replace(/\D/g, '')
-    if (c.length !== 11 || /^(\d)\1{10}$/.test(c)) return false
-    let soma = 0
-    for (let i = 0; i < 9; i++) soma += parseInt(c[i]) * (10 - i)
-    let resto = (soma * 10) % 11
-    if (resto === 10 || resto === 11) resto = 0
-    if (resto !== parseInt(c[9])) return false
-    soma = 0
-    for (let i = 0; i < 10; i++) soma += parseInt(c[i]) * (11 - i)
-    resto = (soma * 10) % 11
-    if (resto === 10 || resto === 11) resto = 0
-    return resto === parseInt(c[10])
-  }
-
-  const formatarCPF = (valor: string) => {
-    const nums = valor.replace(/\D/g, '').slice(0, 11)
-    if (nums.length <= 3) return nums
-    if (nums.length <= 6) return `${nums.slice(0,3)}.${nums.slice(3)}`
-    if (nums.length <= 9) return `${nums.slice(0,3)}.${nums.slice(3,6)}.${nums.slice(6)}`
-    return `${nums.slice(0,3)}.${nums.slice(3,6)}.${nums.slice(6,9)}-${nums.slice(9)}`
-  }
-
-  const FACE_API_CDNS = [
-    {
-      script: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/dist/face-api.js',
-      models: 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api@1.7.12/model',
-    },
-    {
-      script: 'https://unpkg.com/@vladmandic/face-api@1.7.12/dist/face-api.js',
-      models: 'https://unpkg.com/@vladmandic/face-api@1.7.12/model',
-    },
-  ]
 
   const carregarFaceApi = async () => {
     if ((window as any).faceapi) { setFaceApiCarregado(true); return }
@@ -206,7 +103,6 @@ function Verificacao() {
         await tentarCdn(cdn)
         return
       } catch {
-        // limpa faceapi do window se carregou parcialmente antes de tentar próximo CDN
         delete (window as any).faceapi
       }
     }
@@ -226,12 +122,10 @@ function Verificacao() {
     }
   }, [])
 
-  // Salva progresso sempre que qualquer campo relevante muda
   useEffect(() => {
     salvarVerifDraft({ cpf, tipoDoc, frenteFeita, versoFeita })
   }, [cpf, tipoDoc, frenteFeita, versoFeita])
 
-  // Restaura selfie do draft quando userId e tokenAtual ficam disponíveis
   useEffect(() => {
     if (!userId || !tokenAtual) return
     const savedDraft = carregarVerifDraft()
@@ -249,7 +143,6 @@ function Verificacao() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, tokenAtual])
 
-  // Auto-submit após liveness concluído (aguarda userId e tokenAtual estarem prontos)
   useEffect(() => {
     if (livenessOk && selfieFileRef.current && userId && tokenAtual) {
       enviarVerificacao()
@@ -277,7 +170,6 @@ function Verificacao() {
     }
     setStatus('aguardando')
 
-    // Checar se já existe token válido antes de gerar novo — preserva rate limit
     const agora = new Date().toISOString()
     const { data: tokenExistente } = await supabase
       .from('verification_tokens')
@@ -288,7 +180,6 @@ function Verificacao() {
       .maybeSingle()
 
     if (tokenExistente) {
-      // Token válido existe — redirecionar direto para a verificação de rosto
       router.replace(`/verificacao?token=${tokenExistente.token}`)
       return
     }
@@ -431,12 +322,8 @@ function Verificacao() {
     setLivenessOk(false)
     piscarContRef.current = 0
     olhosAbertosRef.current = true
-    // ✅ CORREÇÃO: renderizar o elemento <video> ANTES de iniciarCamera
-    // Se livenessIniciado=false, o <video ref={videoSelfieRef}> não existe no DOM,
-    // então videoSelfieRef.current é null e o stream nunca é atribuído ao elemento.
     setLivenessIniciado(true)
     setFeedbackLiveness('Iniciando câmera...')
-    // Aguarda React renderizar o elemento <video> no DOM
     await new Promise(r => setTimeout(r, 80))
     await iniciarCamera('selfie')
     setDeteccaoAtiva(true)
@@ -485,9 +372,6 @@ function Verificacao() {
     let condicaoOk = false
 
     if (passoId === 'direita') {
-      // Vídeo tem transform: scaleX(-1) no CSS (espelhado para o usuário).
-      // face-api lê pixels brutos SEM espelhamento.
-      // Virar para a direita fisicamente → nariz move para a ESQUERDA nos pixels brutos.
       const nose = landmarks.getNose()
       const jaw = landmarks.getJawOutline()
       const noseTip = nose[3]
@@ -500,8 +384,6 @@ function Verificacao() {
     }
 
     if (passoId === 'esquerda') {
-      // Video CSS-mirrored (scaleX(-1)): olhar para a esquerda fisicamente
-      // → nariz move para a DIREITA nos pixels brutos (x aumenta)
       const nose = landmarks.getNose()
       const jaw = landmarks.getJawOutline()
       const noseTip = nose[3]
@@ -527,29 +409,21 @@ function Verificacao() {
     }
 
     if (passoId === 'piscar') {
-      // EAR (Eye Aspect Ratio): (dist(p1,p5) + dist(p2,p4)) / (2 * dist(p0,p3))
-      // Tolerante: limiar baixo para capturar piscadas rápidas e lentas
       const leftEye  = landmarks.getLeftEye()
       const rightEye = landmarks.getRightEye()
       const ear = (calcularEAR(leftEye) + calcularEAR(rightEye)) / 2
 
       if (ear < 0.22 && olhosAbertosRef.current) {
-        // Olhos fecharam — qualquer velocidade conta
         olhosAbertosRef.current = false
         piscarContRef.current += 1
         setFeedbackLiveness('Piscada detectada!')
       } else if (ear > 0.27) {
-        // Olhos abriram — pronto para próxima piscada
         olhosAbertosRef.current = true
       }
       if (piscarContRef.current >= 1) { condicaoOk = true }
-      // Sem holdCount para piscar — a maquina de estado ja garante precisao
     }
 
     if (passoId === 'sorriso') {
-      // getMouth() retorna 20 pontos: outer (0-11) + inner (12-19)
-      // mouth[0] = canto esquerdo outer, mouth[6] = canto direito outer
-      // mouth[3] = labio superior centro, mouth[9] = labio inferior centro
       const mouth = landmarks.getMouth()
       const mouthWidth  = dist(mouth[0], mouth[6])
       const mouthHeight = dist(mouth[3], mouth[9])
@@ -558,7 +432,6 @@ function Verificacao() {
       else { holdCountRef.current = 0; setFeedbackLiveness('Sorria mostrando os dentes!') }
     }
 
-    // Exige 3 frames consecutivos para confirmar posicao (nao se aplica ao piscar)
     if (passoId !== 'piscar') {
       if (condicaoOk) {
         holdCountRef.current += 1
@@ -596,16 +469,6 @@ function Verificacao() {
     }
   }
 
-  const calcularEAR = (pontos: { x: number; y: number }[]) => {
-    const A = dist(pontos[1], pontos[5])
-    const B = dist(pontos[2], pontos[4])
-    const C = dist(pontos[0], pontos[3])
-    return (A + B) / (2.0 * C)
-  }
-
-  const dist = (a: { x: number; y: number }, b: { x: number; y: number }) =>
-    Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2))
-
   const capturarSelfieFinal = () => {
     const video = videoSelfieRef.current
     const canvas = canvasSelfieRef.current
@@ -618,13 +481,12 @@ function Verificacao() {
       const file = new File([blob], 'selfie.jpg', { type: 'image/jpeg' })
       const url = URL.createObjectURL(blob)
       pararCamera('selfie')
-      selfieFileRef.current = file  // sincroniza ref antes de atualizar estado
+      selfieFileRef.current = file
       setSelfieFile(file)
       setSelfiePreview(url)
       setLivenessOk(true)
       setDeteccaoAtiva(false)
       setFeedbackLiveness('Verificação concluída!')
-      // Persiste selfie no draft para não precisar refazer liveness se a página fechar
       const reader = new FileReader()
       reader.onloadend = () => {
         try {
@@ -639,8 +501,6 @@ function Verificacao() {
   // ─── Upload e envio ──────────────────────────────────────────────────────────
 
   const uploadArquivo = async (file: File, caminho: string) => {
-    // ✅ CORREÇÃO CRÍTICA: upload via API route com service role
-    // Antes: supabase.storage com anon key sem sessão → RLS bloqueava silenciosamente
     const form = new FormData()
     form.append('file', file)
     form.append('caminho', caminho)
@@ -654,7 +514,6 @@ function Verificacao() {
     return caminho
   }
 
-  // Upload imediato ao tirar/selecionar foto de documento
   const uploadDocImediato = async (file: File, tipo: 'frente' | 'verso') => {
     if (!userId || !tokenAtual) {
       setErroForm('Erro de sessão. Recarregue a página e tente novamente.')
@@ -668,7 +527,6 @@ function Verificacao() {
       if (tipo === 'frente') {
         setFrenteFeita(true)
         setFrenteUploadFalhou(false)
-        // Auto-avança para o próximo passo após 800ms (tempo para ver o banner verde)
         setTimeout(() => {
           setStatus(prev => prev === 'doc_frente' ? (tipoDoc === 'cpf_doc' ? 'selfie' : 'doc_verso') : prev)
         }, 800)
@@ -698,8 +556,6 @@ function Verificacao() {
     if (!selfieFile) { setErroForm('Conclua a verificação de rosto antes de continuar.'); return }
     setStatus('enviando')
 
-    // Timeout de 60s por operação — evita spinner infinito em conexões instáveis
-    // function declaration (não arrow) para evitar parse ambíguo de <T> como JSX em .tsx
     function comTimeout<T>(p: Promise<T>): Promise<T> {
       return Promise.race([
         p,
@@ -709,7 +565,6 @@ function Verificacao() {
       ])
     }
 
-    // Upload frente — pula se já foi enviado antes
     if (!frenteFeita && docFrente) {
       try {
         await comTimeout(uploadArquivo(docFrente, `${userId}/frente.jpg`))
@@ -721,7 +576,6 @@ function Verificacao() {
       }
     }
 
-    // Upload verso — pula se já foi enviado antes
     if (!versoFeita && docVerso) {
       try {
         await comTimeout(uploadArquivo(docVerso, `${userId}/verso.jpg`))
@@ -817,7 +671,7 @@ function Verificacao() {
       <div>
         <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden', backgroundColor: '#111', marginBottom: '12px' }}>
           <video ref={videoRef} autoPlay playsInline muted style={{ width: '100%', borderRadius: '16px', display: cameraAtiva ? 'block' : 'none', maxHeight: '200px', objectFit: 'cover' }} />
-          {!cameraAtiva && <div style={{ padding: '40px', textAlign: 'center' }}><div style={{ fontSize: '36px' }}>⏳</div><p style={{ color: '#aaa', fontSize: '13px', marginTop: '8px' }}>Abrindo câmera...</p></div>}
+          {!cameraAtiva && <div style={{ padding: '40px', textAlign: 'center' }}><div style={{ fontSize: '36px' }}>&#x23F3;</div><p style={{ color: '#aaa', fontSize: '13px', marginTop: '8px' }}>Abrindo câmera...</p></div>}
           {cameraAtiva && (
             <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '80%', height: '70%', border: '2px dashed rgba(255,255,255,0.6)', borderRadius: '8px', pointerEvents: 'none' }}>
               <div style={{ position: 'absolute', top: '-18px', left: '50%', transform: 'translateX(-50%)', backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: '8px', padding: '2px 8px' }}>
@@ -847,7 +701,7 @@ function Verificacao() {
           <label style={{ display: 'block', border: '2px dashed var(--border)', borderRadius: '16px', padding: '24px', cursor: 'pointer', textAlign: 'center' }}>
             <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" style={{ display: 'none' }} onChange={e => e.target.files?.[0] && handleArquivo(e.target.files[0], tipo)} />
             <FolderOpen size={36} color="var(--muted)" strokeWidth={1.5} />
-            <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '8px' }}>Toque para selecionar arquivo<br /><span style={{ fontSize: '11px' }}>JPG, PNG, WEBP ou PDF (máx. 10MB)</span></p>
+            <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '8px' }}>Toque para selecionar arquivo<br /><span style={{ fontSize: '11px' }}>JPG, PNG, WEBP ou PDF (max. 10MB)</span></p>
           </label>
         )}
         {arquivo && (
@@ -856,7 +710,7 @@ function Verificacao() {
             <span style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}><RefreshCw size={13} /> Trocar arquivo</span>
           </label>
         )}
-        <button onClick={() => setModo('escolha')} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '10px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer', marginTop: '8px' }}>← Voltar às opções</button>
+        <button onClick={() => setModo('escolha')} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '10px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer', marginTop: '8px' }}>&#x2190; Voltar as opcoes</button>
       </div>
     )
   }
@@ -875,7 +729,7 @@ function Verificacao() {
           <div style={{ width: '56px', height: '56px', borderRadius: '16px', backgroundColor: 'var(--accent-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><ScanFace size={32} color="var(--accent)" strokeWidth={1.5} /></div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Use o celular</h2>
           <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7' }}>
-            A verificação só pode ser feita pelo celular.<br /><br />
+            A verificacao so pode ser feita pelo celular.<br /><br />
             Abra o email que enviamos e toque em <strong style={{ color: 'var(--accent)' }}>Verificar identidade</strong> no seu celular.
           </p>
         </>)}
@@ -885,11 +739,11 @@ function Verificacao() {
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Verifique seu email</h2>
           {emailEnviado
             ? <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>Enviamos um link para o seu email. <strong style={{ color: 'var(--text)' }}>Abra no celular</strong> para concluir.<br /><br />O link expira em <strong style={{ color: 'var(--accent)' }}>30 minutos</strong>.</p>
-            : <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '24px' }}>Enviando o link de verificação...</p>
+            : <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '24px' }}>Enviando o link de verificacao...</p>
           }
           <div style={{ backgroundColor: 'var(--accent-light)', borderRadius: '12px', padding: '14px', marginBottom: '20px' }}>
             <p style={{ fontSize: '13px', color: 'var(--accent)', fontWeight: '600' }}>Abra o link no celular</p>
-            <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>A selfie ao vivo só funciona no celular.</p>
+            <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px' }}>A selfie ao vivo so funciona no celular.</p>
           </div>
           {erroEmail && <p style={{ color: '#ef4444', fontSize: '13px', marginBottom: '12px', fontWeight: '600' }}>{erroEmail}</p>}
           {emailEnviado && <button onClick={reenviarEmail} style={{ backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '10px 24px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Reenviar email</button>}
@@ -915,9 +769,9 @@ function Verificacao() {
             </div>
           </div>
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
-          <button onClick={() => { const c = cpf.replace(/\D/g,''); if (!validarCPF(c)) { setErroForm('CPF inválido. Verifique os dígitos.'); return } setErroForm(''); setStatus('doc_frente') }}
+          <button onClick={() => { const c = cpf.replace(/\D/g,''); if (!validarCPF(c)) { setErroForm('CPF invalido. Verifique os digitos.'); return } setErroForm(''); setStatus('doc_frente') }}
             style={{ width: '100%', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '20px' }}>
-            Próximo →
+            Proximo &#x2192;
           </button>
         </>)}
 
@@ -937,11 +791,11 @@ function Verificacao() {
               <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Enviando foto...</p>
             </div>
           )}
-          {dicas(['Fundo liso, de preferência branco ou claro', 'Boa iluminação: evite sombras e reflexos', 'Documento inteiro visível, sem cortar bordas', 'Sem acessórios cobrindo o documento', 'Imagem nítida e sem borrão'])}
+          {dicas(['Fundo liso, de preferencia branco ou claro', 'Boa iluminacao: evite sombras e reflexos', 'Documento inteiro visivel, sem cortar bordas', 'Sem acessorios cobrindo o documento', 'Imagem nitida e sem borrao'])}
           {botoesCaptura('frente', modoFrente, setModoFrente, docFrentePreview, docFrente, cameraFrenteAtiva, videoFrenteRef, canvasFrenteRef)}
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
           <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-            <button onClick={() => { pararCamera('frente'); setStatus('dados') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
+            <button onClick={() => { pararCamera('frente'); setStatus('dados') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>&#x2190; Voltar</button>
             <button
               disabled={frenteUploadando}
               onClick={() => {
@@ -952,7 +806,7 @@ function Verificacao() {
                 setErroForm(''); setStatus(tipoDoc === 'cpf_doc' ? 'selfie' : 'doc_verso')
               }}
               style={{ flex: 2, backgroundColor: frenteUploadando ? 'var(--border)' : 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: frenteUploadando ? 'not-allowed' : 'pointer' }}>
-              {frenteUploadando ? 'Enviando...' : frenteUploadFalhou ? 'Tentar enviar novamente' : 'Próximo →'}
+              {frenteUploadando ? 'Enviando...' : frenteUploadFalhou ? 'Tentar enviar novamente' : 'Proximo \u2192'}
             </button>
           </div>
         </>)}
@@ -973,11 +827,11 @@ function Verificacao() {
               <p style={{ fontSize: '13px', color: 'var(--muted)', margin: 0 }}>Enviando foto...</p>
             </div>
           )}
-          {dicas(['Fundo liso, de preferência branco ou claro', 'Boa iluminação: evite sombras e reflexos', 'Documento inteiro visível, sem cortar bordas', 'Imagem nítida e sem borrão'])}
+          {dicas(['Fundo liso, de preferencia branco ou claro', 'Boa iluminacao: evite sombras e reflexos', 'Documento inteiro visivel, sem cortar bordas', 'Imagem nitida e sem borrao'])}
           {botoesCaptura('verso', modoVerso, setModoVerso, docVersoPreview, docVerso, cameraVersoAtiva, videoVersoRef, canvasVersoRef)}
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
           <div style={{ display: 'flex', gap: '8px', marginTop: '16px' }}>
-            <button onClick={() => { pararCamera('verso'); setStatus('doc_frente') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
+            <button onClick={() => { pararCamera('verso'); setStatus('doc_frente') }} style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>&#x2190; Voltar</button>
             <button
               disabled={versoUploadando}
               onClick={() => {
@@ -988,15 +842,15 @@ function Verificacao() {
                 setErroForm(''); setStatus('selfie')
               }}
               style={{ flex: 2, backgroundColor: versoUploadando ? 'var(--border)' : 'var(--accent)', color: '#fff', border: 'none', borderRadius: '100px', padding: '12px', fontSize: '14px', fontWeight: '700', cursor: versoUploadando ? 'not-allowed' : 'pointer' }}>
-              {versoUploadando ? 'Enviando...' : versoUploadFalhou ? 'Tentar enviar novamente' : 'Próximo →'}
+              {versoUploadando ? 'Enviando...' : versoUploadFalhou ? 'Tentar enviar novamente' : 'Proximo \u2192'}
             </button>
           </div>
         </>)}
 
         {status === 'selfie' && card(<>
           {passos(totalPassos)}
-          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Verificação facial</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo {totalPassos} de {totalPassos}: confirmação de identidade</p>
+          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '20px', color: 'var(--text)', marginBottom: '4px' }}>Verificacao facial</h2>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginBottom: '16px' }}>Passo {totalPassos} de {totalPassos}: confirmacao de identidade</p>
 
           {!livnessIniciado && !livenessOk && (
             <>
@@ -1014,7 +868,7 @@ function Verificacao() {
               <div style={{ backgroundColor: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.25)', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', textAlign: 'left' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Lightbulb size={13} color="var(--gold)" strokeWidth={2} />
-                  <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Boa iluminação, rosto descoberto, fundo neutro.</p>
+                  <p style={{ fontSize: '12px', color: 'var(--muted)', margin: 0 }}>Boa iluminacao, rosto descoberto, fundo neutro.</p>
                 </div>
               </div>
               {feedbackLiveness && (
@@ -1026,7 +880,7 @@ function Verificacao() {
                 </button>
               ) : (
                 <button onClick={iniciarLiveness} style={{ width: '100%', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>
-                  Iniciar verificação facial
+                  Iniciar verificacao facial
                 </button>
               )}
             </>
@@ -1034,7 +888,6 @@ function Verificacao() {
 
           {livnessIniciado && !livenessOk && (
             <>
-              {/* Progresso: bolinhas pequenas */}
               <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', justifyContent: 'center', alignItems: 'center' }}>
                 {PASSOS_LIVENESS.map((_, i) => (
                   <div key={i} style={{
@@ -1047,7 +900,6 @@ function Verificacao() {
                 ))}
               </div>
 
-              {/* Ícone grande do passo atual */}
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', backgroundColor: 'var(--accent-light)', borderRadius: '16px', padding: '20px 12px 16px', marginBottom: '12px', border: '1px solid var(--accent-border)' }}>
                 <div style={{ color: 'var(--accent)', marginBottom: '12px' }}>
                   {LIVENESS_ICON[PASSOS_LIVENESS[passoAtual]?.id]}
@@ -1059,7 +911,7 @@ function Verificacao() {
                   Passo {passoAtual + 1} de {PASSOS_LIVENESS.length}
                 </p>
                 {feedbackLiveness && (
-                  <p style={{ fontSize: '13px', color: feedbackLiveness.startsWith('✅') ? 'var(--accent)' : 'var(--muted)', fontWeight: '500' }}>
+                  <p style={{ fontSize: '13px', color: feedbackLiveness.startsWith('\u2705') ? 'var(--accent)' : 'var(--muted)', fontWeight: '500' }}>
                     {feedbackLiveness}
                   </p>
                 )}
@@ -1075,11 +927,8 @@ function Verificacao() {
                         <ellipse cx="150" cy="185" rx="90" ry="120" fill="black" />
                       </mask>
                     </defs>
-                    {/* Fundo escurecido fora do oval */}
                     <rect width="300" height="400" fill="rgba(0,0,0,0.55)" mask="url(#oval-cutout)" />
-                    {/* Borda do oval */}
                     <ellipse cx="150" cy="185" rx="90" ry="120" fill="none" stroke="rgba(225,29,72,0.9)" strokeWidth="2.5" />
-                    {/* Marcadores de canto */}
                     <path d="M78 100 Q60 100 60 118" fill="none" stroke="#E11D48" strokeWidth="3" strokeLinecap="round" />
                     <path d="M222 100 Q240 100 240 118" fill="none" stroke="#E11D48" strokeWidth="3" strokeLinecap="round" />
                     <path d="M78 270 Q60 270 60 252" fill="none" stroke="#E11D48" strokeWidth="3" strokeLinecap="round" />
@@ -1089,14 +938,14 @@ function Verificacao() {
                 {!cameraSelfieAtiva && (
                   <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px' }}>
                     <div style={{ width: '28px', height: '28px', border: '3px solid var(--border)', borderTop: '3px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.8s linear infinite', marginBottom: '12px' }} />
-                    <p style={{ color: '#aaa', fontSize: '13px' }}>Abrindo câmera...</p>
+                    <p style={{ color: '#aaa', fontSize: '13px' }}>Abrindo camera...</p>
                   </div>
                 )}
               </div>
               <canvas ref={canvasSelfieRef} style={{ display: 'none' }} />
 
               <button onClick={reiniciarLiveness} style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '12px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                <RefreshCw size={14} /> Reiniciar verificação
+                <RefreshCw size={14} /> Reiniciar verificacao
               </button>
             </>
           )}
@@ -1104,7 +953,7 @@ function Verificacao() {
           {livenessOk && selfiePreview && (
             <>
               <div style={{ backgroundColor: 'var(--accent-light)', border: '1px solid var(--accent-border)', borderRadius: '12px', padding: '12px', marginBottom: '12px' }}>
-                <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}><Check size={16} /> Verificação facial concluída!</p>
+                <p style={{ fontSize: '14px', fontWeight: '700', color: 'var(--accent)', display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'center' }}><Check size={16} /> Verificacao facial concluida!</p>
                 {!erroForm && <p style={{ fontSize: '12px', color: 'var(--muted)', marginTop: '4px', textAlign: 'center' }}>Enviando dados...</p>}
               </div>
               <img src={selfiePreview} alt="selfie" style={{ width: '100%', borderRadius: '16px', marginBottom: '12px', maxHeight: '240px', objectFit: 'cover' }} />
@@ -1113,11 +962,11 @@ function Verificacao() {
                   <p style={{ color: 'var(--red)', fontSize: '13px', marginBottom: '12px' }}>{erroForm}</p>
                   <button onClick={enviarVerificacao}
                     style={{ width: '100%', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginBottom: '8px' }}>
-                    Tentar novamente →
+                    Tentar novamente &#x2192;
                   </button>
                   <button onClick={reiniciarLiveness}
                     style={{ width: '100%', backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '11px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>
-                    Refazer verificação facial
+                    Refazer verificacao facial
                   </button>
                 </>
               )}
@@ -1127,7 +976,7 @@ function Verificacao() {
           {!livenessOk && (
             <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
               <button onClick={() => { reiniciarLiveness(); setStatus(tipoDoc === 'cpf_doc' ? 'doc_frente' : 'doc_verso') }}
-                style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>← Voltar</button>
+                style={{ flex: 1, backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '12px', fontSize: '14px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>&#x2190; Voltar</button>
             </div>
           )}
         </>)}
@@ -1135,12 +984,11 @@ function Verificacao() {
         {status === 'enviando' && <div>
           <div style={{ width: '56px', height: '56px', border: '5px solid var(--accent)', borderTop: '5px solid transparent', borderRadius: '50%', margin: '0 auto 20px', animation: 'spin 1s linear infinite' }} />
           <p style={{ color: 'var(--muted)', fontSize: '15px' }}>Enviando documentos...</p>
-          <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '8px' }}>Não feche esta tela.</p>
-          <p style={{ color: 'var(--muted-2)', fontSize: '12px', marginTop: '24px' }}>Isso pode levar até 1 minuto em conexões lentas.</p>
+          <p style={{ color: 'var(--muted)', fontSize: '13px', marginTop: '8px' }}>Nao feche esta tela.</p>
+          <p style={{ color: 'var(--muted-2)', fontSize: '12px', marginTop: '24px' }}>Isso pode levar ate 1 minuto em conexoes lentas.</p>
         </div>}
 
         {status === 'sucesso' && card(<>
-          {/* Selo azul de verificação */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
             <div style={{ position: 'relative', width: '88px', height: '88px' }}>
               <svg viewBox="0 0 88 88" width="88" height="88">
@@ -1150,14 +998,10 @@ function Verificacao() {
                     <stop offset="100%" stopColor="#1D4ED8" />
                   </linearGradient>
                 </defs>
-                {/* Escudo arredondado */}
                 <path d="M44 6 L76 18 L76 44 C76 61 62 75 44 82 C26 75 12 61 12 44 L12 18 Z" fill="url(#sealGrad)" />
-                {/* Brilho superior */}
                 <path d="M44 10 L72 20 L72 42 C72 57 60 70 44 77" fill="none" stroke="rgba(255,255,255,0.2)" strokeWidth="1.5" />
-                {/* Checkmark */}
                 <polyline points="28,44 38,54 60,32" fill="none" stroke="white" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              {/* Brilho animado */}
               <div style={{ position: 'absolute', inset: 0, borderRadius: '50%', background: 'radial-gradient(circle at 30% 30%, rgba(37,99,235,0.25) 0%, transparent 70%)', animation: 'pulse 2s ease-in-out infinite' }} />
             </div>
           </div>
@@ -1166,23 +1010,23 @@ function Verificacao() {
             <svg width="12" height="12" viewBox="0 0 88 88"><path d="M44 6 L76 18 L76 44 C76 61 62 75 44 82 C26 75 12 61 12 44 L12 18 Z" fill="#2563EB" /><polyline points="28,44 38,54 60,32" fill="none" stroke="white" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round" /></svg>
             <span style={{ fontSize: '12px', fontWeight: '700', color: '#60A5FA' }}>Perfil verificado</span>
           </div>
-          <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7' }}>Sua identidade foi confirmada com sucesso. Agora complete o seu perfil para começar.<br /><br />Redirecionando...</p>
+          <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7' }}>Sua identidade foi confirmada com sucesso. Agora complete o seu perfil para comecar.<br /><br />Redirecionando...</p>
           <div style={{ width: '48px', height: '48px', border: '4px solid var(--accent)', borderTop: '4px solid transparent', borderRadius: '50%', margin: '24px auto 0', animation: 'spin 1s linear infinite' }} />
-          <button onClick={() => { window.location.href = '/onboarding' }} style={{ marginTop: '20px', backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '10px 24px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Continuar →</button>
+          <button onClick={() => { window.location.href = '/onboarding' }} style={{ marginTop: '20px', backgroundColor: 'transparent', border: '1.5px solid rgba(255,255,255,0.06)', borderRadius: '100px', padding: '10px 24px', fontSize: '13px', color: 'var(--muted)', fontWeight: '600', cursor: 'pointer' }}>Continuar &#x2192;</button>
           <style>{`@keyframes pulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }`}</style>
         </>)}
 
         {status === 'expirado' && card(<>
           <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(245,158,11,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><AlertCircle size={28} color="var(--gold)" strokeWidth={1.5} /></div>
           <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Link expirado</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>Este link expirou. Faça login para receber um novo.</p>
+          <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>Este link expirou. Faca login para receber um novo.</p>
           <button onClick={() => router.push('/login')} style={{ background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>Fazer login</button>
         </>)}
 
         {status === 'usado' && card(<>
           <div style={{ width: '56px', height: '56px', borderRadius: '50%', backgroundColor: 'rgba(245,158,11,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}><AlertCircle size={28} color="var(--gold)" strokeWidth={1.5} /></div>
-          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Link já utilizado</h2>
-          <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>Este link já foi usado. Faça login para receber um novo.</p>
+          <h2 style={{ fontFamily: 'var(--font-fraunces)', fontSize: '22px', color: 'var(--text)', marginBottom: '12px' }}>Link ja utilizado</h2>
+          <p style={{ color: 'var(--muted)', fontSize: '14px', lineHeight: '1.7', marginBottom: '24px' }}>Este link ja foi usado. Faca login para receber um novo.</p>
           <button onClick={() => router.push('/login')} style={{ background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px 32px', fontSize: '15px', fontWeight: '700', cursor: 'pointer' }}>Fazer login</button>
         </>)}
 

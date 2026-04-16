@@ -1,311 +1,24 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { usePlan } from '@/hooks/usePlan'
 import { useRouter } from 'next/navigation'
 import {
-  Star, Zap, ArrowLeft, CheckCircle, Loader2, ShoppingBag,
-  Search, RotateCcw, Coins, Plus, Ghost, Eye, Gift, BadgeCheck,
-  TrendingUp, X, Package, ChevronRight, ChevronDown, Backpack, Crown, Ticket, Video,
+  ArrowLeft, CheckCircle, ShoppingBag,
+  Search, RotateCcw, Coins, Plus, Ghost, Eye, TrendingUp,
+  Star, Zap, Gift, BadgeCheck, Package, ChevronDown, Backpack, Ticket, Video, Crown,
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
 import { useSounds } from '@/hooks/useSounds'
 import CheckoutModal from '@/components/CheckoutModal'
-
-// ─── Pacotes de fichas ────────────────────────────────────────────────────
-const FICHAS_PACKAGES = [
-  { label: '50 fichas',   price: 'R$ 5,97',  amountCents: 597,  qtd: 50,  highlight: false, tag: null,         packageId: 'fichas_50' },
-  { label: '150 fichas',  price: 'R$ 14,97', amountCents: 1497, qtd: 150, highlight: true,  tag: 'Mais popular', packageId: 'fichas_150' },
-  { label: '400 fichas',  price: 'R$ 34,97', amountCents: 3497, qtd: 400, highlight: false, tag: null,         packageId: 'fichas_400' },
-  { label: '900 fichas',  price: 'R$ 59,97', amountCents: 5997, qtd: 900, highlight: false, tag: 'Melhor valor', packageId: 'fichas_900' },
-]
-
-// ─── Itens compraveis com fichas ──────────────────────────────────────────
-type ItemKey =
-  | 'superlike' | 'boost' | 'lupa' | 'rewind'
-  | 'ghost_7d' | 'ghost_35d'
-  | 'reveals_5' | 'xp_bonus_3d' | 'verified_plus' | 'caixa_surpresa' | 'caixa_lendaria'
-  | 'passaporte_camarote'
-  | 'live_1h' | 'live_5h' | 'live_15h' | 'live_30h'
-
-interface StoreItem {
-  key: ItemKey
-  label: string
-  description: string
-  unit: string           // ex: "SuperLike", "Boost", "perfis revelados"
-  icon: React.ReactNode
-  baseFichas: number     // preco por unidade
-  accentColor: string
-  blackOnly?: boolean
-  accentBg: string
-  accentBorder: string
-  balanceKey?: string
-  maxQty: number         // maximo selecionavel
-  new?: boolean
-}
-
-const STORE_ITEMS: StoreItem[] = [
-  {
-    key: 'superlike', label: 'SuperCurtida', description: 'Se destaque para quem você mais quer',
-    unit: 'SuperCurtida',
-    icon: <Star size={20} strokeWidth={1.5} />, baseFichas: 30, maxQty: 10,
-    accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.25)',
-    balanceKey: 'superlikes',
-  },
-  {
-    key: 'boost', label: 'Boost', description: '1 hora em destaque na sua região',
-    unit: 'Boost',
-    icon: <Zap size={20} strokeWidth={1.5} />, baseFichas: 40, maxQty: 5,
-    accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
-    balanceKey: 'boosts',
-  },
-  {
-    key: 'lupa', label: 'Lupa', description: 'Revele perfis borrados na aba Destaque',
-    unit: 'Lupa',
-    icon: <Search size={20} strokeWidth={1.5} />, baseFichas: 25, maxQty: 10,
-    accentColor: '#3b82f6', accentBg: 'rgba(59,130,246,0.10)', accentBorder: 'rgba(59,130,246,0.25)',
-    balanceKey: 'lupas',
-  },
-  {
-    key: 'rewind', label: 'Desfazer', description: 'Volte atrás em perfis que passou',
-    unit: 'Desfazer',
-    icon: <RotateCcw size={20} strokeWidth={1.5} />, baseFichas: 20, maxQty: 10,
-    accentColor: '#a855f7', accentBg: 'rgba(168,85,247,0.10)', accentBorder: 'rgba(168,85,247,0.25)',
-    balanceKey: 'rewinds',
-  },
-  {
-    key: 'ghost_7d', label: 'Fantasma 7 dias', description: 'Fique invisível nas buscas por 7 dias',
-    unit: 'ativação',
-    icon: <Ghost size={20} strokeWidth={1.5} />, baseFichas: 60, maxQty: 1,
-    accentColor: '#6b7280', accentBg: 'rgba(107,114,128,0.10)', accentBorder: 'rgba(107,114,128,0.25)',
-    balanceKey: 'ghost',
-  },
-  {
-    key: 'ghost_35d', label: 'Fantasma 35 dias', description: 'Invisibilidade por mais de um mês',
-    unit: 'ativação',
-    icon: <Ghost size={20} strokeWidth={1.5} />, baseFichas: 220, maxQty: 1,
-    accentColor: '#6b7280', accentBg: 'rgba(107,114,128,0.10)', accentBorder: 'rgba(107,114,128,0.25)',
-    balanceKey: 'ghost',
-  },
-  {
-    key: 'reveals_5', label: 'Ver quem curtiu', description: 'Revela todos os perfis que curtiram você por 24 horas',
-    unit: 'acesso (24h)',
-    icon: <Eye size={20} strokeWidth={1.5} />, baseFichas: 50, maxQty: 5,
-    accentColor: '#ec4899', accentBg: 'rgba(236,72,153,0.10)', accentBorder: 'rgba(236,72,153,0.25)',
-    new: true,
-  },
-  {
-    key: 'xp_bonus_3d', label: 'Bônus de XP (7 dias)', description: 'Ganhe o dobro de XP em tudo por 7 dias',
-    unit: 'ativação',
-    icon: <TrendingUp size={20} strokeWidth={1.5} />, baseFichas: 100, maxQty: 1,
-    accentColor: '#10b981', accentBg: 'rgba(16,185,129,0.10)', accentBorder: 'rgba(16,185,129,0.25)',
-    new: true,
-  },
-  {
-    key: 'verified_plus', label: 'Selo Verificado Plus', description: 'Selo especial exibido no seu perfil para sempre',
-    unit: 'ativação',
-    icon: <BadgeCheck size={20} strokeWidth={1.5} />, baseFichas: 200, maxQty: 1,
-    accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.25)',
-    new: true,
-  },
-  {
-    key: 'caixa_surpresa', label: 'Caixa Surpresa', description: 'Prêmio aleatório, pode ser raro!',
-    unit: 'caixa',
-    icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 35, maxQty: 5,
-    accentColor: '#8b5cf6', accentBg: 'rgba(139,92,246,0.10)', accentBorder: 'rgba(139,92,246,0.25)',
-    new: true,
-  },
-  {
-    key: 'caixa_lendaria', label: 'Caixa Super Lendária', description: 'Recompensas exclusivas e raras, itens que não existem em outro lugar',
-    unit: 'caixa',
-    icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 2250, maxQty: 1,
-    accentColor: '#F59E0B', accentBg: 'rgba(139,92,246,0.15)', accentBorder: 'rgba(245,158,11,0.50)',
-    new: true,
-  },
-  {
-    key: 'live_1h', label: 'Tempo Live +1h', description: '1 hora extra de videochamada',
-    unit: 'hora',
-    icon: <Video size={20} strokeWidth={1.5} />, baseFichas: 40, maxQty: 10,
-    accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
-    new: true,
-  },
-  {
-    key: 'live_5h', label: 'Tempo Live +5h', description: '5 horas extras de videochamada',
-    unit: 'pacote',
-    icon: <Video size={20} strokeWidth={1.5} />, baseFichas: 170, maxQty: 5,
-    accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
-    new: true,
-  },
-  {
-    key: 'live_15h', label: 'Tempo Live +15h', description: '15 horas extras de videochamada',
-    unit: 'pacote',
-    icon: <Video size={20} strokeWidth={1.5} />, baseFichas: 350, maxQty: 3,
-    accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
-    new: true,
-  },
-  {
-    key: 'live_30h', label: 'Tempo Live +30h', description: '30 horas extras de videochamada',
-    unit: 'pacote',
-    icon: <Video size={20} strokeWidth={1.5} />, baseFichas: 600, maxQty: 2,
-    accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
-    new: true,
-  },
-  {
-    key: 'passaporte_camarote', label: 'Passaporte Camarote', description: 'Acesso ao Camarote por 30 dias: Sugar, Fetiche e salas VIP',
-    unit: 'acesso (30 dias)',
-    icon: <Crown size={20} strokeWidth={1.5} />, baseFichas: 70, maxQty: 1,
-    accentColor: '#F59E0B', accentBg: 'rgba(245,158,11,0.10)', accentBorder: 'rgba(245,158,11,0.30)',
-    blackOnly: true,
-    new: true,
-  },
-]
-
-// ─── Config visual dos premios da caixa surpresa ─────────────────────────
-const SURPRESA_CONFIG: Record<string, { label: string; color: string; bg: string; icon: React.ReactNode }> = {
-  fichas:        { label: 'Fichas',           color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <Coins size={44} color="#F59E0B" strokeWidth={1.5} /> },
-  ticket:        { label: 'Fichas',           color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <Coins size={44} color="#F59E0B" strokeWidth={1.5} /> },
-  supercurtida:  { label: 'SuperCurtida',     color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <Star size={44} color="#F59E0B" strokeWidth={1.5} /> },
-  boost:         { label: 'Boost',            color: '#E11D48', bg: 'rgba(225,29,72,0.15)',  icon: <Zap  size={44} color="#E11D48" strokeWidth={1.5} /> },
-  lupa:          { label: 'Lupa',             color: '#3b82f6', bg: 'rgba(59,130,246,0.15)', icon: <Search size={44} color="#3b82f6" strokeWidth={1.5} /> },
-  rewind:        { label: 'Desfazer',         color: '#a855f7', bg: 'rgba(168,85,247,0.15)', icon: <RotateCcw size={44} color="#a855f7" strokeWidth={1.5} /> },
-  invisivel_1d:  { label: '1 dia Invisível',  color: '#9ca3af', bg: 'rgba(107,114,128,0.15)',icon: <Ghost size={44} color="#9ca3af" strokeWidth={1.5} /> },
-  plan_plus_1d:  { label: '1 dia Plus',       color: '#10b981', bg: 'rgba(16,185,129,0.15)', icon: <BadgeCheck size={44} color="#10b981" strokeWidth={1.5} /> },
-  plan_black_1d: { label: '1 dia Black',      color: '#F59E0B', bg: 'rgba(245,158,11,0.15)', icon: <BadgeCheck size={44} color="#F59E0B" strokeWidth={1.5} /> },
-}
-
-// ─── Componente Sheet de confirmacao ─────────────────────────────────────
-
-function PurchaseSheet({
-  item,
-  qty,
-  fichas,
-  onConfirm,
-  onClose,
-  loading,
-}: {
-  item: StoreItem
-  qty: number
-  fichas: number
-  onConfirm: () => void
-  onClose: () => void
-  loading: boolean
-}) {
-  const total = item.baseFichas * qty
-  const canAfford = fichas >= total
-  const qtyLabel = qty > 1 ? `${qty}x ${item.unit}` : `1 ${item.unit}`
-
-  return (
-    <>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex: 40, backgroundColor: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)' }} />
-      <div style={{ position: 'fixed', inset: '0 0 0 0', zIndex: 50, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pointerEvents: 'none' }}>
-        <div style={{ pointerEvents: 'all', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: '20px 20px 0 0', borderTop: '1px solid rgba(255,255,255,0.06)', padding: '20px 20px 40px', animation: 'slideUp 0.25s ease-out' }}>
-          <div style={{ width: 36, height: 4, borderRadius: 100, backgroundColor: 'rgba(255,255,255,0.15)', margin: '0 auto 20px' }} />
-
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-            <div style={{ width: 52, height: 52, borderRadius: 14, backgroundColor: item.accentBg, border: `1px solid ${item.accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: item.accentColor, flexShrink: 0 }}>
-              {item.icon}
-            </div>
-            <div>
-              <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)', margin: 0 }}>{item.label}</p>
-              <p style={{ fontSize: 12, color: 'var(--muted)', margin: '3px 0 0' }}>{item.description}</p>
-            </div>
-            <button onClick={onClose} style={{ marginLeft: 'auto', width: 32, height: 32, borderRadius: 8, border: '1px solid rgba(255,255,255,0.06)', backgroundColor: 'transparent', color: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}>
-              <X size={15} strokeWidth={1.5} />
-            </button>
-          </div>
-
-          {/* Resumo */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', borderRadius: 14, backgroundColor: canAfford ? 'rgba(245,158,11,0.08)' : 'rgba(225,29,72,0.08)', border: `1px solid ${canAfford ? 'rgba(245,158,11,0.25)' : 'rgba(225,29,72,0.25)'}`, marginBottom: 12 }}>
-            <div>
-              <span style={{ fontSize: 13, color: 'var(--muted)' }}>Comprando</span>
-              <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--text)', margin: '2px 0 0' }}>{qtyLabel}</p>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <span style={{ fontSize: 13, color: 'var(--muted)' }}>Total</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, justifyContent: 'flex-end', marginTop: 2 }}>
-                <Coins size={15} color="#F59E0B" strokeWidth={1.5} />
-                <span style={{ fontSize: 18, fontWeight: 800, color: '#F59E0B' }}>{total}</span>
-                <span style={{ fontSize: 12, color: 'rgba(245,158,11,0.6)' }}>fichas</span>
-              </div>
-              {qty > 1 && <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.30)' }}>{item.baseFichas} cada</span>}
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-            <span style={{ fontSize: 13, color: 'var(--muted)' }}>Seu saldo</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-              <Coins size={13} color={canAfford ? '#F59E0B' : '#f87171'} strokeWidth={1.5} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: canAfford ? '#F59E0B' : '#f87171' }}>{fichas} fichas</span>
-            </div>
-          </div>
-
-          {canAfford ? (
-            <button
-              onClick={onConfirm}
-              disabled={loading}
-              style={{ width: '100%', padding: '16px', borderRadius: 14, border: 'none', background: loading ? 'rgba(225,29,72,0.40)' : 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: 15, fontWeight: 700, cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
-            >
-              {loading ? <Loader2 size={18} strokeWidth={1.5} style={{ animation: 'spin 0.8s linear infinite' }} /> : <Coins size={18} strokeWidth={1.5} />}
-              {loading ? 'Processando...' : `Confirmar (${total} fichas)`}
-            </button>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <p style={{ textAlign: 'center', fontSize: 13, color: '#f87171', margin: 0 }}>
-                Fichas insuficientes: faltam {total - fichas} fichas
-              </p>
-              <button onClick={onClose} style={{ width: '100%', padding: '14px', borderRadius: 14, border: '1px solid var(--accent-border)', backgroundColor: 'var(--accent-light)', color: 'var(--accent)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}>
-                Comprar fichas acima
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-    </>
-  )
-}
-
-// ─── Confetti canvas ──────────────────────────────────────────────────────
-function Confetti() {
-  const ref = useRef<HTMLCanvasElement>(null)
-  useEffect(() => {
-    const c = ref.current; if (!c) return
-    const ctx = c.getContext('2d')!
-    c.width = window.innerWidth; c.height = window.innerHeight
-    const COLS = ['#E11D48','#F59E0B','#10b981','#3b82f6','#a855f7','#F43F5E','#ffffff','#f97316','#06b6d4']
-    type P = { x:number; y:number; vx:number; vy:number; color:string; w:number; h:number; r:number; rv:number }
-    const ps: P[] = Array.from({ length: 130 }, () => ({
-      x: Math.random() * c.width,
-      y: -30 - Math.random() * 400,
-      vx: (Math.random() - 0.5) * 6,
-      vy: Math.random() * 3 + 2,
-      color: COLS[Math.floor(Math.random() * COLS.length)],
-      w: Math.random() * 12 + 5, h: Math.random() * 6 + 3,
-      r: Math.random() * Math.PI * 2, rv: (Math.random() - 0.5) * 0.14,
-    }))
-    let alive = true
-    const tick = () => {
-      if (!alive) return
-      ctx.clearRect(0, 0, c.width, c.height)
-      for (const p of ps) {
-        p.x += p.vx; p.y += p.vy; p.vy += 0.07; p.r += p.rv
-        if (p.y > c.height + 30) { p.y = -30; p.x = Math.random() * c.width; p.vy = Math.random() * 3 + 2 }
-        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r)
-        ctx.fillStyle = p.color; ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h)
-        ctx.restore()
-      }
-      requestAnimationFrame(tick)
-    }
-    tick()
-    return () => { alive = false }
-  }, [])
-  return <canvas ref={ref} style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 1 }} />
-}
-
-// ─── Pagina principal ─────────────────────────────────────────────────────
+import { FICHAS_PACKAGES, STORE_ITEMS, SURPRESA_CONFIG, StoreItem } from './_components/helpers'
+import { PurchaseSheet } from './_components/PurchaseSheet'
+import { Confetti } from './_components/Confetti'
+import { CountdownText } from './_components/CountdownText'
+import { BalanceItem } from './_components/BalanceItem'
 
 export default function LojaPage() {
   const { user } = useAuth()
@@ -451,7 +164,6 @@ export default function LojaPage() {
     ? Math.ceil((new Date(ghostModeUntil!).getTime() - Date.now()) / 86400000)
     : 0
 
-  // Config diaria do Pacote Lendario — varia bonus (20-70%) e caixas (1-2) por dia
   const lendariaConfig = (() => {
     const now = new Date()
     const day = now.getDate()
@@ -460,9 +172,7 @@ export default function LojaPage() {
     const bonus = bonusOpcoes[((day * 13) + (month * 7)) % bonusOpcoes.length]
     const caixas = day % 3 === 0 ? 2 : 1
     const fichas = Math.round(2700 * (1 + bonus / 100) / 100) * 100
-    // Semanas de pagamento: dias 1-7 e 21-27 do mes
     const isPaymentWeek = (day >= 1 && day <= 7) || (day >= 21 && day <= 27)
-    // Fora da semana: slot de 6h por dia baseado no dia/mes
     const slotStart = ((day * 13) + (month * 7)) % 18
     const currentHour = now.getHours()
     const isInSlot = currentHour >= slotStart && currentHour < slotStart + 6
@@ -478,7 +188,6 @@ export default function LojaPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--font-jakarta)', paddingBottom: '96px' }}>
 
-      {/* Header */}
       <header style={{ position: 'sticky', top: 0, zIndex: 30, backgroundColor: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(12px)', borderBottom: '1px solid rgba(255,255,255,0.06)', padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px' }}>
         <button
           onClick={() => router.back()}
@@ -495,7 +204,6 @@ export default function LojaPage() {
             <p style={{ fontSize: '11px', color: 'var(--muted)', margin: 0, marginTop: '2px' }}>Itens e recursos extras</p>
           </div>
         </div>
-        {/* Botão recarregar + Saldo de fichas */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <button
             onClick={() => { setLojaTab('recargas'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
@@ -514,7 +222,6 @@ export default function LojaPage() {
 
       <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
 
-        {/* Mochila colapsavel */}
         <div style={{ background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 2px 8px rgba(0,0,0,0.2), 0 8px 32px rgba(0,0,0,0.25)' }}>
           <button
             onClick={() => setMochilaAberta(v => !v)}
@@ -551,9 +258,6 @@ export default function LojaPage() {
           )}
         </div>
 
-        {/* Boost: removido da loja — aparece no dashboard */}
-
-        {/* ─── Pacote Lendário (aparece em periodos estratégicos) ───── */}
         {lendariaConfig.show && (
           <div>
             <div
@@ -612,7 +316,6 @@ export default function LojaPage() {
           </div>
         )}
 
-        {/* ─── Tabs e conteúdo (ocultos quando mochila está aberta) ─── */}
         {!mochilaAberta && <>
         <div style={{ display: 'flex', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', borderRadius: 12, padding: 4, border: '1px solid rgba(255,255,255,0.06)' }}>
           {(['compras', 'recargas'] as const).map((tab) => (
@@ -632,7 +335,6 @@ export default function LojaPage() {
           ))}
         </div>
 
-        {/* ─── Pacotes de fichas ─────────────────────────────────────── */}
         {lojaTab === 'recargas' && <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <Coins size={15} strokeWidth={1.5} color="#F59E0B" />
@@ -681,7 +383,6 @@ export default function LojaPage() {
               )
             })}
           </div>
-          {/* Botao de adquirir fichas */}
           <button
             onClick={() => {
               if (!selectedPackage) { toast.info('Selecione um pacote acima.'); return }
@@ -708,7 +409,6 @@ export default function LojaPage() {
           </button>
         </div>}
 
-        {/* ─── Itens (pago com fichas) ──────────────────────────────── */}
         {lojaTab === 'compras' && <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
             <Package size={15} strokeWidth={1.5} color="var(--muted)" />
@@ -725,12 +425,10 @@ export default function LojaPage() {
                   key={item.key}
                   style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 14px', borderRadius: '16px', background: 'linear-gradient(180deg, rgba(19,22,31,0.95) 0%, rgba(15,17,23,0.98) 100%)', border: locked ? '1px solid rgba(245,158,11,0.25)' : '1px solid var(--border)', opacity: locked ? 0.75 : 1 }}
                 >
-                  {/* Icone */}
                   <div style={{ width: '42px', height: '42px', borderRadius: '12px', backgroundColor: item.accentBg, border: `1px solid ${item.accentBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: item.accentColor }}>
                     {item.icon}
                   </div>
 
-                  {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <p style={{ fontSize: '13px', fontWeight: '700', color: 'var(--text)', margin: 0 }}>{item.label}</p>
@@ -745,7 +443,6 @@ export default function LojaPage() {
                     </div>
                   </div>
 
-                  {/* Seletor +/- */}
                   {item.maxQty > 1 && (
                     <div
                       style={{ display: 'flex', alignItems: 'center', gap: 0, backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}
@@ -763,7 +460,6 @@ export default function LojaPage() {
                     </div>
                   )}
 
-                  {/* Botao comprar */}
                   {locked ? (
                     <a href="/planos" style={{ flexShrink: 0, padding: '7px 12px', borderRadius: 10, background: 'rgba(245,158,11,0.12)', color: '#F59E0B', fontSize: 11, fontWeight: 700, textDecoration: 'none', fontFamily: 'var(--font-jakarta)', border: '1px solid rgba(245,158,11,0.25)', whiteSpace: 'nowrap' }}>
                       Somente Black
@@ -789,7 +485,6 @@ export default function LojaPage() {
 
       </div>
 
-      {/* Sheet de confirmacao de compra */}
       {openItem && (
         <PurchaseSheet
           item={openItem}
@@ -801,12 +496,10 @@ export default function LojaPage() {
         />
       )}
 
-      {/* Modal Caixa (Surpresa e Lendaria) */}
       {boxPhase !== 'idle' && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 100, backgroundColor: 'rgba(0,0,0,0.92)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 28, overflow: 'hidden' }}>
           {boxPhase === 'reveal' && <Confetti />}
 
-          {/* Caixa animada */}
           {boxPhase !== 'reveal' && (
             <div style={{
               width: 130, height: 130, borderRadius: 26, flexShrink: 0,
@@ -829,7 +522,6 @@ export default function LojaPage() {
             </div>
           )}
 
-          {/* Reveal */}
           {boxPhase === 'reveal' && boxReveal && (
             <div style={{ textAlign: 'center', animation: 'box-reveal 0.5s cubic-bezier(0.34,1.56,0.64,1)', position: 'relative', zIndex: 3, padding: '0 32px', maxWidth: 360 }}>
 
@@ -924,66 +616,6 @@ export default function LojaPage() {
           100%{opacity:1;transform:scale(1) translateY(0)}
         }
       `}</style>
-    </div>
-  )
-}
-
-function CountdownText({ until }: { until: string }) {
-  const str = useCountdownStr(until)
-  return <>{str}</>
-}
-
-function useCountdownStr(until?: string): string {
-  const [str, setStr] = useState('')
-  useEffect(() => {
-    if (!until) return
-    const update = () => {
-      const diff = new Date(until).getTime() - Date.now()
-      if (diff <= 0) { setStr('Expirando'); return }
-      const h = Math.floor(diff / 3600000)
-      const m = Math.floor((diff % 3600000) / 60000)
-      const s = Math.floor((diff % 60000) / 1000)
-      if (h > 24) setStr(`${Math.floor(h / 24)}d ${h % 24}h`)
-      else if (h > 0) setStr(`${h}h ${m}m`)
-      else setStr(`${m}m ${s}s`)
-    }
-    update()
-    const id = setInterval(update, 1000)
-    return () => clearInterval(id)
-  }, [until])
-  return str
-}
-
-function BalanceItem({ icon, label, value, active, suffix, countdown, onActivate, activating }: {
-  icon: React.ReactNode
-  label: string
-  value: number
-  active?: boolean
-  suffix?: string
-  countdown?: string
-  onActivate?: () => void
-  activating?: boolean
-}) {
-  const timeLeft = useCountdownStr(countdown)
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '10px 8px', borderRadius: '12px', backgroundColor: active ? 'var(--accent-light)' : 'rgba(255,255,255,0.03)', border: `1px solid ${active ? 'var(--accent-border)' : 'rgba(255,255,255,0.05)'}` }}>
-      <div style={{ marginBottom: '6px' }}>{icon}</div>
-      <p style={{ fontSize: '16px', fontWeight: '800', color: active ? 'var(--accent)' : 'var(--text)', margin: 0, lineHeight: 1 }}>
-        {value}{suffix && <span style={{ fontSize: '11px', fontWeight: '400', marginLeft: '1px' }}>{suffix}</span>}
-      </p>
-      <p style={{ fontSize: '10px', color: 'var(--muted)', margin: 0, marginTop: '3px', textAlign: 'center', lineHeight: 1.2 }}>{label}</p>
-      {active && timeLeft && (
-        <p style={{ fontSize: '9px', color: active ? 'var(--accent)' : '#6b7280', margin: 0, marginTop: '2px', textAlign: 'center', fontWeight: 600, letterSpacing: '0.02em' }}>{timeLeft}</p>
-      )}
-      {onActivate && !active && value > 0 && (
-        <button
-          onClick={onActivate}
-          disabled={activating}
-          style={{ marginTop: '6px', padding: '3px 10px', borderRadius: '100px', border: 'none', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', fontSize: '9px', fontWeight: 700, cursor: activating ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-jakarta)', opacity: activating ? 0.6 : 1 }}
-        >
-          {activating ? '...' : 'Ativar'}
-        </button>
-      )}
     </div>
   )
 }
