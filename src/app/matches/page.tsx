@@ -792,7 +792,14 @@ function ConversaItem({ match, formatTempo, onLongPress }: { match: Match; forma
           color: match.unread_count > 0 ? 'rgba(248,249,250,0.60)' : 'rgba(248,249,250,0.30)',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
-          {match.last_message || 'Iniciar conversa...'}
+          {(() => {
+            const msg = match.last_message
+            if (!msg) return 'Iniciar conversa...'
+            if (msg === '__NUDGE__') return '📳 Chamou sua atenção'
+            if (msg.startsWith('__CONVITE__:')) return '📅 Convite de encontro'
+            if (msg.startsWith('__MEETING__:')) return '📅 Convite de encontro'
+            return msg
+          })()}
         </p>
       </div>
     </div>

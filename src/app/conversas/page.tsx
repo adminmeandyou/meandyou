@@ -436,9 +436,14 @@ function ConvRow({ conv, currentUserId, isArchived, onArchive }: {
             )}
           </div>
           <p style={{ fontSize: 13, margin: 0, color: conv.unreadCount > 0 ? 'rgba(248,249,250,0.65)' : 'rgba(248,249,250,0.35)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {conv.lastMessage
-              ? `${isMyMessage ? 'Você: ' : ''}${conv.lastMessage}`
-              : 'Nenhuma mensagem ainda'}
+            {(() => {
+              const msg = conv.lastMessage
+              if (!msg) return 'Nenhuma mensagem ainda'
+              if (msg === '__NUDGE__') return '📳 Chamou sua atenção'
+              if (msg.startsWith('__CONVITE__:')) return '📅 Convite de encontro'
+              if (msg.startsWith('__MEETING__:')) return '📅 Convite de encontro'
+              return `${isMyMessage ? 'Você: ' : ''}${msg}`
+            })()}
           </p>
         </div>
       </Link>
