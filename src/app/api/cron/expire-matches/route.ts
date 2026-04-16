@@ -19,11 +19,19 @@ async function run(req: Request) {
     console.error('[cron] notify_expiring_matches error:', notifyErr.message)
   }
 
-  // Expira matches antigos
+  // Expira matches antigos (amigos sao protegidos)
   const { error: expireErr } = await supabase.rpc('expire_matches')
   if (expireErr) {
     console.error('[cron] expire_matches error:', expireErr.message)
     return NextResponse.json({ error: expireErr.message }, { status: 500 })
+  }
+
+  // Limpa mensagens com mais de 30 dias (mantem ultimas 50 por conversa)
+  const { data: deletedCount, error: cleanupErr } = await supabase.rpc('cleanup_old_messages')
+  if (cleanupErr) {
+    console.error('[cron] cleanup_old_messages error:', cleanupErr.message)
+  } else if (deletedCount && deletedCount > 0) {
+    console.log(`[cron] ${deletedCount} mensagens antigas removidas`)
   }
 
   return NextResponse.json({ ok: true, ts: new Date().toISOString() })

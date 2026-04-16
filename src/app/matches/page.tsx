@@ -26,10 +26,14 @@ type Match = {
   conversation_id: string | null
   last_active_at?: string | null
   show_last_active?: boolean
+  is_friend?: boolean
 }
 
 // Lógica: sem conversa expira em 7 dias, com conversa expira em 14 dias sem interação
-function getExpiryInfo(matchedAt: string, lastMessageAt: string | null): { label: string; urgent: boolean } | null {
+// Amigos (is_friend = true) nunca expiram
+function getExpiryInfo(matchedAt: string, lastMessageAt: string | null, isFriend?: boolean): { label: string; urgent: boolean } | null {
+  if (isFriend) return null // amigos nunca expiram
+
   const now = Date.now()
   const matchAge = (now - new Date(matchedAt).getTime()) / 3600000 // horas
 
@@ -132,10 +136,22 @@ export default function MatchesPage() {
   async function loadMatches(uid: string) {
     setLoading(true)
     try {
-      const { data, error } = await supabase.rpc('get_my_matches', { p_user_id: uid })
+      const [matchesRes, friendsRes] = await Promise.all([
+        supabase.rpc('get_my_matches', { p_user_id: uid }),
+        fetch('/api/amigos').then(r => r.ok ? r.json() : { friends: [] }).catch(() => ({ friends: [] })),
+      ])
       // PGRST116 = zero rows — conta nova sem matches, nao e erro real
-      if (error && error.code !== 'PGRST116') throw error
-      setMatches(data || [])
+      if (matchesRes.error && matchesRes.error.code !== 'PGRST116') throw matchesRes.error
+      const friendIds = new Set(
+        (friendsRes.friends ?? []).map((f: any) =>
+          f.requester_id === uid ? f.receiver_id : f.requester_id
+        )
+      )
+      const enriched = (matchesRes.data || []).map((m: Match) => ({
+        ...m,
+        is_friend: friendIds.has(m.other_user_id),
+      }))
+      setMatches(enriched)
     } catch {
       setMatches([])
       toast.error('Erro ao carregar matches.')
@@ -514,7 +530,7 @@ function NovoMatchCard({
   onIniciarConversa: () => void
   formatTempo: (d: string | null) => string
 }) {
-  const expiry = getExpiryInfo(match.matched_at, match.last_message_at)
+  const expiry = getExpiryInfo(match.matched_at, match.last_message_at, match.is_friend)
   const [friendSent, setFriendSent] = useState(false)
 
   async function handleAddFriend(e: React.MouseEvent) {
@@ -564,7 +580,8 @@ function NovoMatchCard({
           )}
         </div>
 
-        {/* Botao adicionar amigo — canto inferior direito */}
+        {/* Botao adicionar amigo — canto inferior direito (esconde se ja e amigo) */}
+        {!match.is_friend && (
         <button
           onClick={handleAddFriend}
           style={{
@@ -583,9 +600,23 @@ function NovoMatchCard({
             : <UserPlus size={11} color="rgba(248,249,250,0.7)" strokeWidth={2} />
           }
         </button>
+        )}
+
+        {/* Badge amigo */}
+        {match.is_friend && (
+          <span style={{
+            position: 'absolute', top: -3, left: -3,
+            fontSize: 8, fontWeight: 700, padding: '2px 5px', borderRadius: 100,
+            background: '#10b981',
+            color: '#fff',
+            boxShadow: '0 2px 8px rgba(16,185,129,0.30)',
+          }}>
+            Amigo
+          </span>
+        )}
 
         {/* Badge de expiracao */}
-        {expiry && (
+        {!match.is_friend && expiry && (
           <span style={{
             position: 'absolute', top: -3, left: -3,
             fontSize: 8, fontWeight: 700, padding: '2px 5px', borderRadius: 100,
@@ -627,7 +658,7 @@ function getNivel(matchedAt: string, lastMessageAt: string | null): { label: str
 
 function ConversaItem({ match, formatTempo, onLongPress }: { match: Match; formatTempo: (d: string | null) => string; onLongPress: (m: Match) => void }) {
   const router = useRouter()
-  const expiry = getExpiryInfo(match.matched_at, match.last_message_at)
+  const expiry = getExpiryInfo(match.matched_at, match.last_message_at, match.is_friend)
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const triggered = useRef(false)
 
@@ -727,7 +758,17 @@ function ConversaItem({ match, formatTempo, onLongPress }: { match: Match; forma
             }}>
               {match.name}
             </p>
-            {expiry && (
+            {match.is_friend && (
+              <span style={{
+                fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 100, flexShrink: 0,
+                background: 'rgba(16,185,129,0.12)',
+                color: '#10b981',
+                border: '1px solid rgba(16,185,129,0.25)',
+              }}>
+                Amigo
+              </span>
+            )}
+            {!match.is_friend && expiry && (
               <span style={{
                 fontSize: 9, fontWeight: 700, padding: '2px 6px', borderRadius: 100, flexShrink: 0,
                 background: expiry.urgent ? 'rgba(225,29,72,0.15)' : 'rgba(225,29,72,0.08)',
