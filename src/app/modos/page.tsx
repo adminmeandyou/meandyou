@@ -1319,7 +1319,7 @@ function BuscaInner() {
             }}
           >
             {saving && <Loader2 size={17} style={{ animation: 'ui-spin 1s linear infinite' }} />}
-            {filtersConfigured ? 'Salvar e buscar' : 'Pronto, vamos la!'}
+            {filtersConfigured ? 'Salvar e buscar' : 'Pronto, vamos lá!'}
           </button>
         </div>
       </BottomSheet>
@@ -1360,7 +1360,7 @@ function BuscaInner() {
               </div>
             )}
             <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 30, color: 'var(--text)', margin: '0 0 8px' }}>
-              E um Match!
+              É um Match!
             </h3>
             <p style={{ fontSize: 14, color: 'var(--muted)', margin: '0 0 24px', lineHeight: 1.5 }}>
               Você e <strong style={{ color: 'var(--text)' }}>{matchResult.name}</strong> se curtiram mutuamente.
