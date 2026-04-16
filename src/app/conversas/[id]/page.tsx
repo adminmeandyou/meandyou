@@ -697,8 +697,19 @@ export default function ChatPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ receiverId: otherUser.id }),
       })
-      if (!res.ok) setFriendSent(false)
+      if (res.ok) {
+        toast.success(`Pedido de amizade enviado para ${otherUser.name}`)
+      } else {
+        const data = await res.json().catch(() => ({}))
+        if (res.status === 409) {
+          toast.info(data.error || 'Pedido já enviado')
+        } else {
+          toast.error('Erro ao enviar pedido')
+          setFriendSent(false)
+        }
+      }
     } catch {
+      toast.error('Erro ao enviar pedido')
       setFriendSent(false)
     }
   }

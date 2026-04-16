@@ -48,6 +48,25 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: 'Erro ao enviar pedido' }, { status: 500 })
 
+  // Notificar o receiver via push + banco
+  try {
+    const { enviarPushParaUsuario } = await import('@/lib/push')
+    const { data: profile } = await supabaseAdmin
+      .from('public_profiles')
+      .select('name')
+      .eq('id', user.id)
+      .single()
+    const nome = profile?.name || 'Alguém'
+    await enviarPushParaUsuario({
+      targetUserId: receiverId,
+      type: 'friend_request',
+      title: 'Pedido de amizade',
+      body: `${nome} quer ser seu amigo`,
+      data: { url: '/amigos' },
+      fromUserId: user.id,
+    })
+  } catch { /* push silencioso */ }
+
   return NextResponse.json({ ok: true })
 }
 
@@ -79,6 +98,26 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
     }
     await supabaseAdmin.from('friendships').update({ status: 'accepted', updated_at: new Date().toISOString() }).eq('id', friendshipId)
+
+    // Notificar quem enviou o pedido
+    try {
+      const { enviarPushParaUsuario } = await import('@/lib/push')
+      const { data: profile } = await supabaseAdmin
+        .from('public_profiles')
+        .select('name')
+        .eq('id', user.id)
+        .single()
+      const nome = profile?.name || 'Alguém'
+      await enviarPushParaUsuario({
+        targetUserId: friendship.requester_id,
+        type: 'friend_accepted',
+        title: 'Amizade aceita',
+        body: `${nome} aceitou seu pedido de amizade`,
+        data: { url: '/amigos' },
+        fromUserId: user.id,
+      })
+    } catch { /* push silencioso */ }
+
     return NextResponse.json({ ok: true })
   }
 

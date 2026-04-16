@@ -6,7 +6,7 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
 
-type NotificationType = 'match' | 'message' | 'superlike' | 'boost_expired' | 'plan_expired'
+type NotificationType = 'match' | 'message' | 'superlike' | 'boost_expired' | 'plan_expired' | 'friend_request' | 'friend_accepted'
 
 function initWebPush() {
   webpush.setVapidDetails(
