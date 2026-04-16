@@ -12,16 +12,28 @@ export function ConversaItem({ match, formatTempo, onLongPress }: { match: Match
   const expiry = getExpiryInfo(match.matched_at, match.last_message_at, match.is_friend)
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const triggered = useRef(false)
+  const startPos = useRef<{ x: number; y: number } | null>(null)
 
-  function startPress() {
+  function startPress(e: React.PointerEvent) {
     triggered.current = false
+    startPos.current = { x: e.clientX, y: e.clientY }
     pressTimer.current = setTimeout(() => {
       triggered.current = true
       onLongPress(match)
     }, 500)
   }
+  function movePress(e: React.PointerEvent) {
+    if (!startPos.current || !pressTimer.current) return
+    const dx = Math.abs(e.clientX - startPos.current.x)
+    const dy = Math.abs(e.clientY - startPos.current.y)
+    if (dx > 10 || dy > 10) {
+      clearTimeout(pressTimer.current)
+      pressTimer.current = null
+    }
+  }
   function cancelPress() {
     if (pressTimer.current) clearTimeout(pressTimer.current)
+    pressTimer.current = null
   }
   function handleClick() {
     if (triggered.current) return
@@ -32,6 +44,7 @@ export function ConversaItem({ match, formatTempo, onLongPress }: { match: Match
   return (
     <div
       onPointerDown={startPress}
+      onPointerMove={movePress}
       onPointerUp={cancelPress}
       onPointerLeave={cancelPress}
       onPointerCancel={cancelPress}

@@ -9,8 +9,8 @@ function EmblemaSvg({ id, desbloqueado }: { id: string; desbloqueado: boolean })
     <img
       src={`/badges/${id}.svg`}
       alt=""
-      width={32}
-      height={32}
+      width={40}
+      height={40}
       style={{ display: 'block', opacity: desbloqueado ? 1 : 0.20, filter: desbloqueado ? 'none' : 'grayscale(1)' }}
     />
   )

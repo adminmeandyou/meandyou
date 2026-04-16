@@ -78,11 +78,11 @@ export function InterestsGrid({ tags, isOwnProfile, onEdit }: { tags: string[]; 
         <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(248,249,250,0.30)' }}>Interesses</span>
         {isOwnProfile && <EditButton onClick={onEdit} />}
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
         {tags.slice(0, 6).map((tag: string, i: number) => (
-          <div key={i} style={{ backgroundColor: '#1a1b21', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px' }}>
-            <Heart size={13} color="var(--accent)" strokeWidth={1.5} />
-            <span style={{ fontSize: '13px', color: '#F8F9FA', fontWeight: 600 }}>{tag}</span>
+          <div key={i} style={{ backgroundColor: '#1a1b21', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '5px', padding: '5px 10px' }}>
+            <Heart size={11} color="var(--accent)" strokeWidth={1.5} />
+            <span style={{ fontSize: '11px', color: '#F8F9FA', fontWeight: 600 }}>{tag}</span>
           </div>
         ))}
       </div>
@@ -196,9 +196,9 @@ function TagSection({ title, tags, onEdit }: { title: string; tags: string[]; on
         <h3 style={{ fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(248,249,250,0.30)', margin: 0 }}>{title}</h3>
         {onEdit && <EditButton onClick={onEdit} />}
       </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
         {tags.map((tag) => (
-          <span key={tag} style={{ padding: '6px 14px', borderRadius: '100px', fontSize: '12px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(248,249,250,0.50)' }}>
+          <span key={tag} style={{ padding: '4px 10px', borderRadius: '100px', fontSize: '11px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(248,249,250,0.50)' }}>
             {tag}
           </span>
         ))}

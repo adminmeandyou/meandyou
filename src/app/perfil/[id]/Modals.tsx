@@ -16,10 +16,10 @@ export function BadgeModal({ badge, onClose }: { badge: EmblemaDef; onClose: () 
         style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.09)', borderRadius: '20px', padding: '28px 24px', maxWidth: '340px', width: '100%' }}
         onClick={e => e.stopPropagation()}
       >
-        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-          <div style={{ width: '100px', height: '100px', borderRadius: '20px', backgroundColor: badge.desbloqueado ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '24px' }}>
+          <div style={{ width: '120px', height: '120px', borderRadius: '24px', backgroundColor: badge.desbloqueado ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/badges/${badge.id}.svg`} alt="" width={64} height={64} style={{ display: 'block', opacity: badge.desbloqueado ? 1 : 0.20, filter: badge.desbloqueado ? 'none' : 'grayscale(1)' }} />
+            <img src={`/badges/${badge.id}.svg`} alt="" width={80} height={80} style={{ display: 'block', opacity: badge.desbloqueado ? 1 : 0.20, filter: badge.desbloqueado ? 'none' : 'grayscale(1)' }} />
             {!badge.desbloqueado && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,9,14,0.65)' }}>
                 <span style={{ fontSize: '28px', opacity: 0.5 }}>&#128274;</span>
@@ -28,7 +28,7 @@ export function BadgeModal({ badge, onClose }: { badge: EmblemaDef; onClose: () 
           </div>
         </div>
         <div style={{ textAlign: 'center', marginBottom: '16px' }}>
-          <h3 style={{ color: '#F8F9FA', fontFamily: 'var(--font-fraunces)', fontSize: '20px', fontWeight: 700, margin: '0 0 8px' }}>{badge.name}</h3>
+          <h3 style={{ color: '#F8F9FA', fontFamily: 'var(--font-fraunces)', fontSize: '22px', fontWeight: 700, margin: '0 0 10px' }}>{badge.name}</h3>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', alignItems: 'center' }}>
             <BadgePill rarity={badge.raridade} />
             {badge.desbloqueado && (

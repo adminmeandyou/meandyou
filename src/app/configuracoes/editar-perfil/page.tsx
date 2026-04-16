@@ -86,7 +86,7 @@ export default function EditarPerfilPage() {
       {/* Header */}
       <div style={{ padding: '16px 20px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: '1px solid rgba(255,255,255,0.05)', position: 'sticky', top: 0, backgroundColor: '#08090E', zIndex: 10 }}>
         <button
-          onClick={() => router.push('/configuracoes')}
+          onClick={() => router.back()}
           style={{ width: '40px', height: '40px', borderRadius: '50%', border: 'none', backgroundColor: 'rgba(255,255,255,0.05)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
         >
           <ArrowLeft size={20} color="#fff" />

@@ -5,7 +5,7 @@ import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
-import { Phone, PhoneOff, PhoneIncoming, AlertCircle, Loader2, Video, VideoOff, Mic, MicOff, ArrowLeft, RotateCcw, FlipHorizontal2, Volume2, VolumeX } from 'lucide-react'
+import { Phone, PhoneOff, PhoneIncoming, AlertCircle, Loader2, Video, VideoOff, Mic, MicOff, ArrowLeft, RotateCcw, Volume2, VolumeX } from 'lucide-react'
 import Image from 'next/image'
 import { playSoundDirect } from '@/hooks/useSounds'
 import { initVideoCallBus, onVideoCallSignal, sendVideoCallSignal } from '@/lib/videocall-bus'
@@ -238,10 +238,7 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
     }
   }
 
-  function toggleMirror() {
-    playSoundDirect('tap')
-    setMirrored(v => !v)
-  }
+
 
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, color: 'var(--muted)' }}>
@@ -361,7 +358,7 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
 
       {/* Vignettes */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 160, background: 'linear-gradient(to bottom, rgba(8,9,14,0.7) 0%, rgba(8,9,14,0) 100%)', pointerEvents: 'none', zIndex: 10 }} />
-      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 240, background: 'linear-gradient(to top, rgba(8,9,14,0.92) 0%, rgba(8,9,14,0) 100%)', pointerEvents: 'none', zIndex: 10 }} />
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 160, background: 'linear-gradient(to top, rgba(8,9,14,0.92) 0%, rgba(8,9,14,0) 100%)', pointerEvents: 'none', zIndex: 10 }} />
 
       {/* Header */}
       <header style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', paddingTop: 'max(16px, env(safe-area-inset-top, 16px))' }}>
@@ -415,7 +412,7 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
       )}
 
       {/* PIP — self */}
-      <section style={{ position: 'absolute', right: 20, bottom: 148, width: 104, aspectRatio: '3/4', zIndex: 35, borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.10)', background: '#13161f' }}>
+      <section style={{ position: 'absolute', right: 16, bottom: 100, width: 90, aspectRatio: '3/4', zIndex: 35, borderRadius: 10, overflow: 'hidden', boxShadow: '0 12px 30px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.10)', background: '#13161f' }}>
         {camOn ? (
           <video
             ref={localVideoRef}
@@ -433,15 +430,15 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
 
       {/* Control bar */}
       <nav style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', paddingTop: 10, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))', pointerEvents: 'none' }}>
-        <div style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderRadius: 100, background: 'rgba(15,17,23,0.78)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 -10px 30px rgba(0,0,0,0.5)' }}>
+        <div style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 100, background: 'rgba(15,17,23,0.82)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 -8px 24px rgba(0,0,0,0.5)' }}>
           <ControlButton
-            icon={micOn ? <Mic size={17} strokeWidth={1.5} /> : <MicOff size={17} strokeWidth={1.5} />}
+            icon={micOn ? <Mic size={15} strokeWidth={1.5} /> : <MicOff size={15} strokeWidth={1.5} />}
             label="Mudo"
             onClick={toggleMic}
             active={!micOn}
           />
           <ControlButton
-            icon={camOn ? <Video size={17} strokeWidth={1.5} /> : <VideoOff size={17} strokeWidth={1.5} />}
+            icon={camOn ? <Video size={15} strokeWidth={1.5} /> : <VideoOff size={15} strokeWidth={1.5} />}
             label="Vídeo"
             onClick={toggleCam}
             active={!camOn}
@@ -451,23 +448,17 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
             aria-label="Encerrar chamada"
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
-            <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'linear-gradient(135deg, #E11D48, #be123c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(225,29,72,0.40), 0 0 0 4px rgba(225,29,72,0.08)' }}>
-              <PhoneOff size={21} color="#fff" strokeWidth={1.8} />
+            <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #E11D48, #be123c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(225,29,72,0.40), 0 0 0 3px rgba(225,29,72,0.08)' }}>
+              <PhoneOff size={18} color="#fff" strokeWidth={1.8} />
             </div>
           </button>
           <ControlButton
-            icon={<RotateCcw size={17} strokeWidth={1.5} />}
+            icon={<RotateCcw size={15} strokeWidth={1.5} />}
             label="Girar"
             onClick={flipCam}
           />
           <ControlButton
-            icon={<FlipHorizontal2 size={17} strokeWidth={1.5} />}
-            label="Espelho"
-            onClick={toggleMirror}
-            active={!mirrored}
-          />
-          <ControlButton
-            icon={remoteMuted ? <VolumeX size={17} strokeWidth={1.5} /> : <Volume2 size={17} strokeWidth={1.5} />}
+            icon={remoteMuted ? <VolumeX size={15} strokeWidth={1.5} /> : <Volume2 size={15} strokeWidth={1.5} />}
             label="Som"
             onClick={() => {
               setRemoteMuted(v => {
@@ -497,7 +488,7 @@ function ControlButton({ icon, label, onClick, active = false }: {
       aria-label={label}
       style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: active ? '#F43F5E' : 'rgba(255,255,255,0.88)' }}
     >
-      <div style={{ width: 40, height: 40, borderRadius: '50%', background: active ? 'rgba(225,29,72,0.18)' : 'rgba(52,52,58,0.6)', border: active ? '1px solid rgba(225,29,72,0.35)' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 180ms cubic-bezier(0.19,1,0.22,1)' }}>
+      <div style={{ width: 36, height: 36, borderRadius: '50%', background: active ? 'rgba(225,29,72,0.18)' : 'rgba(52,52,58,0.6)', border: active ? '1px solid rgba(225,29,72,0.35)' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 180ms cubic-bezier(0.19,1,0.22,1)' }}>
         {icon}
       </div>
     </button>

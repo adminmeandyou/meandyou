@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { CalendarPlus, CheckCircle2 } from 'lucide-react'
 import { RESPOSTAS_RAPIDAS } from './helpers'
 
@@ -14,10 +14,12 @@ export function ConviteCard({
   respondedWith?: string | null
 }) {
   const [localResponse, setLocalResponse] = useState<string | null>(null)
+  const replySent = useRef(false)
   const answered = respondedWith || localResponse
 
   function handleReply(r: string) {
-    if (answered) return
+    if (answered || replySent.current) return
+    replySent.current = true
     setLocalResponse(r)
     onReply(r)
   }

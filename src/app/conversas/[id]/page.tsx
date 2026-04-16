@@ -1001,26 +1001,47 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* Banner convite pendente */}
+        {/* Banner encontro aceito */}
         {acceptedMeeting && (
           <div style={{
             flexShrink: 0,
-            display: 'flex', alignItems: 'center', gap: 10,
             padding: '10px 16px',
             background: 'rgba(16,185,129,0.08)',
             borderBottom: '1px solid rgba(16,185,129,0.15)',
           }}>
-            <CalendarCheck size={14} color="#10b981" strokeWidth={1.5} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ fontSize: 13, color: '#10b981', margin: 0, fontWeight: 700, fontFamily: 'var(--font-fraunces)' }}>Encontro marcado</p>
-              <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {acceptedMeeting.text}{acceptedMeeting.date ? ` · ${acceptedMeeting.date}` : ''}
-              </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <CalendarCheck size={14} color="#10b981" strokeWidth={1.5} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ fontSize: 13, color: '#10b981', margin: 0, fontWeight: 700, fontFamily: 'var(--font-fraunces)' }}>Encontro marcado</p>
+                <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {acceptedMeeting.text}{acceptedMeeting.date ? ` · ${acceptedMeeting.date}` : ''}
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+              <button
+                onClick={() => { setInput(`Sobre nosso encontro: `); inputRef.current?.focus() }}
+                style={{ flex: 1, padding: '6px 0', borderRadius: 8, background: 'rgba(16,185,129,0.12)', border: '1px solid rgba(16,185,129,0.20)', color: '#10b981', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+              >
+                Enviar mensagem
+              </button>
+              <button
+                onClick={() => { sendMessage('Podemos remarcar?'); }}
+                style={{ flex: 1, padding: '6px 0', borderRadius: 8, background: 'rgba(245,158,11,0.10)', border: '1px solid rgba(245,158,11,0.20)', color: '#f59e0b', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+              >
+                Remarcar
+              </button>
+              <button
+                onClick={() => { sendMessage('Preciso cancelar o encontro, desculpa!'); setAcceptedMeeting(null) }}
+                style={{ flex: 1, padding: '6px 0', borderRadius: 8, background: 'rgba(225,29,72,0.08)', border: '1px solid rgba(225,29,72,0.15)', color: '#F43F5E', fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         )}
 
-        {pendingConvite && (
+        {pendingConvite && !acceptedMeeting && (
           <div style={{
             flexShrink: 0,
             display: 'flex', alignItems: 'center', gap: 10,
@@ -1034,9 +1055,17 @@ export default function ChatPage() {
             </p>
             <button
               onClick={() => { sendMessage('Aceito!'); setPendingConvite(null) }}
-              style={{ padding: '4px 14px', borderRadius: 100, background: 'var(--accent)', border: 'none', fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer', letterSpacing: '0.05em' }}
+              disabled={sending}
+              style={{ padding: '4px 14px', borderRadius: 100, background: 'var(--accent)', border: 'none', fontSize: 11, fontWeight: 700, color: '#fff', cursor: sending ? 'not-allowed' : 'pointer', letterSpacing: '0.05em', opacity: sending ? 0.6 : 1 }}
             >
               Aceito!
+            </button>
+            <button
+              onClick={() => { sendMessage('Não posso'); setPendingConvite(null) }}
+              disabled={sending}
+              style={{ padding: '4px 10px', borderRadius: 100, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.10)', fontSize: 11, fontWeight: 600, color: 'var(--muted)', cursor: sending ? 'not-allowed' : 'pointer' }}
+            >
+              Recusar
             </button>
             <button onClick={() => setPendingConvite(null)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
               <X size={14} color="var(--muted)" />
