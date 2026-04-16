@@ -254,6 +254,7 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, plan, remoteMut
 
   async function toggleMic() {
     if (!localParticipant) return
+    playSoundDirect('tap')
     const next = !micOn
     await localParticipant.setMicrophoneEnabled(next)
     setMicOn(next)
@@ -261,6 +262,7 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, plan, remoteMut
 
   async function toggleCam() {
     if (!localParticipant) return
+    playSoundDirect('tap')
     const next = !camOn
     await localParticipant.setCameraEnabled(next)
     setCamOn(next)
@@ -268,6 +270,7 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, plan, remoteMut
 
   async function flipCam() {
     if (!localParticipant) return
+    playSoundDirect('tap')
     const next: 'user' | 'environment' = facing === 'user' ? 'environment' : 'user'
     try {
       // Precisa desligar antes de religar pra forcar o browser
@@ -286,6 +289,7 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, plan, remoteMut
   }
 
   function toggleMirror() {
+    playSoundDirect('tap')
     setMirrored(v => !v)
   }
 

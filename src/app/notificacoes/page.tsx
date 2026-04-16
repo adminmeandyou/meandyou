@@ -8,6 +8,7 @@ import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 type Notification = {
   id: string
@@ -88,6 +89,7 @@ export default function NotificacoesPage() {
 
   function handleClick(n: Notification) {
     haptics.tap()
+    playSoundDirect('tap')
     setNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x))
     if (n.type === 'match' && n.data?.match_id) {
       router.push(`/conversas/${n.data.match_id}`)

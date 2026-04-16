@@ -9,6 +9,7 @@ import { SkeletonList } from '@/components/Skeleton'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
+import { playSoundDirect } from '@/hooks/useSounds'
 import { ReportModal } from '@/components/ReportModal'
 
 type Match = {
@@ -642,6 +643,7 @@ function ConversaItem({ match, formatTempo, onLongPress }: { match: Match; forma
   }
   function handleClick() {
     if (triggered.current) return
+    playSoundDirect('tap')
     router.push(`/conversas/${match.match_id}`)
   }
 

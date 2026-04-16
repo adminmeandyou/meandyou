@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { saveUserLocation } from '../lib/location'
 import { Heart, Search, Star, Zap, Shield, ChevronRight, Check, MapPin, Bell } from 'lucide-react'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 const PASSOS = ['Bem-vindo', 'Como funciona', 'Permissões', 'Pronto']
 
@@ -79,6 +80,7 @@ export default function OnboardingPage() {
 
   const pedirGps = async () => {
     if (gpsAtivo) return
+    playSoundDirect('tap')
     setGpsLoading(true)
     try {
       const { data: { user } } = await supabase.auth.getUser()
@@ -93,6 +95,7 @@ export default function OnboardingPage() {
 
   const pedirNotificacoes = async () => {
     if (notifAtiva) return
+    playSoundDirect('tap')
     setNotifLoading(true)
     try {
       if ('Notification' in window) {
