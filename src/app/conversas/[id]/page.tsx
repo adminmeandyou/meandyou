@@ -80,6 +80,9 @@ export default function ChatPage() {
   // Registro privado
   const [showMeetingModal, setShowMeetingModal] = useState(false)
   const [meetingLocal, setMeetingLocal]         = useState('')
+  const [meetingPlaceSuggestions, setMeetingPlaceSuggestions] = useState<Array<{ display_name: string; name: string; address: any }>>([])
+  const [showMeetingPlaces, setShowMeetingPlaces] = useState(false)
+  const meetingPlaceDebounce = useRef<NodeJS.Timeout | null>(null)
   const [meetingDateVal, setMeetingDateVal]     = useState('')
   const [meetingTimeVal, setMeetingTimeVal]     = useState('')
   const [meetingSaved, setMeetingSaved]         = useState(false)
@@ -536,6 +539,34 @@ export default function ChatPage() {
   }
 
   // ── Fase 8: handlers ─────────────────────────────────────────────────────────
+
+  function handleMeetingPlaceSearch(query: string) {
+    setMeetingLocal(query)
+    if (meetingPlaceDebounce.current) clearTimeout(meetingPlaceDebounce.current)
+    if (query.length < 3) { setMeetingPlaceSuggestions([]); setShowMeetingPlaces(false); return }
+    meetingPlaceDebounce.current = setTimeout(async () => {
+      try {
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=br&accept-language=pt-BR`, {
+          headers: { 'User-Agent': 'MeAndYou/1.0' }
+        })
+        const data = await res.json()
+        setMeetingPlaceSuggestions(data)
+        setShowMeetingPlaces(data.length > 0)
+      } catch { setMeetingPlaceSuggestions([]); setShowMeetingPlaces(false) }
+    }, 500)
+  }
+
+  function selectMeetingPlace(place: any) {
+    const addr = place.address || {}
+    setMeetingLocal(place.name || place.display_name.split(',')[0])
+    setMeetingRua(addr.road || '')
+    setMeetingNumero(addr.house_number || '')
+    setMeetingBairro(addr.suburb || addr.neighbourhood || '')
+    setMeetingCidade(addr.city || addr.town || addr.village || addr.municipality || '')
+    setMeetingUf(addr.state_code?.toUpperCase() || (addr.state ? addr.state.slice(0, 2).toUpperCase() : ''))
+    setMeetingCep(addr.postcode || '')
+    setShowMeetingPlaces(false)
+  }
 
   async function handleCepLookup(raw: string) {
     const cep = raw.replace(/\D/g, '').slice(0, 8)
@@ -1579,15 +1610,55 @@ export default function ChatPage() {
                     <div style={{ marginBottom:24 }}>
                       <div style={labelStyle}>Onde?</div>
                       <div style={{ display:'flex',flexDirection:'column',gap:14 }}>
-                        <input
-                          value={meetingLocal}
-                          onChange={e => setMeetingLocal(e.target.value)}
-                          placeholder="Nome do local"
-                          autoFocus
-                          style={inputStyle}
-                          onFocus={onFocusInput}
-                          onBlur={onBlurInput}
-                        />
+                        <div style={{ position:'relative' }}>
+                          <input
+                            value={meetingLocal}
+                            onChange={e => handleMeetingPlaceSearch(e.target.value)}
+                            onFocus={() => { if (meetingPlaceSuggestions.length > 0) setShowMeetingPlaces(true) }}
+                            placeholder="Buscar local, restaurante, shopping..."
+                            autoFocus
+                            autoComplete="off"
+                            style={inputStyle}
+                            onBlur={e => { onBlurInput(e); setTimeout(() => setShowMeetingPlaces(false), 200) }}
+                          />
+                          {showMeetingPlaces && meetingPlaceSuggestions.length > 0 && (
+                            <div style={{
+                              position:'absolute', left:0, right:0, top:'100%', zIndex:30,
+                              background:'rgba(15,17,23,0.98)', border:'1px solid rgba(255,255,255,0.08)',
+                              borderRadius:12, marginTop:4, overflow:'hidden',
+                              maxHeight:200, overflowY:'auto',
+                              boxShadow:'0 8px 32px rgba(0,0,0,0.5)',
+                            }}>
+                              {meetingPlaceSuggestions.map((place, i) => {
+                                const addr = place.address || {}
+                                const nome = place.name || ''
+                                const cidade = addr.city || addr.town || addr.village || addr.municipality || ''
+                                const estado = addr.state || ''
+                                const bairro = addr.suburb || addr.neighbourhood || ''
+                                const sub = [bairro, cidade, estado].filter(Boolean).join(', ')
+                                return (
+                                  <button
+                                    key={i}
+                                    onMouseDown={e => { e.preventDefault(); selectMeetingPlace(place) }}
+                                    style={{
+                                      width:'100%', display:'flex', alignItems:'flex-start', gap:10,
+                                      padding:'11px 14px', background:'transparent',
+                                      border:'none', borderBottom: i < meetingPlaceSuggestions.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
+                                      cursor:'pointer', textAlign:'left',
+                                      fontFamily:'var(--font-jakarta)',
+                                    }}
+                                  >
+                                    <MapPin size={14} color="var(--accent)" strokeWidth={1.5} style={{ flexShrink:0, marginTop:2 }} />
+                                    <div style={{ minWidth:0 }}>
+                                      <p style={{ fontSize:13, fontWeight:600, color:'var(--text)', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{nome || place.display_name.split(',')[0]}</p>
+                                      {sub && <p style={{ fontSize:11, color:'var(--muted)', margin:'2px 0 0', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{sub}</p>}
+                                    </div>
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          )}
+                        </div>
                         <input
                           value={meetingCep}
                           onChange={e => handleCepLookup(e.target.value)}
