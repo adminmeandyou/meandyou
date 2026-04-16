@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
-import { MessageCircle, Heart, Loader2, UserPlus, Check, User, HeartCrack, ShieldAlert, Archive, X } from 'lucide-react'
+import Link from 'next/link'
+import { MessageCircle, Heart, Loader2, UserPlus, Check, User, HeartCrack, ShieldAlert, Archive, X, UserCircle, Clock, Users } from 'lucide-react'
 import { SkeletonList } from '@/components/Skeleton'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { useToast } from '@/components/Toast'
@@ -56,6 +57,30 @@ function getExpiryInfo(matchedAt: string, lastMessageAt: string | null, isFriend
   }
 }
 
+type FriendProfile = {
+  id: string
+  name: string
+  photo_best: string | null
+  city: string | null
+  plan: string
+  last_seen: string | null
+}
+
+type Friendship = {
+  id: string
+  requester_id: string
+  receiver_id: string
+  status: 'pending' | 'accepted' | 'declined'
+  created_at: string
+  updated_at: string
+  other: FriendProfile | null
+}
+
+function isFriendOnline(lastSeen: string | null): boolean {
+  if (!lastSeen) return false
+  return (Date.now() - new Date(lastSeen).getTime()) < 5 * 60 * 1000
+}
+
 export default function MatchesPage() {
   const router = useRouter()
   const toast = useToast()
@@ -66,6 +91,17 @@ export default function MatchesPage() {
   const [actionsFor, setActionsFor] = useState<Match | null>(null)
   const [reportFor, setReportFor] = useState<{ id: string; name: string } | null>(null)
   const [unmatchConfirm, setUnmatchConfirm] = useState(false)
+
+  // Aba principal
+  const [pageTab, setPageTab] = useState<'matches' | 'amigos'>('matches')
+
+  // Amigos
+  const [friendsList, setFriendsList] = useState<Friendship[]>([])
+  const [friendsPending, setFriendsPending] = useState<Friendship[]>([])
+  const [friendsLoading, setFriendsLoading] = useState(false)
+  const [friendsLoaded, setFriendsLoaded] = useState(false)
+  const [friendTab, setFriendTab] = useState<'amigos' | 'pendentes'>('amigos')
+  const [friendActionLoading, setFriendActionLoading] = useState<string | null>(null)
 
   async function actionAddFriend(m: Match) {
     if (!userId) return
@@ -80,6 +116,57 @@ export default function MatchesPage() {
     } catch { toast.error('Erro ao enviar solicitação') }
     setActionsFor(null)
   }
+
+  // ── Funções de amigos ──
+  async function loadFriends() {
+    setFriendsLoading(true)
+    try {
+      const res = await fetch('/api/amigos')
+      if (res.ok) {
+        const data = await res.json()
+        setFriendsList(data.friends ?? [])
+        setFriendsPending(data.pending ?? [])
+      }
+    } catch { /* silencioso */ }
+    setFriendsLoading(false)
+    setFriendsLoaded(true)
+  }
+
+  async function friendRespond(friendshipId: string, action: 'accept' | 'decline') {
+    setFriendActionLoading(friendshipId)
+    try {
+      const res = await fetch('/api/amigos', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ friendshipId, action }),
+      })
+      if (res.ok) await loadFriends()
+    } catch { /* silencioso */ }
+    setFriendActionLoading(null)
+  }
+
+  async function friendRemove(friendshipId: string) {
+    setFriendActionLoading(friendshipId)
+    try {
+      const res = await fetch('/api/amigos', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ friendshipId, action: 'remove' }),
+      })
+      if (res.ok) await loadFriends()
+    } catch { /* silencioso */ }
+    setFriendActionLoading(null)
+  }
+
+  // Carregar amigos quando trocar pra aba
+  useEffect(() => {
+    if (pageTab === 'amigos' && !friendsLoaded) loadFriends()
+  }, [pageTab])
+
+  const onlineFriends = friendsList.filter(f => isFriendOnline(f.other?.last_seen ?? null))
+  const offlineFriends = friendsList.filter(f => !isFriendOnline(f.other?.last_seen ?? null))
+  const receivedPending = friendsPending.filter(f => f.receiver_id === userId)
+  const sentPending = friendsPending.filter(f => f.requester_id === userId)
 
   async function actionUnmatch(m: Match) {
     try {
@@ -239,7 +326,54 @@ export default function MatchesPage() {
         </div>
       </header>
 
+      {/* ── Tabs: Matches / Amigos ── */}
+      <div style={{
+        display: 'flex', gap: 0,
+        padding: '0 20px',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        background: 'rgba(8,9,14,0.92)',
+        position: 'sticky', top: 61, zIndex: 29,
+      }}>
+        {([
+          { key: 'matches' as const, label: 'Matches', icon: <Heart size={14} strokeWidth={1.5} /> },
+          { key: 'amigos' as const, label: 'Amigos', icon: <Users size={14} strokeWidth={1.5} />, badge: receivedPending.length },
+        ]).map(t => (
+          <button
+            key={t.key}
+            onClick={() => setPageTab(t.key)}
+            style={{
+              flex: 1,
+              padding: '12px 0',
+              border: 'none',
+              borderBottom: pageTab === t.key ? '2px solid var(--accent)' : '2px solid transparent',
+              background: 'transparent',
+              color: pageTab === t.key ? '#F8F9FA' : 'rgba(248,249,250,0.35)',
+              fontSize: 13, fontWeight: 600,
+              cursor: 'pointer',
+              fontFamily: 'var(--font-jakarta)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              transition: 'all 0.15s',
+            }}
+          >
+            {t.icon}
+            {t.label}
+            {t.badge && t.badge > 0 ? (
+              <span style={{
+                minWidth: 16, height: 16, borderRadius: 100,
+                background: '#E11D48', color: '#fff',
+                fontSize: 9, fontWeight: 700,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px',
+              }}>
+                {t.badge > 9 ? '9+' : t.badge}
+              </span>
+            ) : null}
+          </button>
+        ))}
+      </div>
+
       <main style={{ padding: '24px 0 0' }}>
+        {/* ═══ Aba Matches ═══ */}
+        {pageTab === 'matches' && (<>
         {loading ? (
           <div style={{ padding: '0 20px' }}>
             <SkeletonList rows={5} />
@@ -413,6 +547,164 @@ export default function MatchesPage() {
               </div>
             )}
           </>
+        )}
+        </>)}
+
+        {/* ═══ Aba Amigos ═══ */}
+        {pageTab === 'amigos' && (
+          <div style={{ padding: '0 16px' }}>
+            {/* Sub-tabs: Amigos / Pendentes */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              {([
+                { key: 'amigos' as const, label: `Amigos (${friendsList.length})` },
+                { key: 'pendentes' as const, label: `Pendentes (${friendsPending.length})` },
+              ]).map(t => (
+                <button
+                  key={t.key}
+                  onClick={() => setFriendTab(t.key)}
+                  style={{
+                    padding: '8px 16px', borderRadius: 100,
+                    border: `1px solid ${friendTab === t.key ? 'var(--accent)' : 'rgba(255,255,255,0.06)'}`,
+                    backgroundColor: friendTab === t.key ? 'rgba(225,29,72,0.12)' : 'transparent',
+                    color: friendTab === t.key ? 'var(--accent)' : 'var(--muted)',
+                    fontSize: 13, fontWeight: friendTab === t.key ? 600 : 400,
+                    cursor: 'pointer', fontFamily: 'var(--font-jakarta)',
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Lista de amigos */}
+            {friendTab === 'amigos' && (
+              <>
+                {friendsLoading ? (
+                  [...Array(4)].map((_, i) => (
+                    <div key={i} style={{ height: 64, borderRadius: 14, backgroundColor: 'var(--bg-card)', marginBottom: 8, animation: 'ui-pulse 1.5s ease infinite' }} />
+                  ))
+                ) : friendsList.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+                    <Users size={40} color="var(--muted-2)" strokeWidth={1} style={{ marginBottom: 12 }} />
+                    <p style={{ color: 'var(--muted)', fontSize: 14, margin: 0 }}>Nenhum amigo ainda</p>
+                    <p style={{ color: 'var(--muted-2)', fontSize: 13, margin: '6px 0 0', lineHeight: 1.5 }}>
+                      Depois de um match, você pode adicionar a pessoa como amigo. Amigos não expiram.
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    {onlineFriends.length > 0 && (
+                      <>
+                        <p style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px', fontWeight: 700 }}>
+                          Online agora ({onlineFriends.length})
+                        </p>
+                        {onlineFriends.map(f => (
+                          <FriendRowInline key={f.id} friendship={f} onRemove={friendRemove} actionLoading={friendActionLoading} online />
+                        ))}
+                        <div style={{ height: 12 }} />
+                      </>
+                    )}
+                    {offlineFriends.length > 0 && (
+                      <>
+                        {onlineFriends.length > 0 && (
+                          <p style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px', fontWeight: 700 }}>
+                            Todos os amigos ({offlineFriends.length})
+                          </p>
+                        )}
+                        {offlineFriends.map(f => (
+                          <FriendRowInline key={f.id} friendship={f} onRemove={friendRemove} actionLoading={friendActionLoading} online={false} />
+                        ))}
+                      </>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+
+            {/* Pendentes */}
+            {friendTab === 'pendentes' && (
+              <>
+                {receivedPending.length > 0 && (
+                  <>
+                    <p style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px', fontWeight: 700 }}>Pedidos recebidos</p>
+                    {receivedPending.map(f => (
+                      <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <Link href={`/perfil/${f.other?.id}`} style={{ flexShrink: 0, textDecoration: 'none' }}>
+                          {f.other?.photo_best ? (
+                            <img src={f.other.photo_best} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.06)' }} />
+                          ) : (
+                            <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <UserCircle size={28} color="var(--muted)" />
+                            </div>
+                          )}
+                        </Link>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ fontWeight: 600, fontSize: 14, margin: 0, color: '#F8F9FA' }}>{f.other?.name ?? 'Usuário'}</p>
+                          <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0 0' }}>Quer ser seu amigo</p>
+                        </div>
+                        <div style={{ display: 'flex', gap: 8 }}>
+                          <button
+                            onClick={() => friendRespond(f.id, 'accept')}
+                            disabled={friendActionLoading === f.id}
+                            style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.3)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#10b981' }}
+                          >
+                            <Check size={16} />
+                          </button>
+                          <button
+                            onClick={() => friendRespond(f.id, 'decline')}
+                            disabled={friendActionLoading === f.id}
+                            style={{ width: 36, height: 36, borderRadius: 10, backgroundColor: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87171' }}
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <div style={{ height: 16 }} />
+                  </>
+                )}
+
+                {sentPending.length > 0 && (
+                  <>
+                    <p style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 8px', fontWeight: 700 }}>Pedidos enviados</p>
+                    {sentPending.map(f => (
+                      <div key={f.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <Link href={`/perfil/${f.other?.id}`} style={{ flexShrink: 0, textDecoration: 'none' }}>
+                          {f.other?.photo_best ? (
+                            <img src={f.other.photo_best} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.06)' }} />
+                          ) : (
+                            <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <UserCircle size={28} color="var(--muted)" />
+                            </div>
+                          )}
+                        </Link>
+                        <div style={{ flex: 1 }}>
+                          <p style={{ fontWeight: 600, fontSize: 14, margin: 0, color: '#F8F9FA' }}>{f.other?.name ?? 'Usuário'}</p>
+                          <p style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0 0', display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <Clock size={11} /> Aguardando resposta
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => friendRemove(f.id)}
+                          disabled={friendActionLoading === f.id}
+                          style={{ fontSize: 12, color: '#f87171', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    ))}
+                  </>
+                )}
+
+                {friendsPending.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+                    <UserPlus size={40} color="var(--muted-2)" strokeWidth={1} style={{ marginBottom: 12 }} />
+                    <p style={{ color: 'var(--muted)', fontSize: 14, margin: 0 }}>Nenhum pedido pendente</p>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         )}
       </main>
 
@@ -801,6 +1093,57 @@ function ConversaItem({ match, formatTempo, onLongPress }: { match: Match; forma
             return msg
           })()}
         </p>
+      </div>
+    </div>
+  )
+}
+
+// ─── Linha de amigo (inline na aba) ──────────────────────────────────────────
+
+function FriendRowInline({
+  friendship, onRemove, actionLoading, online,
+}: {
+  friendship: Friendship
+  onRemove: (id: string) => void
+  actionLoading: string | null
+  online: boolean
+}) {
+  const p = friendship.other
+  if (!p) return null
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+      <Link href={`/perfil/${p.id}`} style={{ position: 'relative', flexShrink: 0, textDecoration: 'none' }}>
+        {p.photo_best ? (
+          <img src={p.photo_best} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.06)' }} />
+        ) : (
+          <div style={{ width: 48, height: 48, borderRadius: '50%', backgroundColor: 'var(--bg-card2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <UserCircle size={28} color="var(--muted)" />
+          </div>
+        )}
+        {online && (
+          <div style={{ position: 'absolute', bottom: 1, right: 1, width: 12, height: 12, borderRadius: '50%', backgroundColor: '#10b981', border: '2px solid var(--bg)' }} />
+        )}
+      </Link>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ fontWeight: 600, fontSize: 14, margin: 0, color: '#F8F9FA', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.name}</p>
+        <p style={{ fontSize: 12, color: online ? '#10b981' : 'var(--muted)', margin: '2px 0 0' }}>
+          {online ? 'Online agora' : p.city ?? 'MeAndYou'}
+        </p>
+      </div>
+      <div style={{ display: 'flex', gap: 6 }}>
+        <Link
+          href={`/perfil/${p.id}`}
+          style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: 'var(--muted)' }}
+        >
+          <UserCircle size={15} />
+        </Link>
+        <button
+          onClick={() => onRemove(friendship.id)}
+          disabled={actionLoading === friendship.id}
+          style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: 'transparent', border: '1px solid rgba(239,68,68,0.2)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87171' }}
+        >
+          <X size={14} />
+        </button>
       </div>
     </div>
   )
