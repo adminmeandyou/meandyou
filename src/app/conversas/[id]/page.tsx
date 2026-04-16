@@ -878,23 +878,6 @@ export default function ChatPage() {
             />
           )}
 
-          {/* Chamar atenção — tremer a tela do outro (estilo MSN) */}
-          <button
-            onClick={handleNudge}
-            style={{ width: 36, height: 36, borderRadius: '50%', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-            title="Chamar atenção"
-          >
-            <Zap size={18} color="rgba(248,249,250,0.40)" strokeWidth={1.5} />
-          </button>
-
-          {/* Ícone info / Central de Segurança */}
-          <button
-            onClick={() => setShowSecuritySheet(true)}
-            style={{ width: 36, height: 36, borderRadius: '50%', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-            title="Segurança"
-          >
-            <Shield size={18} color="rgba(248,249,250,0.25)" strokeWidth={1.5} />
-          </button>
 
           {/* Hamburguer — abre menu de ações */}
           <button
@@ -931,6 +914,7 @@ export default function ChatPage() {
               { icon: friendSent ? <Check size={16} strokeWidth={1.5} /> : <UserPlus size={16} strokeWidth={1.5} />, label: friendSent ? 'Amigo adicionado' : 'Adicionar como amigo', sub: friendSent ? 'Solicitação enviada' : 'Conectem-se fora do app', onClick: () => { setShowMenu(false); handleAddFriend() }, success: friendSent },
               ...(messages.length >= 5 && !ratingDone ? [{ icon: <Star size={16} strokeWidth={1.5} />, label: 'Avaliar conversa', sub: 'Avaliação anônima', onClick: () => { setShowMenu(false); setShowRatingModal(true) } }] : []),
               ...(boloOportunidade && !boloDone ? [{ icon: <Coffee size={16} strokeWidth={1.5} />, label: 'O encontro aconteceu?', sub: 'Conte como foi', onClick: () => { setShowMenu(false); setShowBoloModal(true) } }] : []),
+              { icon: <Shield size={16} strokeWidth={1.5} />, label: 'Central de segurança', sub: 'Denunciar, bloquear, modo invisível', onClick: () => { setShowMenu(false); setShowSecuritySheet(true) } },
             ].map((item, i, arr) => (
               <button key={i} onClick={item.onClick} style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 12,
@@ -1246,6 +1230,13 @@ export default function ChatPage() {
               style={{ width: 34, height: 34, borderRadius: 8, border: 'none', background: showEmojis ? 'rgba(225,29,72,0.10)' : 'transparent', color: showEmojis ? 'var(--accent)' : 'rgba(248,249,250,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
             >
               <Smile size={17} strokeWidth={1.5} />
+            </button>
+            <button
+              onClick={handleNudge}
+              title="Chamar atenção"
+              style={{ width: 34, height: 34, borderRadius: 8, border: 'none', background: 'transparent', color: 'rgba(248,249,250,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            >
+              <Zap size={17} strokeWidth={1.5} />
             </button>
             <div style={{ flex: 1, position: 'relative' }}>
               <textarea
