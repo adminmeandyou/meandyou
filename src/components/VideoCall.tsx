@@ -1,32 +1,25 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import type { ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import {
-  LiveKitRoom,
-  RoomAudioRenderer,
-  VideoTrack,
-  useLocalParticipant,
-  useTracks,
-} from '@livekit/components-react'
-import { Track } from 'livekit-client'
-import '@livekit/components-styles'
 import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { Phone, PhoneOff, PhoneIncoming, AlertCircle, Loader2, Video, VideoOff, Mic, MicOff, ArrowLeft, RotateCcw, FlipHorizontal2, Volume2, VolumeX } from 'lucide-react'
 import Image from 'next/image'
 import { playSoundDirect } from '@/hooks/useSounds'
 import { initVideoCallBus, onVideoCallSignal, sendVideoCallSignal } from '@/lib/videocall-bus'
+import type { CallSignal } from '@/lib/videocall-bus'
+import { WebRTCManager } from '@/lib/webrtc'
 
-// ─── Tela de chamada ativa (LiveKit) ─────────────────────────────────────────
-function ActiveCall({ matchId, otherName, onEnd }: {
+// ─── Tela de chamada ativa (WebRTC P2P) ─────────────────────────────────────
+function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
   matchId: string
+  otherUserId: string
   otherName: string
+  isCaller: boolean
   onEnd: () => void
 }) {
-  const [token, setToken] = useState<string | null>(null)
-  const [livekitUrl, setLivekitUrl] = useState<string | null>(null)
   const [remainingMinutes, setRemainingMinutes] = useState(0)
   const [plan, setPlan] = useState<string>('essencial')
   const [loading, setLoading] = useState(true)
@@ -35,24 +28,117 @@ function ActiveCall({ matchId, otherName, onEnd }: {
   const [limitReached, setLimitReached] = useState(false)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [remoteMuted, setRemoteMuted] = useState(false)
+  const [connected, setConnected] = useState(false)
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
+
   const startTimeRef = useRef<number | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const heartbeatRef = useRef<NodeJS.Timeout | null>(null)
+  const managerRef = useRef<WebRTCManager | null>(null)
+  const localVideoRef = useRef<HTMLVideoElement>(null)
+  const remoteVideoRef = useRef<HTMLVideoElement>(null)
+  const remoteAudioRef = useRef<HTMLAudioElement>(null)
+
+  const [micOn, setMicOn] = useState(true)
+  const [camOn, setCamOn] = useState(true)
+  const [facing, setFacing] = useState<'user' | 'environment'>('user')
+  const [mirrored, setMirrored] = useState(true)
+
+  const handleEnd = useCallback(() => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    if (heartbeatRef.current) clearInterval(heartbeatRef.current)
+    const duration = startTimeRef.current ? Math.floor((Date.now() - startTimeRef.current) / 1000) : 0
+    notifyEnd(matchId, duration)
+    managerRef.current?.destroy()
+    managerRef.current = null
+    onEnd()
+  }, [matchId, onEnd])
 
   useEffect(() => {
     start()
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
       if (heartbeatRef.current) clearInterval(heartbeatRef.current)
+      managerRef.current?.destroy()
+      managerRef.current = null
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchId])
+
+  useEffect(() => {
+    if (!connected) return
+    const unsub = onVideoCallSignal((payload) => {
+      if (payload.match_id !== matchId) return
+      if (payload.type === 'sdp_offer' && payload.sdp) managerRef.current?.handleOffer(payload.sdp)
+      if (payload.type === 'sdp_answer' && payload.sdp) managerRef.current?.handleAnswer(payload.sdp)
+      if (payload.type === 'ice_candidate' && payload.candidate) managerRef.current?.handleIceCandidate(payload.candidate)
+      if (payload.type === 'ended') handleEnd()
+    })
+    return unsub
+  }, [connected, matchId, handleEnd])
+
+  useEffect(() => {
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream
+    }
+  }, [remoteStream])
 
   async function start() {
     setLoading(true)
     setError(null)
     setPermissionDenied(false)
-    await fetchToken()
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      const res = await fetch('/api/videocall/check-limits', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({ matchId }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        if (data.limit_reached) setLimitReached(true)
+        setError(data.error)
+        setLoading(false)
+        return
+      }
+      setRemainingMinutes(data.remaining_minutes)
+      if (data.plan) setPlan(data.plan)
+    } catch {
+      setError('Erro ao conectar. Verifique sua conexão.')
+      setLoading(false)
+      return
+    }
+
+    try {
+      const manager = new WebRTCManager(otherUserId, matchId, {
+        onRemoteStream: (stream) => setRemoteStream(stream),
+        onConnectionState: () => {},
+        onDisconnected: handleEnd,
+      })
+      managerRef.current = manager
+      await manager.init(isCaller)
+
+      const local = manager.getLocalStream()
+      if (localVideoRef.current && local) {
+        localVideoRef.current.srcObject = local
+      }
+
+      setConnected(true)
+      startTimeRef.current = Date.now()
+      timerRef.current = setInterval(() =>
+        setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current!) / 1000)), 1000
+      )
+      sendHeartbeat()
+      heartbeatRef.current = setInterval(sendHeartbeat, 60000)
+    } catch (err) {
+      handleMediaError(err)
+    } finally {
+      setLoading(false)
+    }
   }
 
   function handleMediaError(err: unknown) {
@@ -67,38 +153,10 @@ function ActiveCall({ matchId, otherName, onEnd }: {
     }
   }
 
-  async function fetchToken() {
-    try {
-      const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch('/api/livekit/token', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token ?? ''}`,
-        },
-        body: JSON.stringify({ matchId }),
-      })
-      const data = await res.json()
-      if (!res.ok) {
-        if (data.limit_reached) setLimitReached(true)
-        setError(data.error)
-        return
-      }
-      setToken(data.token)
-      setLivekitUrl(data.livekit_url)
-      setRemainingMinutes(data.remaining_minutes)
-      if (data.plan) setPlan(data.plan)
-    } catch {
-      setError('Erro ao conectar. Verifique sua conexão.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   async function sendHeartbeat() {
     try {
       const { data: { session } } = await supabase.auth.getSession()
-      const res = await fetch('/api/livekit/heartbeat', {
+      const res = await fetch('/api/videocall/heartbeat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,35 +168,68 @@ function ActiveCall({ matchId, otherName, onEnd }: {
       const data = await res.json()
       if (typeof data.remaining_minutes === 'number') setRemainingMinutes(data.remaining_minutes)
       if (data.plan) setPlan(data.plan)
-      if (data.limit_reached) handleDisconnected()
-    } catch {
-      // silencioso — heartbeat perde 1 ping nao e critico
+      if (data.limit_reached) handleEnd()
+    } catch {}
+  }
+
+  async function notifyEnd(mId: string, durationSeconds: number) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      await fetch('/api/videocall/end', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token ?? ''}`,
+        },
+        body: JSON.stringify({ matchId: mId, durationSeconds }),
+      })
+    } catch {}
+  }
+
+  useEffect(() => {
+    if (remainingMinutes <= 0) return
+    const t = setTimeout(handleEnd, remainingMinutes * 60 * 1000)
+    return () => clearTimeout(t)
+  }, [remainingMinutes, handleEnd])
+
+  function toggleMic() {
+    if (!managerRef.current) return
+    playSoundDirect('tap')
+    const on = managerRef.current.toggleMic()
+    setMicOn(on)
+  }
+
+  function toggleCam() {
+    if (!managerRef.current) return
+    playSoundDirect('tap')
+    const on = managerRef.current.toggleCamera()
+    setCamOn(on)
+    if (localVideoRef.current) {
+      localVideoRef.current.srcObject = managerRef.current.getLocalStream()
     }
   }
 
-  function handleConnected() {
-    startTimeRef.current = Date.now()
-    timerRef.current = setInterval(() =>
-      setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current!) / 1000)), 1000
-    )
-    // Heartbeat: debita 1 min imediatamente (cobre o primeiro minuto da chamada)
-    // e depois a cada 60s enquanto a chamada estiver ativa.
-    sendHeartbeat()
-    heartbeatRef.current = setInterval(sendHeartbeat, 60000)
+  async function flipCam() {
+    if (!managerRef.current) return
+    playSoundDirect('tap')
+    const next: 'user' | 'environment' = facing === 'user' ? 'environment' : 'user'
+    try {
+      await managerRef.current.flipCamera(next)
+      setFacing(next)
+      setCamOn(true)
+      setMirrored(next === 'user')
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = managerRef.current.getLocalStream()
+      }
+    } catch (e) {
+      console.warn('flip camera failed', e)
+    }
   }
 
-  function handleDisconnected() {
-    if (timerRef.current) clearInterval(timerRef.current)
-    if (heartbeatRef.current) clearInterval(heartbeatRef.current)
-    onEnd()
+  function toggleMirror() {
+    playSoundDirect('tap')
+    setMirrored(v => !v)
   }
-
-  // Auto-encerra ao atingir o limite de minutos
-  useEffect(() => {
-    if (remainingMinutes <= 0) return
-    const t = setTimeout(handleDisconnected, remainingMinutes * 60 * 1000)
-    return () => clearTimeout(t)
-  }, [remainingMinutes])
 
   if (loading) return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 12, color: 'var(--muted)' }}>
@@ -170,142 +261,33 @@ function ActiveCall({ matchId, otherName, onEnd }: {
     </div>
   )
 
-  if (!token || !livekitUrl) return null
-
-  return (
-    <LiveKitRoom
-      token={token}
-      serverUrl={livekitUrl}
-      connect={true}
-      video={false}
-      audio={false}
-      onConnected={handleConnected}
-      onDisconnected={handleDisconnected}
-      onError={(err) => console.error('LiveKit error:', err)}
-      style={{ height: '100%', background: '#08090E' }}
-    >
-      <CallView
-        otherName={otherName}
-        elapsedSeconds={elapsedSeconds}
-        remainingMinutes={remainingMinutes}
-        plan={plan}
-        remoteMuted={remoteMuted}
-        onToggleRemoteMute={() => setRemoteMuted(v => !v)}
-        onEnd={handleDisconnected}
-        onMediaError={handleMediaError}
-      />
-      <RoomAudioRenderer volume={remoteMuted ? 0 : 1} />
-    </LiveKitRoom>
-  )
-}
-
-// ─── Tela "em chamada" editorial (LiveKit custom) ───────────────────────────
-function CallView({ otherName, elapsedSeconds, remainingMinutes, plan, remoteMuted, onToggleRemoteMute, onEnd, onMediaError }: {
-  otherName: string
-  elapsedSeconds: number
-  remainingMinutes: number
-  plan: string
-  remoteMuted: boolean
-  onToggleRemoteMute: () => void
-  onEnd: () => void
-  onMediaError: (err: unknown) => void
-}) {
   const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1)
   const minutesCritical = remainingMinutes > 0 && remainingMinutes <= 3
   const minutesLow = remainingMinutes > 3 && remainingMinutes <= 10
   const minutesColor = minutesCritical ? '#F43F5E' : minutesLow ? '#F59E0B' : 'rgba(255,255,255,0.55)'
   const minutesBg = minutesCritical ? 'rgba(244,63,94,0.14)' : minutesLow ? 'rgba(245,158,11,0.14)' : 'rgba(15,17,23,0.7)'
   const minutesBorder = minutesCritical ? 'rgba(244,63,94,0.35)' : minutesLow ? 'rgba(245,158,11,0.35)' : 'rgba(255,255,255,0.05)'
-  const { localParticipant } = useLocalParticipant()
-  const tracks = useTracks([Track.Source.Camera], { onlySubscribed: false })
-  const remoteCam = tracks.find(t => !t.participant.isLocal)
-  const localCam = tracks.find(t => t.participant.isLocal)
-
-  const [micOn, setMicOn] = useState(true)
-  const [camOn, setCamOn] = useState(true)
-  const [facing, setFacing] = useState<'user' | 'environment'>('user')
-  const [mirrored, setMirrored] = useState(true)
-
-  // Habilita camera e microfone manualmente apos conectar.
-  // Faz de forma serial (mic primeiro) para evitar race no iOS Safari.
-  useEffect(() => {
-    if (!localParticipant) return
-    let cancelled = false
-    ;(async () => {
-      try {
-        if (!localParticipant.isMicrophoneEnabled) {
-          await localParticipant.setMicrophoneEnabled(true)
-        }
-        if (cancelled) return
-        if (!localParticipant.isCameraEnabled) {
-          await localParticipant.setCameraEnabled(true, { facingMode: 'user' })
-        }
-      } catch (e) {
-        console.error('enable mic/cam failed', e)
-        if (!cancelled) onMediaError(e)
-        return
-      }
-      if (!cancelled) {
-        setMicOn(localParticipant.isMicrophoneEnabled)
-        setCamOn(localParticipant.isCameraEnabled)
-      }
-    })()
-    return () => { cancelled = true }
-  }, [localParticipant, onMediaError])
-
-  async function toggleMic() {
-    if (!localParticipant) return
-    playSoundDirect('tap')
-    const next = !micOn
-    await localParticipant.setMicrophoneEnabled(next)
-    setMicOn(next)
-  }
-
-  async function toggleCam() {
-    if (!localParticipant) return
-    playSoundDirect('tap')
-    const next = !camOn
-    await localParticipant.setCameraEnabled(next)
-    setCamOn(next)
-  }
-
-  async function flipCam() {
-    if (!localParticipant) return
-    playSoundDirect('tap')
-    const next: 'user' | 'environment' = facing === 'user' ? 'environment' : 'user'
-    try {
-      // Precisa desligar antes de religar pra forcar o browser
-      // a pegar a outra camera (frontal <-> traseira).
-      await localParticipant.setCameraEnabled(false)
-      await localParticipant.setCameraEnabled(true, { facingMode: next })
-      setFacing(next)
-      setCamOn(true)
-      // Camera traseira nao precisa de espelhamento, frontal sim por padrao
-      setMirrored(next === 'user')
-    } catch (e) {
-      console.warn('flip camera failed', e)
-      // Fallback: tenta voltar a ligar o que tinha
-      try { await localParticipant.setCameraEnabled(true, { facingMode: facing }) } catch {}
-    }
-  }
-
-  function toggleMirror() {
-    playSoundDirect('tap')
-    setMirrored(v => !v)
-  }
 
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', background: '#08090E', fontFamily: 'var(--font-jakarta)', overflow: 'hidden' }}>
       {/* Remote video (full screen) */}
       <div style={{ position: 'absolute', inset: 0, background: '#0d0e13' }}>
-        {remoteCam?.publication?.track ? (
-          <VideoTrack trackRef={remoteCam} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        {remoteStream && remoteStream.getVideoTracks().length > 0 ? (
+          <video
+            ref={remoteVideoRef}
+            autoPlay
+            playsInline
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+          />
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)', fontSize: 13 }}>
             Aguardando vídeo de {otherName}…
           </div>
         )}
       </div>
+
+      {/* Remote audio */}
+      <audio ref={remoteAudioRef} autoPlay style={{ display: 'none' }} />
 
       {/* Vignettes */}
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 160, background: 'linear-gradient(to bottom, rgba(8,9,14,0.7) 0%, rgba(8,9,14,0) 100%)', pointerEvents: 'none', zIndex: 10 }} />
@@ -315,7 +297,7 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, plan, remoteMut
       <header style={{ position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px', paddingTop: 'max(16px, env(safe-area-inset-top, 16px))' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, minWidth: 0 }}>
           <button
-            onClick={onEnd}
+            onClick={handleEnd}
             aria-label="Voltar"
             style={{ flexShrink: 0, width: 40, height: 40, borderRadius: '50%', background: 'rgba(15,17,23,0.5)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', padding: 0 }}
           >
@@ -362,8 +344,14 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, plan, remoteMut
 
       {/* PIP — self */}
       <section style={{ position: 'absolute', right: 20, bottom: 148, width: 104, aspectRatio: '3/4', zIndex: 35, borderRadius: 12, overflow: 'hidden', boxShadow: '0 20px 40px rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.10)', background: '#13161f' }}>
-        {localCam?.publication?.track && camOn ? (
-          <VideoTrack trackRef={localCam} style={{ width: '100%', height: '100%', objectFit: 'cover', transform: mirrored ? 'scaleX(-1)' : 'none' }} />
+        {camOn ? (
+          <video
+            ref={localVideoRef}
+            autoPlay
+            playsInline
+            muted
+            style={{ width: '100%', height: '100%', objectFit: 'cover', transform: mirrored ? 'scaleX(-1)' : 'none' }}
+          />
         ) : (
           <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <VideoOff size={20} color="rgba(255,255,255,0.4)" strokeWidth={1.5} />
@@ -387,7 +375,7 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, plan, remoteMut
             active={!camOn}
           />
           <button
-            onClick={onEnd}
+            onClick={handleEnd}
             aria-label="Encerrar chamada"
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
@@ -410,7 +398,14 @@ function CallView({ otherName, elapsedSeconds, remainingMinutes, plan, remoteMut
           <ControlButton
             icon={remoteMuted ? <VolumeX size={20} strokeWidth={1.5} /> : <Volume2 size={20} strokeWidth={1.5} />}
             label="Som"
-            onClick={onToggleRemoteMute}
+            onClick={() => {
+              setRemoteMuted(v => {
+                const next = !v
+                if (remoteAudioRef.current) remoteAudioRef.current.muted = next
+                if (remoteVideoRef.current) remoteVideoRef.current.muted = next
+                return next
+              })
+            }}
             active={remoteMuted}
           />
         </div>
@@ -571,6 +566,9 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
   const [callId, setCallId] = useState<string | null>(null)
   const [callerName, setCallerName] = useState('')
   const [callerPhoto, setCallerPhoto] = useState<string | null>(null)
+  const [callerIdState, setCallerIdState] = useState<string | null>(null)
+  const [isCaller, setIsCaller] = useState(false)
+  const [otherUserId, setOtherUserId] = useState<string | null>(null)
   const missedTimeout = useRef<NodeJS.Timeout | null>(null)
   const calleeIdRef = useRef<string | null>(null)
 
@@ -581,9 +579,9 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
     const unsub = onVideoCallSignal((payload) => {
       if (!payload) return
 
-      // Chamada recebida: quem está sendo chamado (user corrente no chat)
       if (payload.type === 'ringing' && payload.callee_id === user.id && payload.match_id === matchId) {
         setCallId(payload.call_id ?? null)
+        setCallerIdState(payload.caller_id ?? null)
         setCallState('incoming')
         if (payload.caller_id) loadCallerProfile(payload.caller_id)
         missedTimeout.current = setTimeout(() => {
@@ -592,20 +590,17 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
         }, 40000)
       }
 
-      // Chamador: outro lado aceitou minha ligação
       if (payload.type === 'accepted' && payload.match_id === matchId) {
         if (missedTimeout.current) clearTimeout(missedTimeout.current)
         setCallState('active')
       }
 
-      // Chamador: outro lado recusou
       if (payload.type === 'rejected' && payload.match_id === matchId) {
         if (missedTimeout.current) clearTimeout(missedTimeout.current)
         setCallState('rejected')
         setTimeout(() => setCallState('idle'), 3000)
       }
 
-      // Qualquer lado: chamada encerrada/cancelada
       if ((payload.type === 'ended' || payload.type === 'cancelled') && payload.match_id === matchId) {
         setCallState('idle')
       }
@@ -637,6 +632,8 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
 
     const calleeId = match.user1 === user.id ? match.user2 : match.user1
     calleeIdRef.current = calleeId
+    setOtherUserId(calleeId)
+    setIsCaller(true)
     const { data: call } = await supabase
       .from('video_calls')
       .insert({ match_id: matchId, caller_id: user.id, callee_id: calleeId, status: 'ringing' })
@@ -647,7 +644,6 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
       setCallId(call.id)
       setCallState('calling')
 
-      // Envia ringing direto para o canal do callee (1 send efêmero)
       await sendVideoCallSignal(calleeId, {
         type: 'ringing',
         call_id: call.id,
@@ -673,6 +669,8 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
     await supabase.from('video_calls').update({ status: 'accepted' }).eq('id', callId)
     const { data: call } = await supabase.from('video_calls').select('caller_id').eq('id', callId).single()
     if (call) {
+      setOtherUserId(call.caller_id)
+      setIsCaller(false)
       await sendVideoCallSignal(call.caller_id, {
         type: 'accepted', call_id: callId, match_id: matchId,
       })
@@ -735,9 +733,9 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
         <IncomingCallScreen callerName={callerName} callerPhoto={callerPhoto} onAccept={handleAccept} onReject={handleReject} />
       </div>
     )
-    if (callState === 'active') return (
+    if (callState === 'active' && otherUserId) return (
       <div style={overlayBase}>
-        <ActiveCall matchId={matchId} otherName={otherName} onEnd={handleEndCall} />
+        <ActiveCall matchId={matchId} otherUserId={otherUserId} otherName={otherName} isCaller={isCaller} onEnd={handleEndCall} />
       </div>
     )
     if (callState === 'rejected') return (

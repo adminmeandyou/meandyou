@@ -7,13 +7,15 @@
 import { supabase } from '@/app/lib/supabase'
 
 export type CallSignal = {
-  type: 'ringing' | 'accepted' | 'rejected' | 'ended' | 'cancelled'
+  type: 'ringing' | 'accepted' | 'rejected' | 'ended' | 'cancelled' | 'sdp_offer' | 'sdp_answer' | 'ice_candidate'
   call_id?: string
   match_id?: string
   caller_id?: string
   callee_id?: string
   caller_name?: string
   caller_photo?: string | null
+  sdp?: RTCSessionDescriptionInit
+  candidate?: RTCIceCandidateInit
 }
 
 type Listener = (payload: CallSignal) => void

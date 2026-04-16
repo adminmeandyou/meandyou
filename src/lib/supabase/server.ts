@@ -3,7 +3,7 @@ import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { cookies } from 'next/headers'
 import { createServerClient } from '@supabase/ssr'
 
-// Usado em API routes que precisam de sessão do usuário (ex: livekit/token)
+// Usado em API routes que precisam de sessão do usuário (ex: videocall/check-limits)
 export async function createClient() {
   const cookieStore = await cookies()
 

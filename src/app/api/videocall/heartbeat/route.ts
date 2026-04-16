@@ -1,7 +1,3 @@
-// src/app/api/livekit/heartbeat/route.ts
-// Heartbeat chamado pelo client a cada 60s durante a videochamada.
-// Debita 1 minuto do plano diario e retorna quantos minutos ainda restam.
-// Funciona como fallback quando o webhook room_finished do LiveKit nao dispara.
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 
@@ -37,14 +33,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Match não encontrado' }, { status: 403 })
     }
 
-    // Debita 1 minuto do usuario autenticado
     await supabaseAdmin.rpc('register_video_minutes', {
       p_user_id:  user.id,
       p_match_id: matchId,
       p_minutes:  1,
     })
 
-    // Retorna minutos restantes apos o debito
     const [profileResult, minutesResult] = await Promise.all([
       supabaseAdmin.from('profiles').select('plan').eq('id', user.id).single(),
       supabaseAdmin
@@ -67,7 +61,7 @@ export async function POST(req: NextRequest) {
       limit_reached: minutosRestantes <= 0,
     })
   } catch (err) {
-    console.error('Erro no heartbeat LiveKit:', err)
+    console.error('Erro no heartbeat videocall:', err)
     return NextResponse.json({ error: 'Erro interno' }, { status: 500 })
   }
 }

@@ -103,7 +103,7 @@ export default function Privacidade() {
         </Section>
 
         <Section titulo="6. Compartilhamento de dados">
-          Não vendemos seus dados. Podemos compartilhar com: (a) <strong>Provedores de serviço</strong>: Supabase (banco de dados), Vercel (hospedagem), Resend (e-mail), LiveKit (videochamada), gateway de pagamentos — todos sob acordos de confidencialidade; (b) <strong>Autoridades</strong>: quando exigido por ordem judicial ou obrigação legal. Todos os prestadores de serviço são obrigados a tratar seus dados com o mesmo nível de proteção aplicado por nós.
+          Não vendemos seus dados. Podemos compartilhar com: (a) <strong>Provedores de serviço</strong>: Supabase (banco de dados), Vercel (hospedagem), Resend (e-mail), Cloudflare (videochamada), gateway de pagamentos — todos sob acordos de confidencialidade; (b) <strong>Autoridades</strong>: quando exigido por ordem judicial ou obrigação legal. Todos os prestadores de serviço são obrigados a tratar seus dados com o mesmo nível de proteção aplicado por nós.
         </Section>
 
         <Section titulo="7. Armazenamento e segurança">
