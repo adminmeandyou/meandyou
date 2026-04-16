@@ -13,7 +13,7 @@ import type { CallSignal } from '@/lib/videocall-bus'
 import { WebRTCManager } from '@/lib/webrtc'
 
 // ─── Tela de chamada ativa (WebRTC P2P) ─────────────────────────────────────
-function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
+export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
   matchId: string
   otherUserId: string
   otherName: string

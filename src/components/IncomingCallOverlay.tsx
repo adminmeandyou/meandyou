@@ -1,28 +1,40 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
+// useRouter removido — overlay renderiza ActiveCall direto, sem navegacao
 import Image from 'next/image'
 import { Phone, PhoneOff } from 'lucide-react'
 import { supabase } from '@/app/lib/supabase'
-import { initVideoCallBus, onVideoCallSignal, sendVideoCallSignal, teardownVideoCallBus } from '@/lib/videocall-bus'
+import { initVideoCallBus, onVideoCallSignal, sendVideoCallSignal } from '@/lib/videocall-bus'
+import { ActiveCall } from './VideoCall'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 interface CallerInfo {
   matchId: string
+  callId: string
   callerId: string
   callerName: string
   callerPhoto: string | null
 }
 
 /**
- * Overlay global de chamada de vídeo recebida.
+ * Overlay global de chamada de video recebida.
  * Montado no AppShell — aparece em qualquer tela do app.
- * Usa o videocall-bus (1 canal Realtime fixo por usuário).
+ * Usa o videocall-bus (1 canal Realtime fixo por usuario).
+ *
+ * Quando o usuario aceita, renderiza ActiveCall diretamente
+ * em vez de navegar para outra pagina.
  */
 export function IncomingCallOverlay() {
-  const router = useRouter()
+  const pathname = usePathname()
+  const pathnameRef = useRef(pathname)
+  pathnameRef.current = pathname
+
   const [incoming, setIncoming] = useState<CallerInfo | null>(null)
+  const [activeCall, setActiveCall] = useState<CallerInfo | null>(null)
   const userIdRef = useRef<string | null>(null)
+  const missedTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
     let mounted = true
@@ -37,16 +49,31 @@ export function IncomingCallOverlay() {
 
       unsub = onVideoCallSignal((payload) => {
         if (!mounted) return
+
         if (payload.type === 'ringing' && payload.callee_id === user.id) {
+          // Se o usuario esta na conversa deste match, o VideoCallButton
+          // ja cuida — nao duplicar o overlay aqui
+          if (payload.match_id && pathnameRef.current === `/conversas/${payload.match_id}`) return
+
           setIncoming({
             matchId: payload.match_id ?? '',
+            callId: payload.call_id ?? '',
             callerId: payload.caller_id ?? '',
-            callerName: payload.caller_name ?? 'Alguém',
+            callerName: payload.caller_name ?? 'Alguem',
             callerPhoto: payload.caller_photo ?? null,
           })
+
+          // Auto-dismiss se nao atender em 40s
+          if (missedTimeoutRef.current) clearTimeout(missedTimeoutRef.current)
+          missedTimeoutRef.current = setTimeout(() => {
+            setIncoming(null)
+          }, 40000)
         }
+
         if (payload.type === 'cancelled' || payload.type === 'ended') {
           setIncoming(prev => (prev && prev.matchId === payload.match_id ? null : prev))
+          setActiveCall(prev => (prev && prev.matchId === payload.match_id ? null : prev))
+          if (missedTimeoutRef.current) clearTimeout(missedTimeoutRef.current)
         }
       })
     }
@@ -56,42 +83,106 @@ export function IncomingCallOverlay() {
     return () => {
       mounted = false
       if (unsub) unsub()
-      teardownVideoCallBus()
+      if (missedTimeoutRef.current) clearTimeout(missedTimeoutRef.current)
+      // NAO chamar teardownVideoCallBus aqui — o bus e compartilhado
+      // com VideoCallButton e deve persistir enquanto o usuario estiver logado
     }
   }, [])
 
+  useEffect(() => {
+    if (incoming) {
+      playSoundDirect('notification')
+      const id = setInterval(() => playSoundDirect('notification'), 1500)
+      return () => clearInterval(id)
+    }
+  }, [incoming])
+
   async function handleAccept() {
     if (!incoming) return
-    const matchId = incoming.matchId
-    const callerId = incoming.callerId
+    if (missedTimeoutRef.current) clearTimeout(missedTimeoutRef.current)
+
+    const info = { ...incoming }
     setIncoming(null)
+
+    // Atualiza banco (silencioso — pode falhar se tabela for video_calls)
+    try {
+      if (info.callId) {
+        await supabase.from('video_calls').update({ status: 'accepted' }).eq('id', info.callId)
+      }
+    } catch {}
+
     // Avisa o chamador que foi aceito
-    await sendVideoCallSignal(callerId, {
+    await sendVideoCallSignal(info.callerId, {
       type: 'accepted',
-      match_id: matchId,
+      call_id: info.callId,
+      match_id: info.matchId,
       callee_id: userIdRef.current ?? undefined,
     })
-    router.push(`/videochamada/${matchId}`)
+
+    // Renderiza ActiveCall diretamente
+    setActiveCall(info)
   }
 
   async function handleReject() {
     if (!incoming) return
+    if (missedTimeoutRef.current) clearTimeout(missedTimeoutRef.current)
+
     await sendVideoCallSignal(incoming.callerId, {
       type: 'rejected',
       match_id: incoming.matchId,
       callee_id: userIdRef.current ?? undefined,
     })
-    // Atualiza banco
-    await supabase
-      .from('videocalls')
-      .update({ status: 'rejected' })
-      .eq('match_id', incoming.matchId)
-      .eq('status', 'ringing')
+
+    try {
+      if (incoming.callId) {
+        await supabase.from('video_calls').update({ status: 'rejected' }).eq('id', incoming.callId)
+      }
+    } catch {}
+
     setIncoming(null)
   }
 
+  async function handleEndCall() {
+    if (!activeCall) return
+
+    try {
+      if (activeCall.callId) {
+        await supabase.from('video_calls').update({ status: 'ended' }).eq('id', activeCall.callId)
+      }
+    } catch {}
+
+    await sendVideoCallSignal(activeCall.callerId, {
+      type: 'ended',
+      call_id: activeCall.callId,
+      match_id: activeCall.matchId,
+    })
+
+    setActiveCall(null)
+  }
+
+  // Chamada ativa — renderiza ActiveCall full-screen
+  if (activeCall) {
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: 'var(--bg)',
+        width: '100vw', height: '100dvh',
+      }}>
+        <ActiveCall
+          matchId={activeCall.matchId}
+          otherUserId={activeCall.callerId}
+          otherName={activeCall.callerName}
+          isCaller={false}
+          onEnd={handleEndCall}
+        />
+      </div>
+    )
+  }
+
+  // Sem chamada recebida
   if (!incoming) return null
 
+  // Tela de chamada recebida
   return (
     <div
       style={{
@@ -129,13 +220,13 @@ export function IncomingCallOverlay() {
       </div>
 
       <p style={{ fontSize: 10, color: '#F43F5E', letterSpacing: '0.22em', textTransform: 'uppercase', fontWeight: 700, margin: '0 0 8px' }}>
-        Chamada de vídeo
+        Chamada de video
       </p>
       <p style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', fontSize: 30, color: 'var(--text)', margin: 0, letterSpacing: '-0.02em' }}>
         {incoming.callerName}
       </p>
       <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.50)', margin: '8px 0 48px' }}>
-        Está te chamando…
+        Esta te chamando…
       </p>
 
       <div style={{ display: 'flex', gap: 56, alignItems: 'center' }}>
