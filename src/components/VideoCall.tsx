@@ -29,6 +29,7 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   const [remoteMuted, setRemoteMuted] = useState(false)
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
+  const [remoteTrackCount, setRemoteTrackCount] = useState(0)
 
   const startTimeRef = useRef<number | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -89,10 +90,18 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
   }, [matchId])
 
   useEffect(() => {
-    if (remoteVideoRef.current && remoteStream) {
-      remoteVideoRef.current.srcObject = remoteStream
+    if (remoteStream) {
+      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream
+      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStream
     }
-  }, [remoteStream])
+  }, [remoteStream, remoteTrackCount])
+
+  useEffect(() => {
+    if (!loading && localVideoRef.current && managerRef.current) {
+      const local = managerRef.current.getLocalStream()
+      if (local) localVideoRef.current.srcObject = local
+    }
+  }, [loading])
 
   async function start() {
     setLoading(true)
@@ -127,7 +136,10 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
     try {
       const { data: { session: sess } } = await supabase.auth.getSession()
       const manager = new WebRTCManager(otherUserId, matchId, sess?.access_token ?? '', plan, {
-        onRemoteStream: (stream) => setRemoteStream(stream),
+        onRemoteStream: (stream) => {
+          setRemoteStream(stream)
+          setRemoteTrackCount(stream.getTracks().length)
+        },
         onConnectionState: () => {},
         onDisconnected: handleEnd,
       })
@@ -135,11 +147,6 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
       await manager.init(isCaller)
       managerReadyRef.current = true
       drainSignalQueue()
-
-      const local = manager.getLocalStream()
-      if (localVideoRef.current && local) {
-        localVideoRef.current.srcObject = local
-      }
 
       startTimeRef.current = Date.now()
       timerRef.current = setInterval(() =>
@@ -342,7 +349,7 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
     <div style={{ position: 'relative', width: '100%', height: '100%', background: '#08090E', fontFamily: 'var(--font-jakarta)', overflow: 'hidden' }}>
       {/* Remote video (full screen) */}
       <div style={{ position: 'absolute', inset: 0, background: '#0d0e13' }}>
-        {remoteStream && remoteStream.getVideoTracks().length > 0 ? (
+        {remoteStream && remoteTrackCount > 0 && remoteStream.getVideoTracks().length > 0 ? (
           <video
             ref={remoteVideoRef}
             autoPlay
