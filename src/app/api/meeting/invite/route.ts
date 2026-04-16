@@ -88,13 +88,21 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Match não encontrado' }, { status: 404 })
   }
 
-  // Cancela convites pendentes anteriores deste proposer neste match
-  await supabase
+  // Verifica se já existe um encontro ativo (pending ou accepted) neste match
+  const { data: activeInvite } = await supabase
     .from('meeting_invites')
-    .update({ status: 'cancelled' })
+    .select('id, status')
     .eq('match_id', matchId)
-    .eq('proposer_id', user.id)
-    .eq('status', 'pending')
+    .in('status', ['pending', 'accepted'])
+    .limit(1)
+    .maybeSingle()
+
+  if (activeInvite) {
+    const msg = activeInvite.status === 'pending'
+      ? 'Já existe um convite pendente com essa pessoa. Cancele ou aguarde a resposta antes de criar outro.'
+      : 'Já existe um encontro confirmado com essa pessoa. Cancele ou conclua antes de criar outro.'
+    return NextResponse.json({ error: msg }, { status: 409 })
+  }
 
   const { data, error } = await supabase
     .from('meeting_invites')
