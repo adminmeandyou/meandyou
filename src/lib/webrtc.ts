@@ -1,16 +1,26 @@
 import { sendVideoCallSignal } from '@/lib/videocall-bus'
 
-const ICE_SERVERS: RTCIceServer[] = [
+const FALLBACK_ICE: RTCIceServer[] = [
   { urls: 'stun:stun.cloudflare.com:3478' },
   { urls: 'stun:stun.l.google.com:19302' },
-  ...(process.env.NEXT_PUBLIC_TURN_URL
-    ? [{
-        urls: process.env.NEXT_PUBLIC_TURN_URL,
-        username: process.env.NEXT_PUBLIC_TURN_USERNAME ?? '',
-        credential: process.env.NEXT_PUBLIC_TURN_CREDENTIAL ?? '',
-      }]
-    : []),
 ]
+
+async function fetchIceServers(accessToken: string): Promise<RTCIceServer[]> {
+  try {
+    const res = await fetch('/api/videocall/ice-servers', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${accessToken}`,
+      },
+    })
+    if (!res.ok) return FALLBACK_ICE
+    const data = await res.json()
+    return data.iceServers ?? FALLBACK_ICE
+  } catch {
+    return FALLBACK_ICE
+  }
+}
 
 export type WebRTCCallbacks = {
   onRemoteStream: (stream: MediaStream) => void
@@ -24,18 +34,21 @@ export class WebRTCManager {
   private remoteStream: MediaStream | null = null
   private targetUserId: string
   private matchId: string
+  private accessToken: string
   private callbacks: WebRTCCallbacks
   private pendingCandidates: RTCIceCandidateInit[] = []
   private hasRemoteDescription = false
 
-  constructor(targetUserId: string, matchId: string, callbacks: WebRTCCallbacks) {
+  constructor(targetUserId: string, matchId: string, accessToken: string, callbacks: WebRTCCallbacks) {
     this.targetUserId = targetUserId
     this.matchId = matchId
+    this.accessToken = accessToken
     this.callbacks = callbacks
   }
 
   async init(isCaller: boolean, facingMode: 'user' | 'environment' = 'user') {
-    this.pc = new RTCPeerConnection({ iceServers: ICE_SERVERS })
+    const iceServers = await fetchIceServers(this.accessToken)
+    this.pc = new RTCPeerConnection({ iceServers })
     this.remoteStream = new MediaStream()
 
     this.pc.onicecandidate = (e) => {
