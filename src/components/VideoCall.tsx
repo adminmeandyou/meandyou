@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Phone, PhoneOff, PhoneIncoming, AlertCircle, Loader2, Video, VideoOff, Mic, MicOff, ArrowLeft, RotateCcw, FlipHorizontal2, Volume2, VolumeX } from 'lucide-react'
 import Image from 'next/image'
 import { playSoundDirect } from '@/hooks/useSounds'
+import { initVideoCallBus, onVideoCallSignal, sendVideoCallSignal } from '@/lib/videocall-bus'
 
 // ─── Tela de chamada ativa (LiveKit) ─────────────────────────────────────────
 function ActiveCall({ matchId, otherName, onEnd }: {
@@ -571,50 +572,47 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
   const [callerName, setCallerName] = useState('')
   const [callerPhoto, setCallerPhoto] = useState<string | null>(null)
   const missedTimeout = useRef<NodeJS.Timeout | null>(null)
-  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
+  const calleeIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     if (!user) return
+    initVideoCallBus(user.id)
 
-    // Broadcast channel — gratuito no plano free (postgres_changes filtrado exige pago)
-    const channel = supabase.channel(`videocall:${matchId}`)
-      .on('broadcast', { event: 'call_signal' }, ({ payload }) => {
-        if (!payload) return
+    const unsub = onVideoCallSignal((payload) => {
+      if (!payload) return
 
-        // Chamada recebida: quem está sendo chamado
-        if (payload.type === 'ringing' && payload.callee_id === user.id) {
-          setCallId(payload.call_id)
-          setCallState('incoming')
-          loadCallerProfile(payload.caller_id)
-          missedTimeout.current = setTimeout(() => {
-            setCallState('missed')
-            setTimeout(() => setCallState('idle'), 3000)
-          }, 40000)
-        }
-
-        // Chamador: outro lado aceitou
-        if (payload.type === 'accepted' && payload.caller_id === user.id) {
-          if (missedTimeout.current) clearTimeout(missedTimeout.current)
-          setCallState('active')
-        }
-
-        // Chamador: outro lado recusou
-        if (payload.type === 'rejected' && payload.caller_id === user.id) {
-          if (missedTimeout.current) clearTimeout(missedTimeout.current)
-          setCallState('rejected')
+      // Chamada recebida: quem está sendo chamado (user corrente no chat)
+      if (payload.type === 'ringing' && payload.callee_id === user.id && payload.match_id === matchId) {
+        setCallId(payload.call_id ?? null)
+        setCallState('incoming')
+        if (payload.caller_id) loadCallerProfile(payload.caller_id)
+        missedTimeout.current = setTimeout(() => {
+          setCallState('missed')
           setTimeout(() => setCallState('idle'), 3000)
-        }
+        }, 40000)
+      }
 
-        // Qualquer lado: chamada encerrada
-        if (payload.type === 'ended') {
-          setCallState('idle')
-        }
-      })
-      .subscribe()
+      // Chamador: outro lado aceitou minha ligação
+      if (payload.type === 'accepted' && payload.match_id === matchId) {
+        if (missedTimeout.current) clearTimeout(missedTimeout.current)
+        setCallState('active')
+      }
 
-    channelRef.current = channel
+      // Chamador: outro lado recusou
+      if (payload.type === 'rejected' && payload.match_id === matchId) {
+        if (missedTimeout.current) clearTimeout(missedTimeout.current)
+        setCallState('rejected')
+        setTimeout(() => setCallState('idle'), 3000)
+      }
+
+      // Qualquer lado: chamada encerrada/cancelada
+      if ((payload.type === 'ended' || payload.type === 'cancelled') && payload.match_id === matchId) {
+        setCallState('idle')
+      }
+    })
+
     return () => {
-      channel.unsubscribe()
+      unsub()
       if (missedTimeout.current) clearTimeout(missedTimeout.current)
     }
   }, [user, matchId])
@@ -628,14 +626,6 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
     if (data) { setCallerName(data.name); setCallerPhoto(data.photo_best) }
   }
 
-  async function broadcastSignal(payload: Record<string, unknown>) {
-    await channelRef.current?.send({
-      type: 'broadcast',
-      event: 'call_signal',
-      payload,
-    })
-  }
-
   async function handleCall() {
     if (!user) return
     const { data: match } = await supabase
@@ -646,6 +636,7 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
     if (!match) return
 
     const calleeId = match.user1 === user.id ? match.user2 : match.user1
+    calleeIdRef.current = calleeId
     const { data: call } = await supabase
       .from('video_calls')
       .insert({ match_id: matchId, caller_id: user.id, callee_id: calleeId, status: 'ringing' })
@@ -656,12 +647,20 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
       setCallId(call.id)
       setCallState('calling')
 
-      // Notifica o outro lado via broadcast (funciona no plano gratuito)
-      await broadcastSignal({ type: 'ringing', call_id: call.id, caller_id: user.id, callee_id: calleeId })
+      // Envia ringing direto para o canal do callee (1 send efêmero)
+      await sendVideoCallSignal(calleeId, {
+        type: 'ringing',
+        call_id: call.id,
+        match_id: matchId,
+        caller_id: user.id,
+        callee_id: calleeId,
+        caller_name: otherName,
+        caller_photo: otherPhoto ?? null,
+      })
 
       missedTimeout.current = setTimeout(async () => {
         await supabase.from('video_calls').update({ status: 'missed' }).eq('id', call.id)
-        await broadcastSignal({ type: 'ended', call_id: call.id })
+        await sendVideoCallSignal(calleeId, { type: 'ended', match_id: matchId, call_id: call.id })
         setCallState('missed')
         setTimeout(() => setCallState('idle'), 3000)
       }, 40000)
@@ -672,9 +671,12 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
     if (!callId || !user) return
     if (missedTimeout.current) clearTimeout(missedTimeout.current)
     await supabase.from('video_calls').update({ status: 'accepted' }).eq('id', callId)
-    // Avisa o chamador que foi aceito
     const { data: call } = await supabase.from('video_calls').select('caller_id').eq('id', callId).single()
-    if (call) await broadcastSignal({ type: 'accepted', call_id: callId, caller_id: call.caller_id })
+    if (call) {
+      await sendVideoCallSignal(call.caller_id, {
+        type: 'accepted', call_id: callId, match_id: matchId,
+      })
+    }
     setCallState('active')
   }
 
@@ -683,14 +685,22 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
     if (missedTimeout.current) clearTimeout(missedTimeout.current)
     await supabase.from('video_calls').update({ status: 'rejected' }).eq('id', callId)
     const { data: call } = await supabase.from('video_calls').select('caller_id').eq('id', callId).single()
-    if (call) await broadcastSignal({ type: 'rejected', call_id: callId, caller_id: call.caller_id })
+    if (call) {
+      await sendVideoCallSignal(call.caller_id, {
+        type: 'rejected', call_id: callId, match_id: matchId,
+      })
+    }
     setCallState('idle')
   }
 
   async function handleEndCall() {
     if (callId) {
       await supabase.from('video_calls').update({ status: 'ended' }).eq('id', callId)
-      await broadcastSignal({ type: 'ended', call_id: callId })
+      const { data: call } = await supabase.from('video_calls').select('caller_id, callee_id').eq('id', callId).single()
+      const otherId = call ? (call.caller_id === user?.id ? call.callee_id : call.caller_id) : calleeIdRef.current
+      if (otherId) {
+        await sendVideoCallSignal(otherId, { type: 'ended', call_id: callId, match_id: matchId })
+      }
     }
     setCallId(null)
     setCallState('idle')
@@ -700,7 +710,9 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
     if (callId) {
       if (missedTimeout.current) clearTimeout(missedTimeout.current)
       await supabase.from('video_calls').update({ status: 'ended' }).eq('id', callId)
-      await broadcastSignal({ type: 'ended', call_id: callId })
+      if (calleeIdRef.current) {
+        await sendVideoCallSignal(calleeIdRef.current, { type: 'cancelled', call_id: callId, match_id: matchId })
+      }
     }
     setCallId(null)
     setCallState('idle')

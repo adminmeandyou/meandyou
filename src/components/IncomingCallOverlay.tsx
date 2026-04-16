@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { Phone, PhoneOff } from 'lucide-react'
 import { supabase } from '@/app/lib/supabase'
+import { initVideoCallBus, onVideoCallSignal, sendVideoCallSignal, teardownVideoCallBus } from '@/lib/videocall-bus'
 
 interface CallerInfo {
   matchId: string
@@ -16,86 +17,69 @@ interface CallerInfo {
 /**
  * Overlay global de chamada de vídeo recebida.
  * Montado no AppShell — aparece em qualquer tela do app.
- * Escuta Broadcast em todos os matches ativos do usuário logado.
+ * Usa o videocall-bus (1 canal Realtime fixo por usuário).
  */
 export function IncomingCallOverlay() {
   const router = useRouter()
   const [incoming, setIncoming] = useState<CallerInfo | null>(null)
-  const channelsRef = useRef<ReturnType<typeof supabase.channel>[]>([])
   const userIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     let mounted = true
+    let unsub: (() => void) | null = null
 
     async function setup() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user || !mounted) return
       userIdRef.current = user.id
 
-      // Busca todos os matches ativos do usuário
-      const { data: matches } = await supabase
-        .from('matches')
-        .select('id')
-        .or(`user1.eq.${user.id},user2.eq.${user.id}`)
-        .eq('status', 'active')
+      initVideoCallBus(user.id)
 
-      if (!matches || !mounted) return
-
-      // Para cada match, cria um canal Broadcast escutando chamadas
-      for (const match of matches) {
-        const channel = supabase
-          .channel(`videocall:${match.id}`)
-          .on('broadcast', { event: 'call_signal' }, ({ payload }) => {
-            if (
-              payload?.type === 'ringing' &&
-              payload?.callee_id === userIdRef.current &&
-              mounted
-            ) {
-              setIncoming({
-                matchId: match.id,
-                callerId: payload.caller_id,
-                callerName: payload.caller_name ?? 'Alguém',
-                callerPhoto: payload.caller_photo ?? null,
-              })
-            }
-            // Se a chamada foi cancelada pelo chamador
-            if (payload?.type === 'cancelled' && payload?.match_id === match.id) {
-              setIncoming(prev => prev?.matchId === match.id ? null : prev)
-            }
+      unsub = onVideoCallSignal((payload) => {
+        if (!mounted) return
+        if (payload.type === 'ringing' && payload.callee_id === user.id) {
+          setIncoming({
+            matchId: payload.match_id ?? '',
+            callerId: payload.caller_id ?? '',
+            callerName: payload.caller_name ?? 'Alguém',
+            callerPhoto: payload.caller_photo ?? null,
           })
-          .subscribe()
-
-        channelsRef.current.push(channel)
-      }
+        }
+        if (payload.type === 'cancelled' || payload.type === 'ended') {
+          setIncoming(prev => (prev && prev.matchId === payload.match_id ? null : prev))
+        }
+      })
     }
 
     setup()
 
     return () => {
       mounted = false
-      channelsRef.current.forEach(ch => supabase.removeChannel(ch))
-      channelsRef.current = []
+      if (unsub) unsub()
+      teardownVideoCallBus()
     }
   }, [])
 
   async function handleAccept() {
     if (!incoming) return
     const matchId = incoming.matchId
+    const callerId = incoming.callerId
     setIncoming(null)
+    // Avisa o chamador que foi aceito
+    await sendVideoCallSignal(callerId, {
+      type: 'accepted',
+      match_id: matchId,
+      callee_id: userIdRef.current ?? undefined,
+    })
     router.push(`/videochamada/${matchId}`)
   }
 
   async function handleReject() {
     if (!incoming) return
-    // Broadcast de rejeição
-    await supabase.channel(`videocall:${incoming.matchId}`).send({
-      type: 'broadcast',
-      event: 'call_signal',
-      payload: {
-        type: 'rejected',
-        match_id: incoming.matchId,
-        callee_id: userIdRef.current,
-      },
+    await sendVideoCallSignal(incoming.callerId, {
+      type: 'rejected',
+      match_id: incoming.matchId,
+      callee_id: userIdRef.current ?? undefined,
     })
     // Atualiza banco
     await supabase
