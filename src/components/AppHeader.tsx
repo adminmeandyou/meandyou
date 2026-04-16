@@ -22,12 +22,13 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
   return (
     <header
       style={{
-        height: 56,
+        minHeight: 56,
         flexShrink: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
         padding: '0 16px',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
         borderBottom: '1px solid rgba(255,255,255,0.05)',
         background: 'rgba(8,9,14,0.85)',
         backdropFilter: 'blur(24px) saturate(1.3)',

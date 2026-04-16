@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Fraunces, Plus_Jakarta_Sans } from 'next/font/google'
 import './globals.css'
 import { AppShell } from '@/components/AppShell'
@@ -16,6 +16,14 @@ const plusJakarta = Plus_Jakarta_Sans({
   display: 'swap',
 })
 
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+}
 
 export const metadata: Metadata = {
   title: 'MeAndYou | Relacionamentos com pessoas verificadas',
