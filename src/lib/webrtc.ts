@@ -78,9 +78,9 @@ export class WebRTCManager {
     }
 
     this.pc.ontrack = (e) => {
-      e.streams[0]?.getTracks().forEach(track => {
-        this.remoteStream!.addTrack(track)
-      })
+      try {
+        this.remoteStream!.addTrack(e.track)
+      } catch {}
       this.callbacks.onRemoteStream(this.remoteStream!)
     }
 
@@ -114,24 +114,32 @@ export class WebRTCManager {
 
   async handleOffer(sdp: RTCSessionDescriptionInit) {
     if (!this.pc) return
-    await this.pc.setRemoteDescription(new RTCSessionDescription(sdp))
-    this.hasRemoteDescription = true
-    this.drainPendingCandidates()
+    try {
+      await this.pc.setRemoteDescription(new RTCSessionDescription(sdp))
+      this.hasRemoteDescription = true
+      this.drainPendingCandidates()
 
-    const answer = await this.pc.createAnswer()
-    await this.pc.setLocalDescription(answer)
-    await sendVideoCallSignal(this.targetUserId, {
-      type: 'sdp_answer',
-      match_id: this.matchId,
-      sdp: { type: answer.type, sdp: answer.sdp },
-    })
+      const answer = await this.pc.createAnswer()
+      await this.pc.setLocalDescription(answer)
+      await sendVideoCallSignal(this.targetUserId, {
+        type: 'sdp_answer',
+        match_id: this.matchId,
+        sdp: { type: answer.type, sdp: answer.sdp },
+      })
+    } catch (err) {
+      console.error('[WebRTC] handleOffer failed:', err)
+    }
   }
 
   async handleAnswer(sdp: RTCSessionDescriptionInit) {
     if (!this.pc) return
-    await this.pc.setRemoteDescription(new RTCSessionDescription(sdp))
-    this.hasRemoteDescription = true
-    this.drainPendingCandidates()
+    try {
+      await this.pc.setRemoteDescription(new RTCSessionDescription(sdp))
+      this.hasRemoteDescription = true
+      this.drainPendingCandidates()
+    } catch (err) {
+      console.error('[WebRTC] handleAnswer failed:', err)
+    }
   }
 
   async handleIceCandidate(candidate: RTCIceCandidateInit) {

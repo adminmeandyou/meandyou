@@ -30,6 +30,7 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
   const [remoteMuted, setRemoteMuted] = useState(false)
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null)
   const [remoteTrackCount, setRemoteTrackCount] = useState(0)
+  const [iceState, setIceState] = useState<string>('new')
 
   const startTimeRef = useRef<number | null>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -126,7 +127,8 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
         return
       }
       setRemainingMinutes(data.remaining_minutes)
-      if (data.plan) setPlan(data.plan)
+      const resolvedPlan = data.plan ?? 'essencial'
+      setPlan(resolvedPlan)
     } catch {
       setError('Erro ao conectar. Verifique sua conexão.')
       setLoading(false)
@@ -135,12 +137,14 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
 
     try {
       const { data: { session: sess } } = await supabase.auth.getSession()
-      const manager = new WebRTCManager(otherUserId, matchId, sess?.access_token ?? '', plan, {
+      const { data: planData } = await supabase.from('profiles').select('plan').eq('id', sess?.user?.id).single()
+      const actualPlan = planData?.plan ?? 'essencial'
+      const manager = new WebRTCManager(otherUserId, matchId, sess?.access_token ?? '', actualPlan, {
         onRemoteStream: (stream) => {
           setRemoteStream(stream)
           setRemoteTrackCount(stream.getTracks().length)
         },
-        onConnectionState: () => {},
+        onConnectionState: (state) => setIceState(state),
         onDisconnected: handleEnd,
       })
       managerRef.current = manager
@@ -395,7 +399,9 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
       {/* Conexão estável card */}
       <div style={{ position: 'absolute', top: 96, left: 20, zIndex: 30, pointerEvents: 'none' }}>
         <div style={{ background: 'rgba(15,17,23,0.7)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', padding: '12px 14px', maxWidth: 200 }}>
-          <p style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', fontSize: 15, color: '#fff', margin: '0 0 8px', lineHeight: 1.15 }}>Conexão estável</p>
+          <p style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', fontSize: 15, color: '#fff', margin: '0 0 8px', lineHeight: 1.15 }}>
+            {iceState === 'connected' || iceState === 'completed' ? 'Conexao estavel' : iceState === 'checking' ? 'Conectando...' : iceState === 'failed' ? 'Falha na conexao' : 'Aguardando...'}
+          </p>
           <div style={{ display: 'flex', gap: 3 }}>
             <div style={{ height: 3, width: 24, borderRadius: 2, background: '#E11D48' }} />
             <div style={{ height: 3, width: 24, borderRadius: 2, background: '#E11D48' }} />
