@@ -13,7 +13,7 @@ import { calcTrustScore, getConquistas, getStatusPills } from './utils'
 import { HeroSection } from './HeroSection'
 import { DesktopHeader } from './DesktopHeader'
 import { DesktopActions, MobileActionBar } from './ActionButtons'
-import { StatusChips, BioSection, ProfileQuestion, InterestsGrid, InfoGrid, TrustScore, RatingsCard, FilterTags } from './ContentSections'
+import { StatusChips, BioSection, InterestsGrid, InfoGrid, TrustScore, RatingsCard, FilterTags } from './ContentSections'
 import { BadgesSection, HiddenBadgesToggle } from './BadgesSection'
 import { BadgeModal, EmergencyModal, DenunciaModal } from './Modals'
 
@@ -317,9 +317,6 @@ export default function VerPerfilPage() {
           <div className="perfil-content-inner" style={{ display: 'flex', flexDirection: 'column', gap: '28px', position: 'relative', zIndex: 2 }}>
             <StatusChips chips={statusChips} />
             <BioSection bio={profile.bio} isOwnProfile={isOwnProfile} onEdit={goEdit} />
-            {profile.profile_question && profile.profile_question_answer && (
-              <ProfileQuestion question={profile.profile_question} answer={profile.profile_question_answer} />
-            )}
             <BadgesSection
               showConquistas={showConquistas} publicStatic={publicStatic} publicDb={publicDb}
               conquistas={conquistas} isOwnProfile={isOwnProfile} badgeShowcase={badgeShowcase}

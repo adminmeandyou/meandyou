@@ -392,25 +392,6 @@ function Acordeao({ id, titulo, badge, badgeCor, aberto, onToggle, children }: {
 
 // ─── Seção: Fotos & Bio ───────────────────────────────────────────────────────
 
-const PERGUNTAS_SUGESTOES = [
-  'Qual seria seu fim de semana ideal?',
-  'O que não pode faltar num primeiro encontro?',
-  'Qual música define você agora?',
-  'Qual seria a viagem dos sonhos?',
-  'O que te faz rir de verdade?',
-  'Série ou filme? Qual é a favorita?',
-  'O que você faz quando quer relaxar?',
-  'Qual superpoder você escolheria?',
-  'Café da manhã ou jantar romântico?',
-  'Qual é a sua história favorita para contar?',
-]
-
-const BIO_SUGESTOES = [
-  'Adoro viajar', 'Trabalho com tecnologia', 'Fã de boa música',
-  'Gosto de cozinhar', 'Apaixonado(a) por filmes', 'Amo animais',
-  'Pratico esportes', 'Leitor(a) compulsivo(a)', 'Amo a natureza',
-]
-
 function FotosBioSection({ userId, profileData, onSaved }: {
   userId: string
   profileData: ProfileData
@@ -428,9 +409,6 @@ function FotosBioSection({ userId, profileData, onSaved }: {
     return idx >= 0 ? idx : 0
   })
   const [bio, setBio] = useState(profileData.bio ?? '')
-  const [pergunta, setPergunta] = useState(profileData.profile_question ?? '')
-  const [resposta, setResposta] = useState(profileData.profile_question_answer ?? '')
-  const [mostrarListaPerguntas, setMostrarListaPerguntas] = useState(false)
   const [salvando, setSalvando] = useState(false)
   const [enviando, setEnviando] = useState<number | null>(null)
   const [erro, setErro] = useState('')
@@ -472,11 +450,9 @@ function FotosBioSection({ userId, profileData, onSaved }: {
     fotoSlots.forEach((slot, i) => { update[slot] = fotosUrls[i] ?? null })
     update['photo_best'] = fotosUrls[fotoPrincipal] ?? fotosUrls.find(Boolean) ?? null
     try {
-      const perguntaFinal = pergunta.trim() || null
-      const respostaFinal = perguntaFinal ? (resposta.trim() || null) : null
-      const { error: saveErr } = await supabase.from('profiles').update({ bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, ...update }).eq('id', userId)
+      const { error: saveErr } = await supabase.from('profiles').update({ bio, profile_question: null, profile_question_answer: null, ...update }).eq('id', userId)
       if (saveErr) throw saveErr
-      onSaved({ bio, profile_question: perguntaFinal, profile_question_answer: respostaFinal, photo_best: update['photo_best'], ...Object.fromEntries(fotoSlots.map((s, i) => [s, fotosUrls[i]])) } as any)
+      onSaved({ bio, profile_question: null, profile_question_answer: null, photo_best: update['photo_best'], ...Object.fromEntries(fotoSlots.map((s, i) => [s, fotosUrls[i]])) } as any)
       // Verifica emblemas de perfil (Perfil Completo, Galeria Rica)
       if (userId) {
         const { data: { session } } = await supabase.auth.getSession()
@@ -576,88 +552,6 @@ function FotosBioSection({ userId, profileData, onSaved }: {
         style={{ width: '100%', minHeight: '100px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '12px', color: '#F8F9FA', fontSize: '14px', fontFamily: 'var(--font-jakarta)', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
       />
       <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', textAlign: 'right', margin: '4px 0 10px' }}>{bio.length}/300</p>
-
-      {/* Pílulas de sugestão */}
-      <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '11px', margin: '0 0 6px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.8px' }}>Sugestões</p>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
-        {BIO_SUGESTOES.map(sug => (
-          <button
-            key={sug}
-            onClick={() => {
-              if (bio.length + (bio.length > 0 ? 2 : 0) + sug.length <= 300) {
-                setBio(prev => prev.length > 0 ? `${prev}, ${sug}` : sug)
-              }
-            }}
-            style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(248,249,250,0.55)', borderRadius: '100px', fontSize: '12px', padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
-          >
-            {sug}
-          </button>
-        ))}
-      </div>
-
-      {/* Pergunta do perfil */}
-      <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '16px', marginTop: '4px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-          <label style={{ color: 'rgba(248,249,250,0.45)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px' }}>Pergunta (opcional)</label>
-          {pergunta && (
-            <button
-              onClick={() => { setPergunta(''); setResposta('') }}
-              style={{ color: 'rgba(248,249,250,0.30)', fontSize: '11px', background: 'none', border: 'none', cursor: 'pointer', padding: '0', fontFamily: 'var(--font-jakarta)' }}
-            >
-              Remover
-            </button>
-          )}
-        </div>
-        <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', margin: '0 0 10px' }}>
-          Aparece acima da sua bio. Escolha uma sugestão ou escreva a sua.
-        </p>
-
-        {/* Lista de sugestoes */}
-        <button
-          onClick={() => setMostrarListaPerguntas(p => !p)}
-          style={{ backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.07)', color: 'rgba(248,249,250,0.55)', borderRadius: '100px', fontSize: '12px', padding: '5px 12px', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}
-        >
-          <span>{mostrarListaPerguntas ? '▲' : '▼'}</span> Ver sugestões
-        </button>
-
-        {mostrarListaPerguntas && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '10px' }}>
-            {PERGUNTAS_SUGESTOES.map(q => (
-              <button
-                key={q}
-                onClick={() => { setPergunta(q); setMostrarListaPerguntas(false) }}
-                style={{ backgroundColor: pergunta === q ? 'rgba(225,29,72,0.10)' : 'rgba(255,255,255,0.03)', border: `1px solid ${pergunta === q ? 'rgba(225,29,72,0.30)' : 'rgba(255,255,255,0.07)'}`, color: pergunta === q ? '#E11D48' : 'rgba(248,249,250,0.65)', borderRadius: '10px', fontSize: '13px', padding: '9px 12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-jakarta)' }}
-              >
-                {q}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Campo de pergunta personalizada */}
-        <input
-          value={pergunta}
-          onChange={e => setPergunta(e.target.value)}
-          maxLength={120}
-          placeholder="Ou escreva sua própria pergunta..."
-          style={{ width: '100%', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '10px 12px', color: '#F8F9FA', fontSize: '14px', fontFamily: 'var(--font-jakarta)', boxSizing: 'border-box', outline: 'none', marginBottom: '8px' }}
-        />
-
-        {/* Campo de resposta — so aparece se tiver pergunta */}
-        {pergunta.trim() && (
-          <>
-            <label style={{ display: 'block', color: 'rgba(248,249,250,0.45)', fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>Sua resposta</label>
-            <textarea
-              value={resposta}
-              onChange={e => setResposta(e.target.value)}
-              maxLength={200}
-              placeholder="Responda de forma sincera e divertida..."
-              style={{ width: '100%', minHeight: '70px', backgroundColor: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '10px 12px', color: '#F8F9FA', fontSize: '14px', fontFamily: 'var(--font-jakarta)', resize: 'vertical', boxSizing: 'border-box', outline: 'none' }}
-            />
-            <p style={{ color: 'rgba(248,249,250,0.30)', fontSize: '12px', textAlign: 'right', margin: '4px 0 0' }}>{resposta.length}/200</p>
-          </>
-        )}
-      </div>
 
       <BotaoSalvar loading={salvando} sucesso={sucesso} onClick={salvar} />
     </div>
