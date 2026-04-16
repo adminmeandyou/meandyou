@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Bell, Heart, MessageCircle, Star, Zap, Crown, CheckCheck, UserPlus, UserCheck } from 'lucide-react'
+import { ArrowLeft, Bell, Heart, MessageCircle, Star, Zap, Crown, CheckCheck, UserPlus, UserCheck, CalendarHeart, CalendarCheck, CalendarX, RefreshCw, Ban } from 'lucide-react'
 import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useToast } from '@/components/Toast'
@@ -27,8 +27,13 @@ const TYPE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color:
   like:             { label: 'Alguem curtiu voce',         icon: <Heart size={16} />,         color: '#f472b6', bg: 'rgba(244,114,182,0.10)' },
   friend_request:   { label: 'Pedido de amizade',          icon: <UserPlus size={16} />,      color: '#60a5fa', bg: 'rgba(96,165,250,0.10)' },
   friend_accepted:  { label: 'Amizade aceita!',            icon: <UserCheck size={16} />,     color: '#10b981', bg: 'rgba(16,185,129,0.10)' },
-  boost_expired:    { label: 'Boost expirado',             icon: <Zap size={16} />,           color: 'var(--muted)', bg: 'rgba(255,255,255,0.05)' },
-  plan_expired:     { label: 'Plano expirado',             icon: <Crown size={16} />,         color: '#fb923c', bg: 'rgba(251,146,60,0.10)' },
+  boost_expired:        { label: 'Boost expirado',             icon: <Zap size={16} />,           color: 'var(--muted)', bg: 'rgba(255,255,255,0.05)' },
+  plan_expired:         { label: 'Plano expirado',             icon: <Crown size={16} />,         color: '#fb923c', bg: 'rgba(251,146,60,0.10)' },
+  meeting_invite:       { label: 'Convite de encontro',        icon: <CalendarHeart size={16} />, color: '#f472b6', bg: 'rgba(244,114,182,0.10)' },
+  meeting_accepted:     { label: 'Encontro confirmado!',       icon: <CalendarCheck size={16} />, color: '#10b981', bg: 'rgba(16,185,129,0.10)' },
+  meeting_declined:     { label: 'Encontro recusado',          icon: <CalendarX size={16} />,     color: '#f87171', bg: 'rgba(248,113,113,0.10)' },
+  meeting_rescheduled:  { label: 'Encontro remarcado',         icon: <RefreshCw size={16} />,     color: '#F59E0B', bg: 'rgba(245,158,11,0.10)' },
+  meeting_cancelled:    { label: 'Encontro cancelado',         icon: <Ban size={16} />,           color: '#f87171', bg: 'rgba(248,113,113,0.10)' },
 }
 
 function timeAgo(dateStr: string) {
@@ -134,6 +139,8 @@ export default function NotificacoesPage() {
       router.push('/amigos')
     } else if (n.type === 'plan_expired') {
       router.push('/planos')
+    } else if (n.type.startsWith('meeting_')) {
+      router.push('/matches')
     }
   }
 

@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
+import { enviarPushParaUsuario } from '@/lib/push'
+
+async function getUserName(supabase: Awaited<ReturnType<typeof createClient>>, userId: string): Promise<string> {
+  const { data } = await supabase.from('profiles').select('name').eq('id', userId).single()
+  return data?.name || 'Alguem'
+}
 
 // Lista todos os encontros do usuário logado (como proposer ou receiver)
 export async function GET() {
@@ -120,6 +126,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
+  // Notificar o receiver sobre o convite
+  try {
+    const nome = await getUserName(supabase, user.id)
+    await enviarPushParaUsuario({
+      targetUserId: receiverId,
+      type: 'meeting_invite',
+      title: 'Convite de encontro',
+      body: `${nome} convidou voce para um encontro`,
+      data: { url: '/matches', inviteId: data.id, local },
+      fromUserId: user.id,
+    })
+  } catch { /* silencioso */ }
+
   return NextResponse.json({ ok: true, inviteId: data.id })
 }
 
@@ -174,6 +193,21 @@ export async function PATCH(req: Request) {
       .eq('id', inviteId)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    // Notificar a outra pessoa
+    const otherId = isProposer ? invite.receiver_id : invite.proposer_id
+    try {
+      const nome = await getUserName(supabase, user.id)
+      await enviarPushParaUsuario({
+        targetUserId: otherId,
+        type: 'meeting_cancelled',
+        title: 'Encontro cancelado',
+        body: `${nome} cancelou o encontro`,
+        data: { url: '/matches' },
+        fromUserId: user.id,
+      })
+    } catch { /* silencioso */ }
+
     return NextResponse.json({ ok: true })
   }
 
@@ -204,6 +238,20 @@ export async function PATCH(req: Request) {
       .eq('id', inviteId)
 
     if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    // Notificar a outra pessoa
+    const otherIdReschedule = isProposer ? invite.receiver_id : invite.proposer_id
+    try {
+      const nome = await getUserName(supabase, user.id)
+      await enviarPushParaUsuario({
+        targetUserId: otherIdReschedule,
+        type: 'meeting_rescheduled',
+        title: 'Encontro remarcado',
+        body: `${nome} quer remarcar o encontro`,
+        data: { url: '/matches', note: rescheduleNote ?? '' },
+        fromUserId: user.id,
+      })
+    } catch { /* silencioso */ }
 
     // Se informou nova data/local, cria um novo convite automaticamente
     if (newDate || newLocal) {
@@ -245,6 +293,30 @@ export async function PATCH(req: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
+
+  // Notificar o proposer sobre a resposta
+  try {
+    const nome = await getUserName(supabase, user.id)
+    if (action === 'accepted') {
+      await enviarPushParaUsuario({
+        targetUserId: invite.proposer_id,
+        type: 'meeting_accepted',
+        title: 'Encontro confirmado!',
+        body: `${nome} aceitou seu convite de encontro`,
+        data: { url: '/matches' },
+        fromUserId: user.id,
+      })
+    } else if (action === 'declined') {
+      await enviarPushParaUsuario({
+        targetUserId: invite.proposer_id,
+        type: 'meeting_declined',
+        title: 'Encontro recusado',
+        body: `${nome} recusou o convite de encontro`,
+        data: { url: '/matches' },
+        fromUserId: user.id,
+      })
+    }
+  } catch { /* silencioso */ }
 
   return NextResponse.json({ ok: true })
 }
