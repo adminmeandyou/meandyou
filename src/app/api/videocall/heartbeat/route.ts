@@ -33,11 +33,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Match não encontrado' }, { status: 403 })
     }
 
-    await supabaseAdmin.rpc('register_video_minutes', {
-      p_user_id:  user.id,
-      p_match_id: matchId,
-      p_minutes:  1,
-    })
+    // Registra 1 minuto de uso: upsert na tabela video_minutes
+    const hoje = new Date().toISOString().split('T')[0]
+    const { data: existing } = await supabaseAdmin
+      .from('video_minutes')
+      .select('minutes')
+      .eq('user_id', user.id)
+      .eq('date', hoje)
+      .maybeSingle()
+
+    if (existing) {
+      await supabaseAdmin
+        .from('video_minutes')
+        .update({ minutes: existing.minutes + 1 })
+        .eq('user_id', user.id)
+        .eq('date', hoje)
+    } else {
+      await supabaseAdmin
+        .from('video_minutes')
+        .insert({ user_id: user.id, date: hoje, minutes: 1 })
+    }
 
     const [profileResult, minutesResult, extraResult] = await Promise.all([
       supabaseAdmin.from('profiles').select('plan').eq('id', user.id).single(),
@@ -45,7 +60,7 @@ export async function POST(req: NextRequest) {
         .from('video_minutes')
         .select('minutes')
         .eq('user_id', user.id)
-        .eq('date', new Date().toISOString().split('T')[0])
+        .eq('date', hoje)
         .maybeSingle(),
       supabaseAdmin.from('user_video_extra').select('amount').eq('user_id', user.id).maybeSingle(),
     ])

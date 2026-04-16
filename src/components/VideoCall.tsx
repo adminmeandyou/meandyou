@@ -386,14 +386,19 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
       <div style={{ position: 'absolute', top: 96, left: 20, zIndex: 30, pointerEvents: 'none' }}>
         <div style={{ background: 'rgba(15,17,23,0.7)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', padding: '12px 14px', maxWidth: 200 }}>
           <p style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', fontSize: 15, color: '#fff', margin: '0 0 8px', lineHeight: 1.15 }}>
-            {iceState === 'connected' || iceState === 'completed' ? 'Conexao estavel' : iceState === 'checking' ? 'Conectando...' : iceState === 'failed' ? 'Falha na conexao' : 'Aguardando...'}
+            {iceState === 'connected' || iceState === 'completed' ? 'Conex��o estável' : iceState === 'checking' ? 'Conectando...' : iceState === 'failed' ? 'Falha na conexão' : 'Aguardando...'}
           </p>
-          <div style={{ display: 'flex', gap: 3 }}>
-            <div style={{ height: 3, width: 24, borderRadius: 2, background: '#E11D48' }} />
-            <div style={{ height: 3, width: 24, borderRadius: 2, background: '#E11D48' }} />
-            <div style={{ height: 3, width: 24, borderRadius: 2, background: '#E11D48' }} />
-            <div style={{ height: 3, width: 24, borderRadius: 2, background: 'rgba(255,255,255,0.18)' }} />
-          </div>
+          {(() => {
+            const bars = iceState === 'connected' || iceState === 'completed' ? 4 : iceState === 'checking' ? 2 : iceState === 'failed' ? 1 : 0
+            const barColor = iceState === 'failed' ? '#f87171' : '#10b981'
+            return (
+              <div style={{ display: 'flex', gap: 3 }}>
+                {[0, 1, 2, 3].map(i => (
+                  <div key={i} style={{ height: 3, width: 24, borderRadius: 2, background: i < bars ? barColor : 'rgba(255,255,255,0.18)' }} />
+                ))}
+              </div>
+            )
+          })()}
         </div>
       </div>
 
