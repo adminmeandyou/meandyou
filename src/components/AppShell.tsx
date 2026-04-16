@@ -12,6 +12,7 @@ import { BadgeWatcher } from './BadgeWatcher'
 import { LevelUpToast } from './LevelUpToast'
 import { AttentionProvider } from './AttentionProvider'
 import { IncomingCallOverlay } from './IncomingCallOverlay'
+import { NotificationProvider } from '@/contexts/NotificationContext'
 
 /**
  * Rotas que recebem o shell do app (header + bottom nav + sidebar).
@@ -72,6 +73,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <ToastProvider>
     <AttentionProvider>
+    <NotificationProvider>
     <BadgeWatcher />
     <LevelUpToast />
     <IncomingCallOverlay />
@@ -188,6 +190,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       </div>
     </AppHeaderProvider>
+    </NotificationProvider>
     </AttentionProvider>
     </ToastProvider>
   )

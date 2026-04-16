@@ -9,6 +9,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
 import { playSoundDirect } from '@/hooks/useSounds'
+import { useNotifications } from '@/contexts/NotificationContext'
 
 type Notification = {
   id: string
@@ -45,6 +46,7 @@ export default function NotificacoesPage() {
   const router = useRouter()
   const toast = useToast()
   const haptics = useHaptics()
+  const { markAllRead: markAllReadGlobal, decrementUnread } = useNotifications()
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [markingRead, setMarkingRead] = useState(false)
@@ -53,17 +55,16 @@ export default function NotificacoesPage() {
 
   useEffect(() => {
     loadNotifications()
-    // Busca userId para o Realtime
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (user) setUserId(user.id)
     })
   }, [])
 
-  // Realtime: escuta novas notificações
+  // Realtime: escuta novas notificações na lista da página
   useEffect(() => {
     if (!userId) return
     const channel = supabase
-      .channel('notif-realtime')
+      .channel('notif-page')
       .on('postgres_changes', {
         event: 'INSERT',
         schema: 'public',
@@ -72,8 +73,6 @@ export default function NotificacoesPage() {
       }, (payload) => {
         const newNotif = payload.new as Notification
         setNotifications(prev => [newNotif, ...prev])
-        haptics.tap()
-        playSoundDirect('notification')
       })
       .subscribe()
 
@@ -110,6 +109,7 @@ export default function NotificacoesPage() {
         headers: { 'Authorization': `Bearer ${session?.access_token ?? ''}` },
       })
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+      markAllReadGlobal()
       toast.success('Todas marcadas como lidas')
     } catch {
       toast.error('Erro ao marcar como lidas.')
@@ -120,6 +120,7 @@ export default function NotificacoesPage() {
   function handleClick(n: Notification) {
     haptics.tap()
     playSoundDirect('tap')
+    if (!n.read) decrementUnread()
     setNotifications((prev) => prev.map((x) => x.id === n.id ? { ...x, read: true } : x))
     if (n.type === 'match' && n.data?.match_id) {
       router.push(`/conversas/${n.data.match_id}`)

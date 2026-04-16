@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { Bell, Settings, ArrowLeft } from 'lucide-react'
+import { useNotifications } from '@/contexts/NotificationContext'
 
 interface AppHeaderProps {
   modeSelector?: React.ReactNode
@@ -18,6 +19,7 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
   const router = useRouter()
   const [notifHovered, setNotifHovered] = useState(false)
   const [shieldHovered, setShieldHovered] = useState(false)
+  const { unreadCount } = useNotifications()
 
   return (
     <header
@@ -102,6 +104,20 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
           aria-label="Notificações"
         >
           <Bell size={20} strokeWidth={1.5} />
+          {unreadCount > 0 && (
+            <span style={{
+              position: 'absolute', top: 4, right: 4,
+              minWidth: 16, height: 16, borderRadius: 100,
+              background: 'var(--accent)', color: '#fff',
+              fontSize: 10, fontWeight: 700,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '0 4px',
+              border: '2px solid rgba(8,9,14,0.9)',
+              lineHeight: 1,
+            }}>
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
         </Link>
 
         <Link
