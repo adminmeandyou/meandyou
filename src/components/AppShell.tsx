@@ -11,6 +11,7 @@ import { PlanGuard } from './PlanGuard'
 import { BadgeWatcher } from './BadgeWatcher'
 import { LevelUpToast } from './LevelUpToast'
 import { AttentionProvider } from './AttentionProvider'
+import { IncomingCallOverlay } from './IncomingCallOverlay'
 
 /**
  * Rotas que recebem o shell do app (header + bottom nav + sidebar).
@@ -73,6 +74,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <AttentionProvider>
     <BadgeWatcher />
     <LevelUpToast />
+    <IncomingCallOverlay />
     <AppHeaderProvider>
       {/* Grain overlay — textura cinematográfica (pointer-events none, não interfere em nada) */}
       <div style={{
