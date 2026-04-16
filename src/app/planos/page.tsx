@@ -11,7 +11,7 @@ const PLANS = [
   {
     id: 'essencial',
     name: 'Essencial',
-    price: 9.97,
+    price: 9.90,
     icon: Zap,
     color: 'rgba(248,249,250,0.70)',
     features: [
@@ -21,13 +21,14 @@ const PLANS = [
       '1 ticket de roleta por dia',
       '1 Lupa por dia',
       'Conversar com seus matches',
-      '1h de videochamada por dia',
+      'Ate 45min de videochamada por dia',
+      'Qualidade de video basica (360p a 480p)',
     ],
   },
   {
     id: 'plus',
     name: 'Plus',
-    price: 39.97,
+    price: 39.90,
     icon: Star,
     color: '#E11D48',
     highlight: true,
@@ -41,13 +42,14 @@ const PLANS = [
       'Ver quem curtiu você',
       'Desfazer curtida (1 por dia)',
       'Destaque na busca',
-      '5h de videochamada por dia',
+      'Ate 2h de videochamada por dia',
+      'Qualidade de video melhor (360p a 720p)',
     ],
   },
   {
     id: 'black',
     name: 'Black',
-    price: 99.97,
+    price: 99.90,
     icon: Crown,
     color: '#F59E0B',
     features: [
@@ -59,7 +61,8 @@ const PLANS = [
       'Até 2 Boosts simultâneos',
       'Filtros Sugar e Fetiche',
       'Área Backstage exclusiva',
-      '10h de videochamada por dia',
+      'Ate 5h de videochamada por dia',
+      'Qualidade de video maxima (360p a 1080p)',
     ],
   },
 ]

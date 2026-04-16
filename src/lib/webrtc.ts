@@ -28,10 +28,10 @@ export type WebRTCCallbacks = {
   onDisconnected: () => void
 }
 
-const VIDEO_QUALITY: Record<string, { width: number; height: number }> = {
-  essencial: { width: 640, height: 480 },
-  plus:      { width: 1280, height: 720 },
-  black:     { width: 1920, height: 1080 },
+const VIDEO_QUALITY: Record<string, { minW: number; minH: number; maxW: number; maxH: number }> = {
+  essencial: { minW: 480, minH: 360, maxW: 640, maxH: 480 },
+  plus:      { minW: 480, minH: 360, maxW: 1280, maxH: 720 },
+  black:     { minW: 480, minH: 360, maxW: 1920, maxH: 1080 },
 }
 
 export class WebRTCManager {
@@ -55,7 +55,11 @@ export class WebRTCManager {
   }
 
   private get quality() {
-    return VIDEO_QUALITY[this.plan] ?? VIDEO_QUALITY.essencial
+    const q = VIDEO_QUALITY[this.plan] ?? VIDEO_QUALITY.essencial
+    return {
+      width: { min: q.minW, ideal: q.maxW, max: q.maxW },
+      height: { min: q.minH, ideal: q.maxH, max: q.maxH },
+    }
   }
 
   async init(isCaller: boolean, facingMode: 'user' | 'environment' = 'user') {
@@ -89,7 +93,7 @@ export class WebRTCManager {
     }
 
     this.localStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode, width: { ideal: this.quality.width }, height: { ideal: this.quality.height } },
+      video: { facingMode, width: this.quality.width, height: this.quality.height },
       audio: true,
     })
 
@@ -180,7 +184,7 @@ export class WebRTCManager {
     }
 
     const newStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: newFacing, width: { ideal: this.quality.width }, height: { ideal: this.quality.height } },
+      video: { facingMode: newFacing, width: this.quality.width, height: this.quality.height },
     })
     const newTrack = newStream.getVideoTracks()[0]
     this.localStream.addTrack(newTrack)

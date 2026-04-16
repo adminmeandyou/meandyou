@@ -239,15 +239,72 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
     </div>
   )
 
+  if (error && limitReached) {
+    const upgradeInfo: Record<string, { next: string; price: string; hours: string; extras: string }> = {
+      essencial: { next: 'Plus', price: '39,90', hours: '2h por dia', extras: 'qualidade melhor + ver quem curtiu voce + desfazer curtida' },
+      plus:      { next: 'Black', price: '99,90', hours: '5h por dia', extras: 'qualidade maxima + filtros exclusivos + area Backstage' },
+      black:     { next: '', price: '', hours: '', extras: '' },
+    }
+    const info = upgradeInfo[plan] ?? upgradeInfo.essencial
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 0, padding: '0 24px', textAlign: 'center', fontFamily: 'var(--font-jakarta)' }}>
+        <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(245,158,11,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+          <Video size={28} color="#F59E0B" strokeWidth={1.5} />
+        </div>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', margin: 0, lineHeight: 1.3 }}>
+          Voce atingiu seu tempo de Live hoje
+        </h2>
+        <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 6, maxWidth: 300, lineHeight: 1.5 }}>
+          Seu plano atual permite {plan === 'essencial' ? '45 minutos' : plan === 'plus' ? '2 horas' : '5 horas'} de videochamada por dia.
+        </p>
+
+        <div style={{ width: '100%', maxWidth: 320, display: 'flex', flexDirection: 'column', gap: 10, marginTop: 24 }}>
+          {info.next && (
+            <button
+              onClick={() => { window.location.href = '/planos' }}
+              style={{
+                width: '100%', padding: '14px 16px', borderRadius: 12,
+                background: 'linear-gradient(135deg, #E11D48, #be123c)',
+                border: 'none', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+              }}
+            >
+              <span>Continuar agora</span>
+              <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.85 }}>
+                Por apenas R$ {info.price}/mes voce ganha {info.hours} + {info.extras}
+              </span>
+            </button>
+          )}
+
+          <button
+            onClick={() => { window.location.href = '/loja' }}
+            style={{
+              width: '100%', padding: '14px 16px', borderRadius: 12,
+              background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.10)',
+              color: 'var(--text)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+            }}
+          >
+            <span>Recarregar saldo Live com fichas</span>
+            <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--muted)' }}>
+              A partir de 40 fichas por 1 hora extra
+            </span>
+          </button>
+        </div>
+
+        <button onClick={onEnd} style={{ marginTop: 16, padding: '10px 18px', borderRadius: 10, background: 'transparent', border: 'none', color: 'var(--muted)', fontSize: 13, cursor: 'pointer' }}>
+          Voltar para o chat
+        </button>
+      </div>
+    )
+  }
+
   if (error) return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 16, padding: '0 32px', textAlign: 'center' }}>
-      <AlertCircle size={32} color={limitReached ? '#F59E0B' : '#F43F5E'} />
-      <p style={{ fontSize: 14, color: limitReached ? '#F59E0B' : '#F43F5E', maxWidth: 320, lineHeight: 1.5 }}>{error}</p>
-      {limitReached && (
-        <p style={{ fontSize: 12, color: 'var(--muted-2)' }}>Faça upgrade para ter mais tempo de chamada.</p>
-      )}
+      <AlertCircle size={32} color="#F43F5E" />
+      <p style={{ fontSize: 14, color: '#F43F5E', maxWidth: 320, lineHeight: 1.5 }}>{error}</p>
       {permissionDenied && (
-        <p style={{ fontSize: 11, color: 'var(--muted-2)', maxWidth: 280, lineHeight: 1.55 }}>Abra as configurações do navegador e libere câmera e microfone para o MeAndYou, depois tente novamente.</p>
+        <p style={{ fontSize: 11, color: 'var(--muted-2)', maxWidth: 280, lineHeight: 1.55 }}>Abra as configuracoes do navegador e libere camera e microfone para o MeAndYou, depois tente novamente.</p>
       )}
       <div style={{ display: 'flex', gap: 10 }}>
         {permissionDenied && (
