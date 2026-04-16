@@ -439,9 +439,9 @@ function ConvRow({ conv, currentUserId, isArchived, onArchive }: {
             {(() => {
               const msg = conv.lastMessage
               if (!msg) return 'Nenhuma mensagem ainda'
-              if (msg === '__NUDGE__') return '📳 Chamou sua atenção'
-              if (msg.startsWith('__CONVITE__:')) return '📅 Convite de encontro'
-              if (msg.startsWith('__MEETING__:')) return '📅 Convite de encontro'
+              if (msg === '__NUDGE__') return 'Chamou sua atenção'
+              if (msg.startsWith('__CONVITE__:')) return 'Convite de encontro'
+              if (msg.startsWith('__MEETING__:')) return 'Convite de encontro'
               return `${isMyMessage ? 'Você: ' : ''}${msg}`
             })()}
           </p>

@@ -795,9 +795,9 @@ function ConversaItem({ match, formatTempo, onLongPress }: { match: Match; forma
           {(() => {
             const msg = match.last_message
             if (!msg) return 'Iniciar conversa...'
-            if (msg === '__NUDGE__') return '📳 Chamou sua atenção'
-            if (msg.startsWith('__CONVITE__:')) return '📅 Convite de encontro'
-            if (msg.startsWith('__MEETING__:')) return '📅 Convite de encontro'
+            if (msg === '__NUDGE__') return 'Chamou sua atenção'
+            if (msg.startsWith('__CONVITE__:')) return 'Convite de encontro'
+            if (msg.startsWith('__MEETING__:')) return 'Convite de encontro'
             return msg
           })()}
         </p>

@@ -121,6 +121,18 @@ input::placeholder, textarea::placeholder {
   font-weight: 400;
 }
 
+/* Chat inline input — anula estilos de formulario */
+.chat-inline-input,
+.chat-inline-input:hover,
+.chat-inline-input:focus {
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, #E11D48 0%, #be123c 100%);
   color: #fff;

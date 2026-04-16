@@ -116,6 +116,7 @@ export default function ChatPage() {
   const [friendSent, setFriendSent] = useState(false)
 
   const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
@@ -345,9 +346,16 @@ export default function ChatPage() {
   }, [messages, userId])
 
   function scrollToBottom(instant?: boolean) {
-    setTimeout(() => {
-      bottomRef.current?.scrollIntoView({ behavior: instant ? 'instant' : 'smooth' })
-    }, 50)
+    requestAnimationFrame(() => {
+      const el = messagesContainerRef.current
+      if (el) {
+        if (instant) {
+          el.scrollTop = el.scrollHeight
+        } else {
+          el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
+        }
+      }
+    })
   }
 
   // ✅ Rate limit local: 5 msgs seguidas sem resposta bloqueiam envio
@@ -1067,6 +1075,7 @@ export default function ChatPage() {
 
         {/* ── Mensagens ── */}
         <div
+          ref={messagesContainerRef}
           className={shake ? 'chat-shake' : ''}
           style={{ flex: 1, overflowY: 'scroll', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', touchAction: 'pan-y', padding: '4px 14px 8px' }}
         >
@@ -1385,6 +1394,7 @@ export default function ChatPage() {
             <div style={{ flex: 1, position: 'relative' }}>
               <textarea
                 ref={inputRef}
+                className="chat-inline-input"
                 value={input}
                 onChange={(e) => {
                   setInput(e.target.value)
