@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import Image from 'next/image'
 import { supabase } from '../lib/supabase'
 import Link from 'next/link'
-import { MessageCircle, Heart, Loader2, UserPlus, Check, User, HeartCrack, ShieldAlert, Archive, X, UserCircle, Clock, Users } from 'lucide-react'
+import { MessageCircle, Heart, Loader2, UserPlus, Check, User, HeartCrack, ShieldAlert, Archive, X, UserCircle, Clock, Users, CalendarHeart, MapPin, CalendarCheck, CalendarX, RefreshCw, Ban, PartyPopper } from 'lucide-react'
 import { SkeletonList } from '@/components/Skeleton'
 import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { useToast } from '@/components/Toast'
@@ -93,7 +93,35 @@ export default function MatchesPage() {
   const [unmatchConfirm, setUnmatchConfirm] = useState(false)
 
   // Aba principal
-  const [pageTab, setPageTab] = useState<'matches' | 'amigos'>('matches')
+  const [pageTab, setPageTab] = useState<'matches' | 'encontros' | 'amigos'>('matches')
+
+  // Encontros
+  type MeetingInvite = {
+    id: string
+    match_id: string
+    proposer_id: string
+    receiver_id: string
+    local: string
+    meeting_date: string
+    status: 'pending' | 'accepted' | 'declined' | 'rescheduled' | 'cancelled'
+    created_at: string
+    responded_at: string | null
+    reschedule_note: string | null
+    other_id: string
+    other_name: string
+    other_photo: string | null
+    is_proposer: boolean
+  }
+  const [meetings, setMeetings] = useState<MeetingInvite[]>([])
+  const [meetingsLoading, setMeetingsLoading] = useState(false)
+  const [meetingsLoaded, setMeetingsLoaded] = useState(false)
+  const [meetingTab, setMeetingTab] = useState<'ativos' | 'historico'>('ativos')
+  const [meetingAction, setMeetingAction] = useState<{ invite: MeetingInvite; type: 'cancel' | 'reschedule' | 'decline' } | null>(null)
+  const [rescheduleNote, setRescheduleNote] = useState('')
+  const [rescheduleDate, setRescheduleDate] = useState('')
+  const [rescheduleLocal, setRescheduleLocal] = useState('')
+  const [meetingActionLoading, setMeetingActionLoading] = useState(false)
+  const [acceptedPopup, setAcceptedPopup] = useState<MeetingInvite | null>(null)
 
   // Amigos
   const [friendsList, setFriendsList] = useState<Friendship[]>([])
@@ -158,6 +186,66 @@ export default function MatchesPage() {
     setFriendActionLoading(null)
   }
 
+  // ── Funções de encontros ──
+  async function loadMeetings() {
+    setMeetingsLoading(true)
+    try {
+      const res = await fetch('/api/meeting/invite')
+      if (res.ok) {
+        const data = await res.json()
+        setMeetings(data.invites ?? [])
+      }
+    } catch { /* silencioso */ }
+    setMeetingsLoading(false)
+    setMeetingsLoaded(true)
+  }
+
+  async function handleMeetingAction(inviteId: string, action: string, extra?: Record<string, string>) {
+    setMeetingActionLoading(true)
+    try {
+      const res = await fetch('/api/meeting/invite', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inviteId, action, ...extra }),
+      })
+      if (res.ok) {
+        if (action === 'accepted') {
+          // Busca o convite atualizado pra mostrar popup
+          const inv = meetings.find(m => m.id === inviteId)
+          if (inv) {
+            setAcceptedPopup({ ...inv, status: 'accepted' })
+            playSoundDirect('match')
+            haptics.success()
+          }
+        } else {
+          toast.success(
+            action === 'cancelled' ? 'Encontro cancelado' :
+            action === 'declined' ? 'Convite recusado' :
+            action === 'rescheduled' ? 'Reagendamento solicitado' : 'Feito'
+          )
+        }
+        await loadMeetings()
+      } else {
+        const err = await res.json().catch(() => ({}))
+        toast.error(err.error ?? 'Erro ao processar')
+      }
+    } catch { toast.error('Erro de conexão') }
+    setMeetingActionLoading(false)
+    setMeetingAction(null)
+    setRescheduleNote('')
+    setRescheduleDate('')
+    setRescheduleLocal('')
+  }
+
+  const meetingsAtivos = meetings.filter(m => m.status === 'pending' || m.status === 'accepted')
+  const meetingsHistorico = meetings.filter(m => m.status === 'declined' || m.status === 'rescheduled' || m.status === 'cancelled')
+  const meetingsPendingCount = meetings.filter(m => m.status === 'pending' && !m.is_proposer).length
+
+  // Carregar encontros quando trocar pra aba
+  useEffect(() => {
+    if (pageTab === 'encontros' && !meetingsLoaded) loadMeetings()
+  }, [pageTab])
+
   // Carregar amigos quando trocar pra aba
   useEffect(() => {
     if (pageTab === 'amigos' && !friendsLoaded) loadFriends()
@@ -213,6 +301,9 @@ export default function MatchesPage() {
         })
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'matches' }, () => {
           loadMatches(user.id)
+        })
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'meeting_invites' }, () => {
+          if (meetingsLoaded) loadMeetings()
         })
         .subscribe()
     })
@@ -336,6 +427,7 @@ export default function MatchesPage() {
       }}>
         {([
           { key: 'matches' as const, label: 'Matches', icon: <Heart size={14} strokeWidth={1.5} /> },
+          { key: 'encontros' as const, label: 'Encontros', icon: <CalendarHeart size={14} strokeWidth={1.5} />, badge: meetingsPendingCount },
           { key: 'amigos' as const, label: 'Amigos', icon: <Users size={14} strokeWidth={1.5} />, badge: receivedPending.length },
         ]).map(t => (
           <button
@@ -549,6 +641,93 @@ export default function MatchesPage() {
           </>
         )}
         </>)}
+
+        {/* ═══ Aba Encontros ═══ */}
+        {pageTab === 'encontros' && (
+          <div style={{ padding: '0 16px' }}>
+            {/* Sub-tabs */}
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+              {([
+                { key: 'ativos' as const, label: `Ativos (${meetingsAtivos.length})` },
+                { key: 'historico' as const, label: `Histórico (${meetingsHistorico.length})` },
+              ]).map(t => (
+                <button
+                  key={t.key}
+                  onClick={() => setMeetingTab(t.key)}
+                  style={{
+                    padding: '8px 16px', borderRadius: 100,
+                    border: `1px solid ${meetingTab === t.key ? 'var(--accent)' : 'rgba(255,255,255,0.06)'}`,
+                    backgroundColor: meetingTab === t.key ? 'rgba(225,29,72,0.12)' : 'transparent',
+                    color: meetingTab === t.key ? 'var(--accent)' : 'var(--muted)',
+                    fontSize: 13, fontWeight: meetingTab === t.key ? 600 : 400,
+                    cursor: 'pointer', fontFamily: 'var(--font-jakarta)',
+                  }}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+
+            {meetingsLoading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} style={{ height: 96, borderRadius: 14, backgroundColor: 'var(--bg-card)', marginBottom: 8, animation: 'ui-pulse 1.5s ease infinite' }} />
+              ))
+            ) : (
+              <>
+                {/* Ativos */}
+                {meetingTab === 'ativos' && (
+                  <>
+                    {meetingsAtivos.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+                        <CalendarHeart size={40} color="var(--muted-2)" strokeWidth={1} style={{ marginBottom: 12 }} />
+                        <p style={{ color: 'var(--muted)', fontSize: 14, margin: 0 }}>Nenhum encontro marcado</p>
+                        <p style={{ color: 'var(--muted-2)', fontSize: 13, margin: '6px 0 0', lineHeight: 1.5 }}>
+                          Convide alguém para um encontro pelo chat!
+                        </p>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {meetingsAtivos.map(inv => (
+                          <MeetingCard
+                            key={inv.id}
+                            invite={inv}
+                            onAccept={() => handleMeetingAction(inv.id, 'accepted')}
+                            onDecline={() => setMeetingAction({ invite: inv, type: 'decline' })}
+                            onCancel={() => setMeetingAction({ invite: inv, type: 'cancel' })}
+                            onReschedule={() => {
+                              setRescheduleLocal(inv.local)
+                              setRescheduleDate(inv.meeting_date ? inv.meeting_date.slice(0, 16) : '')
+                              setMeetingAction({ invite: inv, type: 'reschedule' })
+                            }}
+                            loading={meetingActionLoading}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+
+                {/* Histórico */}
+                {meetingTab === 'historico' && (
+                  <>
+                    {meetingsHistorico.length === 0 ? (
+                      <div style={{ textAlign: 'center', padding: '48px 16px' }}>
+                        <Clock size={40} color="var(--muted-2)" strokeWidth={1} style={{ marginBottom: 12 }} />
+                        <p style={{ color: 'var(--muted)', fontSize: 14, margin: 0 }}>Nenhum histórico ainda</p>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                        {meetingsHistorico.map(inv => (
+                          <MeetingCard key={inv.id} invite={inv} loading={false} />
+                        ))}
+                      </div>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        )}
 
         {/* ═══ Aba Amigos ═══ */}
         {pageTab === 'amigos' && (
@@ -793,6 +972,249 @@ export default function MatchesPage() {
                 ))}
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── Modal de ação de encontro ── */}
+      {meetingAction && (
+        <div
+          onClick={() => { setMeetingAction(null); setRescheduleNote(''); setRescheduleDate(''); setRescheduleLocal('') }}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 100,
+            background: 'rgba(8,9,14,0.75)', backdropFilter: 'blur(12px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            animation: 'ui-fade-in 0.18s ease',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: 'calc(100% - 40px)', maxWidth: 380,
+              background: 'rgba(15,17,23,0.98)',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 20, padding: 24,
+              animation: 'ui-slide-up 0.22s ease',
+            }}
+          >
+            {/* Header com foto */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0,
+                background: '#13161F', border: '1px solid rgba(255,255,255,0.06)',
+              }}>
+                {meetingAction.invite.other_photo ? (
+                  <Image src={meetingAction.invite.other_photo} alt="" fill className="object-cover" sizes="48px" />
+                ) : (
+                  <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(248,249,250,0.5)', fontFamily: 'var(--font-fraunces)', fontSize: 20 }}>
+                    {meetingAction.invite.other_name[0]}
+                  </div>
+                )}
+              </div>
+              <div>
+                <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#F8F9FA' }}>{meetingAction.invite.other_name}</p>
+                <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--muted)' }}>
+                  {meetingAction.type === 'cancel' ? 'Cancelar encontro' :
+                   meetingAction.type === 'decline' ? 'Recusar convite' :
+                   'Pedir reagendamento'}
+                </p>
+              </div>
+            </div>
+
+            {/* Info do encontro */}
+            <div style={{
+              padding: 14, borderRadius: 12,
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.05)',
+              marginBottom: 16, fontSize: 13, color: 'rgba(248,249,250,0.70)',
+              display: 'flex', flexDirection: 'column', gap: 6,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <MapPin size={13} color="var(--accent)" strokeWidth={1.5} />
+                <span>{meetingAction.invite.local}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <CalendarCheck size={13} color="var(--accent)" strokeWidth={1.5} />
+                <span>{formatMeetingDate(meetingAction.invite.meeting_date)}</span>
+              </div>
+            </div>
+
+            {meetingAction.type === 'reschedule' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+                <div>
+                  <label style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 6 }}>Novo local</label>
+                  <input
+                    value={rescheduleLocal}
+                    onChange={e => setRescheduleLocal(e.target.value)}
+                    placeholder="Local do encontro"
+                    style={{
+                      width: '100%', padding: '10px 14px', borderRadius: 10,
+                      background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                      color: '#F8F9FA', fontSize: 14, fontFamily: 'var(--font-jakarta)',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 6 }}>Nova data/hora</label>
+                  <input
+                    type="datetime-local"
+                    value={rescheduleDate}
+                    onChange={e => setRescheduleDate(e.target.value)}
+                    style={{
+                      width: '100%', padding: '10px 14px', borderRadius: 10,
+                      background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                      color: '#F8F9FA', fontSize: 14, fontFamily: 'var(--font-jakarta)',
+                      outline: 'none', colorScheme: 'dark',
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: 11, color: 'var(--muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: 6 }}>Mensagem (opcional)</label>
+                  <input
+                    value={rescheduleNote}
+                    onChange={e => setRescheduleNote(e.target.value)}
+                    placeholder="Ex: Podemos mudar para sábado?"
+                    style={{
+                      width: '100%', padding: '10px 14px', borderRadius: 10,
+                      background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                      color: '#F8F9FA', fontSize: 14, fontFamily: 'var(--font-jakarta)',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {(meetingAction.type === 'cancel' || meetingAction.type === 'decline') && (
+              <p style={{ margin: '0 0 16px', fontSize: 13, color: 'rgba(248,249,250,0.60)', lineHeight: 1.5 }}>
+                {meetingAction.type === 'cancel'
+                  ? 'Tem certeza? A outra pessoa será notificada do cancelamento.'
+                  : 'Tem certeza que deseja recusar este convite?'
+                }
+              </p>
+            )}
+
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={() => { setMeetingAction(null); setRescheduleNote(''); setRescheduleDate(''); setRescheduleLocal('') }}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: 12,
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.07)',
+                  color: 'rgba(248,249,250,0.75)', fontSize: 13, fontWeight: 600,
+                  cursor: 'pointer', fontFamily: 'var(--font-jakarta)',
+                }}
+              >
+                Voltar
+              </button>
+              <button
+                onClick={() => {
+                  const action = meetingAction.type === 'cancel' ? 'cancelled' : meetingAction.type === 'decline' ? 'declined' : 'rescheduled'
+                  const extra: Record<string, string> = {}
+                  if (meetingAction.type === 'reschedule') {
+                    if (rescheduleNote) extra.rescheduleNote = rescheduleNote
+                    if (rescheduleDate) extra.newDate = rescheduleDate
+                    if (rescheduleLocal && rescheduleLocal !== meetingAction.invite.local) extra.newLocal = rescheduleLocal
+                  }
+                  handleMeetingAction(meetingAction.invite.id, action, Object.keys(extra).length > 0 ? extra : undefined)
+                }}
+                disabled={meetingActionLoading}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: 12,
+                  background: meetingAction.type === 'reschedule' ? 'var(--accent)' : '#E11D48',
+                  border: 'none', color: '#fff', fontSize: 13, fontWeight: 700,
+                  cursor: meetingActionLoading ? 'wait' : 'pointer',
+                  fontFamily: 'var(--font-jakarta)',
+                  opacity: meetingActionLoading ? 0.6 : 1,
+                }}
+              >
+                {meetingActionLoading ? 'Processando...' :
+                  meetingAction.type === 'cancel' ? 'Cancelar encontro' :
+                  meetingAction.type === 'decline' ? 'Recusar' :
+                  'Reagendar'
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Popup encontro aceito ── */}
+      {acceptedPopup && (
+        <div
+          onClick={() => setAcceptedPopup(null)}
+          style={{
+            position: 'fixed', inset: 0, zIndex: 110,
+            background: 'rgba(8,9,14,0.85)', backdropFilter: 'blur(20px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            animation: 'ui-fade-in 0.25s ease',
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: 'calc(100% - 48px)', maxWidth: 340,
+              background: 'linear-gradient(170deg, rgba(225,29,72,0.10) 0%, rgba(15,17,23,0.98) 40%)',
+              border: '1px solid rgba(225,29,72,0.20)',
+              borderRadius: 24, padding: '40px 28px 28px',
+              textAlign: 'center',
+              animation: 'ui-slide-up 0.3s cubic-bezier(0.4,0,0.2,1)',
+              boxShadow: '0 24px 80px rgba(225,29,72,0.15)',
+            }}
+          >
+            {/* Icone celebracao */}
+            <div style={{
+              width: 72, height: 72, borderRadius: '50%', margin: '0 auto 20px',
+              background: 'linear-gradient(135deg, rgba(225,29,72,0.20), rgba(245,158,11,0.15))',
+              border: '2px solid rgba(225,29,72,0.30)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 0 40px rgba(225,29,72,0.20)',
+            }}>
+              <PartyPopper size={32} color="#E11D48" strokeWidth={1.5} />
+            </div>
+
+            <h2 style={{
+              fontFamily: 'var(--font-fraunces)', fontSize: 24, fontWeight: 700,
+              color: '#F8F9FA', margin: '0 0 8px', letterSpacing: '-0.02em',
+            }}>
+              Encontro confirmado!
+            </h2>
+
+            <p style={{ color: 'rgba(248,249,250,0.55)', fontSize: 14, margin: '0 0 24px', lineHeight: 1.5 }}>
+              Você aceitou o encontro com <strong style={{ color: '#F8F9FA' }}>{acceptedPopup.other_name}</strong>
+            </p>
+
+            {/* Detalhes */}
+            <div style={{
+              padding: 16, borderRadius: 14,
+              background: 'rgba(255,255,255,0.04)',
+              border: '1px solid rgba(255,255,255,0.06)',
+              marginBottom: 24, textAlign: 'left',
+              display: 'flex', flexDirection: 'column', gap: 10,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <MapPin size={15} color="#E11D48" strokeWidth={1.5} />
+                <span style={{ color: 'rgba(248,249,250,0.80)', fontSize: 14 }}>{acceptedPopup.local}</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <CalendarCheck size={15} color="#E11D48" strokeWidth={1.5} />
+                <span style={{ color: 'rgba(248,249,250,0.80)', fontSize: 14 }}>{formatMeetingDate(acceptedPopup.meeting_date)}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setAcceptedPopup(null)}
+              style={{
+                width: '100%', padding: '14px',
+                background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)',
+                color: '#fff', fontWeight: 700, fontSize: 14,
+                borderRadius: 14, border: 'none', cursor: 'pointer',
+                fontFamily: 'var(--font-jakarta)',
+                boxShadow: '0 8px 28px rgba(225,29,72,0.30)',
+              }}
+            >
+              Fechar
+            </button>
           </div>
         </div>
       )}
@@ -1094,6 +1516,234 @@ function ConversaItem({ match, formatTempo, onLongPress }: { match: Match; forma
           })()}
         </p>
       </div>
+    </div>
+  )
+}
+
+// ─── Linha de amigo (inline na aba) ──────────────────────────────────────────
+
+// ─── Helpers de encontro ─────────────────────────────────────────────────────
+
+function formatMeetingDate(dateStr: string): string {
+  if (!dateStr) return ''
+  const d = new Date(dateStr)
+  const now = new Date()
+  const diffDays = Math.floor((d.getTime() - now.getTime()) / 86400000)
+
+  const time = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+  const date = d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' })
+
+  if (diffDays === 0) return `Hoje às ${time}`
+  if (diffDays === 1) return `Amanhã às ${time}`
+  if (diffDays === -1) return `Ontem às ${time}`
+  if (diffDays < -1) return `${date} às ${time} (passado)`
+  if (diffDays <= 7) return `${d.toLocaleDateString('pt-BR', { weekday: 'long' })} às ${time}`
+  return `${date} às ${time}`
+}
+
+function getMeetingStatusInfo(status: string, isProposer: boolean): { label: string; color: string; bg: string; border: string } {
+  switch (status) {
+    case 'pending':
+      return isProposer
+        ? { label: 'Aguardando resposta', color: '#F59E0B', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.25)' }
+        : { label: 'Pendente', color: '#60a5fa', bg: 'rgba(96,165,250,0.10)', border: 'rgba(96,165,250,0.25)' }
+    case 'accepted':
+      return { label: 'Confirmado', color: '#10b981', bg: 'rgba(16,185,129,0.10)', border: 'rgba(16,185,129,0.25)' }
+    case 'declined':
+      return { label: 'Recusado', color: '#f87171', bg: 'rgba(248,113,113,0.10)', border: 'rgba(248,113,113,0.25)' }
+    case 'rescheduled':
+      return { label: 'Reagendado', color: '#F59E0B', bg: 'rgba(245,158,11,0.10)', border: 'rgba(245,158,11,0.25)' }
+    case 'cancelled':
+      return { label: 'Cancelado', color: 'rgba(248,249,250,0.35)', bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.08)' }
+    default:
+      return { label: status, color: 'var(--muted)', bg: 'transparent', border: 'rgba(255,255,255,0.06)' }
+  }
+}
+
+type MeetingInviteType = {
+  id: string
+  match_id: string
+  proposer_id: string
+  receiver_id: string
+  local: string
+  meeting_date: string
+  status: 'pending' | 'accepted' | 'declined' | 'rescheduled' | 'cancelled'
+  created_at: string
+  responded_at: string | null
+  reschedule_note: string | null
+  other_id: string
+  other_name: string
+  other_photo: string | null
+  is_proposer: boolean
+}
+
+function MeetingCard({
+  invite,
+  onAccept,
+  onDecline,
+  onCancel,
+  onReschedule,
+  loading,
+}: {
+  invite: MeetingInviteType
+  onAccept?: () => void
+  onDecline?: () => void
+  onCancel?: () => void
+  onReschedule?: () => void
+  loading: boolean
+}) {
+  const statusInfo = getMeetingStatusInfo(invite.status, invite.is_proposer)
+  const isActive = invite.status === 'pending' || invite.status === 'accepted'
+  const isPast = new Date(invite.meeting_date).getTime() < Date.now()
+
+  return (
+    <div style={{
+      padding: 16, borderRadius: 16,
+      background: 'rgba(15,17,23,0.70)',
+      border: `1px solid ${isActive ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.03)'}`,
+      opacity: isActive ? 1 : 0.65,
+    }}>
+      {/* Topo: foto + nome + status */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+        <div style={{
+          width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0,
+          background: '#13161F', border: '1px solid rgba(255,255,255,0.06)',
+        }}>
+          {invite.other_photo ? (
+            <Image src={invite.other_photo} alt={invite.other_name} fill className="object-cover" sizes="44px" />
+          ) : (
+            <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(248,249,250,0.5)', fontFamily: 'var(--font-fraunces)', fontSize: 18 }}>
+              {invite.other_name[0]}
+            </div>
+          )}
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: 15, color: '#F8F9FA', fontFamily: 'var(--font-fraunces)' }}>
+              {invite.other_name}
+            </p>
+            <span style={{
+              fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 100,
+              background: statusInfo.bg, color: statusInfo.color,
+              border: `1px solid ${statusInfo.border}`,
+            }}>
+              {statusInfo.label}
+            </span>
+          </div>
+          <p style={{ margin: '3px 0 0', fontSize: 12, color: 'var(--muted)' }}>
+            {invite.is_proposer ? 'Você convidou' : 'Convidou você'}
+          </p>
+        </div>
+      </div>
+
+      {/* Detalhes */}
+      <div style={{
+        padding: 12, borderRadius: 12,
+        background: 'rgba(255,255,255,0.03)',
+        border: '1px solid rgba(255,255,255,0.04)',
+        marginBottom: isActive ? 14 : 0,
+        display: 'flex', flexDirection: 'column', gap: 8,
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <MapPin size={13} color="var(--accent)" strokeWidth={1.5} />
+          <span style={{ fontSize: 13, color: 'rgba(248,249,250,0.75)' }}>{invite.local}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <CalendarCheck size={13} color="var(--accent)" strokeWidth={1.5} />
+          <span style={{ fontSize: 13, color: 'rgba(248,249,250,0.75)' }}>{formatMeetingDate(invite.meeting_date)}</span>
+        </div>
+        {invite.reschedule_note && (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginTop: 2 }}>
+            <RefreshCw size={13} color="#F59E0B" strokeWidth={1.5} style={{ marginTop: 1, flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: 'rgba(248,249,250,0.55)', fontStyle: 'italic' }}>"{invite.reschedule_note}"</span>
+          </div>
+        )}
+      </div>
+
+      {/* Ações */}
+      {isActive && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {/* Receiver pendente: pode aceitar */}
+          {invite.status === 'pending' && !invite.is_proposer && onAccept && (
+            <button
+              onClick={onAccept}
+              disabled={loading}
+              style={{
+                flex: 1, minWidth: 100, padding: '10px 14px', borderRadius: 10,
+                background: 'rgba(16,185,129,0.15)', border: '1px solid rgba(16,185,129,0.30)',
+                color: '#10b981', fontSize: 13, fontWeight: 700,
+                cursor: loading ? 'wait' : 'pointer', fontFamily: 'var(--font-jakarta)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}
+            >
+              <Check size={14} strokeWidth={2} /> Aceitar
+            </button>
+          )}
+
+          {/* Receiver pendente: pode recusar */}
+          {invite.status === 'pending' && !invite.is_proposer && onDecline && (
+            <button
+              onClick={onDecline}
+              disabled={loading}
+              style={{
+                padding: '10px 14px', borderRadius: 10,
+                background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.20)',
+                color: '#f87171', fontSize: 13, fontWeight: 600,
+                cursor: loading ? 'wait' : 'pointer', fontFamily: 'var(--font-jakarta)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}
+            >
+              <CalendarX size={14} strokeWidth={1.5} /> Recusar
+            </button>
+          )}
+
+          {/* Ambos podem reagendar (pendente ou aceito) */}
+          {onReschedule && (
+            <button
+              onClick={onReschedule}
+              disabled={loading}
+              style={{
+                padding: '10px 14px', borderRadius: 10,
+                background: 'rgba(245,158,11,0.08)', border: '1px solid rgba(245,158,11,0.20)',
+                color: '#F59E0B', fontSize: 13, fontWeight: 600,
+                cursor: loading ? 'wait' : 'pointer', fontFamily: 'var(--font-jakarta)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}
+            >
+              <RefreshCw size={14} strokeWidth={1.5} /> Remarcar
+            </button>
+          )}
+
+          {/* Ambos podem cancelar */}
+          {onCancel && (
+            <button
+              onClick={onCancel}
+              disabled={loading}
+              style={{
+                padding: '10px 14px', borderRadius: 10,
+                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                color: 'rgba(248,249,250,0.45)', fontSize: 13, fontWeight: 600,
+                cursor: loading ? 'wait' : 'pointer', fontFamily: 'var(--font-jakarta)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}
+            >
+              <Ban size={14} strokeWidth={1.5} /> Cancelar
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Badge passado */}
+      {isPast && invite.status === 'accepted' && (
+        <div style={{
+          marginTop: 10, padding: '8px 12px', borderRadius: 10,
+          background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.12)',
+          fontSize: 12, color: '#10b981', fontWeight: 600,
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          <CalendarCheck size={13} strokeWidth={1.5} /> Encontro realizado
+        </div>
+      )}
     </div>
   )
 }
