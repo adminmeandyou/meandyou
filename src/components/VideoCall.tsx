@@ -853,12 +853,12 @@ export function VideoCallButton({ matchId, otherName, otherPhoto }: {
     <>
       <button
         onClick={handleCall}
-        style={{ width: 36, height: 36, borderRadius: '50%', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(248,249,250,0.40)', transition: 'color 0.2s' }}
+        style={{ width: 40, height: 40, borderRadius: '50%', background: 'transparent', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'rgba(248,249,250,0.50)', transition: 'color 0.2s' }}
         title="Iniciar videochamada"
         onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent)')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(248,249,250,0.40)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'rgba(248,249,250,0.50)')}
       >
-        <Video size={18} strokeWidth={1.5} />
+        <Video size={22} strokeWidth={1.5} />
       </button>
       {overlay && typeof document !== 'undefined' && createPortal(overlay, document.body)}
     </>

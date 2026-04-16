@@ -9,7 +9,7 @@ import {
   ArrowLeft, Send, ShieldAlert,
   Loader2, AlertCircle, Lock, Menu,
   Sparkles, CalendarPlus, Zap, X, CalendarCheck, Star, Coffee,
-  MapPin, Shield, HeartCrack, Ghost, Phone, CheckCircle2, UserPlus, Check, Smile
+  MapPin, Shield, HeartCrack, Ghost, Phone, CheckCircle2, UserPlus, Check, Smile, Vibrate
 } from 'lucide-react'
 import { ChatBubble } from '@/components/ui/ChatBubble'
 import { ReportModal } from '@/components/ReportModal'
@@ -883,15 +883,15 @@ export default function ChatPage() {
           <button
             onClick={() => setShowMenu(v => !v)}
             style={{
-              width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer',
+              width: 40, height: 40, borderRadius: '50%', border: 'none', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: showMenu ? 'rgba(225,29,72,0.12)' : 'transparent',
-              color: showMenu ? 'var(--accent)' : 'rgba(248,249,250,0.40)',
+              color: showMenu ? 'var(--accent)' : 'rgba(248,249,250,0.50)',
               transition: 'all 0.2s',
             }}
             title="Ações"
           >
-            <Menu size={18} strokeWidth={1.5} />
+            <Menu size={22} strokeWidth={1.5} />
           </button>
         </header>
 
@@ -910,7 +910,7 @@ export default function ChatPage() {
               { icon: <Sparkles size={16} strokeWidth={1.5} />, label: 'Quebra-gelo', sub: 'Sugestões para começar', onClick: () => { setShowMenu(false); setShowConvite(false); setIcebreakerList(pickRandomIcebreakers(6)); setShowIcebreakers(v => !v) }, active: showIcebreakers },
               { icon: <CalendarPlus size={16} strokeWidth={1.5} />, label: 'Chamar para Encontro', sub: 'Proponha um encontro', onClick: () => { setShowMenu(false); setShowIcebreakers(false); setShowConvite(v => !v) }, active: showConvite },
               { icon: <MapPin size={16} strokeWidth={1.5} />, label: 'Registrar Encontro', sub: 'Salvar local e horário', onClick: () => { setShowMenu(false); setShowMeetingModal(true) } },
-              { icon: <Zap size={16} strokeWidth={1.5} />, label: 'Chamar atenção', sub: 'Faz a tela da pessoa tremer', onClick: () => { setShowMenu(false); handleNudge() } },
+              { icon: <Vibrate size={16} strokeWidth={1.5} />, label: 'Chamar atenção', sub: 'Faz a tela da pessoa tremer', onClick: () => { setShowMenu(false); handleNudge() } },
               { icon: friendSent ? <Check size={16} strokeWidth={1.5} /> : <UserPlus size={16} strokeWidth={1.5} />, label: friendSent ? 'Amigo adicionado' : 'Adicionar como amigo', sub: friendSent ? 'Solicitação enviada' : 'Conectem-se fora do app', onClick: () => { setShowMenu(false); handleAddFriend() }, success: friendSent },
               ...(messages.length >= 5 && !ratingDone ? [{ icon: <Star size={16} strokeWidth={1.5} />, label: 'Avaliar conversa', sub: 'Avaliação anônima', onClick: () => { setShowMenu(false); setShowRatingModal(true) } }] : []),
               ...(boloOportunidade && !boloDone ? [{ icon: <Coffee size={16} strokeWidth={1.5} />, label: 'O encontro aconteceu?', sub: 'Conte como foi', onClick: () => { setShowMenu(false); setShowBoloModal(true) } }] : []),
@@ -1236,7 +1236,7 @@ export default function ChatPage() {
               title="Chamar atenção"
               style={{ width: 34, height: 34, borderRadius: 8, border: 'none', background: 'transparent', color: 'rgba(248,249,250,0.35)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
             >
-              <Zap size={17} strokeWidth={1.5} />
+              <Vibrate size={17} strokeWidth={1.5} />
             </button>
             <div style={{ flex: 1, position: 'relative' }}>
               <textarea
