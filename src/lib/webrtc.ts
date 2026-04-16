@@ -28,6 +28,12 @@ export type WebRTCCallbacks = {
   onDisconnected: () => void
 }
 
+const VIDEO_QUALITY: Record<string, { width: number; height: number }> = {
+  essencial: { width: 640, height: 480 },
+  plus:      { width: 1280, height: 720 },
+  black:     { width: 1920, height: 1080 },
+}
+
 export class WebRTCManager {
   private pc: RTCPeerConnection | null = null
   private localStream: MediaStream | null = null
@@ -35,15 +41,21 @@ export class WebRTCManager {
   private targetUserId: string
   private matchId: string
   private accessToken: string
+  private plan: string
   private callbacks: WebRTCCallbacks
   private pendingCandidates: RTCIceCandidateInit[] = []
   private hasRemoteDescription = false
 
-  constructor(targetUserId: string, matchId: string, accessToken: string, callbacks: WebRTCCallbacks) {
+  constructor(targetUserId: string, matchId: string, accessToken: string, plan: string, callbacks: WebRTCCallbacks) {
     this.targetUserId = targetUserId
     this.matchId = matchId
     this.accessToken = accessToken
+    this.plan = plan
     this.callbacks = callbacks
+  }
+
+  private get quality() {
+    return VIDEO_QUALITY[this.plan] ?? VIDEO_QUALITY.essencial
   }
 
   async init(isCaller: boolean, facingMode: 'user' | 'environment' = 'user') {
@@ -77,7 +89,7 @@ export class WebRTCManager {
     }
 
     this.localStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode, width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: { facingMode, width: { ideal: this.quality.width }, height: { ideal: this.quality.height } },
       audio: true,
     })
 
@@ -168,7 +180,7 @@ export class WebRTCManager {
     }
 
     const newStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: newFacing, width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: { facingMode: newFacing, width: { ideal: this.quality.width }, height: { ideal: this.quality.height } },
     })
     const newTrack = newStream.getVideoTracks()[0]
     this.localStream.addTrack(newTrack)

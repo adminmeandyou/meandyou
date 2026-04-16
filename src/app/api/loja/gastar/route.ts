@@ -19,6 +19,10 @@ const ITEM_CONFIG: Record<string, { fichasPorUnidade: number; label: string }> =
   verified_plus: { fichasPorUnidade: 200,  label: 'Selo Verificado Plus' },
   caixa_surpresa:{ fichasPorUnidade: 35,   label: 'Caixa Surpresa' },
   caixa_lendaria:{ fichasPorUnidade: 2250, label: 'Caixa Super Lendaria' },
+  live_1h:       { fichasPorUnidade: 40,   label: 'Tempo Live +1h' },
+  live_5h:       { fichasPorUnidade: 170,  label: 'Tempo Live +5h' },
+  live_15h:      { fichasPorUnidade: 350,  label: 'Tempo Live +15h' },
+  live_30h:      { fichasPorUnidade: 600,  label: 'Tempo Live +30h' },
 }
 
 async function incrementarSaldo(tabela: string, userId: string, amount: number): Promise<void> {
@@ -140,6 +144,11 @@ export async function POST(req: NextRequest) {
           .from('user_badges')
           .upsert({ user_id: user.id, badge_id: verifiedBadge.id }, { onConflict: 'user_id,badge_id', ignoreDuplicates: true })
       }
+
+    } else if (item_key.startsWith('live_')) {
+      const LIVE_MINUTES: Record<string, number> = { live_1h: 60, live_5h: 300, live_15h: 900, live_30h: 1800 }
+      const minutes = (LIVE_MINUTES[item_key] ?? 60) * qty
+      await incrementarSaldo('user_video_extra', user.id, minutes)
 
     } else if (item_key === 'caixa_surpresa') {
       // Premio aleatorio da caixa — NAO usa spin_roleta (sem deducao de ticket)

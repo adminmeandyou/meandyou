@@ -115,7 +115,7 @@ function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }: {
 
     try {
       const { data: { session: sess } } = await supabase.auth.getSession()
-      const manager = new WebRTCManager(otherUserId, matchId, sess?.access_token ?? '', {
+      const manager = new WebRTCManager(otherUserId, matchId, sess?.access_token ?? '', plan, {
         onRemoteStream: (stream) => setRemoteStream(stream),
         onConnectionState: () => {},
         onDisconnected: handleEnd,

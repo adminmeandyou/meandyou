@@ -7,9 +7,9 @@ const supabaseAdmin = createClient(
 )
 
 const LIMITE_VIDEO: Record<string, number> = {
-  essencial: 60,
-  plus:      300,
-  black:     600,
+  essencial: 45,
+  plus:      120,
+  black:     300,
 }
 
 export async function POST(req: NextRequest) {
@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
       p_minutes:  1,
     })
 
-    const [profileResult, minutesResult] = await Promise.all([
+    const [profileResult, minutesResult, extraResult] = await Promise.all([
       supabaseAdmin.from('profiles').select('plan').eq('id', user.id).single(),
       supabaseAdmin
         .from('video_minutes')
@@ -47,17 +47,21 @@ export async function POST(req: NextRequest) {
         .eq('user_id', user.id)
         .eq('date', new Date().toISOString().split('T')[0])
         .maybeSingle(),
+      supabaseAdmin.from('user_video_extra').select('amount').eq('user_id', user.id).maybeSingle(),
     ])
 
     const plano = profileResult.data?.plan ?? 'essencial'
     const minutosUsados = minutesResult.data?.minutes ?? 0
-    const limiteMinutos = LIMITE_VIDEO[plano] ?? 60
-    const minutosRestantes = Math.max(limiteMinutos - minutosUsados, 0)
+    const limiteMinutos = LIMITE_VIDEO[plano] ?? 45
+    const extraMinutos = extraResult.data?.amount ?? 0
+    const totalDisponivel = limiteMinutos + extraMinutos
+    const minutosRestantes = Math.max(totalDisponivel - minutosUsados, 0)
 
     return NextResponse.json({
       remaining_minutes: minutosRestantes,
       plan: plano,
       daily_limit: limiteMinutos,
+      extra_minutes: extraMinutos,
       limit_reached: minutosRestantes <= 0,
     })
   } catch (err) {

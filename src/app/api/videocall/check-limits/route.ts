@@ -7,9 +7,9 @@ const supabaseAdmin = createClient(
 )
 
 const LIMITE_VIDEO: Record<string, number> = {
-  essencial: 60,
-  plus:      300,
-  black:     600,
+  essencial: 45,
+  plus:      120,
+  black:     300,
 }
 
 export async function POST(req: NextRequest) {
@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Match inativo' }, { status: 403 })
     }
 
-    const [profileResult, minutesResult] = await Promise.all([
+    const [profileResult, minutesResult, extraResult] = await Promise.all([
       supabaseAdmin.from('profiles').select('plan').eq('id', user.id).single(),
       supabaseAdmin
         .from('video_minutes')
@@ -45,17 +45,22 @@ export async function POST(req: NextRequest) {
         .eq('user_id', user.id)
         .eq('date', new Date().toISOString().split('T')[0])
         .maybeSingle(),
+      supabaseAdmin.from('user_video_extra').select('amount').eq('user_id', user.id).maybeSingle(),
     ])
 
     const plano = profileResult.data?.plan ?? 'essencial'
     const minutosUsados = minutesResult.data?.minutes ?? 0
-    const limiteMinutos = LIMITE_VIDEO[plano] ?? 60
-    const minutosRestantes = Math.max(limiteMinutos - minutosUsados, 0)
+    const limiteMinutos = LIMITE_VIDEO[plano] ?? 45
+    const extraMinutos = extraResult.data?.amount ?? 0
+    const totalDisponivel = limiteMinutos + extraMinutos
+    const minutosRestantes = Math.max(totalDisponivel - minutosUsados, 0)
 
     if (minutosRestantes <= 0) {
       return NextResponse.json({
-        error: `Você atingiu o limite diário de ${limiteMinutos} minutos do plano ${plano}. Faça upgrade para continuar.`,
+        error: 'Você atingiu seu tempo de Live hoje',
         limit_reached: true,
+        plan: plano,
+        extra_minutes: extraMinutos,
       }, { status: 403 })
     }
 
@@ -63,6 +68,7 @@ export async function POST(req: NextRequest) {
       remaining_minutes: minutosRestantes,
       plan: plano,
       daily_limit: limiteMinutos,
+      extra_minutes: extraMinutos,
     })
   } catch (err) {
     console.error('Erro ao verificar limites de vídeo:', err)

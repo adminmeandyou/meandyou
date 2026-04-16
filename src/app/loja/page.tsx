@@ -8,7 +8,7 @@ import { useRouter } from 'next/navigation'
 import {
   Star, Zap, ArrowLeft, CheckCircle, Loader2, ShoppingBag,
   Search, RotateCcw, Coins, Plus, Ghost, Eye, Gift, BadgeCheck,
-  TrendingUp, X, Package, ChevronRight, ChevronDown, Backpack, Crown, Ticket,
+  TrendingUp, X, Package, ChevronRight, ChevronDown, Backpack, Crown, Ticket, Video,
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
@@ -29,6 +29,7 @@ type ItemKey =
   | 'ghost_7d' | 'ghost_35d'
   | 'reveals_5' | 'xp_bonus_3d' | 'verified_plus' | 'caixa_surpresa' | 'caixa_lendaria'
   | 'passaporte_camarote'
+  | 'live_1h' | 'live_5h' | 'live_15h' | 'live_30h'
 
 interface StoreItem {
   key: ItemKey
@@ -122,6 +123,34 @@ const STORE_ITEMS: StoreItem[] = [
     unit: 'caixa',
     icon: <Gift size={20} strokeWidth={1.5} />, baseFichas: 2250, maxQty: 1,
     accentColor: '#F59E0B', accentBg: 'rgba(139,92,246,0.15)', accentBorder: 'rgba(245,158,11,0.50)',
+    new: true,
+  },
+  {
+    key: 'live_1h', label: 'Tempo Live +1h', description: '1 hora extra de videochamada',
+    unit: 'hora',
+    icon: <Video size={20} strokeWidth={1.5} />, baseFichas: 40, maxQty: 10,
+    accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
+    new: true,
+  },
+  {
+    key: 'live_5h', label: 'Tempo Live +5h', description: '5 horas extras de videochamada',
+    unit: 'pacote',
+    icon: <Video size={20} strokeWidth={1.5} />, baseFichas: 170, maxQty: 5,
+    accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
+    new: true,
+  },
+  {
+    key: 'live_15h', label: 'Tempo Live +15h', description: '15 horas extras de videochamada',
+    unit: 'pacote',
+    icon: <Video size={20} strokeWidth={1.5} />, baseFichas: 350, maxQty: 3,
+    accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
+    new: true,
+  },
+  {
+    key: 'live_30h', label: 'Tempo Live +30h', description: '30 horas extras de videochamada',
+    unit: 'pacote',
+    icon: <Video size={20} strokeWidth={1.5} />, baseFichas: 600, maxQty: 2,
+    accentColor: '#E11D48', accentBg: 'rgba(225,29,72,0.10)', accentBorder: 'rgba(225,29,72,0.25)',
     new: true,
   },
   {
