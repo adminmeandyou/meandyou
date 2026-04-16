@@ -74,18 +74,23 @@ export function InterestsGrid({ tags, isOwnProfile, onEdit }: { tags: string[]; 
   if (!tags?.length) return null
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
         <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.15em', color: 'rgba(248,249,250,0.30)' }}>Interesses</span>
         {isOwnProfile && <EditButton onClick={onEdit} />}
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-        {tags.slice(0, 4).map((tag: string, i: number) => (
-          <div key={i} style={{ backgroundColor: '#1a1b21', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '16px', aspectRatio: '1', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '10px', padding: '16px' }}>
-            <Heart size={22} color="var(--accent)" strokeWidth={1.5} />
-            <span style={{ fontFamily: 'var(--font-fraunces)', fontSize: '14px', color: '#F8F9FA', fontWeight: 700, textAlign: 'center', lineHeight: 1.3 }}>{tag}</span>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+        {tags.slice(0, 6).map((tag: string, i: number) => (
+          <div key={i} style={{ backgroundColor: '#1a1b21', border: '1px solid rgba(255,255,255,0.06)', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 14px' }}>
+            <Heart size={13} color="var(--accent)" strokeWidth={1.5} />
+            <span style={{ fontSize: '13px', color: '#F8F9FA', fontWeight: 600 }}>{tag}</span>
           </div>
         ))}
       </div>
+      {isOwnProfile && (
+        <button onClick={onEdit} style={{ marginTop: 10, fontSize: 12, color: 'var(--accent)', fontWeight: 600, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'var(--font-jakarta)' }}>
+          Editar interesses
+        </button>
+      )}
     </div>
   )
 }

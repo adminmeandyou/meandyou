@@ -42,9 +42,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const { error } = await supabaseAdmin
+  const { data: inserted, error } = await supabaseAdmin
     .from('friendships')
     .insert({ requester_id: user.id, receiver_id: receiverId, status: 'pending' })
+    .select('id')
+    .single()
 
   if (error) return NextResponse.json({ error: 'Erro ao enviar pedido' }, { status: 500 })
 
@@ -67,7 +69,7 @@ export async function POST(req: NextRequest) {
     })
   } catch { /* push silencioso */ }
 
-  return NextResponse.json({ ok: true })
+  return NextResponse.json({ ok: true, friendshipId: inserted?.id ?? null })
 }
 
 // PATCH /api/amigos — aceitar, recusar ou remover amizade

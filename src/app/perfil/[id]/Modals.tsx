@@ -17,9 +17,9 @@ export function BadgeModal({ badge, onClose }: { badge: EmblemaDef; onClose: () 
         onClick={e => e.stopPropagation()}
       >
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-          <div style={{ width: '80px', height: '80px', borderRadius: '16px', backgroundColor: badge.desbloqueado ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ width: '100px', height: '100px', borderRadius: '20px', backgroundColor: badge.desbloqueado ? 'rgba(255,255,255,0.07)' : 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.10)', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`/badges/${badge.id}.svg`} alt="" width={48} height={48} style={{ display: 'block', opacity: badge.desbloqueado ? 1 : 0.20, filter: badge.desbloqueado ? 'none' : 'grayscale(1)' }} />
+            <img src={`/badges/${badge.id}.svg`} alt="" width={64} height={64} style={{ display: 'block', opacity: badge.desbloqueado ? 1 : 0.20, filter: badge.desbloqueado ? 'none' : 'grayscale(1)' }} />
             {!badge.desbloqueado && (
               <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(8,9,14,0.65)' }}>
                 <span style={{ fontSize: '28px', opacity: 0.5 }}>&#128274;</span>

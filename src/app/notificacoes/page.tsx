@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Bell, Heart, MessageCircle, Star, Zap, Crown, CheckCheck } from 'lucide-react'
+import { ArrowLeft, Bell, Heart, MessageCircle, Star, Zap, Crown, CheckCheck, UserPlus, UserCheck } from 'lucide-react'
 import { SkeletonList } from '@/components/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useToast } from '@/components/Toast'
@@ -12,7 +12,7 @@ import { playSoundDirect } from '@/hooks/useSounds'
 
 type Notification = {
   id: string
-  type: 'match' | 'message' | 'superlike' | 'boost_expired' | 'plan_expired'
+  type: string
   from_user_id: string | null
   read: boolean
   data: Record<string, unknown>
@@ -20,11 +20,14 @@ type Notification = {
 }
 
 const TYPE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color: string; bg: string }> = {
-  match:         { label: 'Novo match!',         icon: <Heart size={16} />,         color: '#f472b6', bg: 'rgba(244,114,182,0.10)' },
-  message:       { label: 'Nova mensagem',        icon: <MessageCircle size={16} />, color: '#60a5fa', bg: 'rgba(96,165,250,0.10)' },
-  superlike:     { label: 'SuperCurtida recebida', icon: <Star size={16} />,          color: '#facc15', bg: 'rgba(250,204,21,0.10)' },
-  boost_expired: { label: 'Boost expirado',       icon: <Zap size={16} />,           color: 'var(--muted)', bg: 'rgba(255,255,255,0.05)' },
-  plan_expired:  { label: 'Plano expirado',       icon: <Crown size={16} />,         color: '#fb923c', bg: 'rgba(251,146,60,0.10)' },
+  match:            { label: 'Novo match!',                icon: <Heart size={16} />,         color: '#f472b6', bg: 'rgba(244,114,182,0.10)' },
+  message:          { label: 'Nova mensagem',              icon: <MessageCircle size={16} />, color: '#60a5fa', bg: 'rgba(96,165,250,0.10)' },
+  superlike:        { label: 'SuperCurtida recebida',      icon: <Star size={16} />,          color: '#facc15', bg: 'rgba(250,204,21,0.10)' },
+  like:             { label: 'Alguem curtiu voce',         icon: <Heart size={16} />,         color: '#f472b6', bg: 'rgba(244,114,182,0.10)' },
+  friend_request:   { label: 'Pedido de amizade',          icon: <UserPlus size={16} />,      color: '#60a5fa', bg: 'rgba(96,165,250,0.10)' },
+  friend_accepted:  { label: 'Amizade aceita!',            icon: <UserCheck size={16} />,     color: '#10b981', bg: 'rgba(16,185,129,0.10)' },
+  boost_expired:    { label: 'Boost expirado',             icon: <Zap size={16} />,           color: 'var(--muted)', bg: 'rgba(255,255,255,0.05)' },
+  plan_expired:     { label: 'Plano expirado',             icon: <Crown size={16} />,         color: '#fb923c', bg: 'rgba(251,146,60,0.10)' },
 }
 
 function timeAgo(dateStr: string) {
@@ -46,9 +49,36 @@ export default function NotificacoesPage() {
   const [loading, setLoading] = useState(true)
   const [markingRead, setMarkingRead] = useState(false)
 
+  const [userId, setUserId] = useState<string | null>(null)
+
   useEffect(() => {
     loadNotifications()
+    // Busca userId para o Realtime
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (user) setUserId(user.id)
+    })
   }, [])
+
+  // Realtime: escuta novas notificações
+  useEffect(() => {
+    if (!userId) return
+    const channel = supabase
+      .channel('notif-realtime')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'notifications',
+        filter: `user_id=eq.${userId}`,
+      }, (payload) => {
+        const newNotif = payload.new as Notification
+        setNotifications(prev => [newNotif, ...prev])
+        haptics.tap()
+        playSoundDirect('notification')
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [userId])
 
   async function loadNotifications() {
     setLoading(true)
@@ -97,6 +127,10 @@ export default function NotificacoesPage() {
       router.push(`/conversas/${n.data.match_id}`)
     } else if (n.type === 'superlike' && n.from_user_id) {
       router.push(`/perfil/${n.from_user_id}`)
+    } else if (n.type === 'like' && n.from_user_id) {
+      router.push('/curtidas')
+    } else if ((n.type === 'friend_request' || n.type === 'friend_accepted') && n.from_user_id) {
+      router.push('/amigos')
     } else if (n.type === 'plan_expired') {
       router.push('/planos')
     }

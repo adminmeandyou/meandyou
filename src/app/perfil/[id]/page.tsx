@@ -266,7 +266,7 @@ export default function VerPerfilPage() {
   const badgeShowcaseList = isOwnProfile ? badgeShowcase : ((profile?.badge_showcase as string[]) ?? [])
   const publicStatic = isOwnProfile ? unlockedStatic : unlockedStatic.filter(e => badgeShowcaseList.includes(e.id))
   const publicDb = isOwnProfile ? dbBadges : dbBadges.filter(ub => badgeShowcaseList.includes(ub.badge_id))
-  const showConquistas = publicStatic.length + publicDb.length > 0 || conquistas.length > 0
+  const showConquistas = true
   const totalBadgesCount = unlockedStatic.length + dbBadges.length
   const hasHiddenBadges = !isOwnProfile && totalBadgesCount > publicStatic.length + publicDb.length
   const hiddenStatic = unlockedStatic.filter(e => !publicStatic.find(p => p.id === e.id))

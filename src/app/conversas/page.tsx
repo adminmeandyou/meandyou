@@ -553,6 +553,18 @@ function AbaTodos({ matches, onEmpty, onOpen, searchTerm }: {
   const haptics = useHaptics()
   const [selected, setSelected] = useState<Match | null>(null)
 
+  // Bloqueia scroll do body quando popup está aberto
+  useEffect(() => {
+    if (selected) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+    return () => { document.body.style.overflow = ''; document.body.style.touchAction = '' }
+  }, [selected])
+
   if (matches.length === 0) {
     return (
       <EmptyState
@@ -690,6 +702,17 @@ function AbaOnline({ friends, myShowOnline, onEmpty, searchTerm }: {
   const router = useRouter()
   const haptics = useHaptics()
   const [selected, setSelected] = useState<Friend | null>(null)
+
+  useEffect(() => {
+    if (selected) {
+      document.body.style.overflow = 'hidden'
+      document.body.style.touchAction = 'none'
+    } else {
+      document.body.style.overflow = ''
+      document.body.style.touchAction = ''
+    }
+    return () => { document.body.style.overflow = ''; document.body.style.touchAction = '' }
+  }, [selected])
 
   if (!myShowOnline) {
     return (

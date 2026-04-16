@@ -9,7 +9,7 @@ import {
   ArrowLeft, Send, ShieldAlert,
   Loader2, AlertCircle, Lock, Menu,
   Sparkles, CalendarPlus, Zap, X, CalendarCheck, Star, Coffee,
-  MapPin, Shield, HeartCrack, Ghost, Phone, CheckCircle2, UserPlus, Check, Smile, Vibrate
+  MapPin, Shield, HeartCrack, Phone, CheckCircle2, UserPlus, Check, Smile, Vibrate
 } from 'lucide-react'
 import { ChatBubble } from '@/components/ui/ChatBubble'
 import { ReportModal } from '@/components/ReportModal'
@@ -101,19 +101,23 @@ export default function ChatPage() {
   const [showSecuritySheet, setShowSecuritySheet] = useState(false)
   const [unmatchConfirm, setUnmatchConfirm]       = useState(false)
   const [unmatchDone, setUnmatchDone]             = useState(false)
-  const [ghostModeUntil, setGhostModeUntil]       = useState<string | null>(null)
   const [showReport, setShowReport]               = useState(false)
   // ─────────────────────────────────────────────────────────────────────────────
 
   // Gamificacao Fase 7
   const [showRatingModal, setShowRatingModal] = useState(false)
   const [ratingDone, setRatingDone] = useState(false)
+  const [ratingConfirmOpcao, setRatingConfirmOpcao] = useState<string | null>(null)
   const [showBoloModal, setShowBoloModal] = useState(false)
   const [boloDone, setBoloDone] = useState(false)
   const [boloOportunidade, setBoloOportunidade] = useState(false)
 
   // Adicionar como amigo (M4)
   const [friendSent, setFriendSent] = useState(false)
+  const [friendshipId, setFriendshipId] = useState<string | null>(null)
+
+  // Encontro aceito fixo
+  const [acceptedMeeting, setAcceptedMeeting] = useState<{ text: string; date?: string } | null>(null)
 
   const bottomRef = useRef<HTMLDivElement>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -195,6 +199,10 @@ export default function ChatPage() {
     // Detecta convite pendente não respondido
     detectPendingConvite(uid)
 
+    // Carrega avaliação anterior do localStorage
+    const savedRating = localStorage.getItem(`rating_${matchId}`)
+    if (savedRating) setRatingDone(true)
+
     // Realtime: Broadcast (gratuito no plano free — não usa postgres_changes com filtro)
     channelRef.current = supabase
       .channel(`chat-${matchId}`)
@@ -239,14 +247,6 @@ export default function ChatPage() {
         scrollToBottom()
       })
       .subscribe()
-
-    // Fase 8: busca ghost mode para exibir na Central de Segurança
-    const { data: ghostData } = await supabase
-      .from('profiles')
-      .select('ghost_mode_until')
-      .eq('id', uid)
-      .single()
-    setGhostModeUntil(ghostData?.ghost_mode_until ?? null)
 
     // Fase 8: check-in pós-encontro — verifica localStorage
     try {
@@ -342,6 +342,26 @@ export default function ChatPage() {
     if (!boloDone) {
       const aceitei = messages.some(m => m.sender_id === userId && m.content === 'Aceito!')
       if (aceitei) setBoloOportunidade(true)
+    }
+
+    // Detecta encontro aceito (para banner fixo)
+    const meetingMsgs = messages.filter(m => m.content.startsWith('__MEETING__:') || m.content.startsWith(CONVITE_PREFIX))
+    for (let i = meetingMsgs.length - 1; i >= 0; i--) {
+      const mIdx = messages.findIndex(m => m.id === meetingMsgs[i].id)
+      const resp = getConviteResponse(mIdx)
+      if (resp === 'Aceito!') {
+        try {
+          if (meetingMsgs[i].content.startsWith('__MEETING__:')) {
+            const d = JSON.parse(meetingMsgs[i].content.slice('__MEETING__:'.length))
+            const dateStr = (d.date && d.time) ? new Date(`${d.date}T${d.time}`).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) : undefined
+            setAcceptedMeeting({ text: d.local || d.texto || 'Encontro marcado', date: dateStr })
+          } else {
+            setAcceptedMeeting({ text: meetingMsgs[i].content.slice(CONVITE_PREFIX.length) })
+          }
+        } catch { setAcceptedMeeting({ text: 'Encontro marcado' }) }
+        break
+      }
+      if (i === 0) setAcceptedMeeting(null)
     }
   }, [messages, userId])
 
@@ -512,15 +532,17 @@ export default function ChatPage() {
   async function handleRating(opcao: string) {
     setRatingDone(true)
     setShowRatingModal(false)
+    setRatingConfirmOpcao(null)
+    // Salva localmente para permitir alteração futura
+    localStorage.setItem(`rating_${matchId}`, opcao)
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      // Tentativa silenciosa — tabela match_ratings pode nao existir ainda
-      await supabase.from('match_ratings').insert({
+      // Upsert: se já avaliou, atualiza
+      await supabase.from('match_ratings').upsert({
         match_id: matchId,
         rater_id: userId,
         rated_id: otherUser?.id,
         rating: opcao,
-      })
+      }, { onConflict: 'match_id,rater_id' })
     } catch { /* silencioso */ }
   }
 
@@ -699,7 +721,27 @@ export default function ChatPage() {
   }
 
   async function handleAddFriend() {
-    if (friendSent || !otherUser) return
+    if (!otherUser) return
+
+    // Se já enviou, cancela
+    if (friendSent && friendshipId) {
+      try {
+        const res = await fetch('/api/amigos', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ friendshipId, action: 'remove' }),
+        })
+        if (res.ok) {
+          setFriendSent(false)
+          setFriendshipId(null)
+          toast.success('Pedido de amizade cancelado')
+        }
+      } catch {
+        toast.error('Erro ao cancelar pedido')
+      }
+      return
+    }
+
     setFriendSent(true)
     try {
       const res = await fetch('/api/amigos', {
@@ -708,6 +750,8 @@ export default function ChatPage() {
         body: JSON.stringify({ receiverId: otherUser.id }),
       })
       if (res.ok) {
+        const data = await res.json().catch(() => ({}))
+        if (data.friendshipId) setFriendshipId(data.friendshipId)
         toast.success(`Pedido de amizade enviado para ${otherUser.name}`)
       } else {
         const data = await res.json().catch(() => ({}))
@@ -740,6 +784,20 @@ export default function ChatPage() {
     return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })
   }
 
+  // Detecta se um convite já foi respondido (procura resposta conhecida nas mensagens seguintes)
+  function getConviteResponse(msgIndex: number): string | null {
+    for (let i = msgIndex + 1; i < messages.length; i++) {
+      const m = messages[i]
+      // Se é outra mensagem de convite, para de procurar
+      if (m.content.startsWith(CONVITE_PREFIX) || m.content.startsWith('__MEETING__:')) break
+      // Se é do receiver (quem não enviou o convite) e é uma resposta conhecida
+      if (m.sender_id !== messages[msgIndex].sender_id && RESPOSTAS_RAPIDAS.includes(m.content)) {
+        return m.content
+      }
+    }
+    return null
+  }
+
   // Renderiza uma mensagem (normal, chamar atenção ou convite)
   function renderMsg(msg: Message, isMe: boolean) {
     // Chamar atenção
@@ -765,8 +823,10 @@ export default function ChatPage() {
           (data.date && data.time) && `🗓 ${new Date(`${data.date}T${data.time}`).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })}`,
           data.texto,
         ].filter(Boolean).join('\n')
+        const msgIdx = messages.findIndex(m => m.id === msg.id)
+        const responded = getConviteResponse(msgIdx)
         return (
-          <ConviteCard key={msg.id} text={linhas} isMe={isMe} time={formatMsgTime(msg.created_at)} onReply={(r) => sendMessage(r)} />
+          <ConviteCard key={msg.id} text={linhas} isMe={isMe} time={formatMsgTime(msg.created_at)} onReply={(r) => sendMessage(r)} respondedWith={responded} />
         )
       } catch { /* fallback abaixo */ }
     }
@@ -774,6 +834,8 @@ export default function ChatPage() {
     // Convite encontro (texto livre — legado)
     if (msg.content.startsWith(CONVITE_PREFIX)) {
       const texto = msg.content.slice(CONVITE_PREFIX.length)
+      const msgIdx = messages.findIndex(m => m.id === msg.id)
+      const responded = getConviteResponse(msgIdx)
       return (
         <ConviteCard
           key={msg.id}
@@ -781,6 +843,7 @@ export default function ChatPage() {
           isMe={isMe}
           time={formatMsgTime(msg.created_at)}
           onReply={(r) => sendMessage(r)}
+          respondedWith={responded}
         />
       )
     }
@@ -1007,8 +1070,8 @@ export default function ChatPage() {
               { icon: <CalendarPlus size={16} strokeWidth={1.5} />, label: 'Chamar para Encontro', sub: 'Proponha um encontro', onClick: () => { setShowMenu(false); setShowIcebreakers(false); setShowConvite(v => !v) }, active: showConvite },
               { icon: <MapPin size={16} strokeWidth={1.5} />, label: 'Registrar Encontro', sub: 'Salvar local e horário', onClick: () => { setShowMenu(false); setShowMeetingModal(true) } },
               { icon: <Vibrate size={16} strokeWidth={1.5} />, label: 'Chamar atenção', sub: 'Faz a tela da pessoa tremer', onClick: () => { setShowMenu(false); handleNudge() } },
-              { icon: friendSent ? <Check size={16} strokeWidth={1.5} /> : <UserPlus size={16} strokeWidth={1.5} />, label: friendSent ? 'Amigo adicionado' : 'Adicionar como amigo', sub: friendSent ? 'Solicitação enviada' : 'Conectem-se fora do app', onClick: () => { setShowMenu(false); handleAddFriend() }, success: friendSent },
-              ...(messages.length >= 5 && !ratingDone ? [{ icon: <Star size={16} strokeWidth={1.5} />, label: 'Avaliar conversa', sub: 'Avaliação anônima', onClick: () => { setShowMenu(false); setShowRatingModal(true) } }] : []),
+              { icon: friendSent ? <Check size={16} strokeWidth={1.5} /> : <UserPlus size={16} strokeWidth={1.5} />, label: friendSent ? 'Cancelar pedido' : 'Adicionar como amigo', sub: friendSent ? 'Toque para cancelar' : 'Conectem-se fora do app', onClick: () => { setShowMenu(false); handleAddFriend() }, success: friendSent },
+              ...(messages.length >= 5 ? [{ icon: <Star size={16} strokeWidth={1.5} />, label: ratingDone ? 'Alterar avaliação' : 'Avaliar conversa', sub: 'Avaliação anônima', onClick: () => { setShowMenu(false); setShowRatingModal(true) } }] : []),
               ...(boloOportunidade && !boloDone ? [{ icon: <Coffee size={16} strokeWidth={1.5} />, label: 'O encontro aconteceu?', sub: 'Conte como foi', onClick: () => { setShowMenu(false); setShowBoloModal(true) } }] : []),
               { icon: <Shield size={16} strokeWidth={1.5} />, label: 'Central de segurança', sub: 'Denunciar, bloquear, modo invisível', onClick: () => { setShowMenu(false); setShowSecuritySheet(true) } },
             ].map((item, i, arr) => (
@@ -1038,6 +1101,24 @@ export default function ChatPage() {
 
 
         {/* ── Banner convite pendente ── */}
+        {acceptedMeeting && (
+          <div style={{
+            flexShrink: 0,
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '10px 16px',
+            background: 'rgba(16,185,129,0.08)',
+            borderBottom: '1px solid rgba(16,185,129,0.15)',
+          }}>
+            <CalendarCheck size={14} color="#10b981" strokeWidth={1.5} />
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ fontSize: 13, color: '#10b981', margin: 0, fontWeight: 700, fontFamily: 'var(--font-fraunces)' }}>Encontro marcado</p>
+              <p style={{ fontSize: 12, color: 'var(--muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {acceptedMeeting.text}{acceptedMeeting.date ? ` · ${acceptedMeeting.date}` : ''}
+              </p>
+            </div>
+          </div>
+        )}
+
         {pendingConvite && (
           <div style={{
             flexShrink: 0,
@@ -1051,7 +1132,7 @@ export default function ChatPage() {
               {pendingConvite}
             </p>
             <button
-              onClick={() => sendMessage('Aceito!')}
+              onClick={() => { sendMessage('Aceito!'); setPendingConvite(null) }}
               style={{ padding: '4px 14px', borderRadius: 100, background: 'var(--accent)', border: 'none', fontSize: 11, fontWeight: 700, color: '#fff', cursor: 'pointer', letterSpacing: '0.05em' }}
             >
               Aceito!
@@ -1453,35 +1534,87 @@ export default function ChatPage() {
         {showRatingModal && (
           <div
             style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(8px)' }}
-            onClick={() => setShowRatingModal(false)}
+            onClick={() => { setShowRatingModal(false); setRatingConfirmOpcao(null) }}
           >
             <div
               style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px 24px 0 0', padding: '28px 24px 40px', width: '100%', maxWidth: 480 }}
               onClick={e => e.stopPropagation()}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: 0 }}>Como foi a conversa?</h3>
-                <button onClick={() => setShowRatingModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: 0 }}>
+                  {ratingConfirmOpcao ? 'Confirmar avaliação' : 'Como foi a conversa?'}
+                </h3>
+                <button onClick={() => { setShowRatingModal(false); setRatingConfirmOpcao(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
                   <X size={18} color="var(--muted)" strokeWidth={1.5} />
                 </button>
               </div>
-              <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliação anônima: {otherUser?.name} não saberá quem avaliou.</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {[
-                  { id: 'incrivel', label: 'Pessoa incrível!', color: '#10b981' },
-                  { id: 'agradavel', label: 'Conversa agradável', color: '#60a5fa' },
-                  { id: 'nao_interessei', label: 'Não me interessei', color: 'rgba(248,249,250,0.45)' },
-                  { id: 'ignorado', label: 'Fui ignorado(a)', color: '#F43F5E' },
-                ].map(op => (
-                  <button
-                    key={op.id}
-                    onClick={() => handleRating(op.id)}
-                    style={{ width: '100%', padding: '14px 16px', borderRadius: 14, border: '1px solid var(--border)', backgroundColor: 'rgba(255,255,255,0.04)', color: 'var(--text)', fontSize: 15, fontWeight: 500, textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12, fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
-                  >
-                    <span style={{ color: op.color }}>{op.label}</span>
-                  </button>
-                ))}
-              </div>
+
+              {ratingConfirmOpcao ? (
+                <>
+                  <p style={{ fontSize: 14, color: 'var(--text)', margin: '0 0 6px' }}>
+                    Sua avaliação: <strong>{[
+                      { id: 'incrivel', label: 'Pessoa incrível' },
+                      { id: 'agradavel', label: 'Conversa agradável' },
+                      { id: 'nao_interessei', label: 'Não me interessei' },
+                      { id: 'ignorado', label: 'Fui ignorado(a)' },
+                      { id: 'nao_recomendo', label: 'Não recomendo' },
+                      { id: 'desagradavel', label: 'Pessoa desagradável' },
+                      { id: 'inconveniente', label: 'Inconveniente / desrespeitosa' },
+                    ].find(o => o.id === ratingConfirmOpcao)?.label}</strong>
+                  </p>
+                  <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Essa avaliação é anônima. Você pode alterar depois.</p>
+                  <div style={{ display: 'flex', gap: 10 }}>
+                    <button
+                      onClick={() => setRatingConfirmOpcao(null)}
+                      style={{ flex: 1, padding: '13px 16px', borderRadius: 12, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+                    >
+                      Voltar
+                    </button>
+                    <button
+                      onClick={() => handleRating(ratingConfirmOpcao)}
+                      style={{ flex: 1, padding: '13px 16px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #E11D48, #be123c)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
+                    >
+                      Confirmar
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliação anônima: {otherUser?.name} não saberá quem avaliou.</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    {[
+                      { id: 'incrivel', label: 'Pessoa incrível', color: '#10b981' },
+                      { id: 'agradavel', label: 'Conversa agradável', color: '#60a5fa' },
+                      { id: 'nao_interessei', label: 'Não me interessei', color: 'rgba(248,249,250,0.45)' },
+                      { id: 'ignorado', label: 'Fui ignorado(a)', color: '#facc15' },
+                      { id: 'nao_recomendo', label: 'Não recomendo', color: '#fb923c' },
+                      { id: 'desagradavel', label: 'Pessoa desagradável', color: '#f87171' },
+                      { id: 'inconveniente', label: 'Inconveniente / desrespeitosa', color: '#ef4444' },
+                    ].map(op => {
+                      const currentRating = localStorage.getItem(`rating_${matchId}`)
+                      const isCurrentRating = currentRating === op.id
+                      return (
+                        <button
+                          key={op.id}
+                          onClick={() => setRatingConfirmOpcao(op.id)}
+                          style={{
+                            width: '100%', padding: '12px 16px', borderRadius: 14,
+                            border: isCurrentRating ? `1px solid ${op.color}` : '1px solid var(--border)',
+                            backgroundColor: isCurrentRating ? `${op.color}15` : 'rgba(255,255,255,0.04)',
+                            color: 'var(--text)', fontSize: 14, fontWeight: 500, textAlign: 'left',
+                            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
+                            fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
+                          }}
+                        >
+                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: op.color, flexShrink: 0 }} />
+                          <span style={{ color: op.color, flex: 1 }}>{op.label}</span>
+                          {isCurrentRating && <CheckCircle2 size={16} color={op.color} />}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -1849,69 +1982,68 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* ── Central de Segurança (BottomSheet) ── */}
+        {/* ── Central de Segurança (Tela dedicada) ── */}
         {showSecuritySheet && (
-          <div style={{ position:'fixed',inset:0,zIndex:60,display:'flex',alignItems:'flex-end',justifyContent:'center',background:'rgba(0,0,0,0.75)',backdropFilter:'blur(8px)' }} onClick={() => { setShowSecuritySheet(false); setUnmatchConfirm(false) }}>
-            <div style={{ background:'var(--bg-card2)',border:'1px solid var(--border)',borderRadius:'24px 24px 0 0',padding:'20px 20px 40px',width:'100%',maxWidth:480 }} onClick={e => e.stopPropagation()}>
-              <div style={{ width:40,height:4,borderRadius:4,background:'rgba(255,255,255,0.15)',margin:'0 auto 18px' }} />
-              <div style={{ display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:18 }}>
-                <div style={{ display:'flex',alignItems:'center',gap:8 }}>
-                  <Shield size={16} color="rgba(248,249,250,0.60)" strokeWidth={1.5} />
-                  <span style={{ fontFamily:'var(--font-fraunces)',fontSize:18,color:'var(--text)' }}>Central de seguranca</span>
+          <div style={{ position:'fixed',inset:0,zIndex:60,background:'var(--bg)',overflow:'auto' }}>
+            {/* Header */}
+            <header style={{
+              position:'sticky',top:0,zIndex:10,
+              background:'rgba(8,9,14,0.92)',backdropFilter:'blur(16px)',
+              borderBottom:'1px solid rgba(255,255,255,0.06)',
+              padding:'14px 20px',display:'flex',alignItems:'center',gap:12,
+            }}>
+              <button onClick={() => { setShowSecuritySheet(false); setUnmatchConfirm(false) }} style={{ width:36,height:36,borderRadius:'50%',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0 }}>
+                <ArrowLeft size={18} color="var(--muted)" />
+              </button>
+              <div style={{ display:'flex',alignItems:'center',gap:8 }}>
+                <Shield size={16} color="var(--muted)" strokeWidth={1.5} />
+                <h1 style={{ fontFamily:'var(--font-fraunces)',fontSize:20,color:'var(--text)',margin:0 }}>Central de seguranca</h1>
+              </div>
+            </header>
+
+            <div style={{ padding:'24px 20px',maxWidth:480,margin:'0 auto',display:'flex',flexDirection:'column',gap:12 }}>
+              {/* Info */}
+              <p style={{ fontSize:13,color:'var(--muted-2)',margin:'0 0 8px',lineHeight:1.5 }}>
+                Gerencie sua seguranca nesta conversa com {otherUser?.name}. Todas as acoes sao confidenciais.
+              </p>
+
+              {/* Denunciar */}
+              <button onClick={() => { setShowSecuritySheet(false); setShowReport(true) }} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'16px',borderRadius:16,background:'rgba(239,68,68,0.06)',border:'1px solid rgba(239,68,68,0.15)',cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>
+                <div style={{ width:44,height:44,borderRadius:12,background:'rgba(239,68,68,0.12)',border:'1px solid rgba(239,68,68,0.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><ShieldAlert size={20} color="#ef4444" strokeWidth={1.5} /></div>
+                <div style={{ textAlign:'left',flex:1 }}>
+                  <p style={{ fontSize:15,fontWeight:600,color:'var(--text)',margin:0 }}>Denunciar {otherUser?.name}</p>
+                  <p style={{ fontSize:12,color:'var(--muted-2)',margin:'3px 0 0' }}>Perfil falso, assedio, golpe, comportamento inadequado</p>
                 </div>
-                <button onClick={() => { setShowSecuritySheet(false); setUnmatchConfirm(false) }} style={{ background:'none',border:'none',cursor:'pointer',padding:4 }}><X size={16} color="var(--muted)" /></button>
-              </div>
-              <div style={{ display:'flex',flexDirection:'column',gap:3 }}>
-                {/* Denunciar */}
-                <button onClick={() => { setShowSecuritySheet(false); setShowReport(true) }} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'14px 16px',borderRadius:16,background:'rgba(255,255,255,0.04)',border:'1px solid var(--border)',cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>
-                  <div style={{ width:40,height:40,borderRadius:12,background:'rgba(239,68,68,0.12)',border:'1px solid rgba(239,68,68,0.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><ShieldAlert size={18} color="#ef4444" strokeWidth={1.5} /></div>
-                  <div style={{ textAlign:'left' }}>
-                    <p style={{ fontSize:14,fontWeight:600,color:'var(--text)',margin:0 }}>Denunciar {otherUser?.name}</p>
-                    <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>Perfil falso, assedio, golpe...</p>
+              </button>
+
+              {/* Desfazer match */}
+              {unmatchConfirm ? (
+                <div style={{ padding:'20px',borderRadius:16,background:'rgba(225,29,72,0.06)',border:'1px solid rgba(225,29,72,0.20)' }}>
+                  <p style={{ fontSize:14,color:'var(--text)',margin:'0 0 4px',fontWeight:600,textAlign:'center' }}>Desfazer match?</p>
+                  <p style={{ fontSize:13,color:'var(--muted-2)',margin:'0 0 16px',textAlign:'center' }}>O chat sera encerrado e esta pessoa voltara para o final da sua fila.</p>
+                  <div style={{ display:'flex',gap:10 }}>
+                    <button onClick={() => setUnmatchConfirm(false)} style={{ flex:1,padding:'12px',borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',color:'var(--muted)',fontSize:14,cursor:'pointer',fontFamily:'var(--font-jakarta)',fontWeight:600 }}>Cancelar</button>
+                    <button onClick={handleUnmatch} style={{ flex:1,padding:'12px',borderRadius:12,background:'linear-gradient(135deg, #E11D48, #be123c)',border:'none',color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>Desfazer</button>
                   </div>
-                </button>
-                {/* Desfazer match */}
-                {unmatchConfirm ? (
-                  <div style={{ padding:'14px 16px',borderRadius:16,background:'rgba(225,29,72,0.08)',border:'1px solid rgba(225,29,72,0.25)' }}>
-                    <p style={{ fontSize:13,color:'var(--text)',margin:'0 0 12px',textAlign:'center' }}>Tem certeza? O chat será encerrado.</p>
-                    <div style={{ display:'flex',gap:8 }}>
-                      <button onClick={() => setUnmatchConfirm(false)} style={{ flex:1,padding:'10px',borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',color:'var(--muted)',fontSize:13,cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>Cancelar</button>
-                      <button onClick={handleUnmatch} style={{ flex:1,padding:'10px',borderRadius:12,background:'var(--accent)',border:'none',color:'#fff',fontSize:13,fontWeight:700,cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>Desfazer</button>
-                    </div>
-                  </div>
-                ) : (
-                  <button onClick={() => setUnmatchConfirm(true)} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'14px 16px',borderRadius:16,background:'rgba(255,255,255,0.04)',border:'1px solid var(--border)',cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>
-                    <div style={{ width:40,height:40,borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><HeartCrack size={18} color="rgba(248,249,250,0.45)" strokeWidth={1.5} /></div>
-                    <div style={{ textAlign:'left' }}>
-                      <p style={{ fontSize:14,fontWeight:600,color:'var(--text)',margin:0 }}>Desfazer match</p>
-                      <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>Encerrar conversa e remover match</p>
-                    </div>
-                  </button>
-                )}
-                {/* Modo Invisível */}
-                <button onClick={() => { setShowSecuritySheet(false); router.push('/loja') }} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'14px 16px',borderRadius:16,background:'rgba(255,255,255,0.04)',border:'1px solid var(--border)',cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>
-                  <div style={{ width:40,height:40,borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><Ghost size={18} color="rgba(248,249,250,0.45)" strokeWidth={1.5} /></div>
+                </div>
+              ) : (
+                <button onClick={() => setUnmatchConfirm(true)} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'16px',borderRadius:16,background:'rgba(255,255,255,0.03)',border:'1px solid var(--border)',cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>
+                  <div style={{ width:44,height:44,borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><HeartCrack size={20} color="rgba(248,249,250,0.50)" strokeWidth={1.5} /></div>
                   <div style={{ textAlign:'left',flex:1 }}>
-                    <p style={{ fontSize:14,fontWeight:600,color:'var(--text)',margin:0 }}>Modo invisível</p>
-                    <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>
-                      {ghostModeUntil && new Date(ghostModeUntil) > new Date()
-                        ? `Ativo até ${new Date(ghostModeUntil).toLocaleDateString('pt-BR')}`
-                        : 'Some das buscas temporariamente'}
-                    </p>
+                    <p style={{ fontSize:15,fontWeight:600,color:'var(--text)',margin:0 }}>Desfazer match</p>
+                    <p style={{ fontSize:12,color:'var(--muted-2)',margin:'3px 0 0' }}>Encerrar conversa imediatamente</p>
                   </div>
-                  {ghostModeUntil && new Date(ghostModeUntil) > new Date() && (
-                    <span style={{ fontSize:11,color:'#b8f542',background:'rgba(184,245,66,0.12)',border:'1px solid rgba(184,245,66,0.25)',padding:'2px 8px',borderRadius:100 }}>Ativo</span>
-                  )}
                 </button>
-                {/* Emergência */}
-                <a href="tel:190" style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'14px 16px',borderRadius:16,background:'rgba(225,29,72,0.06)',border:'1px solid rgba(225,29,72,0.20)',textDecoration:'none' }}>
-                  <div style={{ width:40,height:40,borderRadius:12,background:'rgba(225,29,72,0.12)',border:'1px solid rgba(225,29,72,0.30)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><Phone size={18} color="#F43F5E" strokeWidth={1.5} /></div>
-                  <div style={{ textAlign:'left' }}>
-                    <p style={{ fontSize:14,fontWeight:600,color:'#F43F5E',margin:0 }}>Ligar 190</p>
-                    <p style={{ fontSize:12,color:'var(--muted-2)',margin:0 }}>Polícia Militar, emergência real</p>
-                  </div>
-                </a>
-              </div>
+              )}
+
+              {/* Emergência */}
+              <a href="tel:190" style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'16px',borderRadius:16,background:'rgba(225,29,72,0.06)',border:'1px solid rgba(225,29,72,0.20)',textDecoration:'none',marginTop:8 }}>
+                <div style={{ width:44,height:44,borderRadius:12,background:'rgba(225,29,72,0.12)',border:'1px solid rgba(225,29,72,0.30)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><Phone size={20} color="#F43F5E" strokeWidth={1.5} /></div>
+                <div style={{ textAlign:'left',flex:1 }}>
+                  <p style={{ fontSize:15,fontWeight:600,color:'#F43F5E',margin:0 }}>Ligar 190</p>
+                  <p style={{ fontSize:12,color:'var(--muted-2)',margin:'3px 0 0' }}>Policia Militar - emergencia real</p>
+                </div>
+              </a>
             </div>
           </div>
         )}
@@ -2005,13 +2137,23 @@ function ActionBtn({
 const RESPOSTAS_RAPIDAS = ['Aceito!', 'Não posso', 'Em breve', 'Me conta mais!']
 
 function ConviteCard({
-  text, isMe, time, onReply,
+  text, isMe, time, onReply, respondedWith,
 }: {
   text: string
   isMe: boolean
   time: string
   onReply: (r: string) => void
+  respondedWith?: string | null
 }) {
+  const [localResponse, setLocalResponse] = useState<string | null>(null)
+  const answered = respondedWith || localResponse
+
+  function handleReply(r: string) {
+    if (answered) return
+    setLocalResponse(r)
+    onReply(r)
+  }
+
   return (
     <div style={{
       display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start',
@@ -2030,23 +2172,35 @@ function ConviteCard({
           padding: '10px 14px 8px',
           borderBottom: `1px solid ${isMe ? 'var(--accent-border)' : 'var(--border)'}`,
         }}>
-          <CalendarPlus size={14} color="var(--accent)" strokeWidth={1.5} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent)' }}>Convite de Encontro</span>
+          <CalendarPlus size={14} color={answered === 'Aceito!' ? '#22c55e' : 'var(--accent)'} strokeWidth={1.5} />
+          <span style={{ fontSize: 12, fontWeight: 700, color: answered === 'Aceito!' ? '#22c55e' : 'var(--accent)' }}>
+            {answered === 'Aceito!' ? 'Encontro marcado' : 'Convite de Encontro'}
+          </span>
         </div>
 
         {/* Texto da proposta */}
         <div style={{ padding: '10px 14px' }}>
-          <p style={{ fontSize: 14, color: 'var(--text)', margin: '0 0 10px', lineHeight: 1.45 }}>{text}</p>
+          <p style={{ fontSize: 14, color: 'var(--text)', margin: '0 0 10px', lineHeight: 1.45, whiteSpace: 'pre-line' }}>{text}</p>
           <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>{time}</span>
         </div>
 
-        {/* Respostas rapidas — so para quem recebeu */}
-        {!isMe && (
+        {/* Estado respondido */}
+        {answered && (
+          <div style={{ padding: '0 14px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <CheckCircle2 size={13} color={answered === 'Aceito!' ? '#22c55e' : 'var(--muted)'} />
+            <span style={{ fontSize: 12, color: answered === 'Aceito!' ? '#22c55e' : 'var(--muted)', fontWeight: 600 }}>
+              {answered}
+            </span>
+          </div>
+        )}
+
+        {/* Respostas rapidas — so para quem recebeu e ainda nao respondeu */}
+        {!isMe && !answered && (
           <div style={{ padding: '0 14px 12px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {RESPOSTAS_RAPIDAS.map((r) => (
               <button
                 key={r}
-                onClick={() => onReply(r)}
+                onClick={() => handleReply(r)}
                 style={{
                   padding: '5px 12px', borderRadius: 100,
                   border: '1px solid var(--border)',

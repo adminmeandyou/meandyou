@@ -432,16 +432,16 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
       </section>
 
       {/* Control bar */}
-      <nav style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', paddingTop: 16, paddingBottom: 'max(24px, env(safe-area-inset-bottom, 24px))', pointerEvents: 'none' }}>
-        <div style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 20, padding: '16px 24px', borderRadius: 100, background: 'rgba(15,17,23,0.78)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 -10px 30px rgba(0,0,0,0.5)' }}>
+      <nav style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', paddingTop: 10, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))', pointerEvents: 'none' }}>
+        <div style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', borderRadius: 100, background: 'rgba(15,17,23,0.78)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 -10px 30px rgba(0,0,0,0.5)' }}>
           <ControlButton
-            icon={micOn ? <Mic size={20} strokeWidth={1.5} /> : <MicOff size={20} strokeWidth={1.5} />}
+            icon={micOn ? <Mic size={17} strokeWidth={1.5} /> : <MicOff size={17} strokeWidth={1.5} />}
             label="Mudo"
             onClick={toggleMic}
             active={!micOn}
           />
           <ControlButton
-            icon={camOn ? <Video size={20} strokeWidth={1.5} /> : <VideoOff size={20} strokeWidth={1.5} />}
+            icon={camOn ? <Video size={17} strokeWidth={1.5} /> : <VideoOff size={17} strokeWidth={1.5} />}
             label="Vídeo"
             onClick={toggleCam}
             active={!camOn}
@@ -449,26 +449,25 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
           <button
             onClick={handleEnd}
             aria-label="Encerrar chamada"
-            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'linear-gradient(135deg, #E11D48, #be123c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 12px 32px rgba(225,29,72,0.45), 0 0 0 6px rgba(225,29,72,0.08)' }}>
-              <PhoneOff size={26} color="#fff" strokeWidth={1.8} />
+            <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'linear-gradient(135deg, #E11D48, #be123c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 8px 24px rgba(225,29,72,0.40), 0 0 0 4px rgba(225,29,72,0.08)' }}>
+              <PhoneOff size={21} color="#fff" strokeWidth={1.8} />
             </div>
-            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#F43F5E' }}>Encerrar</span>
           </button>
           <ControlButton
-            icon={<RotateCcw size={20} strokeWidth={1.5} />}
+            icon={<RotateCcw size={17} strokeWidth={1.5} />}
             label="Girar"
             onClick={flipCam}
           />
           <ControlButton
-            icon={<FlipHorizontal2 size={20} strokeWidth={1.5} />}
+            icon={<FlipHorizontal2 size={17} strokeWidth={1.5} />}
             label="Espelho"
             onClick={toggleMirror}
             active={!mirrored}
           />
           <ControlButton
-            icon={remoteMuted ? <VolumeX size={20} strokeWidth={1.5} /> : <Volume2 size={20} strokeWidth={1.5} />}
+            icon={remoteMuted ? <VolumeX size={17} strokeWidth={1.5} /> : <Volume2 size={17} strokeWidth={1.5} />}
             label="Som"
             onClick={() => {
               setRemoteMuted(v => {
@@ -495,12 +494,12 @@ function ControlButton({ icon, label, onClick, active = false }: {
   return (
     <button
       onClick={onClick}
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: active ? '#F43F5E' : 'rgba(255,255,255,0.88)' }}
+      aria-label={label}
+      style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: active ? '#F43F5E' : 'rgba(255,255,255,0.88)' }}
     >
-      <div style={{ width: 48, height: 48, borderRadius: '50%', background: active ? 'rgba(225,29,72,0.18)' : 'rgba(52,52,58,0.6)', border: active ? '1px solid rgba(225,29,72,0.35)' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 180ms cubic-bezier(0.19,1,0.22,1)' }}>
+      <div style={{ width: 40, height: 40, borderRadius: '50%', background: active ? 'rgba(225,29,72,0.18)' : 'rgba(52,52,58,0.6)', border: active ? '1px solid rgba(225,29,72,0.35)' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 180ms cubic-bezier(0.19,1,0.22,1)' }}>
         {icon}
       </div>
-      <span style={{ fontSize: 9, fontWeight: 600, letterSpacing: '0.22em', textTransform: 'uppercase', color: active ? '#F43F5E' : 'rgba(255,255,255,0.55)' }}>{label}</span>
     </button>
   )
 }
