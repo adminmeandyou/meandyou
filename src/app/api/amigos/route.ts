@@ -35,10 +35,14 @@ export async function POST(req: NextRequest) {
 
   if (existing) {
     if (existing.status === 'accepted') {
-      return NextResponse.json({ error: 'Vocês já são amigos' }, { status: 409 })
+      return NextResponse.json({ error: 'Voces ja sao amigos' }, { status: 409 })
     }
     if (existing.status === 'pending') {
-      return NextResponse.json({ error: 'Pedido já enviado' }, { status: 409 })
+      return NextResponse.json({ error: 'Pedido ja enviado' }, { status: 409 })
+    }
+    // Se foi recusado anteriormente, permitir reenvio
+    if (existing.status === 'declined') {
+      await supabaseAdmin.from('friendships').delete().eq('id', existing.id)
     }
   }
 
@@ -135,6 +139,19 @@ export async function PATCH(req: NextRequest) {
     if (friendship.requester_id !== user.id && friendship.receiver_id !== user.id) {
       return NextResponse.json({ error: 'Sem permissão' }, { status: 403 })
     }
+
+    // Se era um pedido pendente, remover a notificação do receiver
+    if (friendship.status === 'pending') {
+      try {
+        await supabaseAdmin
+          .from('notifications')
+          .delete()
+          .eq('user_id', friendship.receiver_id)
+          .eq('from_user_id', friendship.requester_id)
+          .eq('type', 'friend_request')
+      } catch { /* silencioso */ }
+    }
+
     await supabaseAdmin.from('friendships').delete().eq('id', friendshipId)
     return NextResponse.json({ ok: true })
   }

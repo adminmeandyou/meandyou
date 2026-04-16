@@ -54,6 +54,28 @@ export default function AmigosPage() {
     load()
   }, [])
 
+  // Realtime: escuta mudanças na tabela friendships (novo pedido, aceito, removido)
+  useEffect(() => {
+    if (!myUserId) return
+    const channel = supabase
+      .channel('amigos-realtime')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'friendships',
+      }, (payload) => {
+        const row = (payload.new || payload.old) as Record<string, string> | undefined
+        if (!row) return
+        // Só recarrega se envolve o user atual
+        if (row.requester_id === myUserId || row.receiver_id === myUserId) {
+          loadFriends()
+        }
+      })
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [myUserId])
+
   async function loadFriends() {
     setLoading(true)
     try {
