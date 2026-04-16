@@ -9,7 +9,6 @@ import { Phone, PhoneOff, PhoneIncoming, AlertCircle, Loader2, Video, VideoOff, 
 import Image from 'next/image'
 import { playSoundDirect } from '@/hooks/useSounds'
 import { initVideoCallBus, onVideoCallSignal, sendVideoCallSignal } from '@/lib/videocall-bus'
-import type { CallSignal } from '@/lib/videocall-bus'
 import { WebRTCManager } from '@/lib/webrtc'
 
 // ─── Tela de chamada ativa (WebRTC P2P) ─────────────────────────────────────
@@ -39,8 +38,6 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
   const localVideoRef = useRef<HTMLVideoElement>(null)
   const remoteVideoRef = useRef<HTMLVideoElement>(null)
   const remoteAudioRef = useRef<HTMLAudioElement>(null)
-  const signalQueueRef = useRef<CallSignal[]>([])
-  const managerReadyRef = useRef(false)
 
   const [micOn, setMicOn] = useState(true)
   const [camOn, setCamOn] = useState(true)
@@ -57,26 +54,14 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
     onEnd()
   }, [matchId, onEnd])
 
-  function processSignal(payload: CallSignal) {
+  // SDP/ICE agora e tratado internamente pelo WebRTCManager via canal do match.
+  // O bus do usuario so precisa tratar 'ended' para encerrar a chamada.
+  function processSignal(payload: { type: string; match_id?: string }) {
     if (payload.match_id !== matchId) return
-    if (!managerReadyRef.current || !managerRef.current) {
-      signalQueueRef.current.push(payload)
-      return
-    }
-    if (payload.type === 'sdp_offer' && payload.sdp) managerRef.current.handleOffer(payload.sdp)
-    if (payload.type === 'sdp_answer' && payload.sdp) managerRef.current.handleAnswer(payload.sdp)
-    if (payload.type === 'ice_candidate' && payload.candidate) managerRef.current.handleIceCandidate(payload.candidate)
     if (payload.type === 'ended') handleEnd()
   }
 
-  function drainSignalQueue() {
-    const queued = signalQueueRef.current.splice(0)
-    for (const s of queued) processSignal(s)
-  }
-
   useEffect(() => {
-    managerReadyRef.current = false
-    signalQueueRef.current = []
     const unsub = onVideoCallSignal(processSignal)
     start()
     return () => {
@@ -85,24 +70,29 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
       if (heartbeatRef.current) clearInterval(heartbeatRef.current)
       managerRef.current?.destroy()
       managerRef.current = null
-      managerReadyRef.current = false
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [matchId])
 
   useEffect(() => {
     if (remoteStream) {
-      if (remoteVideoRef.current) remoteVideoRef.current.srcObject = remoteStream
-      if (remoteAudioRef.current) remoteAudioRef.current.srcObject = remoteStream
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = remoteStream
+        remoteVideoRef.current.play().catch(() => {})
+      }
+      if (remoteAudioRef.current) {
+        remoteAudioRef.current.srcObject = remoteStream
+        remoteAudioRef.current.play().catch(() => {})
+      }
     }
   }, [remoteStream, remoteTrackCount])
 
   useEffect(() => {
-    if (!loading && localVideoRef.current && managerRef.current) {
+    if (!loading && camOn && localVideoRef.current && managerRef.current) {
       const local = managerRef.current.getLocalStream()
       if (local) localVideoRef.current.srcObject = local
     }
-  }, [loading])
+  }, [loading, camOn])
 
   async function start() {
     setLoading(true)
@@ -149,8 +139,6 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
       })
       managerRef.current = manager
       await manager.init(isCaller)
-      managerReadyRef.current = true
-      drainSignalQueue()
 
       startTimeRef.current = Date.now()
       timerRef.current = setInterval(() =>
@@ -358,6 +346,7 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
             ref={remoteVideoRef}
             autoPlay
             playsInline
+            muted
             style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         ) : (

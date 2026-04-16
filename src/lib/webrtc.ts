@@ -1,4 +1,4 @@
-import { sendVideoCallSignal } from '@/lib/videocall-bus'
+import { supabase } from '@/app/lib/supabase'
 
 const FALLBACK_ICE: RTCIceServer[] = [
   { urls: 'stun:stun.cloudflare.com:3478' },
@@ -38,7 +38,6 @@ export class WebRTCManager {
   private pc: RTCPeerConnection | null = null
   private localStream: MediaStream | null = null
   private remoteStream: MediaStream | null = null
-  private targetUserId: string
   private matchId: string
   private accessToken: string
   private plan: string
@@ -46,8 +45,14 @@ export class WebRTCManager {
   private pendingCandidates: RTCIceCandidateInit[] = []
   private hasRemoteDescription = false
 
-  constructor(targetUserId: string, matchId: string, accessToken: string, plan: string, callbacks: WebRTCCallbacks) {
-    this.targetUserId = targetUserId
+  // Canal dedicado para sinalizacao SDP/ICE (1 por match ativo)
+  private matchChannel: ReturnType<typeof supabase.channel> | null = null
+  private channelReady = false
+  private pcReady = false
+  private pendingIncoming: { type: string; sdp?: RTCSessionDescriptionInit; candidate?: RTCIceCandidateInit }[] = []
+  private pendingOutgoing: { type: string; sdp?: { type: string; sdp?: string }; candidate?: RTCIceCandidateInit }[] = []
+
+  constructor(_targetUserId: string, matchId: string, accessToken: string, plan: string, callbacks: WebRTCCallbacks) {
     this.matchId = matchId
     this.accessToken = accessToken
     this.plan = plan
@@ -63,17 +68,17 @@ export class WebRTCManager {
   }
 
   async init(isCaller: boolean, facingMode: 'user' | 'environment' = 'user') {
+    // 1. Inscreve no canal do match para SDP/ICE (ambos os lados)
+    await this.setupMatchChannel()
+
+    // 2. Cria a PeerConnection
     const iceServers = await fetchIceServers(this.accessToken)
     this.pc = new RTCPeerConnection({ iceServers })
     this.remoteStream = new MediaStream()
 
     this.pc.onicecandidate = (e) => {
       if (e.candidate) {
-        sendVideoCallSignal(this.targetUserId, {
-          type: 'ice_candidate',
-          match_id: this.matchId,
-          candidate: e.candidate.toJSON(),
-        })
+        this.sendSignal({ type: 'ice_candidate', candidate: e.candidate.toJSON() })
       }
     }
 
@@ -92,6 +97,7 @@ export class WebRTCManager {
       }
     }
 
+    // 3. Captura camera e microfone
     this.localStream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode, width: this.quality.width, height: this.quality.height },
       audio: true,
@@ -101,16 +107,82 @@ export class WebRTCManager {
       this.pc!.addTrack(track, this.localStream!)
     })
 
+    // 4. PC pronto — processa sinais que chegaram antes
+    this.pcReady = true
+    this.drainPendingIncoming()
+
+    // 5. Se for o chamador, cria e envia a offer
     if (isCaller) {
       const offer = await this.pc.createOffer()
       await this.pc.setLocalDescription(offer)
-      await sendVideoCallSignal(this.targetUserId, {
+      this.sendSignal({
         type: 'sdp_offer',
-        match_id: this.matchId,
         sdp: { type: offer.type, sdp: offer.sdp },
       })
     }
   }
+
+  // ─── Canal do match para sinalizacao ──────────────────────────────────────────
+
+  private async setupMatchChannel() {
+    this.matchChannel = supabase.channel(`videocall:match:${this.matchId}`)
+
+    this.matchChannel.on('broadcast', { event: 'webrtc' }, ({ payload }) => {
+      if (!payload) return
+      this.handleIncomingSignal(payload)
+    })
+
+    await new Promise<void>((resolve) => {
+      const timeout = setTimeout(() => {
+        console.warn('[WebRTC] match channel subscription timeout')
+        resolve()
+      }, 5000)
+      this.matchChannel!.subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          clearTimeout(timeout)
+          this.channelReady = true
+          this.drainPendingOutgoing()
+          resolve()
+        }
+      })
+    })
+  }
+
+  private handleIncomingSignal(payload: { type: string; sdp?: RTCSessionDescriptionInit; candidate?: RTCIceCandidateInit }) {
+    if (!this.pcReady || !this.pc) {
+      this.pendingIncoming.push(payload)
+      return
+    }
+    if (payload.type === 'sdp_offer' && payload.sdp) this.handleOffer(payload.sdp)
+    if (payload.type === 'sdp_answer' && payload.sdp) this.handleAnswer(payload.sdp)
+    if (payload.type === 'ice_candidate' && payload.candidate) this.handleIceCandidate(payload.candidate)
+  }
+
+  private drainPendingIncoming() {
+    const signals = this.pendingIncoming.splice(0)
+    for (const s of signals) this.handleIncomingSignal(s)
+  }
+
+  private sendSignal(payload: { type: string; sdp?: { type: string; sdp?: string }; candidate?: RTCIceCandidateInit }) {
+    if (!this.channelReady || !this.matchChannel) {
+      this.pendingOutgoing.push(payload)
+      return
+    }
+    this.matchChannel.send({
+      type: 'broadcast',
+      event: 'webrtc',
+      payload,
+    }).catch((err) => {
+      console.error('[WebRTC] sendSignal failed:', err)
+    })
+  }
+
+  private drainPendingOutgoing() {
+    const signals = this.pendingOutgoing.splice(0)
+    for (const s of signals) this.sendSignal(s)
+  }
+
+  // ─── SDP handling ─────────────────────────────────────────────────────────────
 
   async handleOffer(sdp: RTCSessionDescriptionInit) {
     if (!this.pc) return
@@ -121,9 +193,8 @@ export class WebRTCManager {
 
       const answer = await this.pc.createAnswer()
       await this.pc.setLocalDescription(answer)
-      await sendVideoCallSignal(this.targetUserId, {
+      this.sendSignal({
         type: 'sdp_answer',
-        match_id: this.matchId,
         sdp: { type: answer.type, sdp: answer.sdp },
       })
     } catch (err) {
@@ -159,6 +230,8 @@ export class WebRTCManager {
     }
     this.pendingCandidates = []
   }
+
+  // ─── Controles ────────────────────────────────────────────────────────────────
 
   getLocalStream() {
     return this.localStream
@@ -212,5 +285,13 @@ export class WebRTCManager {
     this.remoteStream = null
     this.pendingCandidates = []
     this.hasRemoteDescription = false
+    this.pcReady = false
+    this.channelReady = false
+    this.pendingIncoming = []
+    this.pendingOutgoing = []
+    if (this.matchChannel) {
+      supabase.removeChannel(this.matchChannel)
+      this.matchChannel = null
+    }
   }
 }
