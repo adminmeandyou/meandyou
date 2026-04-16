@@ -20,26 +20,19 @@ import { OnlineIndicator } from '@/components/OnlineIndicator'
 import { useToast } from '@/components/Toast'
 import { pickRandomIcebreakers } from '@/lib/icebreakers'
 
-interface Message {
-  id: string
-  sender_id: string
-  content: string
-  created_at: string
-  read_at: string | null
-}
-
-interface OtherUser {
-  id: string
-  name: string
-  photo_best: string | null
-  verified: boolean
-  last_seen: string | null
-  show_last_active: boolean
-}
-
-const MAX_CHARS = 500
-const CONVITE_PREFIX = '__CONVITE__:'
-const NUDGE_TOKEN = '__NUDGE__'
+import {
+  Message, OtherUser, MAX_CHARS, CONVITE_PREFIX, NUDGE_TOKEN, RESPOSTAS_RAPIDAS,
+  formatMsgTime, getDateLabel, getConviteResponse, checkRateLimit,
+} from './_components/helpers'
+import { ConviteCard } from './_components/ConviteCard'
+import { RatingModal } from './_components/RatingModal'
+import { BoloModal } from './_components/BoloModal'
+import { MeetingModal } from './_components/MeetingModal'
+import { CheckinModal } from './_components/CheckinModal'
+import { SecuritySheet } from './_components/SecuritySheet'
+import { EmergencyModal } from './_components/EmergencyModal'
+import { ConvitePanel } from './_components/ConvitePanel'
+import { IcebreakerPanel } from './_components/IcebreakerPanel'
 
 
 export default function ChatPage() {
@@ -76,8 +69,7 @@ export default function ChatPage() {
   const [shake, setShake] = useState(false)
   const [pendingConvite, setPendingConvite] = useState<string | null>(null)
 
-  // ── Fase 8: Segurança Encontros ──────────────────────────────────────────────
-  // Registro privado
+  // Fase 8: Seguranca Encontros
   const [showMeetingModal, setShowMeetingModal] = useState(false)
   const [meetingLocal, setMeetingLocal]         = useState('')
   const [meetingPlaceSuggestions, setMeetingPlaceSuggestions] = useState<Array<{ display_name: string; name: string; address: any }>>([])
@@ -94,15 +86,14 @@ export default function ChatPage() {
   const [meetingUf, setMeetingUf]               = useState('')
   const [cepLoading, setCepLoading]             = useState(false)
   const [cepError, setCepError]                 = useState('')
-  // Check-in pós-encontro (bloqueante)
+  // Check-in pos-encontro (bloqueante)
   const [checkinMeeting, setCheckinMeeting] = useState<{ id: string; local: string; date: string } | null>(null)
   const [checkinRecordId, setCheckinRecordId] = useState<string | null>(null)
-  // Central de segurança
+  // Central de seguranca
   const [showSecuritySheet, setShowSecuritySheet] = useState(false)
   const [unmatchConfirm, setUnmatchConfirm]       = useState(false)
   const [unmatchDone, setUnmatchDone]             = useState(false)
   const [showReport, setShowReport]               = useState(false)
-  // ─────────────────────────────────────────────────────────────────────────────
 
   // Gamificacao Fase 7
   const [showRatingModal, setShowRatingModal] = useState(false)
@@ -124,7 +115,7 @@ export default function ChatPage() {
   const inputRef = useRef<HTMLTextAreaElement>(null)
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null)
 
-  // Listener de chamada de vídeo — ativo enquanto o chat estiver aberto
+  // Visual viewport para teclado mobile
   useEffect(() => {
     const vv = typeof window !== 'undefined' ? window.visualViewport : null
     if (!vv) return
@@ -159,7 +150,6 @@ export default function ChatPage() {
   async function initChat(uid: string) {
     setLoading(true)
 
-    // Verifica se o match pertence ao usuário
     const { data: match, error: matchErr } = await supabase
       .from('matches')
       .select('id, user1, user2')
@@ -174,7 +164,6 @@ export default function ChatPage() {
 
     const otherId = match.user1 === uid ? match.user2 : match.user1
 
-    // Busca perfil do outro — sem campos sensíveis
     const { data: profile } = await supabase
       .from('profiles')
       .select('id, name, photo_best, verified, last_seen, show_last_active')
@@ -190,43 +179,32 @@ export default function ChatPage() {
       show_last_active: profile?.show_last_active ?? true,
     })
 
-    // Carrega mensagens
     await loadMessages(uid)
-
-    // Marca mensagens recebidas como lidas
     await marcarComoLidas(uid)
-
-    // Detecta convite pendente não respondido
     detectPendingConvite(uid)
 
-    // Carrega avaliação anterior do localStorage
     const savedRating = localStorage.getItem(`rating_${matchId}`)
     if (savedRating) setRatingDone(true)
 
-    // Realtime: Broadcast (gratuito no plano free — não usa postgres_changes com filtro)
+    // Realtime: Broadcast
     channelRef.current = supabase
       .channel(`chat-${matchId}`)
       .on('broadcast', { event: 'new_message' }, ({ payload }) => {
         const newMsg = payload as Message
 
-        // Adiciona mensagem com dedup (evita duplicatas do optimistic update)
         setMessages(prev => {
           if (prev.find(m => m.id === newMsg.id)) return prev
           return [...prev, newMsg]
         })
 
-        // Side effects fora do state updater (React exige updaters puros)
         if (newMsg.sender_id !== uid) {
-          // Convite recebido
           if (newMsg.content.startsWith(CONVITE_PREFIX)) {
             setPendingConvite(newMsg.content.slice(CONVITE_PREFIX.length))
           }
-          // Vibração leve ao receber mensagem nova
           if (typeof navigator !== 'undefined' && navigator.vibrate) {
             navigator.vibrate(15)
           }
 
-          // Chamar atenção recebido: 3 bips + tremida longa
           if (newMsg.content === NUDGE_TOKEN) {
             if (typeof navigator !== 'undefined' && navigator.vibrate) {
               navigator.vibrate([250, 120, 250, 120, 250])
@@ -237,7 +215,6 @@ export default function ChatPage() {
           } else {
             sounds.play('receive')
           }
-          // Marca como lida automaticamente
           supabase
             .from('messages')
             .update({ read_at: new Date().toISOString() })
@@ -248,7 +225,7 @@ export default function ChatPage() {
       })
       .subscribe()
 
-    // Fase 8: check-in pós-encontro — verifica localStorage
+    // Fase 8: check-in pos-encontro
     try {
       const records: any[] = JSON.parse(localStorage.getItem('meandyou_meetings') ?? '[]')
       const pending = records.find(
@@ -256,7 +233,7 @@ export default function ChatPage() {
                new Date(r.date).getTime() + 2 * 60 * 60 * 1000 < Date.now()
       )
       if (pending) setCheckinMeeting({ id: pending.id, local: pending.local, date: pending.date })
-    } catch { /* localStorage indisponível */ }
+    } catch { /* localStorage indisponivel */ }
 
     setLoading(false)
     scrollToBottom()
@@ -310,7 +287,6 @@ export default function ChatPage() {
     const cep = addr.postcode || ''
 
     const partes = [nome, rua && numero ? `${rua}, ${numero}` : rua, bairro, cidade && estado ? `${cidade} - ${estado}` : cidade, cep].filter(Boolean)
-    // Remove duplicatas (nome pode repetir a rua)
     const unicas = [...new Set(partes)]
     const formatado = unicas.join(', ')
 
@@ -320,25 +296,21 @@ export default function ChatPage() {
   }
 
   function detectPendingConvite(uid: string) {
-    // Detecta se há convite recebido sem resposta (busca nas mensagens carregadas)
-    // Será chamado após loadMessages, portanto precisamos passar mensagens como param ou usar state
-    // Solução: chamado depois de loadMessages via useEffect em messages
+    // Detecta se ha convite recebido sem resposta (chamado apos loadMessages via useEffect)
   }
 
   // Detecta convite pendente toda vez que messages mudar
   useEffect(() => {
     if (!userId || messages.length === 0) return
-    // Busca último convite recebido (não meu)
     const convites = messages
       .filter(m => m.sender_id !== userId && m.content.startsWith(CONVITE_PREFIX))
     if (convites.length === 0) { setPendingConvite(null); return }
     const ultimo = convites[convites.length - 1]
-    // Verifica se já foi respondido (alguma mensagem minha depois do convite)
     const meuIdx = messages.findIndex(m => m.id === ultimo.id)
     const houveResposta = messages.slice(meuIdx + 1).some(m => m.sender_id === userId)
     setPendingConvite(houveResposta ? null : ultimo.content.slice(CONVITE_PREFIX.length))
 
-    // Detector de Bolo: verifica se houve convite + "Aceito!" como resposta minha
+    // Detector de Bolo
     if (!boloDone) {
       const aceitei = messages.some(m => m.sender_id === userId && m.content === 'Aceito!')
       if (aceitei) setBoloOportunidade(true)
@@ -348,7 +320,7 @@ export default function ChatPage() {
     const meetingMsgs = messages.filter(m => m.content.startsWith('__MEETING__:') || m.content.startsWith(CONVITE_PREFIX))
     for (let i = meetingMsgs.length - 1; i >= 0; i--) {
       const mIdx = messages.findIndex(m => m.id === meetingMsgs[i].id)
-      const resp = getConviteResponse(mIdx)
+      const resp = getConviteResponse(messages, mIdx)
       if (resp === 'Aceito!') {
         try {
           if (meetingMsgs[i].content.startsWith('__MEETING__:')) {
@@ -378,26 +350,13 @@ export default function ChatPage() {
     })
   }
 
-  // ✅ Rate limit local: 5 msgs seguidas sem resposta bloqueiam envio
-  function checkRateLimit(): boolean {
-    if (!userId) return false
-    const ultimas = [...messages].reverse()
-    let seguidas = 0
-    for (const m of ultimas) {
-      if (m.sender_id === userId) seguidas++
-      else break
-    }
-    return seguidas >= 5
-  }
-
-  // Função base de envio — usada por handleSend e ações especiais
+  // Funcao base de envio
   async function sendMessage(content: string) {
     if (!content || !userId || sending) return
     setSending(true)
     setError('')
     setRateLimited(false)
 
-    // Optimistic update: mostra a mensagem imediatamente
     const tempId = crypto.randomUUID()
     const tempMsg: Message = {
       id: tempId,
@@ -408,7 +367,6 @@ export default function ChatPage() {
     }
     setMessages(prev => [...prev, tempMsg])
     scrollToBottom(true)
-    // Som de envio (exceto para tokens internos sem feedback visual direto)
     if (content !== NUDGE_TOKEN) sounds.play('send')
 
     try {
@@ -424,15 +382,12 @@ export default function ChatPage() {
 
       if (!res.ok) {
         const json = await res.json()
-        // Remove a mensagem otimista em caso de erro
         setMessages(prev => prev.filter(m => m.id !== tempId))
         setError(json.error ?? 'Erro ao enviar mensagem. Tente novamente.')
       } else {
         const json = await res.json()
-        // Substitui a mensagem otimista pela real (com id do banco)
         if (json.message) {
           setMessages(prev => prev.map(m => m.id === tempId ? json.message : m))
-          // Broadcast para o outro usuário (gratuito no plano free)
           channelRef.current?.send({
             type: 'broadcast',
             event: 'new_message',
@@ -441,7 +396,6 @@ export default function ChatPage() {
         }
       }
     } catch {
-      // Rede falhou — remove a mensagem otimista
       setMessages(prev => prev.filter(m => m.id !== tempId))
       setError('Erro de conexão. Tente novamente.')
     } finally {
@@ -455,7 +409,7 @@ export default function ChatPage() {
     if (!texto || !userId || sending) return
     if (texto.length > MAX_CHARS) { setError(`Máximo ${MAX_CHARS} caracteres.`); return }
 
-    if (checkRateLimit()) {
+    if (checkRateLimit(messages, userId)) {
       setRateLimited(true)
       setError('Aguarde uma resposta antes de enviar mais mensagens.')
       return
@@ -489,7 +443,6 @@ export default function ChatPage() {
     const texto = conviteText.trim()
     if (!texto && !conviteLocal.trim()) return
 
-    // Se tem local/data/hora, envia formato estruturado __MEETING__
     if (conviteLocal.trim()) {
       const payload = JSON.stringify({
         texto: texto || null,
@@ -498,7 +451,6 @@ export default function ChatPage() {
         time: conviteTime || null,
       })
       await sendMessage(`__MEETING__:${payload}`)
-      // Cria registro na tabela meeting_invites via API
       if (otherUser && conviteDate && conviteTime) {
         const { data: { session } } = await supabase.auth.getSession()
         const meetingDate = new Date(`${conviteDate}T${conviteTime}`).toISOString()
@@ -533,10 +485,8 @@ export default function ChatPage() {
     setRatingDone(true)
     setShowRatingModal(false)
     setRatingConfirmOpcao(null)
-    // Salva localmente para permitir alteração futura
     localStorage.setItem(`rating_${matchId}`, opcao)
     try {
-      // Upsert: se já avaliou, atualiza
       await supabase.from('match_ratings').upsert({
         match_id: matchId,
         rater_id: userId,
@@ -557,7 +507,6 @@ export default function ChatPage() {
           reporter_id: userId,
           reported_id: otherUser?.id,
         })
-        // Verifica emblema Relato Corajoso
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.access_token && userId) {
           fetch('/api/badges/trigger', {
@@ -570,7 +519,7 @@ export default function ChatPage() {
     }
   }
 
-  // ── Fase 8: handlers ─────────────────────────────────────────────────────────
+  // Fase 8: handlers
 
   function handleMeetingPlaceSearch(query: string) {
     setMeetingLocal(query)
@@ -637,7 +586,6 @@ export default function ChatPage() {
       ? `${meetingLocal.trim()} — ${enderecoCompleto}`
       : meetingLocal.trim()
 
-    // Salva no banco (privado — o match não vê)
     try {
       const { data: { session } } = await supabase.auth.getSession()
       const res = await fetch('/api/safety/save', {
@@ -649,14 +597,12 @@ export default function ChatPage() {
       if (json.id) setCheckinRecordId(json.id)
     } catch { /* silencioso */ }
 
-    // Mantém também localStorage como fallback
     try {
       const record = { id: String(Date.now()), matchId, matchName: otherUser?.name ?? 'Match', local: localFinal, date: meetingDate, checkedIn: false }
       const existing: any[] = JSON.parse(localStorage.getItem('meandyou_meetings') ?? '[]')
       localStorage.setItem('meandyou_meetings', JSON.stringify([...existing, record]))
     } catch { /* ignore */ }
 
-    // XP: encontro registrado (fire-and-forget)
     try {
       const { data: { session: xpSession } } = await supabase.auth.getSession()
       if (xpSession?.access_token) {
@@ -688,7 +634,6 @@ export default function ChatPage() {
   async function handleCheckinBem() {
     if (!checkinMeeting) return
 
-    // Check-in no banco
     if (checkinRecordId) {
       try {
         const { data: { session } } = await supabase.auth.getSession()
@@ -700,7 +645,6 @@ export default function ChatPage() {
       } catch { /* silencioso */ }
     }
 
-    // Atualiza localStorage
     try {
       const records: any[] = JSON.parse(localStorage.getItem('meandyou_meetings') ?? '[]')
       localStorage.setItem('meandyou_meetings', JSON.stringify(
@@ -723,7 +667,6 @@ export default function ChatPage() {
   async function handleAddFriend() {
     if (!otherUser) return
 
-    // Se já enviou, cancela
     if (friendSent && friendshipId) {
       try {
         const res = await fetch('/api/amigos', {
@@ -768,39 +711,8 @@ export default function ChatPage() {
     }
   }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-
-  function formatMsgTime(dateStr: string): string {
-    return new Date(dateStr).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
-  }
-
-  // Agrupa mensagens por data
-  function getDateLabel(dateStr: string): string {
-    const date = new Date(dateStr)
-    const now = new Date()
-    const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000)
-    if (diffDays === 0) return 'Hoje'
-    if (diffDays === 1) return 'Ontem'
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })
-  }
-
-  // Detecta se um convite já foi respondido (procura resposta conhecida nas mensagens seguintes)
-  function getConviteResponse(msgIndex: number): string | null {
-    for (let i = msgIndex + 1; i < messages.length; i++) {
-      const m = messages[i]
-      // Se é outra mensagem de convite, para de procurar
-      if (m.content.startsWith(CONVITE_PREFIX) || m.content.startsWith('__MEETING__:')) break
-      // Se é do receiver (quem não enviou o convite) e é uma resposta conhecida
-      if (m.sender_id !== messages[msgIndex].sender_id && RESPOSTAS_RAPIDAS.includes(m.content)) {
-        return m.content
-      }
-    }
-    return null
-  }
-
-  // Renderiza uma mensagem (normal, chamar atenção ou convite)
+  // Renderiza uma mensagem (normal, chamar atencao ou convite)
   function renderMsg(msg: Message, isMe: boolean) {
-    // Chamar atenção
     if (msg.content === NUDGE_TOKEN) {
       return (
         <div key={msg.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '12px 0', gap: 8 }}>
@@ -814,7 +726,6 @@ export default function ChatPage() {
       )
     }
 
-    // Convite estruturado (com local/data/hora)
     if (msg.content.startsWith('__MEETING__:')) {
       try {
         const data = JSON.parse(msg.content.slice('__MEETING__:'.length))
@@ -824,18 +735,17 @@ export default function ChatPage() {
           data.texto,
         ].filter(Boolean).join('\n')
         const msgIdx = messages.findIndex(m => m.id === msg.id)
-        const responded = getConviteResponse(msgIdx)
+        const responded = getConviteResponse(messages, msgIdx)
         return (
           <ConviteCard key={msg.id} text={linhas} isMe={isMe} time={formatMsgTime(msg.created_at)} onReply={(r) => sendMessage(r)} respondedWith={responded} />
         )
       } catch { /* fallback abaixo */ }
     }
 
-    // Convite encontro (texto livre — legado)
     if (msg.content.startsWith(CONVITE_PREFIX)) {
       const texto = msg.content.slice(CONVITE_PREFIX.length)
       const msgIdx = messages.findIndex(m => m.id === msg.id)
-      const responded = getConviteResponse(msgIdx)
+      const responded = getConviteResponse(messages, msgIdx)
       return (
         <ConviteCard
           key={msg.id}
@@ -848,7 +758,6 @@ export default function ChatPage() {
       )
     }
 
-    // Mensagem normal — estilo editorial
     return (
       <div key={msg.id} style={{ display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start', marginBottom: 6 }}>
         <div style={{
@@ -873,7 +782,6 @@ export default function ChatPage() {
     )
   }
 
-  // Renderiza mensagens com separadores de data
   function renderMessages() {
     const items: React.ReactNode[] = []
     let lastDate = ''
@@ -934,7 +842,7 @@ export default function ChatPage() {
 
       <div style={{ position: 'fixed', top: 'var(--chat-vo, 0px)', left: 0, right: 0, height: 'var(--chat-vh, 100dvh)', overflow: 'hidden', overscrollBehavior: 'none', touchAction: 'none', background: 'var(--bg)', display: 'flex', flexDirection: 'column', fontFamily: 'var(--font-jakarta)', zIndex: 50 }}>
 
-        {/* ── Header glass ── */}
+        {/* Header glass */}
         <header style={{
           flexShrink: 0,
           background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(20px) saturate(1.3)',
@@ -967,7 +875,6 @@ export default function ChatPage() {
               const blurPx = otherMsgs >= 20 ? 0 : otherMsgs >= 10 ? 2 : otherMsgs >= 5 ? 5 : 10
               const revealLabel = blurPx > 0 ? `${Math.max(0, (blurPx === 10 ? 5 : blurPx === 5 ? 10 : 20) - otherMsgs)} msgs` : null
 
-              /* Detecta online (< 5min) */
               const isOnlineNow = otherUser?.last_seen && (Date.now() - new Date(otherUser.last_seen).getTime()) < 5 * 60 * 1000
 
               return (
@@ -987,7 +894,6 @@ export default function ChatPage() {
                       </div>
                     )}
                   </div>
-                  {/* Bolinha verde online */}
                   {isOnlineNow && !revealLabel && (
                     <div style={{ position: 'absolute', bottom: 0, right: 0, width: 10, height: 10, borderRadius: '50%', backgroundColor: '#10b981', border: '2px solid #08090E' }} />
                   )}
@@ -1010,7 +916,6 @@ export default function ChatPage() {
                   <span style={{ marginLeft: 5, fontSize: 10, color: 'var(--accent)', fontFamily: 'var(--font-jakarta)', fontWeight: 700 }}>✓</span>
                 )}
               </p>
-              {/* "Ativo agora" em vermelho ou status normal */}
               {(() => {
                 const isOnline = otherUser?.last_seen && (Date.now() - new Date(otherUser.last_seen).getTime()) < 5 * 60 * 1000
                 if (isOnline) {
@@ -1028,7 +933,6 @@ export default function ChatPage() {
             </div>
           </Link>
 
-          {/* Ícone de vídeo — inicia chamada direto (overlay full-screen) */}
           {otherUser && (
             <VideoCallButton
               matchId={matchId}
@@ -1037,8 +941,6 @@ export default function ChatPage() {
             />
           )}
 
-
-          {/* Hamburguer — abre menu de ações */}
           <button
             onClick={() => setShowMenu(v => !v)}
             style={{
@@ -1054,7 +956,7 @@ export default function ChatPage() {
           </button>
         </header>
 
-        {/* ── Menu de ações (dropdown abaixo do header) ── */}
+        {/* Menu de acoes (dropdown abaixo do header) */}
         {showMenu && (
           <div style={{
             position: 'absolute', top: 60, right: 12, zIndex: 40,
@@ -1099,8 +1001,7 @@ export default function ChatPage() {
           </div>
         )}
 
-
-        {/* ── Banner convite pendente ── */}
+        {/* Banner convite pendente */}
         {acceptedMeeting && (
           <div style={{
             flexShrink: 0,
@@ -1143,7 +1044,7 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* ── Aviso de privacidade ── */}
+        {/* Aviso de privacidade */}
         <div style={{
           flexShrink: 0,
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
@@ -1154,7 +1055,7 @@ export default function ChatPage() {
           Conversa privada
         </div>
 
-        {/* ── Mensagens ── */}
+        {/* Mensagens */}
         <div
           ref={messagesContainerRef}
           className={shake ? 'chat-shake' : ''}
@@ -1182,7 +1083,7 @@ export default function ChatPage() {
           <div ref={bottomRef} />
         </div>
 
-        {/* ── Erro / rate limit ── */}
+        {/* Erro / rate limit */}
         {(error || rateLimited) && (
           <div style={{
             flexShrink: 0, margin: '0 16px 8px',
@@ -1197,250 +1098,39 @@ export default function ChatPage() {
           </div>
         )}
 
-        {/* ── Painel Quebra-gelo (editorial) ── */}
+        {/* Painel Quebra-gelo */}
         {showIcebreakers && (
-          <div style={{
-            flexShrink: 0, margin: '0 14px 8px',
-            background: 'rgba(15,17,23,0.96)',
-            border: '1px solid rgba(255,255,255,0.05)',
-            borderRadius: 16, padding: '14px 14px',
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--accent)', letterSpacing: '0.12em', textTransform: 'uppercase' }}>Puxando assunto</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                <button
-                  onClick={() => setIcebreakerList(pickRandomIcebreakers(6))}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 4,
-                    padding: '4px 10px', borderRadius: 100,
-                    background: 'rgba(225,29,72,0.10)',
-                    border: '1px solid rgba(225,29,72,0.20)',
-                    cursor: 'pointer', color: 'var(--accent)',
-                    fontFamily: 'var(--font-jakarta)', fontSize: 10, fontWeight: 700,
-                    letterSpacing: '0.05em',
-                  }}
-                  title="Trocar sugestões"
-                >
-                  <Sparkles size={10} strokeWidth={2} />
-                  Trocar
-                </button>
-                <button onClick={() => setShowIcebreakers(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                  <X size={13} color="var(--muted)" />
-                </button>
-              </div>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {icebreakerList.map((q, i) => (
-                <button
-                  key={i}
-                  onClick={() => { setInput(q); setShowIcebreakers(false); inputRef.current?.focus() }}
-                  style={{
-                    padding: '9px 12px', borderRadius: 10,
-                    border: '1px solid rgba(255,255,255,0.05)',
-                    background: 'rgba(255,255,255,0.03)',
-                    color: 'rgba(248,249,250,0.65)', fontSize: 13,
-                    cursor: 'pointer', textAlign: 'left',
-                    fontFamily: 'var(--font-fraunces)', fontStyle: 'italic',
-                  }}
-                >
-                  {q}
-                </button>
-              ))}
-            </div>
-          </div>
+          <IcebreakerPanel
+            icebreakerList={icebreakerList}
+            onSelect={(q) => { setInput(q); setShowIcebreakers(false); inputRef.current?.focus() }}
+            onShuffle={() => setIcebreakerList(pickRandomIcebreakers(6))}
+            onClose={() => setShowIcebreakers(false)}
+          />
         )}
 
-        {/* ── Painel Convite Encontro ── */}
+        {/* Painel Convite Encontro */}
         {showConvite && (
-          <div style={{
-            flexShrink: 0, margin: '0 14px 10px',
-            background: 'rgba(15,17,23,0.96)',
-            border: '1px solid rgba(255,255,255,0.06)',
-            borderRadius: 16, padding: '16px 14px',
-          }}>
-            {/* Header */}
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <CalendarPlus size={15} color="var(--accent)" strokeWidth={1.5} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)', fontFamily: 'var(--font-jakarta)', letterSpacing: '0.02em' }}>
-                  Chamar para um encontro
-                </span>
-              </div>
-              <button onClick={() => setShowConvite(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                <X size={15} color="var(--muted)" />
-              </button>
-            </div>
-
-            {/* Local com autocomplete */}
-            <div style={{ marginBottom: 12, position: 'relative' }}>
-              <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
-                Onde?
-              </label>
-              <div style={{ position: 'relative' }}>
-                <MapPin size={15} color="var(--muted)" strokeWidth={1.5} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <input
-                  type="text"
-                  value={conviteLocalQuery}
-                  onChange={e => handlePlaceSearch(e.target.value)}
-                  onFocus={() => { if (placeSuggestions.length > 0) setShowPlaces(true) }}
-                  placeholder="Buscar local, restaurante, shopping..."
-                  autoFocus
-                  autoComplete="off"
-                  style={{
-                    width: '100%', background: 'rgba(255,255,255,0.04)',
-                    border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
-                    padding: '11px 14px 11px 36px', fontSize: 14, color: 'var(--text)',
-                    outline: 'none', boxSizing: 'border-box',
-                    fontFamily: 'var(--font-jakarta)',
-                  }}
-                />
-              </div>
-              {/* Dropdown de sugestões */}
-              {showPlaces && placeSuggestions.length > 0 && (
-                <div style={{
-                  position: 'absolute', left: 0, right: 0, top: '100%', zIndex: 20,
-                  background: 'rgba(15,17,23,0.98)', border: '1px solid rgba(255,255,255,0.08)',
-                  borderRadius: 12, marginTop: 4, overflow: 'hidden',
-                  maxHeight: 220, overflowY: 'auto',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-                }}>
-                  {placeSuggestions.map((place, i) => {
-                    const addr = place.address || {}
-                    const nome = place.name || ''
-                    const cidade = addr.city || addr.town || addr.village || addr.municipality || ''
-                    const estado = addr.state || ''
-                    const bairro = addr.suburb || addr.neighbourhood || ''
-                    const sub = [bairro, cidade, estado].filter(Boolean).join(', ')
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => selectPlace(place)}
-                        style={{
-                          width: '100%', display: 'flex', alignItems: 'flex-start', gap: 10,
-                          padding: '12px 14px', background: 'transparent',
-                          border: 'none', borderBottom: i < placeSuggestions.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                          cursor: 'pointer', textAlign: 'left',
-                          fontFamily: 'var(--font-jakarta)',
-                        }}
-                      >
-                        <MapPin size={14} color="var(--accent)" strokeWidth={1.5} style={{ flexShrink: 0, marginTop: 2 }} />
-                        <div style={{ minWidth: 0 }}>
-                          <p style={{ fontSize: 13, fontWeight: 600, color: 'var(--text)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{nome || place.display_name.split(',')[0]}</p>
-                          {sub && <p style={{ fontSize: 11, color: 'var(--muted)', margin: '2px 0 0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{sub}</p>}
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-              )}
-              {/* Local selecionado */}
-              {conviteLocal && (
-                <div style={{
-                  marginTop: 8, padding: '10px 12px', borderRadius: 10,
-                  background: 'rgba(225,29,72,0.06)', border: '1px solid rgba(225,29,72,0.15)',
-                  display: 'flex', alignItems: 'flex-start', gap: 8,
-                }}>
-                  <MapPin size={13} color="var(--accent)" strokeWidth={1.5} style={{ flexShrink: 0, marginTop: 2 }} />
-                  <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, lineHeight: 1.45, flex: 1 }}>{conviteLocal}</p>
-                  <button onClick={() => { setConviteLocal(''); setConviteLocalQuery(''); setPlaceSuggestions([]) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, flexShrink: 0 }}>
-                    <X size={13} color="var(--muted)" />
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Data + Hora lado a lado */}
-            <div style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
-                  Quando?
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="date"
-                    value={conviteDate}
-                    onChange={e => setConviteDate(e.target.value)}
-                    style={{
-                      width: '100%', background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
-                      padding: '11px 12px', fontSize: 13,
-                      color: conviteDate ? 'var(--text)' : 'rgba(248,249,250,0.4)',
-                      outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-jakarta)',
-                      colorScheme: 'dark',
-                      WebkitAppearance: 'none',
-                      appearance: 'none',
-                      minHeight: 42,
-                    }}
-                  />
-                </div>
-              </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
-                  Que horas?
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="time"
-                    value={conviteTime}
-                    onChange={e => setConviteTime(e.target.value)}
-                    style={{
-                      width: '100%', background: 'rgba(255,255,255,0.04)',
-                      border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
-                      padding: '11px 12px', fontSize: 13,
-                      color: conviteTime ? 'var(--text)' : 'rgba(248,249,250,0.4)',
-                      outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-jakarta)',
-                      colorScheme: 'dark',
-                      WebkitAppearance: 'none',
-                      appearance: 'none',
-                      minHeight: 42,
-                    }}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Mensagem opcional */}
-            <div style={{ marginBottom: 14 }}>
-              <label style={{ display: 'block', fontSize: 10, fontWeight: 700, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
-                Mensagem <span style={{ opacity: 0.5, textTransform: 'none', letterSpacing: 0 }}>(opcional)</span>
-              </label>
-              <input
-                type="text"
-                value={conviteText}
-                onChange={e => setConviteText(e.target.value)}
-                placeholder="Adicione um recado..."
-                maxLength={200}
-                style={{
-                  width: '100%', background: 'rgba(255,255,255,0.04)',
-                  border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12,
-                  padding: '11px 14px', fontSize: 14, color: 'var(--text)',
-                  outline: 'none', boxSizing: 'border-box',
-                  fontFamily: 'var(--font-jakarta)',
-                }}
-              />
-            </div>
-
-            {/* Botão enviar */}
-            <button
-              onClick={handleSendConvite}
-              disabled={!conviteLocal.trim() || sending}
-              style={{
-                width: '100%', padding: '13px 0', borderRadius: 12,
-                background: conviteLocal.trim() ? 'var(--accent)' : 'rgba(255,255,255,0.06)',
-                border: 'none', cursor: conviteLocal.trim() ? 'pointer' : 'default',
-                color: conviteLocal.trim() ? '#fff' : 'rgba(248,249,250,0.35)',
-                fontFamily: 'var(--font-jakarta)', fontSize: 14, fontWeight: 700,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-                transition: 'all 0.2s',
-              }}
-            >
-              <CalendarPlus size={15} strokeWidth={2} />
-              Enviar convite
-            </button>
-          </div>
+          <ConvitePanel
+            conviteText={conviteText}
+            setConviteText={setConviteText}
+            conviteLocalQuery={conviteLocalQuery}
+            conviteLocal={conviteLocal}
+            conviteDate={conviteDate}
+            setConviteDate={setConviteDate}
+            conviteTime={conviteTime}
+            setConviteTime={setConviteTime}
+            placeSuggestions={placeSuggestions}
+            showPlaces={showPlaces}
+            sending={sending}
+            onClose={() => setShowConvite(false)}
+            onPlaceSearch={handlePlaceSearch}
+            onSelectPlace={selectPlace}
+            onClearPlace={() => { setConviteLocal(''); setConviteLocalQuery(''); setPlaceSuggestions([]) }}
+            onSend={handleSendConvite}
+          />
         )}
 
-        {/* ── Barra de entrada glass ── */}
+        {/* Barra de entrada glass */}
         <div style={{
           flexShrink: 0,
           background: 'rgba(8,9,14,0.92)', backdropFilter: 'blur(20px) saturate(1.3)',
@@ -1530,525 +1220,83 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* ── Modal Avaliacao Anonima ── */}
+        {/* Modal Avaliacao Anonima */}
         {showRatingModal && (
-          <div
-            style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(8px)' }}
-            onClick={() => { setShowRatingModal(false); setRatingConfirmOpcao(null) }}
-          >
-            <div
-              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '24px 24px 0 0', padding: '28px 24px 40px', width: '100%', maxWidth: 480 }}
-              onClick={e => e.stopPropagation()}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: 0 }}>
-                  {ratingConfirmOpcao ? 'Confirmar avaliação' : 'Como foi a conversa?'}
-                </h3>
-                <button onClick={() => { setShowRatingModal(false); setRatingConfirmOpcao(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
-                  <X size={18} color="var(--muted)" strokeWidth={1.5} />
-                </button>
-              </div>
-
-              {ratingConfirmOpcao ? (
-                <>
-                  <p style={{ fontSize: 14, color: 'var(--text)', margin: '0 0 6px' }}>
-                    Sua avaliação: <strong>{[
-                      { id: 'incrivel', label: 'Pessoa incrível' },
-                      { id: 'agradavel', label: 'Conversa agradável' },
-                      { id: 'nao_interessei', label: 'Não me interessei' },
-                      { id: 'ignorado', label: 'Fui ignorado(a)' },
-                      { id: 'nao_recomendo', label: 'Não recomendo' },
-                      { id: 'desagradavel', label: 'Pessoa desagradável' },
-                      { id: 'inconveniente', label: 'Inconveniente / desrespeitosa' },
-                    ].find(o => o.id === ratingConfirmOpcao)?.label}</strong>
-                  </p>
-                  <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Essa avaliação é anônima. Você pode alterar depois.</p>
-                  <div style={{ display: 'flex', gap: 10 }}>
-                    <button
-                      onClick={() => setRatingConfirmOpcao(null)}
-                      style={{ flex: 1, padding: '13px 16px', borderRadius: 12, border: '1px solid var(--border)', background: 'rgba(255,255,255,0.04)', color: 'var(--text)', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
-                    >
-                      Voltar
-                    </button>
-                    <button
-                      onClick={() => handleRating(ratingConfirmOpcao)}
-                      style={{ flex: 1, padding: '13px 16px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #E11D48, #be123c)', color: '#fff', fontSize: 14, fontWeight: 600, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
-                    >
-                      Confirmar
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliação anônima: {otherUser?.name} não saberá quem avaliou.</p>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                    {[
-                      { id: 'incrivel', label: 'Pessoa incrível', color: '#10b981' },
-                      { id: 'agradavel', label: 'Conversa agradável', color: '#60a5fa' },
-                      { id: 'nao_interessei', label: 'Não me interessei', color: 'rgba(248,249,250,0.45)' },
-                      { id: 'ignorado', label: 'Fui ignorado(a)', color: '#facc15' },
-                      { id: 'nao_recomendo', label: 'Não recomendo', color: '#fb923c' },
-                      { id: 'desagradavel', label: 'Pessoa desagradável', color: '#f87171' },
-                      { id: 'inconveniente', label: 'Inconveniente / desrespeitosa', color: '#ef4444' },
-                    ].map(op => {
-                      const currentRating = localStorage.getItem(`rating_${matchId}`)
-                      const isCurrentRating = currentRating === op.id
-                      return (
-                        <button
-                          key={op.id}
-                          onClick={() => setRatingConfirmOpcao(op.id)}
-                          style={{
-                            width: '100%', padding: '12px 16px', borderRadius: 14,
-                            border: isCurrentRating ? `1px solid ${op.color}` : '1px solid var(--border)',
-                            backgroundColor: isCurrentRating ? `${op.color}15` : 'rgba(255,255,255,0.04)',
-                            color: 'var(--text)', fontSize: 14, fontWeight: 500, textAlign: 'left',
-                            cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 12,
-                            fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)',
-                          }}
-                        >
-                          <span style={{ width: 8, height: 8, borderRadius: '50%', background: op.color, flexShrink: 0 }} />
-                          <span style={{ color: op.color, flex: 1 }}>{op.label}</span>
-                          {isCurrentRating && <CheckCircle2 size={16} color={op.color} />}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+          <RatingModal
+            otherName={otherUser?.name ?? 'Usuário'}
+            matchId={matchId}
+            ratingConfirmOpcao={ratingConfirmOpcao}
+            setRatingConfirmOpcao={setRatingConfirmOpcao}
+            onClose={() => setShowRatingModal(false)}
+            onConfirm={handleRating}
+          />
         )}
 
-        {/* ── Modal Detector de Bolo ── */}
+        {/* Modal Detector de Bolo */}
         {showBoloModal && (
-          <div
-            style={{ position: 'fixed', inset: 0, zIndex: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(8px)', padding: 20 }}
-            onClick={() => setShowBoloModal(false)}
-          >
-            <div
-              style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 20, padding: '28px 24px', maxWidth: 360, width: '100%' }}
-              onClick={e => e.stopPropagation()}
-            >
-              <div style={{ textAlign: 'center', marginBottom: 20 }}>
-                <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>O encontro aconteceu?</h3>
-                <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: 0, lineHeight: 1.55 }}>Você aceitou um convite de encontro. Nos conte como foi!</p>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {[
-                  { id: 'incrivel', label: 'Foi incrível!' },
-                  { id: 'estranho', label: 'Foi estranho' },
-                  { id: 'bolo', label: 'Levei um bolo' },
-                  { id: 'ainda_nao', label: 'Ainda não aconteceu' },
-                ].map(op => (
-                  <button
-                    key={op.id}
-                    onClick={() => handleBolo(op.id)}
-                    style={{ width: '100%', padding: '13px 16px', borderRadius: 14, border: op.id === 'bolo' ? '1px solid rgba(225,29,72,0.30)' : '1px solid var(--border)', backgroundColor: op.id === 'bolo' ? 'rgba(225,29,72,0.07)' : 'rgba(255,255,255,0.04)', color: op.id === 'bolo' ? 'var(--accent)' : 'var(--text)', fontSize: 14, fontWeight: 500, textAlign: 'left', cursor: 'pointer', fontFamily: 'var(--font-jakarta)', transition: 'all 0.25s cubic-bezier(0.4,0,0.2,1)' }}
-                  >
-                    {op.label}
-                  </button>
-                ))}
-              </div>
-              <button
-                onClick={() => setShowBoloModal(false)}
-                style={{ width: '100%', marginTop: 12, padding: '10px', background: 'none', border: 'none', color: 'var(--muted-2)', fontSize: 13, cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
-              >
-                Perguntar depois
-              </button>
-            </div>
-          </div>
+          <BoloModal
+            otherName={otherUser?.name ?? 'Usuário'}
+            onClose={() => setShowBoloModal(false)}
+            onSelect={handleBolo}
+          />
         )}
 
-        {/* ── Modal Registro Privado (Midnight Editorial) ── */}
-        {showMeetingModal && (() => {
-          const canSave = meetingLocal.trim() && meetingDateVal && meetingTimeVal
-          const inputStyle: React.CSSProperties = {
-            width:'100%',
-            background:'transparent',
-            border:'none',
-            borderBottom:'1px solid rgba(255,255,255,0.12)',
-            borderRadius:0,
-            padding:'10px 2px',
-            fontSize:15,
-            color:'var(--text)',
-            fontFamily:'var(--font-jakarta)',
-            boxSizing:'border-box',
-            outline:'none',
-            transition:'border-color 220ms cubic-bezier(0.4,0,0.2,1)',
-          }
-          const onFocusInput = (e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderBottomColor = 'var(--accent)' }
-          const onBlurInput = (e: React.FocusEvent<HTMLInputElement>) => { e.currentTarget.style.borderBottomColor = 'rgba(255,255,255,0.12)' }
-          const labelStyle: React.CSSProperties = {
-            fontSize:10,
-            color:'rgba(255,255,255,0.45)',
-            display:'block',
-            marginBottom:8,
-            fontFamily:'var(--font-jakarta)',
-            fontWeight:600,
-            textTransform:'uppercase',
-            letterSpacing:'0.16em',
-          }
-          return (
-            <div
-              style={{
-                position:'fixed',inset:0,zIndex:60,
-                display:'flex',alignItems:'center',justifyContent:'center',
-                padding:20,
-                background:'radial-gradient(ellipse at center, rgba(225,29,72,0.18), rgba(0,0,0,0.92) 65%)',
-                backdropFilter:'blur(12px)',
-                WebkitBackdropFilter:'blur(12px)',
-                animation:'ui-fade-in 260ms cubic-bezier(0.4,0,0.2,1)',
-              }}
-              onClick={() => setShowMeetingModal(false)}
-            >
-              <div
-                style={{
-                  position:'relative',
-                  background:'rgba(15,17,23,0.95)',
-                  border:'1px solid rgba(255,255,255,0.05)',
-                  borderRadius:24,
-                  padding:'32px 26px 28px',
-                  width:'100%',
-                  maxWidth:440,
-                  maxHeight:'calc(100vh - 40px)',
-                  overflowY:'auto',
-                  boxShadow:'0 20px 40px rgba(0,0,0,0.6)',
-                }}
-                onClick={e => e.stopPropagation()}
-              >
-                <button
-                  onClick={() => setShowMeetingModal(false)}
-                  aria-label="Fechar"
-                  style={{
-                    position:'absolute',top:16,right:16,
-                    width:32,height:32,borderRadius:'50%',
-                    background:'rgba(255,255,255,0.04)',
-                    border:'1px solid rgba(255,255,255,0.06)',
-                    display:'flex',alignItems:'center',justifyContent:'center',
-                    cursor:'pointer',padding:0,
-                  }}
-                >
-                  <X size={14} color="rgba(255,255,255,0.5)" strokeWidth={1.5} />
-                </button>
+        {/* Modal Registro Privado */}
+        {showMeetingModal && (
+          <MeetingModal
+            otherName={otherUser?.name ?? 'essa pessoa'}
+            meetingSaved={meetingSaved}
+            meetingLocal={meetingLocal}
+            meetingDateVal={meetingDateVal}
+            meetingTimeVal={meetingTimeVal}
+            meetingCep={meetingCep}
+            meetingRua={meetingRua}
+            meetingNumero={meetingNumero}
+            meetingBairro={meetingBairro}
+            meetingCidade={meetingCidade}
+            meetingUf={meetingUf}
+            cepLoading={cepLoading}
+            cepError={cepError}
+            meetingPlaceSuggestions={meetingPlaceSuggestions}
+            showMeetingPlaces={showMeetingPlaces}
+            onClose={() => setShowMeetingModal(false)}
+            onSave={handleSaveMeeting}
+            onPlaceSearch={handleMeetingPlaceSearch}
+            onSelectPlace={selectMeetingPlace}
+            onCepLookup={handleCepLookup}
+            setMeetingDateVal={setMeetingDateVal}
+            setMeetingTimeVal={setMeetingTimeVal}
+            setMeetingRua={setMeetingRua}
+            setMeetingNumero={setMeetingNumero}
+            setMeetingBairro={setMeetingBairro}
+            setMeetingCidade={setMeetingCidade}
+            setMeetingUf={setMeetingUf}
+            setShowMeetingPlaces={setShowMeetingPlaces}
+          />
+        )}
 
-                {meetingSaved ? (
-                  <div style={{ textAlign:'center',padding:'28px 8px 8px' }}>
-                    <CheckCircle2 size={44} color="#10b981" strokeWidth={1.5} style={{ margin:'0 auto 18px' }} />
-                    <h3 style={{ fontFamily:'var(--font-fraunces)',fontStyle:'italic',fontSize:28,fontWeight:400,color:'var(--text)',margin:'0 0 10px',lineHeight:1.15 }}>
-                      Registro <span style={{ color:'#F43F5E' }}>salvo</span>.
-                    </h3>
-                    <p style={{ fontSize:13,color:'rgba(255,255,255,0.5)',margin:0,lineHeight:1.6 }}>Faremos um check-in com você depois do horário marcado.</p>
-                  </div>
-                ) : (
-                  <>
-                    <h2 style={{
-                      fontFamily:'var(--font-fraunces)',
-                      fontStyle:'italic',
-                      fontSize:32,
-                      fontWeight:400,
-                      color:'var(--text)',
-                      margin:'4px 0 6px',
-                      lineHeight:1.1,
-                      letterSpacing:'-0.01em',
-                    }}>
-                      Registrar <span style={{ color:'#F43F5E' }}>encontro</span>?
-                    </h2>
-                    <p style={{
-                      fontSize:13,
-                      color:'rgba(255,255,255,0.45)',
-                      margin:'0 0 28px',
-                      lineHeight:1.55,
-                      fontFamily:'var(--font-jakarta)',
-                    }}>
-                      Com <span style={{ color:'rgba(255,255,255,0.75)' }}>{otherUser?.name ?? 'essa pessoa'}</span>. Fica só no seu dispositivo.
-                    </p>
-
-                    <div style={{ marginBottom:24 }}>
-                      <div style={labelStyle}>Onde?</div>
-                      <div style={{ display:'flex',flexDirection:'column',gap:14 }}>
-                        <div style={{ position:'relative' }}>
-                          <input
-                            value={meetingLocal}
-                            onChange={e => handleMeetingPlaceSearch(e.target.value)}
-                            onFocus={() => { if (meetingPlaceSuggestions.length > 0) setShowMeetingPlaces(true) }}
-                            placeholder="Buscar local, restaurante, shopping..."
-                            autoFocus
-                            autoComplete="off"
-                            style={inputStyle}
-                            onBlur={e => { onBlurInput(e); setTimeout(() => setShowMeetingPlaces(false), 200) }}
-                          />
-                          {showMeetingPlaces && meetingPlaceSuggestions.length > 0 && (
-                            <div style={{
-                              position:'absolute', left:0, right:0, top:'100%', zIndex:30,
-                              background:'rgba(15,17,23,0.98)', border:'1px solid rgba(255,255,255,0.08)',
-                              borderRadius:12, marginTop:4, overflow:'hidden',
-                              maxHeight:200, overflowY:'auto',
-                              boxShadow:'0 8px 32px rgba(0,0,0,0.5)',
-                            }}>
-                              {meetingPlaceSuggestions.map((place, i) => {
-                                const addr = place.address || {}
-                                const nome = place.name || ''
-                                const cidade = addr.city || addr.town || addr.village || addr.municipality || ''
-                                const estado = addr.state || ''
-                                const bairro = addr.suburb || addr.neighbourhood || ''
-                                const sub = [bairro, cidade, estado].filter(Boolean).join(', ')
-                                return (
-                                  <button
-                                    key={i}
-                                    onMouseDown={e => { e.preventDefault(); selectMeetingPlace(place) }}
-                                    style={{
-                                      width:'100%', display:'flex', alignItems:'flex-start', gap:10,
-                                      padding:'11px 14px', background:'transparent',
-                                      border:'none', borderBottom: i < meetingPlaceSuggestions.length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                                      cursor:'pointer', textAlign:'left',
-                                      fontFamily:'var(--font-jakarta)',
-                                    }}
-                                  >
-                                    <MapPin size={14} color="var(--accent)" strokeWidth={1.5} style={{ flexShrink:0, marginTop:2 }} />
-                                    <div style={{ minWidth:0 }}>
-                                      <p style={{ fontSize:13, fontWeight:600, color:'var(--text)', margin:0, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{nome || place.display_name.split(',')[0]}</p>
-                                      {sub && <p style={{ fontSize:11, color:'var(--muted)', margin:'2px 0 0', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{sub}</p>}
-                                    </div>
-                                  </button>
-                                )
-                              })}
-                            </div>
-                          )}
-                        </div>
-                        <input
-                          value={meetingCep}
-                          onChange={e => handleCepLookup(e.target.value)}
-                          placeholder={cepLoading ? 'Buscando CEP…' : cepError ? cepError : 'CEP'}
-                          inputMode="numeric"
-                          maxLength={9}
-                          style={{
-                            ...inputStyle,
-                            color: cepError ? '#F43F5E' : cepLoading ? 'var(--accent)' : 'var(--text)',
-                          }}
-                          onFocus={onFocusInput}
-                          onBlur={onBlurInput}
-                        />
-                        <div style={{ display:'flex',gap:14 }}>
-                          <input
-                            value={meetingRua}
-                            onChange={e => setMeetingRua(e.target.value)}
-                            placeholder="Rua / Avenida"
-                            style={{ ...inputStyle, flex:2 }}
-                            onFocus={onFocusInput}
-                            onBlur={onBlurInput}
-                          />
-                          <input
-                            value={meetingNumero}
-                            onChange={e => setMeetingNumero(e.target.value)}
-                            placeholder="Nº"
-                            inputMode="numeric"
-                            style={{ ...inputStyle, flex:1 }}
-                            onFocus={onFocusInput}
-                            onBlur={onBlurInput}
-                          />
-                        </div>
-                        <input
-                          value={meetingBairro}
-                          onChange={e => setMeetingBairro(e.target.value)}
-                          placeholder="Bairro"
-                          style={inputStyle}
-                          onFocus={onFocusInput}
-                          onBlur={onBlurInput}
-                        />
-                        <div style={{ display:'flex',gap:14 }}>
-                          <input
-                            value={meetingCidade}
-                            onChange={e => setMeetingCidade(e.target.value)}
-                            placeholder="Cidade"
-                            style={{ ...inputStyle, flex:2 }}
-                            onFocus={onFocusInput}
-                            onBlur={onBlurInput}
-                          />
-                          <input
-                            value={meetingUf}
-                            onChange={e => setMeetingUf(e.target.value.toUpperCase().slice(0,2))}
-                            placeholder="UF"
-                            maxLength={2}
-                            style={{ ...inputStyle, flex:1, textTransform:'uppercase' }}
-                            onFocus={onFocusInput}
-                            onBlur={onBlurInput}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div style={{ marginBottom:28 }}>
-                      <div style={labelStyle}>Quando?</div>
-                      <div style={{ display:'flex',gap:14 }}>
-                        <input
-                          type="date"
-                          value={meetingDateVal}
-                          onChange={e => setMeetingDateVal(e.target.value)}
-                          style={{ ...inputStyle, flex:1, colorScheme:'dark' }}
-                          onFocus={onFocusInput}
-                          onBlur={onBlurInput}
-                        />
-                        <input
-                          type="time"
-                          value={meetingTimeVal}
-                          onChange={e => setMeetingTimeVal(e.target.value)}
-                          style={{ ...inputStyle, flex:1, colorScheme:'dark' }}
-                          onFocus={onFocusInput}
-                          onBlur={onBlurInput}
-                        />
-                      </div>
-                    </div>
-
-                    <p style={{
-                      fontSize:11,
-                      color:'rgba(255,255,255,0.35)',
-                      lineHeight:1.6,
-                      margin:'0 0 22px',
-                      fontFamily:'var(--font-jakarta)',
-                      textAlign:'center',
-                    }}>
-                      Faremos um check-in 2h após o horário marcado.
-                    </p>
-
-                    <button
-                      onClick={handleSaveMeeting}
-                      disabled={!canSave}
-                      style={{
-                        width:'100%',
-                        padding:'16px 0',
-                        borderRadius:100,
-                        background: canSave ? 'linear-gradient(135deg, #E11D48, #be123c)' : 'rgba(255,255,255,0.06)',
-                        border:'none',
-                        color: canSave ? '#fff' : 'rgba(255,255,255,0.35)',
-                        fontFamily:'var(--font-jakarta)',
-                        fontSize:12,
-                        fontWeight:700,
-                        letterSpacing:'0.22em',
-                        textTransform:'uppercase',
-                        cursor: canSave ? 'pointer' : 'not-allowed',
-                        boxShadow: canSave ? '0 12px 32px rgba(225,29,72,0.35)' : 'none',
-                        transition:'all 220ms cubic-bezier(0.4,0,0.2,1)',
-                      }}
-                    >
-                      Salvar registro
-                    </button>
-
-                    <button
-                      onClick={() => setShowMeetingModal(false)}
-                      style={{
-                        width:'100%',
-                        marginTop:16,
-                        background:'none',
-                        border:'none',
-                        color:'rgba(255,255,255,0.4)',
-                        fontFamily:'var(--font-jakarta)',
-                        fontSize:11,
-                        fontWeight:600,
-                        letterSpacing:'0.22em',
-                        textTransform:'uppercase',
-                        cursor:'pointer',
-                        padding:'4px 0',
-                      }}
-                    >
-                      Agora não
-                    </button>
-                  </>
-                )}
-              </div>
-            </div>
-          )
-        })()}
-
-        {/* ── Modal Check-in Pós-Encontro (BLOQUEANTE) ── */}
+        {/* Modal Check-in Pos-Encontro (BLOQUEANTE) */}
         {checkinMeeting && (
-          <div style={{ position:'fixed',inset:0,zIndex:70,display:'flex',alignItems:'center',justifyContent:'center',background:'rgba(0,0,0,0.90)',backdropFilter:'blur(12px)',padding:20 }}>
-            <div style={{ background:'var(--bg-card)',border:'1px solid rgba(225,29,72,0.30)',borderRadius:24,padding:'32px 24px',maxWidth:340,width:'100%',textAlign:'center' }}>
-              <div style={{ fontSize:48,marginBottom:16 }}>🔔</div>
-              <h3 style={{ fontFamily:'var(--font-fraunces)',fontSize:22,color:'var(--text)',margin:'0 0 8px' }}>Check-in de seguranca</h3>
-              <p style={{ fontSize:13,color:'var(--muted)',margin:'0 0 6px',lineHeight:1.55 }}>Você tinha um encontro com <strong style={{ color:'rgba(248,249,250,0.75)' }}>{otherUser?.name}</strong></p>
-              <p style={{ fontSize:12,color:'var(--muted-2)',margin:'0 0 28px' }}>{checkinMeeting.local} · {new Date(checkinMeeting.date).toLocaleString('pt-BR',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'})}</p>
-              <p style={{ fontSize:14,color:'var(--text)',fontWeight:600,margin:'0 0 20px' }}>Como você está?</p>
-              <div style={{ display:'flex',flexDirection:'column',gap:10 }}>
-                <button onClick={handleCheckinBem} style={{ width:'100%',padding:'15px 0',borderRadius:14,background:'#10b981',border:'none',color:'#fff',fontFamily:'var(--font-jakarta)',fontSize:15,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:10 }}>
-                  <CheckCircle2 size={18} />
-                  Estou bem
-                </button>
-                <a href="tel:190" style={{ width:'100%',padding:'15px 0',borderRadius:14,background:'var(--accent)',border:'none',color:'#fff',fontFamily:'var(--font-jakarta)',fontSize:15,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:10,textDecoration:'none' }}>
-                  <Phone size={18} />
-                  Preciso de ajuda (190)
-                </a>
-              </div>
-            </div>
-          </div>
+          <CheckinModal
+            otherName={otherUser?.name ?? 'essa pessoa'}
+            checkinMeeting={checkinMeeting}
+            onCheckinBem={handleCheckinBem}
+          />
         )}
 
-        {/* ── Central de Segurança (Tela dedicada) ── */}
+        {/* Central de Seguranca */}
         {showSecuritySheet && (
-          <div style={{ position:'fixed',inset:0,zIndex:60,background:'var(--bg)',overflow:'auto' }}>
-            {/* Header */}
-            <header style={{
-              position:'sticky',top:0,zIndex:10,
-              background:'rgba(8,9,14,0.92)',backdropFilter:'blur(16px)',
-              borderBottom:'1px solid rgba(255,255,255,0.06)',
-              padding:'14px 20px',display:'flex',alignItems:'center',gap:12,
-            }}>
-              <button onClick={() => { setShowSecuritySheet(false); setUnmatchConfirm(false) }} style={{ width:36,height:36,borderRadius:'50%',background:'rgba(255,255,255,0.05)',border:'1px solid rgba(255,255,255,0.06)',display:'flex',alignItems:'center',justifyContent:'center',cursor:'pointer',flexShrink:0 }}>
-                <ArrowLeft size={18} color="var(--muted)" />
-              </button>
-              <div style={{ display:'flex',alignItems:'center',gap:8 }}>
-                <Shield size={16} color="var(--muted)" strokeWidth={1.5} />
-                <h1 style={{ fontFamily:'var(--font-fraunces)',fontSize:20,color:'var(--text)',margin:0 }}>Central de seguranca</h1>
-              </div>
-            </header>
-
-            <div style={{ padding:'24px 20px',maxWidth:480,margin:'0 auto',display:'flex',flexDirection:'column',gap:12 }}>
-              {/* Info */}
-              <p style={{ fontSize:13,color:'var(--muted-2)',margin:'0 0 8px',lineHeight:1.5 }}>
-                Gerencie sua seguranca nesta conversa com {otherUser?.name}. Todas as acoes sao confidenciais.
-              </p>
-
-              {/* Denunciar */}
-              <button onClick={() => { setShowSecuritySheet(false); setShowReport(true) }} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'16px',borderRadius:16,background:'rgba(239,68,68,0.06)',border:'1px solid rgba(239,68,68,0.15)',cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>
-                <div style={{ width:44,height:44,borderRadius:12,background:'rgba(239,68,68,0.12)',border:'1px solid rgba(239,68,68,0.25)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><ShieldAlert size={20} color="#ef4444" strokeWidth={1.5} /></div>
-                <div style={{ textAlign:'left',flex:1 }}>
-                  <p style={{ fontSize:15,fontWeight:600,color:'var(--text)',margin:0 }}>Denunciar {otherUser?.name}</p>
-                  <p style={{ fontSize:12,color:'var(--muted-2)',margin:'3px 0 0' }}>Perfil falso, assedio, golpe, comportamento inadequado</p>
-                </div>
-              </button>
-
-              {/* Desfazer match */}
-              {unmatchConfirm ? (
-                <div style={{ padding:'20px',borderRadius:16,background:'rgba(225,29,72,0.06)',border:'1px solid rgba(225,29,72,0.20)' }}>
-                  <p style={{ fontSize:14,color:'var(--text)',margin:'0 0 4px',fontWeight:600,textAlign:'center' }}>Desfazer match?</p>
-                  <p style={{ fontSize:13,color:'var(--muted-2)',margin:'0 0 16px',textAlign:'center' }}>O chat sera encerrado e esta pessoa voltara para o final da sua fila.</p>
-                  <div style={{ display:'flex',gap:10 }}>
-                    <button onClick={() => setUnmatchConfirm(false)} style={{ flex:1,padding:'12px',borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',color:'var(--muted)',fontSize:14,cursor:'pointer',fontFamily:'var(--font-jakarta)',fontWeight:600 }}>Cancelar</button>
-                    <button onClick={handleUnmatch} style={{ flex:1,padding:'12px',borderRadius:12,background:'linear-gradient(135deg, #E11D48, #be123c)',border:'none',color:'#fff',fontSize:14,fontWeight:700,cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>Desfazer</button>
-                  </div>
-                </div>
-              ) : (
-                <button onClick={() => setUnmatchConfirm(true)} style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'16px',borderRadius:16,background:'rgba(255,255,255,0.03)',border:'1px solid var(--border)',cursor:'pointer',fontFamily:'var(--font-jakarta)' }}>
-                  <div style={{ width:44,height:44,borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><HeartCrack size={20} color="rgba(248,249,250,0.50)" strokeWidth={1.5} /></div>
-                  <div style={{ textAlign:'left',flex:1 }}>
-                    <p style={{ fontSize:15,fontWeight:600,color:'var(--text)',margin:0 }}>Desfazer match</p>
-                    <p style={{ fontSize:12,color:'var(--muted-2)',margin:'3px 0 0' }}>Encerrar conversa imediatamente</p>
-                  </div>
-                </button>
-              )}
-
-              {/* Emergência */}
-              <a href="tel:190" style={{ width:'100%',display:'flex',alignItems:'center',gap:14,padding:'16px',borderRadius:16,background:'rgba(225,29,72,0.06)',border:'1px solid rgba(225,29,72,0.20)',textDecoration:'none',marginTop:8 }}>
-                <div style={{ width:44,height:44,borderRadius:12,background:'rgba(225,29,72,0.12)',border:'1px solid rgba(225,29,72,0.30)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><Phone size={20} color="#F43F5E" strokeWidth={1.5} /></div>
-                <div style={{ textAlign:'left',flex:1 }}>
-                  <p style={{ fontSize:15,fontWeight:600,color:'#F43F5E',margin:0 }}>Ligar 190</p>
-                  <p style={{ fontSize:12,color:'var(--muted-2)',margin:'3px 0 0' }}>Policia Militar - emergencia real</p>
-                </div>
-              </a>
-            </div>
-          </div>
+          <SecuritySheet
+            otherName={otherUser?.name ?? 'Usuário'}
+            unmatchConfirm={unmatchConfirm}
+            setUnmatchConfirm={setUnmatchConfirm}
+            onClose={() => setShowSecuritySheet(false)}
+            onReport={() => { setShowSecuritySheet(false); setShowReport(true) }}
+            onUnmatch={handleUnmatch}
+          />
         )}
 
-        {/* ── ReportModal ── */}
+        {/* ReportModal */}
         {showReport && otherUser && (
           <ReportModal
             reportedId={otherUser.id}
@@ -2057,164 +1305,11 @@ export default function ChatPage() {
           />
         )}
 
-        {/* ── Modal de Emergência ── */}
+        {/* Modal de Emergencia */}
         {emergencyModal && (
-          <div
-            style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.80)', backdropFilter: 'blur(8px)', padding: 20 }}
-            onClick={() => setEmergencyModal(false)}
-          >
-            <div
-              style={{ background: 'var(--bg-card)', border: '1px solid rgba(225,29,72,0.30)', borderRadius: 20, padding: '28px 24px', maxWidth: 340, width: '100%', textAlign: 'center' }}
-              onClick={e => e.stopPropagation()}
-            >
-              <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'rgba(225,29,72,0.12)', border: '1px solid rgba(225,29,72,0.30)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-                <ShieldAlert size={26} color="#F43F5E" strokeWidth={1.5} />
-              </div>
-              <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 22, color: 'var(--text)', margin: '0 0 8px' }}>Você está em perigo?</h3>
-              <p style={{ color: 'var(--muted)', fontSize: 14, margin: '0 0 24px', lineHeight: 1.55 }}>
-                Esta ação ligará imediatamente para a <strong style={{ color: 'rgba(248,249,250,0.70)' }}>Polícia Militar (190)</strong>. Use apenas em situações de risco real.
-              </p>
-              <a
-                href="tel:190"
-                style={{
-                  display: 'block', width: '100%', padding: '14px 0',
-                  borderRadius: 12, background: '#E11D48',
-                  color: '#fff', fontFamily: 'var(--font-jakarta)',
-                  fontSize: 16, fontWeight: 700, textDecoration: 'none', marginBottom: 10,
-                }}
-              >
-                Ligar 190 agora
-              </a>
-              <button
-                onClick={() => setEmergencyModal(false)}
-                style={{ display: 'block', width: '100%', padding: '12px 0', color: 'var(--muted)', fontSize: 14, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--font-jakarta)' }}
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
+          <EmergencyModal onClose={() => setEmergencyModal(false)} />
         )}
       </div>
     </>
-  )
-}
-
-// ─── Botão de ação rápida ─────────────────────────────────────────────────────
-
-function ActionBtn({
-  icon, label, onClick, active = false, accent = false, success = false,
-}: {
-  icon: React.ReactNode
-  label: string
-  onClick: () => void
-  active?: boolean
-  accent?: boolean
-  success?: boolean
-}) {
-  const border = success ? '1px solid rgba(16,185,129,0.25)' : (active || accent ? '1px solid var(--accent-border)' : '1px solid var(--border)')
-  const bg = success ? 'rgba(16,185,129,0.10)' : (active || accent ? 'var(--accent-soft)' : 'rgba(255,255,255,0.04)')
-  const color = success ? '#10b981' : (active || accent ? 'var(--accent)' : 'var(--muted)')
-  return (
-    <button
-      onClick={onClick}
-      title={label}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 5,
-        padding: '6px 12px', borderRadius: 100,
-        border, background: bg, color,
-        fontSize: 12, fontFamily: 'var(--font-jakarta)',
-        cursor: success ? 'default' : 'pointer',
-      }}
-    >
-      {icon}
-      <span>{label}</span>
-    </button>
-  )
-}
-
-// ─── Card de Convite Encontro ─────────────────────────────────────────────────
-
-const RESPOSTAS_RAPIDAS = ['Aceito!', 'Não posso', 'Em breve', 'Me conta mais!']
-
-function ConviteCard({
-  text, isMe, time, onReply, respondedWith,
-}: {
-  text: string
-  isMe: boolean
-  time: string
-  onReply: (r: string) => void
-  respondedWith?: string | null
-}) {
-  const [localResponse, setLocalResponse] = useState<string | null>(null)
-  const answered = respondedWith || localResponse
-
-  function handleReply(r: string) {
-    if (answered) return
-    setLocalResponse(r)
-    onReply(r)
-  }
-
-  return (
-    <div style={{
-      display: 'flex', justifyContent: isMe ? 'flex-end' : 'flex-start',
-      marginBottom: 8,
-    }}>
-      <div style={{
-        maxWidth: '80%',
-        background: isMe ? 'var(--accent-soft)' : 'var(--bg-card)',
-        border: `1px solid ${isMe ? 'var(--accent-border)' : 'var(--border)'}`,
-        borderRadius: isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-        overflow: 'hidden',
-      }}>
-        {/* Header do card */}
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '10px 14px 8px',
-          borderBottom: `1px solid ${isMe ? 'var(--accent-border)' : 'var(--border)'}`,
-        }}>
-          <CalendarPlus size={14} color={answered === 'Aceito!' ? '#22c55e' : 'var(--accent)'} strokeWidth={1.5} />
-          <span style={{ fontSize: 12, fontWeight: 700, color: answered === 'Aceito!' ? '#22c55e' : 'var(--accent)' }}>
-            {answered === 'Aceito!' ? 'Encontro marcado' : 'Convite de Encontro'}
-          </span>
-        </div>
-
-        {/* Texto da proposta */}
-        <div style={{ padding: '10px 14px' }}>
-          <p style={{ fontSize: 14, color: 'var(--text)', margin: '0 0 10px', lineHeight: 1.45, whiteSpace: 'pre-line' }}>{text}</p>
-          <span style={{ fontSize: 11, color: 'var(--muted-2)' }}>{time}</span>
-        </div>
-
-        {/* Estado respondido */}
-        {answered && (
-          <div style={{ padding: '0 14px 12px', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <CheckCircle2 size={13} color={answered === 'Aceito!' ? '#22c55e' : 'var(--muted)'} />
-            <span style={{ fontSize: 12, color: answered === 'Aceito!' ? '#22c55e' : 'var(--muted)', fontWeight: 600 }}>
-              {answered}
-            </span>
-          </div>
-        )}
-
-        {/* Respostas rapidas — so para quem recebeu e ainda nao respondeu */}
-        {!isMe && !answered && (
-          <div style={{ padding: '0 14px 12px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {RESPOSTAS_RAPIDAS.map((r) => (
-              <button
-                key={r}
-                onClick={() => handleReply(r)}
-                style={{
-                  padding: '5px 12px', borderRadius: 100,
-                  border: '1px solid var(--border)',
-                  background: 'rgba(255,255,255,0.05)',
-                  color: 'var(--text)', fontSize: 12,
-                  cursor: 'pointer', fontFamily: 'var(--font-jakarta)',
-                }}
-              >
-                {r}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
   )
 }
