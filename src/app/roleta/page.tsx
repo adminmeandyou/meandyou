@@ -9,6 +9,7 @@ import { useRouter } from 'next/navigation'
 import { ArrowLeft, Ticket, Loader2, Star, Zap, Search, RotateCcw, Gift, Crown, Trophy, TrendingUp, Eye, X, Flame } from 'lucide-react'
 import { useAppHeader } from '@/contexts/AppHeaderContext'
 import { useToast } from '@/components/Toast'
+import { useSounds } from '@/hooks/useSounds'
 
 // ── Configuracao visual dos premios ─────────────────────────────────────
 const PRIZE_CONFIG: Record<string, {
@@ -114,6 +115,7 @@ export default function RoletaPage() {
   const router = useRouter()
   const { setBackHref } = useAppHeader()
   const toast = useToast()
+  const { play } = useSounds()
 
   useEffect(() => {
     setBackHref('/modos')
@@ -453,6 +455,7 @@ export default function RoletaPage() {
 
     animateDecelerate(targetRotation, decelDuration, () => {
       playWinSound(prize.was_jackpot)
+      play(prize.reward_type === 'fichas' ? 'coin' : 'success')
       setResult(prize)
       setTickets(t => t - 1)
       setSpinsToday(s => s + 1)

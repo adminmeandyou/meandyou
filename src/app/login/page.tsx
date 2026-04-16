@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 export default function Login() {
   const [email, setEmail]         = useState('')
@@ -34,9 +35,11 @@ export default function Login() {
       const data = await res.json()
 
       if (!res.ok) {
+        playSoundDirect('error')
         setErro(data.error || 'Email ou senha incorretos.')
         return
       }
+      playSoundDirect('success')
 
       // 2FA exigido
       if (data.requires_2fa) {

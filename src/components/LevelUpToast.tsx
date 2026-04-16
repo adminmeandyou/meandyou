@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 interface LevelUpEvent {
   level: number
@@ -18,6 +19,7 @@ function SingleLevelUpToast({ level, tickets, onDismiss }: LevelUpEvent & { onDi
   useEffect(() => {
     requestAnimationFrame(() => setVisible(true))
     if (navigator.vibrate) navigator.vibrate([20, 40, 80, 40, 20])
+    playSoundDirect('success')
 
     startRef.current = Date.now()
     function tick() {

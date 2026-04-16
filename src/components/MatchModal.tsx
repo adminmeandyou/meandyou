@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { MessageCircle, Heart, X, UserPlus, Check } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 interface MatchModalProps {
   matchId: string
@@ -28,6 +29,7 @@ export function MatchModal({ myPhoto, otherPhoto, otherName, onClose, onStartCha
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     if (navigator.vibrate) navigator.vibrate([80, 40, 160])
+    playSoundDirect('match')
     return () => { document.body.style.overflow = '' }
   }, [])
 

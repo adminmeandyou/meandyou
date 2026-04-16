@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
+import { useSounds } from '@/hooks/useSounds'
 import CheckoutModal from '@/components/CheckoutModal'
 
 // ─── Pacotes de fichas ────────────────────────────────────────────────────
@@ -283,6 +284,7 @@ export default function LojaPage() {
   const router = useRouter()
   const toast = useToast()
   const haptics = useHaptics()
+  const { play } = useSounds()
 
   const [fichas, setFichas]               = useState(0)
   const [tickets, setTickets]             = useState(0)
@@ -353,6 +355,7 @@ export default function LojaPage() {
     const data = await res.json()
     if (data?.success) {
       haptics.success()
+      play('success')
       toast.success('Boost ativado! Você está em destaque por 1 hora')
       setBoostActiveUntil(data.active_until)
       setBoosts((b) => b - 1)
@@ -378,6 +381,7 @@ export default function LojaPage() {
       const data = await res.json()
       if (data.success) {
         haptics.success()
+        play('coin')
         setFichas(f => f - item.baseFichas * qty)
         if (data.surpresa) {
           setBoxReveal({ category: 'surpresa', payload: data.surpresa })

@@ -4,6 +4,7 @@ import { useState, Suspense, useEffect, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronRight, Eye, EyeOff, Check } from 'lucide-react'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 const TURNSTILE_SITE_KEY = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''
 const TOTAL_STEPS = 7
@@ -170,6 +171,7 @@ function CadastroInner() {
     }
 
     setAvancando(true)
+    playSoundDirect('tap')
     setTimeout(() => {
       setAvancando(false)
       setStep(s => s + 1)
@@ -215,10 +217,12 @@ function CadastroInner() {
       })
       const data = await res.json()
       if (!res.ok) {
+        playSoundDirect('error')
         setErro(data.error || 'Erro ao criar conta.')
         resetTurnstile() // token já foi consumido — gera um novo
         return
       }
+      playSoundDirect('success')
 
       const loginRes = await fetch('/api/auth/login', {
         method:  'POST',

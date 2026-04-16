@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Users, Compass, Heart, Gift, User } from 'lucide-react'
 import { useHaptics } from '@/hooks/useHaptics'
+import { useSounds } from '@/hooks/useSounds'
 
 interface NavItem {
   href: string
@@ -28,6 +29,7 @@ function isActive(pathname: string, href: string): boolean {
 export function AppBottomNav() {
   const pathname = usePathname()
   const haptics = useHaptics()
+  const { play } = useSounds()
 
   return (
     <nav
@@ -51,7 +53,7 @@ export function AppBottomNav() {
             <Link
               key={href}
               href={href}
-              onClick={() => haptics.tap()}
+              onClick={() => { haptics.tap(); play('tap') }}
               style={{
                 flex: 1,
                 display: 'flex',
@@ -92,7 +94,7 @@ export function AppBottomNav() {
           <Link
             key={href}
             href={href}
-            onClick={() => haptics.tap()}
+            onClick={() => { haptics.tap(); play('tap') }}
             style={{
               flex: 1,
               display: 'flex',

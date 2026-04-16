@@ -9,6 +9,7 @@ import { usePlan } from '@/hooks/usePlan'
 import { PaywallCard } from '@/components/PaywallCard'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
+import { useSounds } from '@/hooks/useSounds'
 import { ArrowLeft, Heart, Star, Lock } from 'lucide-react'
 
 type LikerProfile = {
@@ -35,6 +36,7 @@ export default function CurtidasPage() {
   const router = useRouter()
   const toast = useToast()
   const haptics = useHaptics()
+  const { play } = useSounds()
 
   const [likers, setLikers] = useState<LikerProfile[]>([])
   const [loading, setLoading] = useState(true)
@@ -91,6 +93,7 @@ export default function CurtidasPage() {
 
   async function handleLikeBack(profileId: string) {
     haptics.medium()
+    play('like')
     try {
       await supabase.rpc('process_like', {
         p_user_id: user!.id,

@@ -8,6 +8,7 @@ import {
   Bell, Shield, Gift,
 } from 'lucide-react'
 import { supabase } from '@/app/lib/supabase'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 interface SidebarItem {
   href: string
@@ -45,6 +46,7 @@ function SidebarLink({ item, pathname }: { item: SidebarItem; pathname: string }
       aria-label={item.label}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      onClick={() => playSoundDirect('tap')}
       className="sidebar-link"
       style={{
         borderRadius: 12,

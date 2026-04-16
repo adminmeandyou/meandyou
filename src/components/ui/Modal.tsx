@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 interface ModalProps {
   isOpen: boolean
@@ -22,6 +23,7 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = 480 }: Moda
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
+      playSoundDirect('open')
     } else {
       document.body.style.overflow = ''
     }
@@ -30,9 +32,11 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = 480 }: Moda
     }
   }, [isOpen])
 
+  const handleClose = () => { playSoundDirect('close'); onClose() }
+
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) onClose()
+      if (e.key === 'Escape' && isOpen) { playSoundDirect('close'); onClose() }
     }
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
@@ -57,7 +61,7 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = 480 }: Moda
     >
       {/* Backdrop */}
       <div
-        onClick={onClose}
+        onClick={handleClose}
         style={{
           position: 'absolute',
           inset: 0,
@@ -108,7 +112,7 @@ export function Modal({ isOpen, onClose, children, title, maxWidth = 480 }: Moda
               {title}
             </span>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               style={{
                 width: 32,
                 height: 32,

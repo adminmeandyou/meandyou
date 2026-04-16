@@ -15,6 +15,7 @@ import {
 import { SkeletonCard, skeletonCss } from '@/components/Skeleton'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
+import { useSounds } from '@/hooks/useSounds'
 import { BottomSheet } from '@/components/ui/BottomSheet'
 import { Pill } from '@/components/ui/Pill'
 import { SliderRange } from '@/components/ui/SliderRange'
@@ -1548,6 +1549,7 @@ function BuscaInner() {
   const currentProfile = deck[currentIdx] ?? null
   const toast = useToast()
   const haptics = useHaptics()
+  const { play } = useSounds()
   const searchParams = useSearchParams()
 
   // Abre filtros automaticamente se vier de /configuracoes com ?filtros=1
@@ -1847,6 +1849,7 @@ function BuscaInner() {
     if (dir === 'up' && superlikesUsed >= superlikeLimit) {
       setDragX(0); setDragY(0); setUpgradeReason('superlike'); setShowUpgradeModal(true); return
     }
+    play(dir === 'right' ? 'like' : dir === 'up' ? 'superlike' : 'dislike')
     setSwipeDir(dir)
     const profileId = currentProfile.id
     const savedProfile = { name: currentProfile.name, photo: currentProfile.photo_best }
@@ -1967,6 +1970,7 @@ function BuscaInner() {
       const data = await res.json()
       if (data?.success) {
         haptics.success()
+        play('success')
         toast.success('Boost ativado! Você está em destaque por 1 hora.')
         setBoostUntil(new Date(data.active_until))
         setBoostAmount(b => b - 1)
@@ -2417,6 +2421,7 @@ function BuscaInner() {
                 label="Voltar"
                 onClick={async () => {
                   if (currentIdx === 0) return
+                  play('tap')
                   setCurrentIdx(i => Math.max(0, i - 1))
                   // Cancela like/superlike no banco se o último swipe foi positivo
                   if (lastSwipe && (lastSwipe.dir === 'right' || lastSwipe.dir === 'up') && userId) {

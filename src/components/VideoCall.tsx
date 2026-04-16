@@ -16,6 +16,7 @@ import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { Phone, PhoneOff, PhoneIncoming, AlertCircle, Loader2, Video, VideoOff, Mic, MicOff, ArrowLeft, RotateCcw, FlipHorizontal2, Volume2, VolumeX } from 'lucide-react'
 import Image from 'next/image'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 // ─── Tela de chamada ativa (LiveKit) ─────────────────────────────────────────
 function ActiveCall({ matchId, otherName, onEnd }: {
@@ -438,6 +439,11 @@ function CallingScreen({ otherName, otherPhoto, onCancel }: {
   otherPhoto?: string | null
   onCancel: () => void
 }) {
+  useEffect(() => {
+    playSoundDirect('notification')
+    const id = setInterval(() => playSoundDirect('notification'), 2000)
+    return () => clearInterval(id)
+  }, [])
   return (
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', background: 'radial-gradient(ellipse at center, rgba(225,29,72,0.10) 0%, #08090E 60%)', fontFamily: 'var(--font-jakarta)', padding: '0 24px' }}>
       {/* Status "CONEXÃO ESTÁVEL" top-right */}
@@ -494,6 +500,11 @@ function IncomingCallScreen({ callerName, callerPhoto, onAccept, onReject }: {
   onAccept: () => void
   onReject: () => void
 }) {
+  useEffect(() => {
+    playSoundDirect('notification')
+    const id = setInterval(() => playSoundDirect('notification'), 1500)
+    return () => clearInterval(id)
+  }, [])
   return (
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', background: 'radial-gradient(ellipse at center, rgba(225,29,72,0.12) 0%, #08090E 60%)', fontFamily: 'var(--font-jakarta)', padding: '0 24px' }}>
       <div style={{ position: 'relative', width: 156, height: 156, marginBottom: 32 }}>

@@ -1,6 +1,7 @@
 'use client'
 
 import { ReactNode, useState } from 'react'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 interface PillProps {
   children: ReactNode
@@ -51,7 +52,7 @@ export function Pill({
 
   return (
     <button
-      onClick={isInteractive ? onClick : undefined}
+      onClick={isInteractive ? () => { playSoundDirect('tap'); onClick?.() } : undefined}
       disabled={disabled || loading}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setPressed(false) }}

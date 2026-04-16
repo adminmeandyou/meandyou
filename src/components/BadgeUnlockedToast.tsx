@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 const RARITY_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   comum:          { label: 'Comum',          color: '#9CA3AF', bg: 'rgba(156,163,175,0.12)' },
@@ -39,6 +40,7 @@ function SingleBadgeToast({ badge, onDismiss }: Props) {
 
     // Haptic
     if (navigator.vibrate) navigator.vibrate([30, 60, 80])
+    playSoundDirect('success')
 
     // Progress bar countdown
     startRef.current = Date.now()

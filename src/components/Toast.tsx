@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext, useState, useCallback, useRef } from 'react'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 type ToastType = 'success' | 'error' | 'info'
 
@@ -26,6 +27,7 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const show = useCallback((message: string, type: ToastType = 'info') => {
     const id = ++counter.current
     setToasts(prev => [...prev.slice(-2), { id, message, type }])
+    playSoundDirect(type === 'error' ? 'error' : 'notification')
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3200)
   }, [])
 

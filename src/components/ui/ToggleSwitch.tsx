@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 interface ToggleSwitchProps {
   checked: boolean
@@ -40,7 +41,7 @@ export function ToggleSwitch({
   const thumbX = checked ? w - thumbSize - thumbOffset : thumbOffset
 
   const handleClick = () => {
-    if (isInteractive) onChange(!checked)
+    if (isInteractive) { playSoundDirect('toggle'); onChange(!checked) }
   }
 
   const switchEl = (

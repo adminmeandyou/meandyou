@@ -3,6 +3,7 @@
 import { ReactNode, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { X } from 'lucide-react'
+import { playSoundDirect } from '@/hooks/useSounds'
 
 interface BottomSheetProps {
   isOpen: boolean
@@ -21,6 +22,7 @@ export function BottomSheet({ isOpen, onClose, children, title }: BottomSheetPro
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
+      playSoundDirect('open')
     } else {
       document.body.style.overflow = ''
     }
@@ -28,6 +30,8 @@ export function BottomSheet({ isOpen, onClose, children, title }: BottomSheetPro
       document.body.style.overflow = ''
     }
   }, [isOpen])
+
+  const handleClose = () => { playSoundDirect('close'); onClose() }
 
   if (!mounted) return null
 
@@ -47,7 +51,7 @@ export function BottomSheet({ isOpen, onClose, children, title }: BottomSheetPro
     >
       {/* Backdrop */}
       <div
-        onClick={onClose}
+        onClick={handleClose}
         style={{
           position: 'absolute',
           inset: 0,
@@ -115,7 +119,7 @@ export function BottomSheet({ isOpen, onClose, children, title }: BottomSheetPro
               {title}
             </span>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               style={{
                 width: 32,
                 height: 32,

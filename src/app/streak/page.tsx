@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
+import { useSounds } from '@/hooks/useSounds'
 import {
   ArrowLeft, Flame, Ticket, Star, Zap, Search, RotateCcw, Ghost,
   Lock, CheckCircle, Loader2, Crown, Sprout, Dumbbell, TrendingUp, Heart, Coins,
@@ -38,6 +39,7 @@ function getPhaseInfo(day: number): { label: string; color: string; icon: React.
 export default function StreakPage() {
   const { user } = useAuth()
   const router = useRouter()
+  const { play } = useSounds()
 
   const [streak, setStreak] = useState<StreakData | null>(null)
   const [calendar, setCalendar] = useState<CalendarEntry[]>([])
@@ -86,6 +88,7 @@ export default function StreakPage() {
       const msgs: Record<string, string> = { already_claimed: 'Já resgatado hoje', not_reached: 'Você ainda não chegou neste dia.', streak_reset: 'Seu streak foi zerado. Continue assim!' }
       setClaimMsg({ day: dayNumber, text: msgs[result?.reason ?? ''] ?? 'Não foi possível resgatar.' })
     } else {
+      play('success')
       setCalendar((prev) => prev.map((e) => (e.day_number === dayNumber ? { ...e, claimed: true } : e)))
       const entry = calendar.find((e) => e.day_number === dayNumber)
       if (entry) {
