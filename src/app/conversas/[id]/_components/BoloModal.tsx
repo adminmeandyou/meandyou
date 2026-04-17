@@ -20,14 +20,14 @@ export function BoloModal({
       >
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
           <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: '0 0 8px' }}>O encontro aconteceu?</h3>
-          <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: 0, lineHeight: 1.55 }}>Voce aceitou um convite de encontro. Nos conte como foi!</p>
+          <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: 0, lineHeight: 1.55 }}>Você aceitou um convite de encontro. Nos conte como foi!</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {[
-            { id: 'incrivel', label: 'Foi incrivel!' },
+            { id: 'incrivel', label: 'Foi incrível!' },
             { id: 'estranho', label: 'Foi estranho' },
             { id: 'bolo', label: 'Levei um bolo' },
-            { id: 'ainda_nao', label: 'Ainda nao aconteceu' },
+            { id: 'ainda_nao', label: 'Ainda não aconteceu' },
           ].map(op => (
             <button
               key={op.id}

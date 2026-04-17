@@ -6,12 +6,11 @@ import { supabase } from '../../lib/supabase'
 import Image from 'next/image'
 import Link from 'next/link'
 import {
-  ArrowLeft, Send, ShieldAlert,
+  ArrowLeft, Send,
   Loader2, AlertCircle, Lock, Menu,
   Sparkles, CalendarPlus, Zap, X, CalendarCheck, Star, Coffee,
-  MapPin, Shield, HeartCrack, Phone, CheckCircle2, UserPlus, Check, Smile, Vibrate
+  MapPin, Shield, UserPlus, Check, Smile, Vibrate
 } from 'lucide-react'
-import { ChatBubble } from '@/components/ui/ChatBubble'
 import { ReportModal } from '@/components/ReportModal'
 import { VideoCallButton } from '@/components/VideoCall'
 import { EmojiPicker } from '@/components/EmojiPicker'
@@ -1119,7 +1118,7 @@ export default function ChatPage() {
                 <p style={{ fontFamily: 'var(--font-fraunces)', fontSize: 18, color: 'var(--text)', margin: '0 0 6px' }}>
                   Vocês fizeram um match!
                 </p>
-                <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: 0 }}>Seja o(a) primeiro(a) a dizer ola.</p>
+                <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: 0 }}>Seja o(a) primeiro(a) a dizer olá.</p>
               </div>
             </div>
           ) : (

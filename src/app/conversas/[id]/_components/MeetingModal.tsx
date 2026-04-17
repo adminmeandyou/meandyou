@@ -139,7 +139,7 @@ export function MeetingModal({
             <h3 style={{ fontFamily:'var(--font-fraunces)',fontStyle:'italic',fontSize:28,fontWeight:400,color:'var(--text)',margin:'0 0 10px',lineHeight:1.15 }}>
               Registro <span style={{ color:'#F43F5E' }}>salvo</span>.
             </h3>
-            <p style={{ fontSize:13,color:'rgba(255,255,255,0.5)',margin:0,lineHeight:1.6 }}>Faremos um check-in com voce depois do horario marcado.</p>
+            <p style={{ fontSize:13,color:'rgba(255,255,255,0.5)',margin:0,lineHeight:1.6 }}>Faremos um check-in com você depois do horário marcado.</p>
           </div>
         ) : (
           <>
@@ -242,7 +242,7 @@ export function MeetingModal({
                   <input
                     value={meetingNumero}
                     onChange={e => setMeetingNumero(e.target.value)}
-                    placeholder="No"
+                    placeholder="N."
                     inputMode="numeric"
                     style={{ ...inputStyle, flex:1 }}
                     onFocus={onFocusInput}
@@ -309,7 +309,7 @@ export function MeetingModal({
               fontFamily:'var(--font-jakarta)',
               textAlign:'center',
             }}>
-              Faremos um check-in 2h apos o horario marcado.
+              Faremos um check-in 2h após o horário marcado.
             </p>
 
             <button

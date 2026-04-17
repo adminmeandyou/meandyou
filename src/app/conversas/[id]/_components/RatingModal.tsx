@@ -3,12 +3,12 @@
 import { X, CheckCircle2 } from 'lucide-react'
 
 const RATING_OPTIONS = [
-  { id: 'incrivel', label: 'Pessoa incrivel', color: '#10b981' },
-  { id: 'agradavel', label: 'Conversa agradavel', color: '#60a5fa' },
-  { id: 'nao_interessei', label: 'Nao me interessei', color: 'rgba(248,249,250,0.45)' },
+  { id: 'incrivel', label: 'Pessoa incrível', color: '#10b981' },
+  { id: 'agradavel', label: 'Conversa agradável', color: '#60a5fa' },
+  { id: 'nao_interessei', label: 'Não me interessei', color: 'rgba(248,249,250,0.45)' },
   { id: 'ignorado', label: 'Fui ignorado(a)', color: '#facc15' },
-  { id: 'nao_recomendo', label: 'Nao recomendo', color: '#fb923c' },
-  { id: 'desagradavel', label: 'Pessoa desagradavel', color: '#f87171' },
+  { id: 'nao_recomendo', label: 'Não recomendo', color: '#fb923c' },
+  { id: 'desagradavel', label: 'Pessoa desagradável', color: '#f87171' },
   { id: 'inconveniente', label: 'Inconveniente / desrespeitosa', color: '#ef4444' },
 ]
 
@@ -38,7 +38,7 @@ export function RatingModal({
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
           <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: 0 }}>
-            {ratingConfirmOpcao ? 'Confirmar avaliacao' : 'Como foi a conversa?'}
+            {ratingConfirmOpcao ? 'Confirmar avaliação' : 'Como foi a conversa?'}
           </h3>
           <button onClick={() => { onClose(); setRatingConfirmOpcao(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
             <X size={18} color="var(--muted)" strokeWidth={1.5} />
@@ -48,9 +48,9 @@ export function RatingModal({
         {ratingConfirmOpcao ? (
           <>
             <p style={{ fontSize: 14, color: 'var(--text)', margin: '0 0 6px' }}>
-              Sua avaliacao: <strong>{RATING_OPTIONS.find(o => o.id === ratingConfirmOpcao)?.label}</strong>
+              Sua avaliação: <strong>{RATING_OPTIONS.find(o => o.id === ratingConfirmOpcao)?.label}</strong>
             </p>
-            <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Essa avaliacao e anonima. Voce pode alterar depois.</p>
+            <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Essa avaliação é anônima. Você pode alterar depois.</p>
             <div style={{ display: 'flex', gap: 10 }}>
               <button
                 onClick={() => setRatingConfirmOpcao(null)}
@@ -68,7 +68,7 @@ export function RatingModal({
           </>
         ) : (
           <>
-            <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliacao anonima: {otherName} nao sabera quem avaliou.</p>
+            <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 20px' }}>Avaliação anônima: {otherName} não saberá quem avaliou.</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {RATING_OPTIONS.map(op => {
                 const currentRating = localStorage.getItem(`rating_${matchId}`)
