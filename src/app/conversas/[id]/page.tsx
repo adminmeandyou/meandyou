@@ -892,7 +892,7 @@ export default function ChatPage() {
               const blurPx = otherMsgs >= 20 ? 0 : otherMsgs >= 10 ? 2 : otherMsgs >= 5 ? 5 : 10
               const revealLabel = blurPx > 0 ? `${Math.max(0, (blurPx === 10 ? 5 : blurPx === 5 ? 10 : 20) - otherMsgs)} msgs` : null
 
-              const isOnlineNow = otherUser?.last_seen && (Date.now() - new Date(otherUser.last_seen).getTime()) < 5 * 60 * 1000
+              const isOnlineNow = otherUser?.show_last_active !== false && otherUser?.last_seen && (Date.now() - new Date(otherUser.last_seen).getTime()) < 5 * 60 * 1000
 
               return (
                 <div style={{ position: 'relative', width: 40, height: 40, flexShrink: 0 }} title={revealLabel ? `Foto revela em ${revealLabel}` : undefined}>
@@ -934,7 +934,7 @@ export default function ChatPage() {
                 )}
               </p>
               {(() => {
-                const isOnline = otherUser?.last_seen && (Date.now() - new Date(otherUser.last_seen).getTime()) < 5 * 60 * 1000
+                const isOnline = otherUser?.show_last_active !== false && otherUser?.last_seen && (Date.now() - new Date(otherUser.last_seen).getTime()) < 5 * 60 * 1000
                 if (isOnline) {
                   return <p style={{ fontSize: 10, color: 'var(--accent)', margin: 0, fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Ativo agora</p>
                 }

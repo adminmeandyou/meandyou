@@ -162,7 +162,7 @@ export function MeetingModal({
               lineHeight:1.55,
               fontFamily:'var(--font-jakarta)',
             }}>
-              Com <span style={{ color:'rgba(255,255,255,0.75)' }}>{otherName}</span>. Fica so no seu dispositivo.
+              Com <span style={{ color:'rgba(255,255,255,0.75)' }}>{otherName}</span>. Fica só no seu dispositivo.
             </p>
 
             <div style={{ marginBottom:24 }}>
@@ -352,7 +352,7 @@ export function MeetingModal({
                 padding:'4px 0',
               }}
             >
-              Agora nao
+              Agora não
             </button>
           </>
         )}

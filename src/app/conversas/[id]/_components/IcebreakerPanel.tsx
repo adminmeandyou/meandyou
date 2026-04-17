@@ -34,7 +34,7 @@ export function IcebreakerPanel({
               fontFamily: 'var(--font-jakarta)', fontSize: 10, fontWeight: 700,
               letterSpacing: '0.05em',
             }}
-            title="Trocar sugestoes"
+            title="Trocar sugestões"
           >
             <Sparkles size={10} strokeWidth={2} />
             Trocar

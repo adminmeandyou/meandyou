@@ -513,10 +513,10 @@ function CallingScreen({ otherName, otherPhoto, onCancel }: {
   }, [])
   return (
     <div style={{ position: 'relative', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', background: 'radial-gradient(ellipse at center, rgba(225,29,72,0.10) 0%, #08090E 60%)', fontFamily: 'var(--font-jakarta)', padding: '0 24px' }}>
-      {/* Status "CONEXÃO ESTÁVEL" top-right */}
+      {/* Status top-right */}
       <div style={{ position: 'absolute', top: 'max(20px, env(safe-area-inset-top, 20px))', right: 20, display: 'flex', alignItems: 'center', gap: 8, padding: '8px 14px', borderRadius: 100, background: 'rgba(15,17,23,0.70)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#10b981', boxShadow: '0 0 8px rgba(16,185,129,0.6)' }} />
-        <span style={{ fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--text)', fontWeight: 600 }}>Conexão estável</span>
+        <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#F59E0B', boxShadow: '0 0 8px rgba(245,158,11,0.6)', animation: 'ui-pulse 2s ease-in-out infinite' }} />
+        <span style={{ fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: 'var(--text)', fontWeight: 600 }}>Chamando</span>
       </div>
 
       {/* Foto com auras pulsantes */}
