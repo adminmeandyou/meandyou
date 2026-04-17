@@ -249,8 +249,8 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
 
   if (error && limitReached) {
     const upgradeInfo: Record<string, { next: string; price: string; hours: string; extras: string }> = {
-      essencial: { next: 'Plus', price: '39,90', hours: '2h por dia', extras: 'qualidade melhor + ver quem curtiu voce + desfazer curtida' },
-      plus:      { next: 'Black', price: '99,90', hours: '5h por dia', extras: 'qualidade maxima + filtros exclusivos + area Backstage' },
+      essencial: { next: 'Plus', price: '39,90', hours: '2h por dia', extras: 'qualidade melhor + ver quem curtiu você + desfazer curtida' },
+      plus:      { next: 'Black', price: '99,90', hours: '5h por dia', extras: 'qualidade máxima + filtros exclusivos + área Backstage' },
       black:     { next: '', price: '', hours: '', extras: '' },
     }
     const info = upgradeInfo[plan] ?? upgradeInfo.essencial
@@ -260,7 +260,7 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
           <Video size={28} color="#F59E0B" strokeWidth={1.5} />
         </div>
         <h2 style={{ fontSize: 18, fontWeight: 700, color: 'var(--text)', margin: 0, lineHeight: 1.3 }}>
-          Voce atingiu seu tempo de Live hoje
+          Você atingiu seu tempo de Live hoje
         </h2>
         <p style={{ fontSize: 13, color: 'var(--muted)', marginTop: 6, maxWidth: 300, lineHeight: 1.5 }}>
           Seu plano atual permite {plan === 'essencial' ? '45 minutos' : plan === 'plus' ? '2 horas' : '5 horas'} de videochamada por dia.
@@ -279,7 +279,7 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
             >
               <span>Continuar agora</span>
               <span style={{ fontSize: 11, fontWeight: 400, opacity: 0.85 }}>
-                Por apenas R$ {info.price}/mes voce ganha {info.hours} + {info.extras}
+                Por apenas R$ {info.price}/mês você ganha {info.hours} + {info.extras}
               </span>
             </button>
           )}
@@ -312,7 +312,7 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
       <AlertCircle size={32} color="#F43F5E" />
       <p style={{ fontSize: 14, color: '#F43F5E', maxWidth: 320, lineHeight: 1.5 }}>{error}</p>
       {permissionDenied && (
-        <p style={{ fontSize: 11, color: 'var(--muted-2)', maxWidth: 280, lineHeight: 1.55 }}>Abra as configuracoes do navegador e libere camera e microfone para o MeAndYou, depois tente novamente.</p>
+        <p style={{ fontSize: 11, color: 'var(--muted-2)', maxWidth: 280, lineHeight: 1.55 }}>Abra as configurações do navegador e libere câmera e microfone para o MeAndYou, depois tente novamente.</p>
       )}
       <div style={{ display: 'flex', gap: 10 }}>
         {permissionDenied && (
@@ -386,7 +386,7 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
       <div style={{ position: 'absolute', top: 96, left: 20, zIndex: 30, pointerEvents: 'none' }}>
         <div style={{ background: 'rgba(15,17,23,0.7)', backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)', padding: '12px 14px', maxWidth: 200 }}>
           <p style={{ fontFamily: 'var(--font-fraunces)', fontStyle: 'italic', fontSize: 15, color: '#fff', margin: '0 0 8px', lineHeight: 1.15 }}>
-            {iceState === 'connected' || iceState === 'completed' ? 'Conex��o estável' : iceState === 'checking' ? 'Conectando...' : iceState === 'failed' ? 'Falha na conexão' : 'Aguardando...'}
+            {iceState === 'connected' || iceState === 'completed' ? 'Conexão estável' : iceState === 'checking' ? 'Conectando...' : iceState === 'failed' ? 'Falha na conexão' : 'Aguardando...'}
           </p>
           {(() => {
             const bars = iceState === 'connected' || iceState === 'completed' ? 4 : iceState === 'checking' ? 2 : iceState === 'failed' ? 1 : 0
@@ -437,13 +437,13 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
       <nav style={{ position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 40, display: 'flex', justifyContent: 'center', alignItems: 'center', paddingTop: 10, paddingBottom: 'max(16px, env(safe-area-inset-bottom, 16px))', pointerEvents: 'none' }}>
         <div style={{ pointerEvents: 'auto', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 100, background: 'rgba(15,17,23,0.82)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.05)', boxShadow: '0 -8px 24px rgba(0,0,0,0.5)' }}>
           <ControlButton
-            icon={micOn ? <Mic size={15} strokeWidth={1.5} /> : <MicOff size={15} strokeWidth={1.5} />}
+            icon={micOn ? <Mic size={17} strokeWidth={1.5} /> : <MicOff size={17} strokeWidth={1.5} />}
             label="Mudo"
             onClick={toggleMic}
             active={!micOn}
           />
           <ControlButton
-            icon={camOn ? <Video size={15} strokeWidth={1.5} /> : <VideoOff size={15} strokeWidth={1.5} />}
+            icon={camOn ? <Video size={17} strokeWidth={1.5} /> : <VideoOff size={17} strokeWidth={1.5} />}
             label="Vídeo"
             onClick={toggleCam}
             active={!camOn}
@@ -453,17 +453,17 @@ export function ActiveCall({ matchId, otherUserId, otherName, isCaller, onEnd }:
             aria-label="Encerrar chamada"
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
-            <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, #E11D48, #be123c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(225,29,72,0.40), 0 0 0 3px rgba(225,29,72,0.08)' }}>
-              <PhoneOff size={18} color="#fff" strokeWidth={1.8} />
+            <div style={{ width: 50, height: 50, borderRadius: '50%', background: 'linear-gradient(135deg, #E11D48, #be123c)', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 6px 20px rgba(225,29,72,0.40), 0 0 0 3px rgba(225,29,72,0.08)' }}>
+              <PhoneOff size={20} color="#fff" strokeWidth={1.8} />
             </div>
           </button>
           <ControlButton
-            icon={<RotateCcw size={15} strokeWidth={1.5} />}
+            icon={<RotateCcw size={17} strokeWidth={1.5} />}
             label="Girar"
             onClick={flipCam}
           />
           <ControlButton
-            icon={remoteMuted ? <VolumeX size={15} strokeWidth={1.5} /> : <Volume2 size={15} strokeWidth={1.5} />}
+            icon={remoteMuted ? <VolumeX size={17} strokeWidth={1.5} /> : <Volume2 size={17} strokeWidth={1.5} />}
             label="Som"
             onClick={() => {
               setRemoteMuted(v => {
@@ -493,7 +493,7 @@ function ControlButton({ icon, label, onClick, active = false }: {
       aria-label={label}
       style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: active ? '#F43F5E' : 'rgba(255,255,255,0.88)' }}
     >
-      <div style={{ width: 36, height: 36, borderRadius: '50%', background: active ? 'rgba(225,29,72,0.18)' : 'rgba(52,52,58,0.6)', border: active ? '1px solid rgba(225,29,72,0.35)' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 180ms cubic-bezier(0.19,1,0.22,1)' }}>
+      <div style={{ width: 40, height: 40, borderRadius: '50%', background: active ? 'rgba(225,29,72,0.18)' : 'rgba(52,52,58,0.6)', border: active ? '1px solid rgba(225,29,72,0.35)' : '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 180ms cubic-bezier(0.19,1,0.22,1)' }}>
         {icon}
       </div>
     </button>
