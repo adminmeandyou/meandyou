@@ -15,14 +15,15 @@ const ITEM_CONFIG: Record<string, { fichasPorUnidade: number; label: string }> =
   ghost_7d:      { fichasPorUnidade: 60,   label: 'Fantasma 7 dias' },
   ghost_35d:     { fichasPorUnidade: 220,  label: 'Fantasma 35 dias' },
   reveals_5:     { fichasPorUnidade: 50,   label: 'Ver quem curtiu (24h)' },
-  xp_bonus_3d:   { fichasPorUnidade: 100,  label: 'Bonus de XP (7 dias)' },
+  xp_bonus_3d:   { fichasPorUnidade: 100,  label: 'Bônus de XP (7 dias)' },
   verified_plus: { fichasPorUnidade: 200,  label: 'Selo Verificado Plus' },
   caixa_surpresa:{ fichasPorUnidade: 35,   label: 'Caixa Surpresa' },
-  caixa_lendaria:{ fichasPorUnidade: 2250, label: 'Caixa Super Lendaria' },
+  caixa_lendaria:{ fichasPorUnidade: 2250, label: 'Caixa Super Lendária' },
   live_1h:       { fichasPorUnidade: 40,   label: 'Tempo Live +1h' },
   live_5h:       { fichasPorUnidade: 170,  label: 'Tempo Live +5h' },
   live_15h:      { fichasPorUnidade: 350,  label: 'Tempo Live +15h' },
-  live_30h:      { fichasPorUnidade: 600,  label: 'Tempo Live +30h' },
+  live_30h:           { fichasPorUnidade: 600,  label: 'Tempo Live +30h' },
+  passaporte_camarote:{ fichasPorUnidade: 70,   label: 'Passaporte Camarote' },
 }
 
 async function incrementarSaldo(tabela: string, userId: string, amount: number): Promise<void> {
@@ -178,7 +179,7 @@ export async function POST(req: NextRequest) {
 
       if (!lendBadges || lendBadges.length === 0) {
         // Emblemas ainda nao cadastrados — informa ao usuario
-        return NextResponse.json({ success: true, caixa_lendaria: { type: 'badge_pending', badge_name: 'Emblema Super Lendario', badge_id: null } })
+        return NextResponse.json({ success: true, caixa_lendaria: { type: 'badge_pending', badge_name: 'Emblema Super Lendário', badge_id: null } })
       }
 
       // Sorteia um emblema que o usuario ainda nao tem
@@ -200,6 +201,11 @@ export async function POST(req: NextRequest) {
       // XP: abriu caixa lendaria
       void supabaseAdmin.rpc('award_xp', { p_user_id: user.id, p_event_type: 'caixa_lendaria', p_base_xp: 100 }).then(() => {})
       return NextResponse.json({ success: true, caixa_lendaria: { type: 'badge', badge_id: badge.id, badge_name: badge.name, badge_icon: badge.icon_url } })
+
+    } else if (item_key === 'passaporte_camarote') {
+      // Ativa acesso ao Camarote por 30 dias
+      const expiresAt = new Date(Date.now() + 30 * 86400000).toISOString()
+      await atualizarProfile(user.id, { camarote_expires_at: expiresAt })
     }
     } catch (creditErr) {
       // Crédito do item falhou — estorna as fichas automaticamente

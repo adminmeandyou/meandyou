@@ -8,9 +8,10 @@ const supabase = createClient(
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params
     const token = req.headers.get('authorization')?.replace('Bearer ', '')
     if (!token) return NextResponse.json({ error: 'Não autenticado' }, { status: 401 })
 
@@ -21,7 +22,7 @@ export async function GET(
     const { data: payment } = await supabase
       .from('payments')
       .select('id, status, gateway_id, method, paid_at')
-      .eq('id', params.id)
+      .eq('id', id)
       .eq('user_id', user.id)
       .single()
 
@@ -49,15 +50,14 @@ export async function GET(
       const abStatus = data.data?.status
 
       if (abStatus === 'PAID') {
-        await supabase
-          .from('payments')
-          .update({ status: 'paid', paid_at: new Date().toISOString() })
-          .eq('id', params.id)
+        // NAO atualiza o banco aqui — o webhook faz o claim atomico + credita os itens.
+        // Se atualizarmos status para 'paid' aqui, o webhook nao consegue fazer o claim
+        // e os itens (fichas, assinatura, etc) nunca sao creditados.
         return NextResponse.json({ status: 'paid' })
       }
 
       if (abStatus === 'EXPIRED' || abStatus === 'CANCELLED') {
-        await supabase.from('payments').update({ status: 'expired' }).eq('id', params.id)
+        await supabase.from('payments').update({ status: 'expired' }).eq('id', id)
         return NextResponse.json({ status: 'expired' })
       }
     }

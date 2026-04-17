@@ -21,8 +21,8 @@ const PLANS = [
       '1 ticket de roleta por dia',
       '1 Lupa por dia',
       'Conversar com seus matches',
-      'Ate 45min de videochamada por dia',
-      'Qualidade de video basica (360p a 480p)',
+      'Até 45min de videochamada por dia',
+      'Qualidade de vídeo básica (360p a 480p)',
     ],
   },
   {
@@ -42,8 +42,8 @@ const PLANS = [
       'Ver quem curtiu você',
       'Desfazer curtida (1 por dia)',
       'Destaque na busca',
-      'Ate 2h de videochamada por dia',
-      'Qualidade de video melhor (360p a 720p)',
+      'Até 2h de videochamada por dia',
+      'Qualidade de vídeo melhor (360p a 720p)',
     ],
   },
   {
@@ -61,8 +61,8 @@ const PLANS = [
       'Até 2 Boosts simultâneos',
       'Filtros Sugar e Fetiche',
       'Área Backstage exclusiva',
-      'Ate 5h de videochamada por dia',
-      'Qualidade de video maxima (360p a 1080p)',
+      'Até 5h de videochamada por dia',
+      'Qualidade de vídeo máxima (360p a 1080p)',
     ],
   },
 ]
@@ -277,7 +277,7 @@ export default function PlanosPage() {
             { label: 'SuperCurtidas', values: ['1/dia', '5/dia', '10/dia'] },
             { label: 'Lupas',         values: ['1/dia', '1/dia', '2/dia'] },
             { label: 'Tickets',       values: ['1/dia', '2/dia', '3/dia'] },
-            { label: 'Vídeo',         values: ['1h/dia', '5h/dia', '10h/dia'] },
+            { label: 'Vídeo',         values: ['45min/dia', '2h/dia', '5h/dia'] },
             { label: 'Ver quem curtiu',   values: ['Não', 'Sim', 'Sim'] },
             { label: 'Backstage',     values: ['Não', 'Não', 'Sim'] },
           ].map((row, i) => (
