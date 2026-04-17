@@ -22,15 +22,6 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const pathname = req.nextUrl.pathname
 
-  // ── Portão: bloqueia apenas páginas (não APIs) ────────────────────────────
-  if (pathname !== GATE_PATH && !pathname.startsWith('/api/')) {
-    const gateCookie = req.cookies.get(GATE_COOKIE)?.value
-    if (gateCookie !== GATE_SENHA) {
-      return NextResponse.redirect(new URL(GATE_PATH, req.url))
-    }
-  }
-  // ─────────────────────────────────────────────────────────────────────────
-
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -47,6 +38,16 @@ export async function middleware(req: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+
+  // ── Portão: bloqueia páginas apenas para visitantes sem cookie ────────────
+  // Usuários autenticados passam direto — o gate é só para visitantes externos
+  if (pathname !== GATE_PATH && !pathname.startsWith('/api/') && !user) {
+    const gateCookie = req.cookies.get(GATE_COOKIE)?.value
+    if (gateCookie !== GATE_SENHA) {
+      return NextResponse.redirect(new URL(GATE_PATH, req.url))
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   // ── Proteção do Backstage (somente plano Black) ───────────────────────────
   if (pathname.startsWith('/backstage')) {
