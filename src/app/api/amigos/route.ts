@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
   try {
     const { enviarPushParaUsuario } = await import('@/lib/push')
     const { data: profile } = await supabaseAdmin
-      .from('public_profiles')
+      .from('profiles')
       .select('name')
       .eq('id', user.id)
       .single()
@@ -109,7 +109,7 @@ export async function PATCH(req: NextRequest) {
     try {
       const { enviarPushParaUsuario } = await import('@/lib/push')
       const { data: profile } = await supabaseAdmin
-        .from('public_profiles')
+        .from('profiles')
         .select('name')
         .eq('id', user.id)
         .single()
@@ -186,8 +186,8 @@ export async function GET(req: NextRequest) {
   )
 
   const { data: profiles } = await supabaseAdmin
-    .from('public_profiles')
-    .select('id, name, photo_best, city, plan, last_seen')
+    .from('profiles')
+    .select('id, name, photo_best, plan, last_seen')
     .in('id', otherIds)
 
   const profileMap = new Map((profiles ?? []).map(p => [p.id, p]))

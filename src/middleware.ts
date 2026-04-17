@@ -22,8 +22,8 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const pathname = req.nextUrl.pathname
 
-  // ── Portão: bloqueia tudo exceto a própria página /acesso e sua API ──────
-  if (pathname !== GATE_PATH && pathname !== '/api/acesso') {
+  // ── Portão: bloqueia apenas páginas (não APIs) ────────────────────────────
+  if (pathname !== GATE_PATH && !pathname.startsWith('/api/')) {
     const gateCookie = req.cookies.get(GATE_COOKIE)?.value
     if (gateCookie !== GATE_SENHA) {
       return NextResponse.redirect(new URL(GATE_PATH, req.url))
@@ -47,6 +47,22 @@ export async function middleware(req: NextRequest) {
   )
 
   const { data: { user } } = await supabase.auth.getUser()
+
+  // ── Proteção do Backstage (somente plano Black) ───────────────────────────
+  if (pathname.startsWith('/backstage')) {
+    if (!user) {
+      return NextResponse.redirect(new URL('/login', req.url))
+    }
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', user.id)
+      .single()
+    if (profile?.plan !== 'black') {
+      return NextResponse.redirect(new URL('/modos', req.url))
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   // ── Proteção do painel admin ──────────────────────────────────────────────
   if (pathname.startsWith('/admin')) {

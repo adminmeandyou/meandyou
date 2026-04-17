@@ -23,8 +23,11 @@ export default function CamaroteCategories({ initial, onSave, onBack }: Props) {
   async function handleSave() {
     if (selected.length === 0) return
     setSaving(true)
-    await onSave(selected)
-    setSaving(false)
+    try {
+      await onSave(selected)
+    } finally {
+      setSaving(false)
+    }
   }
 
   return (

@@ -10,7 +10,7 @@ type FriendProfile = {
   id: string
   name: string
   photo_best: string | null
-  city: string | null
+  city?: string | null
   plan: string
   last_seen: string | null
 }

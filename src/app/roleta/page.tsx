@@ -24,7 +24,7 @@ type Particle = { x: number; y: number; vx: number; vy: number; size: number; co
 
 export default function RoletaPage() {
   const { user } = useAuth()
-  const { limits } = usePlan()
+  const { limits, loading: planLoading } = usePlan()
   const { setBackHref } = useAppHeader()
   const toast = useToast()
   const { play } = useSounds()
@@ -79,7 +79,7 @@ export default function RoletaPage() {
     return () => clearInterval(id)
   }, [])
 
-  const dailyTickets = limits.isBlack ? 3 : limits.isPlus ? 2 : 1
+  const dailyTickets = limits.ticketsPerDay
   const spinsLeft    = Math.max(0, dailyTickets - spinsToday)
   const canSpin      = tickets > 0 && spinsLeft > 0 && !spinning
 

@@ -68,10 +68,17 @@ function CamaroteApp({ onBack }: { onBack: () => void }) {
   }
 
   async function handleCategoriesSaved(cats: string[]) {
+    if (!user) return
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('plan')
+      .eq('id', user.id)
+      .single()
+    if (profile?.plan !== 'black') return
     await supabase
       .from('profiles')
       .update({ camarote_interests: cats })
-      .eq('id', user!.id)
+      .eq('id', user.id)
     setMyCategories(cats)
     setStep('vitrine')
   }
