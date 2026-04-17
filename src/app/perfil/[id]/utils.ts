@@ -60,15 +60,15 @@ export function getAparenciaTags(f: any): string[] {
   if (f.feat_tattoo) tags.push('Tatuagem')
   if (f.feat_piercing) tags.push('Piercing')
   if (f.feat_beard) tags.push('Barba')
-  if (f.feat_glasses) tags.push('Oculos')
+  if (f.feat_glasses) tags.push('Óculos')
   return tags
 }
 
 export function getEstiloTags(f: any): string[] {
   const tags: string[] = []
-  if (f.smoke_no) tags.push('Nao fuma')
+  if (f.smoke_no) tags.push('Não fuma')
   if (f.smoke_yes) tags.push('Fumante')
-  if (f.drink_no) tags.push('Nao bebe')
+  if (f.drink_no) tags.push('Não bebe')
   if (f.drink_socially) tags.push('Bebe socialmente')
   if (f.routine_gym) tags.push('Academia')
   if (f.routine_homebody) tags.push('Caseiro(a)')
@@ -90,9 +90,9 @@ export function getPersonalidadeTags(f: any): string[] {
   if (f.pers_calm) tags.push('Calmo(a)')
   if (f.pers_intense) tags.push('Intenso(a)')
   if (f.pers_communicative) tags.push('Comunicativo(a)')
-  if (f.pers_shy) tags.push('Timido(a)')
-  if (f.rel_evangelical) tags.push('Evangelico(a)')
-  if (f.rel_catholic) tags.push('Catolico(a)')
+  if (f.pers_shy) tags.push('Tímido(a)')
+  if (f.rel_evangelical) tags.push('Evangélico(a)')
+  if (f.rel_catholic) tags.push('Católico(a)')
   if (f.rel_atheist) tags.push('Ateu/Ateia')
   if (f.kids_has) tags.push('Tem filhos')
   if (f.kids_no) tags.push('Sem filhos')
@@ -103,10 +103,10 @@ export function getPersonalidadeTags(f: any): string[] {
 
 export function getObjetivosTags(f: any): string[] {
   const tags: string[] = []
-  if (f.obj_serious) tags.push('Relacionamento serio')
+  if (f.obj_serious) tags.push('Relacionamento sério')
   if (f.obj_casual) tags.push('Relacionamento casual')
   if (f.obj_friendship) tags.push('Amizade')
-  if (f.obj_open) tags.push('Aberto a experiencias')
+  if (f.obj_open) tags.push('Aberto a experiências')
   if (f.obj_sugar_baby) tags.push('Sugar Baby')
   if (f.obj_sugar_daddy) tags.push('Sugar Daddy/Mommy')
   return tags

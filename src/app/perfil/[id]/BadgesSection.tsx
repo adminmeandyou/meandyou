@@ -57,10 +57,10 @@ export function BadgesSection({
         <div style={{ padding: '20px 16px', borderRadius: 16, background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-soft, rgba(255,255,255,0.04))', textAlign: 'center' }}>
           <Award size={24} color="rgba(248,249,250,0.20)" strokeWidth={1.5} style={{ marginBottom: 8 }} />
           <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.40)', margin: '0 0 4px', fontWeight: 500 }}>
-            {isOwnProfile ? 'Voce ainda nao tem emblemas' : 'Nenhum emblema ainda'}
+            {isOwnProfile ? 'Você ainda não tem emblemas' : 'Nenhum emblema ainda'}
           </p>
           <p style={{ fontSize: 12, color: 'rgba(248,249,250,0.25)', margin: 0 }}>
-            {isOwnProfile ? 'Complete acoes para desbloquear emblemas exclusivos' : 'Emblemas aparecem conforme a pessoa usa o app'}
+            {isOwnProfile ? 'Complete ações para desbloquear emblemas exclusivos' : 'Emblemas aparecem conforme a pessoa usa o app'}
           </p>
         </div>
       )}

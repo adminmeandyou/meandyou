@@ -86,7 +86,7 @@ export default function CamaroteAccessModal({ user, plan, onClose }: Props) {
               <div style={{ padding: '14px 16px', borderRadius: 14, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', marginBottom: 20 }}>
                 <p style={{ fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.40)', letterSpacing: '0.07em', textTransform: 'uppercase', margin: '0 0 10px' }}>Com o plano Black você teria</p>
                 {[
-                  'Acesso completo a vitrine do Camarote',
+                  'Acesso completo à vitrine do Camarote',
                   'Interação com todos os Black disponíveis',
                   'Categorias de fetiche e Sugar desbloqueadas',
                   'Chat exclusivo preto e dourado',

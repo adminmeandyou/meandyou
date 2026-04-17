@@ -28,7 +28,7 @@ export function CamaroteModal({ onClose }: { onClose: () => void }) {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
           {[
-            { label: 'Sugar', desc: 'Encontros com beneficios mutuos', color: '#ec4899' },
+            { label: 'Sugar', desc: 'Encontros com benefícios mútuos', color: '#ec4899' },
             { label: 'Fetiche', desc: 'Interesses e estilos de vida alternativos', color: '#a855f7' },
             { label: 'Chat VIP', desc: 'Salas exclusivas para assinantes Black', color: '#F59E0B' },
           ].map((item) => (

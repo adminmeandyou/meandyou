@@ -110,7 +110,7 @@ export default function ResgatesSection() {
             Nenhum pedido no momento
           </p>
           <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', lineHeight: 1.5, margin: 0 }}>
-            Quando alguem pedir acesso em suas categorias, aparece aqui.
+            Quando alguém pedir acesso em suas categorias, aparece aqui.
           </p>
         </div>
       ) : (

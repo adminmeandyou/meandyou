@@ -17,7 +17,7 @@ export const MAX_CHARS = 500
 
 export const RATING_OPTIONS = [
   { key: 'bom_papo',  label: 'Bom de papo',              icon: ThumbsUp,       color: '#2ec4a0' },
-  { key: 'sairam',    label: 'Sairam para se conhecer',  icon: HeartHandshake, color: '#E11D48' },
+  { key: 'sairam',    label: 'Saíram para se conhecer',   icon: HeartHandshake, color: '#E11D48' },
   { key: 'objetivo',  label: 'Alcançaram o objetivo',    icon: Trophy,         color: G         },
   { key: 'bolo',      label: 'Levou bolo',               icon: ThumbsDown,     color: 'rgba(248,249,250,0.40)' },
   { key: 'denuncia',  label: 'Denunciar',                icon: Flag,           color: '#f87171' },

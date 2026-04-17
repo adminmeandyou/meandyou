@@ -147,7 +147,7 @@ export default function CamaroteBlocked({ plan, onBack }: Props) {
             href="/planos"
             style={{ display: 'block', width: '100%', padding: '15px', borderRadius: 16, textAlign: 'center', fontWeight: 700, fontSize: 15, fontFamily: 'var(--font-jakarta)', textDecoration: 'none', background: `linear-gradient(135deg, #c9a84c, ${G}, #fbbf24)`, color: '#fff', boxSizing: 'border-box' }}
           >
-            Assinar Black por R$ 99,97/mes
+            Assinar Black por R$ 99,97/mês
           </a>
           <button
             onClick={() => setShowModal(true)}
