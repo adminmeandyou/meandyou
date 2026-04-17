@@ -15,7 +15,7 @@ async function verificarAdmin() {
 // GET — busca roleta_prizes e streak_calendar_template
 export async function GET(req: NextRequest) {
   const admin = await verificarAdmin()
-  if (!admin) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  if (!admin) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const supabaseAdmin = createAdminClient()
   const { searchParams } = new URL(req.url)
@@ -39,20 +39,20 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ data })
   }
 
-  return NextResponse.json({ error: 'type invalido' }, { status: 400 })
+  return NextResponse.json({ error: 'type inválido' }, { status: 400 })
 }
 
 // POST — cria novo prêmio na roleta
 export async function POST(req: NextRequest) {
   const admin = await verificarAdmin()
-  if (!admin) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  if (!admin) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const supabaseAdmin = createAdminClient()
   const body = await req.json()
   const { type, reward_type, reward_amount, weight } = body
 
-  if (type !== 'roleta') return NextResponse.json({ error: 'type invalido' }, { status: 400 })
-  if (!reward_type || !reward_amount || !weight) return NextResponse.json({ error: 'Campos obrigatorios faltando' }, { status: 400 })
+  if (type !== 'roleta') return NextResponse.json({ error: 'type inválido' }, { status: 400 })
+  if (!reward_type || !reward_amount || !weight) return NextResponse.json({ error: 'Campos obrigatórios faltando' }, { status: 400 })
 
   const { data, error } = await supabaseAdmin
     .from('roleta_prizes')
@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
 // PUT — atualiza prêmio existente (roleta ou calendário)
 export async function PUT(req: NextRequest) {
   const admin = await verificarAdmin()
-  if (!admin) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  if (!admin) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const supabaseAdmin = createAdminClient()
   const body = await req.json()
@@ -75,7 +75,7 @@ export async function PUT(req: NextRequest) {
 
   if (type === 'roleta') {
     const { id, reward_type, reward_amount, weight, active } = body
-    if (!id) return NextResponse.json({ error: 'id obrigatorio' }, { status: 400 })
+    if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
     const { error } = await supabaseAdmin
       .from('roleta_prizes')
       .update({ reward_type, reward_amount: Number(reward_amount), weight: Number(weight), active })
@@ -94,18 +94,18 @@ export async function PUT(req: NextRequest) {
     return NextResponse.json({ ok: true })
   }
 
-  return NextResponse.json({ error: 'type invalido' }, { status: 400 })
+  return NextResponse.json({ error: 'type inválido' }, { status: 400 })
 }
 
 // DELETE — remove prêmio da roleta
 export async function DELETE(req: NextRequest) {
   const admin = await verificarAdmin()
-  if (!admin) return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+  if (!admin) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
   const supabaseAdmin = createAdminClient()
   const { searchParams } = new URL(req.url)
   const id = searchParams.get('id')
-  if (!id) return NextResponse.json({ error: 'id obrigatorio' }, { status: 400 })
+  if (!id) return NextResponse.json({ error: 'id obrigatório' }, { status: 400 })
 
   const { error } = await supabaseAdmin.from('roleta_prizes').delete().eq('id', id)
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })

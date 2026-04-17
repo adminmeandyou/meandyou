@@ -8,9 +8,9 @@ import { Flag, X, ChevronRight, Loader2, CheckCircle, ShieldAlert } from 'lucide
 const REASONS = [
   { value: 'fake_profile',  label: 'Perfil falso',         icon: '🎭' },
   { value: 'scam',          label: 'Golpe ou fraude',       icon: '💰' },
-  { value: 'harassment',    label: 'Assedio',               icon: '⚠️' },
+  { value: 'harassment',    label: 'Assédio',               icon: '⚠️' },
   { value: 'minor',         label: 'Menor de idade',        icon: '🔞' },
-  { value: 'inappropriate', label: 'Conteudo improprio',    icon: '🚫' },
+  { value: 'inappropriate', label: 'Conteúdo impróprio',    icon: '🚫' },
 ]
 
 interface ReportModalProps {
@@ -59,18 +59,18 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
       setLoading(false)
 
       if (res.status === 409) {
-        setError('Voce ja denunciou este perfil recentemente.')
+        setError('Você já denunciou este perfil recentemente.')
         return
       }
       if (!res.ok) {
-        setError('Erro ao enviar denuncia. Tente novamente.')
+        setError('Erro ao enviar denúncia. Tente novamente.')
         return
       }
 
       setStep('success')
     } catch {
       setLoading(false)
-      setError('Erro ao enviar denuncia. Tente novamente.')
+      setError('Erro ao enviar denúncia. Tente novamente.')
     }
   }
 
@@ -108,7 +108,7 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
               <ShieldAlert size={18} color="var(--accent)" strokeWidth={1.5} />
             </div>
             <h3 style={{ fontFamily: 'var(--font-fraunces)', fontSize: 20, color: 'var(--text)', margin: 0 }}>
-              {step === 'success' ? 'Denuncia enviada' : `Denunciar ${reportedName}`}
+              {step === 'success' ? 'Denúncia enviada' : `Denunciar ${reportedName}`}
             </h3>
           </div>
           <button
@@ -128,7 +128,7 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
         {step === 'reason' && (
           <div>
             <p style={{ fontSize: 13, color: 'var(--muted-2)', margin: '0 0 16px', fontFamily: 'var(--font-jakarta)' }}>
-              Qual o motivo da denuncia?
+              Qual o motivo da denúncia?
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -245,7 +245,7 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 }}
               >
-                {loading ? <Loader2 size={16} color="#fff" className="animate-spin" /> : 'Enviar denuncia'}
+                {loading ? <Loader2 size={16} color="#fff" className="animate-spin" /> : 'Enviar denúncia'}
               </button>
             </div>
           </div>
@@ -263,7 +263,7 @@ export function ReportModal({ reportedId, reportedName, onClose }: ReportModalPr
               <CheckCircle size={28} color="var(--green)" strokeWidth={1.5} />
             </div>
             <p style={{ fontSize: 14, color: 'var(--muted)', lineHeight: 1.6, margin: '0 0 24px', fontFamily: 'var(--font-jakarta)' }}>
-              Sua denuncia foi recebida e sera analisada pela nossa equipe. Obrigado por ajudar a manter o MeAndYou seguro.
+              Sua denúncia foi recebida e será analisada pela nossa equipe. Obrigado por ajudar a manter o MeAndYou seguro.
             </p>
             <button
               onClick={onClose}

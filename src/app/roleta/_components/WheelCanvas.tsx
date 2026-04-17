@@ -199,7 +199,7 @@ export default function WheelCanvas({ wheelSize, spinning, canSpin, tickets, spi
           ))}
         </div>
         <span style={{ fontSize: '12px', color: spinsLeft > 0 ? '#eab308' : 'var(--muted)' }}>
-          {spinsLeft > 0 ? `${spinsLeft} disponível${spinsLeft > 1 ? 'veis' : ''}` : 'Esgotados'}
+          {spinsLeft > 0 ? `${spinsLeft} ${spinsLeft > 1 ? 'disponíveis' : 'disponível'}` : 'Esgotados'}
         </span>
       </div>
     </div>

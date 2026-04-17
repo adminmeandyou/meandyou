@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
     const sessionClient = await createServerClient()
     const { data: { user }, error: authError } = await sessionClient.auth.getUser()
     if (authError || !user) {
-      return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 })
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
     }
 
     // Chama spin_roleta com service_role para poder escrever nas tabelas com RLS
@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     const prize = Array.isArray(data) ? data[0] : data
     if (!prize?.reward_type) {
       console.error('[roleta/girar] reward_type ausente:', data)
-      return NextResponse.json({ error: 'Premio invalido' }, { status: 500 })
+      return NextResponse.json({ error: 'Prêmio inválido' }, { status: 500 })
     }
 
     return NextResponse.json(prize)

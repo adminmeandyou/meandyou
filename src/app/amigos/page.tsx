@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/app/lib/supabase'
-import { ArrowLeft, UserPlus, Check, X, MessageCircle, UserCircle, Clock } from 'lucide-react'
+import { ArrowLeft, UserPlus, Check, X, UserCircle, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 type FriendProfile = {
@@ -28,11 +28,6 @@ type Friendship = {
 function isOnline(lastSeen: string | null): boolean {
   if (!lastSeen) return false
   return (Date.now() - new Date(lastSeen).getTime()) < 5 * 60 * 1000
-}
-
-function isActiveToday(lastSeen: string | null): boolean {
-  if (!lastSeen) return false
-  return (Date.now() - new Date(lastSeen).getTime()) < 24 * 60 * 60 * 1000
 }
 
 export default function AmigosPage() {
