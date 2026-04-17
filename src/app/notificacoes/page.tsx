@@ -24,7 +24,7 @@ const TYPE_CONFIG: Record<string, { label: string; icon: React.ReactNode; color:
   match:            { label: 'Novo match!',                icon: <Heart size={16} />,         color: '#f472b6', bg: 'rgba(244,114,182,0.10)' },
   message:          { label: 'Nova mensagem',              icon: <MessageCircle size={16} />, color: '#60a5fa', bg: 'rgba(96,165,250,0.10)' },
   superlike:        { label: 'SuperCurtida recebida',      icon: <Star size={16} />,          color: '#facc15', bg: 'rgba(250,204,21,0.10)' },
-  like:             { label: 'Alguem curtiu voce',         icon: <Heart size={16} />,         color: '#f472b6', bg: 'rgba(244,114,182,0.10)' },
+  like:             { label: 'Alguém curtiu você',         icon: <Heart size={16} />,         color: '#f472b6', bg: 'rgba(244,114,182,0.10)' },
   friend_request:   { label: 'Pedido de amizade',          icon: <UserPlus size={16} />,      color: '#60a5fa', bg: 'rgba(96,165,250,0.10)' },
   friend_accepted:  { label: 'Amizade aceita!',            icon: <UserCheck size={16} />,     color: '#10b981', bg: 'rgba(16,185,129,0.10)' },
   boost_expired:        { label: 'Boost expirado',             icon: <Zap size={16} />,           color: 'var(--muted)', bg: 'rgba(255,255,255,0.05)' },

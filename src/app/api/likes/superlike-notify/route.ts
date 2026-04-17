@@ -24,12 +24,12 @@ export async function POST(req: NextRequest) {
       .eq('id', user.id)
       .single()
 
-    const fromName = fromProfile?.name ?? 'Alguem'
+    const fromName = fromProfile?.name ?? 'Alguém'
 
     await enviarPushParaUsuario({
       targetUserId: toUserId,
       type: 'superlike',
-      title: 'Voce recebeu um SuperLike!',
+      title: 'Você recebeu um SuperLike!',
       body: `${fromName} te deu um SuperLike. Que tal dar uma olhada?`,
       fromUserId: user.id,
       data: { fromUserId: user.id },

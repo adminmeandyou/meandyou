@@ -35,10 +35,10 @@ export async function POST(req: NextRequest) {
 
   if (existing) {
     if (existing.status === 'accepted') {
-      return NextResponse.json({ error: 'Voces ja sao amigos' }, { status: 409 })
+      return NextResponse.json({ error: 'Vocês já são amigos' }, { status: 409 })
     }
     if (existing.status === 'pending') {
-      return NextResponse.json({ error: 'Pedido ja enviado' }, { status: 409 })
+      return NextResponse.json({ error: 'Pedido já enviado' }, { status: 409 })
     }
     // Se foi recusado anteriormente, permitir reenvio
     if (existing.status === 'declined') {
