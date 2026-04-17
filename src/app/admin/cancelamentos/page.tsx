@@ -128,7 +128,7 @@ export default function CancelamentosPage() {
   ]
 
   return (
-    <div style={{ padding: '32px', backgroundColor: '#0a0a0a', minHeight: '100vh', color: '#fff' }}>
+    <div style={{ padding: '32px', color: '#fff' }}>
 
       {/* Aviso fixo */}
       <div style={{

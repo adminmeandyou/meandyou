@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import {
   Plus, Search, Edit2, Trash2, Award, Users, CheckCircle, XCircle,
-  Zap, Upload, X, ImageIcon, ChevronDown, ChevronUp, RefreshCw, Sparkles
+  Zap, Upload, X, RefreshCw, Sparkles
 } from 'lucide-react'
 
 const supabase = createClient(

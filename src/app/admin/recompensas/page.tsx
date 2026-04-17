@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import {
   Gift, RotateCcw, Loader2, Plus, Trash2, Save, Eye,
   Star, Zap, Search, Ghost, Crown, Ticket, AlertTriangle,
@@ -153,7 +152,6 @@ function ModalEditar({
 
 // ─── Página principal ─────────────────────────────────────────────────────
 export default function AdminRecompensasPage() {
-  const router = useRouter()
   const [aba, setAba] = useState<'roleta' | 'calendario'>('roleta')
 
   // Roleta

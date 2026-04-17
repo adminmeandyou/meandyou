@@ -126,7 +126,7 @@ export default function EquipePage() {
   }
 
   return (
-    <div style={{ padding: '32px', backgroundColor: '#0a0a0a', minHeight: '100vh', color: '#fff' }}>
+    <div style={{ padding: '32px', color: '#fff' }}>
 
       {/* Header */}
       <div style={{ marginBottom: '28px' }}>
