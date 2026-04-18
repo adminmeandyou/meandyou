@@ -454,7 +454,7 @@ Adicionar link no sidebar admin (`src/app/admin/layout.tsx` ou equivalente): **"
   - `src/app/lancamento/PlanosLancamento.tsx` — recebe `config`/`content`. Essencial mostra grátis + riscado com preço real. Plus e Black aplicam `lancamento_desconto_pct` se > 0 (preço riscado + preço com desconto + badge `X% OFF no lançamento`). Plus: "Desfazer (1x por dia)".
   - `src/app/lancamento/FaqLancamento.tsx` — aceita `items?` via props (fallback para a lista hardcoded — 9 perguntas). LancamentoClient monta items a partir de `landing_content.faq.q_N/a_N` se existirem.
   - `src/app/lancamento/CtaLancamento.tsx` — recebe `config`/`content`. Countdown dinâmico. Título/subtítulo/CTA/microcopy/bônus editáveis via `landing_content.cta.*`.
-- **Commit:**
+- **Commit:** `feat(lancamento): conecta ao admin e respeita toggle ativo/inativo` (1cb7132)
 - **Pendências:** nenhuma. Redirecionamento testa no próprio Next via `redirect()` server-side.
 - **Próximo passo:** Fase 5 — refatorar `src/app/obrigado/page.tsx` para ler `site_config.obrigado_*` (título, mensagem geral + por plano via `?plano=`).
 
