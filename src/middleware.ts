@@ -137,7 +137,7 @@ export async function middleware(req: NextRequest) {
     if (site.modo_site === 'lancamento' && site.lancamento_ativo) {
       return NextResponse.redirect(new URL('/lancamento', req.url))
     }
-    if (site.modo_site === 'gated') {
+    if (site.modo_site === 'gated' && site.ativo) {
       const gateCookie = req.cookies.get(GATE_COOKIE)?.value
       if (site.senha && gateCookie !== site.senha) {
         return NextResponse.redirect(new URL(GATE_PATH, req.url))
