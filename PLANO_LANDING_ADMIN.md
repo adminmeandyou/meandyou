@@ -403,12 +403,22 @@ Adicionar link no sidebar admin (`src/app/admin/layout.tsx` ou equivalente): **"
 - **Próximo passo:** Fase 2 — criar painel `/admin/site` com 6 tabs (modo, gate, lançamento, obrigado, preços, textos). Começar por `src/app/admin/site/page.tsx` + link no `AdminLayoutClient.tsx`. Padrão do admin: ver `src/app/admin/recompensas/` ou `src/app/admin/marketing/` como referência.
 
 ### Fase 2 — Painel /admin/site
-- **Início:**
-- **Conclusão:**
-- **Arquivos alterados:**
-- **Commit:**
-- **Pendências:**
-- **Próximo passo:**
+- **Início:** 2026-04-18
+- **Conclusão:** 2026-04-18
+- **Arquivos criados:**
+  - `src/app/api/admin/site/route.ts` — GET (`type=config|landing`) e PUT (patch em `site_config` ou update de `landing_content` por id). Verificação `profiles.role='admin'` (staff não tem acesso nessa rota).
+  - `src/app/admin/site/page.tsx` — Client component com 6 tabs:
+    1. **Modo do site** — radio normal/lançamento/fechado
+    2. **Gate** — toggle + senha (show/hide) + título + mensagem
+    3. **Lançamento** — toggle + datas início/fim + desconto %
+    4. **Obrigado** — título padrão + mensagem padrão + 3 mensagens por plano
+    5. **Preços** — 3 inputs (Essencial/Plus/Black)
+    6. **Textos** — lista de `landing_content` agrupada por página (oficial/lançamento) e seção, edição inline com textarea para `tipo=texto_longo`
+- **Arquivos modificados:**
+  - `src/app/admin/AdminLayoutClient.tsx` — novo item de nav "Site e Landing" com ícone `Globe`, entre Recompensas e Bugs.
+- **Commit:** `feat(admin): adiciona /admin/site para gestao de landing, gate, obrigado e precos` (dd2ae97)
+- **Pendências:** nenhuma. Build type-check só mostra os 3 erros pré-existentes de `api/amigos/*` (sessão 17/04).
+- **Próximo passo:** Fase 3 — refatorar `src/app/page.tsx` (Server Component) + seções em `src/app/landing/*.tsx` para ler `site_config_public` e `landing_content`. Adicionar 5 seções novas (Amigos, Lupas, Modo Invisível, Emblemas, Recompensas) e corrigir info desatualizada (Plus desfazer 1/dia, Black 10 SuperCurtidas/dia, incluir Lupas e Tickets em todos os planos).
 
 ### Fase 3 — Landing oficial conectada
 - **Início:**
