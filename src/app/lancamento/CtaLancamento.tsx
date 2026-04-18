@@ -106,7 +106,7 @@ export default function CtaLancamento() {
         <a href="/cadastro" className="lp-cta-final-btn lp-anim">Começar meu período grátis</a>
 
         <p className="lp-cta-final-micro lp-anim">
-          Plano Essencial · 2 meses grátis · Depois R$9,97/mês · Cancele quando quiser
+          Plano Essencial · 2 meses grátis · Depois R$14,90/mês · Cancele quando quiser
         </p>
         <p className="lp-cta-final-micro lp-anim" style={{ marginTop: 6, color: 'rgba(245,158,11,0.55)', fontSize: 13 }}>
           + Emblema de Fundador Lendário, grátis, vitalício

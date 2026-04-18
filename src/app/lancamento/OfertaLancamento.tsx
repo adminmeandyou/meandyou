@@ -13,7 +13,7 @@ export default function OfertaLancamento() {
             O MeAndYou é uma plataforma paga. E vai continuar sendo. Quem paga, leva a experiência a sério. E isso muda o nível de todo mundo dentro do app.
           </p>
           <p style={{ fontSize: 'clamp(15px,2vw,17px)', color: 'rgba(248,249,250,0.60)', lineHeight: 1.8, marginBottom: 40 }}>
-            Mas antes de abrir para o mundo, precisamos de pessoas reais testando, explorando, e nos dizendo o que ainda pode melhorar. Então fizemos uma troca justa: você usa tudo por 2 meses. Nós coletamos feedback real. Depois, se quiser continuar, é R$9,97/mês. Se não quiser, cancela. Sem pressão, sem truque.
+            Mas antes de abrir para o mundo, precisamos de pessoas reais testando, explorando, e nos dizendo o que ainda pode melhorar. Então fizemos uma troca justa: você usa tudo por 2 meses. Nós coletamos feedback real. Depois, se quiser continuar, é R$14,90/mês. Se não quiser, cancela. Sem pressão, sem truque.
           </p>
         </div>
 
@@ -40,7 +40,7 @@ export default function OfertaLancamento() {
             {
               icon: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>,
               iconColor: 'var(--accent)', iconBg: 'rgba(225,29,72,0.12)', iconBorder: 'rgba(225,29,72,0.25)',
-              titulo: 'Depois: só R$9,97/mês',
+              titulo: 'Depois: só R$14,90/mês',
               desc: 'Plano Essencial após o período. Cancele a qualquer momento, sem burocracia.',
             },
           ].map((item, i) => (
@@ -82,7 +82,7 @@ export default function OfertaLancamento() {
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
           </a>
           <p style={{ marginTop: 12, fontSize: 13, color: 'rgba(248,249,250,0.35)' }}>
-            2 meses grátis · Plano Essencial · Depois R$9,97/mês · Cancele quando quiser
+            2 meses grátis · Plano Essencial · Depois R$14,90/mês · Cancele quando quiser
           </p>
         </div>
       </div>

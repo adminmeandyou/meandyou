@@ -48,7 +48,7 @@ export default function HeroSection({ userCity }: HeroProps) {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
             </a>
           </div>
-          <p className="lp-hero-microcopy">A partir de <strong>R$9,97/mês</strong> · Sem conta gratuita</p>
+          <p className="lp-hero-microcopy">A partir de <strong>R$14,90/mês</strong> · Sem conta gratuita</p>
           <div className="lp-hero-social-proof">
             <span className="lp-hero-social-proof-dot" />
             <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas já estão usando {userCity ? <>em <strong className="lp-hero-proof-number">{userCity}</strong></> : 'na sua região mesmo'}</span>

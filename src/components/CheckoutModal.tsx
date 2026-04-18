@@ -34,7 +34,7 @@ const CYCLE_OPTIONS = [
 ]
 
 const PLAN_PRICES: Record<string, Record<string, number>> = {
-  essencial: { monthly: 9.90, quarterly: 26.70, semiannual: 47.50, annual: 83.20 },
+  essencial: { monthly: 14.90, quarterly: 40.20, semiannual: 71.50, annual: 125.20 },
   plus:      { monthly: 39.90, quarterly: 107.70, semiannual: 191.50, annual: 335.20 },
   black:     { monthly: 99.90, quarterly: 269.70, semiannual: 479.50, annual: 839.20 },
 }

@@ -135,7 +135,7 @@ export function RoomsView({ userPlan }: { userPlan: string }) {
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
         </Link>
         <p style={{ fontSize: 11, color: 'var(--muted-2)', textAlign: 'center', margin: '10px 0 0' }}>
-          A partir de R$9,97/mes no plano Plus
+          A partir de R$14,90/mês no plano Essencial
         </p>
       </div>
     )

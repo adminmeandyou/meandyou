@@ -137,7 +137,7 @@ export default function HeroLancamento({ userCity, notifList }: HeroProps) {
             </a>
           </div>
           <p className="lp-hero-microcopy">
-            Plano Essencial · <strong>2 meses grátis</strong> · Depois R$9,97/mês · Cancele quando quiser
+            Plano Essencial · <strong>2 meses grátis</strong> · Depois R$14,90/mês · Cancele quando quiser
           </p>
           <div className="lp-hero-social-proof">
             <span className="lp-hero-social-proof-dot" />

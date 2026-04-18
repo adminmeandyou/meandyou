@@ -12,10 +12,10 @@ export default function PlanosLancamento() {
       nome: 'Essencial',
       area: 'Pista',
       preco: 'Grátis',
-      precoRiscado: '9,97',
+      precoRiscado: '14,90',
       desc: 'O plano de entrada. Use tudo por 2 meses sem pagar nada. Depois decide se quer continuar.',
       ctaText: 'Começar grátis agora',
-      nota: 'Após o período: R$9,97/mês · Cancele quando quiser',
+      nota: 'Após o período: R$14,90/mês · Cancele quando quiser',
       feats: [
         { ok: true,  txt: '20 curtidas por dia' },
         { ok: true,  txt: '1 SuperCurtida por dia' },
@@ -31,7 +31,7 @@ export default function PlanosLancamento() {
       badge: 'Mais escolhido', badgeCls: 'featured', ctaCls: 'featured', featured: true,
       nome: 'Plus',
       area: 'Área VIP',
-      preco: '39,97',
+      preco: '39,90',
       desc: 'A experiência completa de filtragem. Para quem quer controle total desde o início.',
       ctaText: 'Assinar o Plus',
       feats: [
@@ -50,7 +50,7 @@ export default function PlanosLancamento() {
       badge: 'Black', badgeCls: 'black', ctaCls: 'black',
       nome: 'Black',
       area: 'Backstage',
-      preco: '99,97',
+      preco: '99,90',
       desc: 'Você acessa tudo, sem restrições. Com área exclusiva Backstage e o máximo do algoritmo.',
       ctaText: 'Assinar o Black',
       feats: [

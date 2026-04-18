@@ -11,7 +11,7 @@ const PLANS = [
   {
     id: 'essencial',
     name: 'Essencial',
-    price: 9.90,
+    price: 14.90,
     icon: Zap,
     color: 'rgba(248,249,250,0.70)',
     features: [
@@ -19,7 +19,6 @@ const PLANS = [
       '20 curtidas por dia',
       '1 SuperCurtida por dia',
       '1 ticket de roleta por dia',
-      '1 Lupa por dia',
       'Conversar com seus matches',
       'Até 45min de videochamada por dia',
       'Qualidade de vídeo básica (360p a 480p)',
@@ -275,7 +274,7 @@ export default function PlanosPage() {
           {[
             { label: 'Curtidas',      values: ['20/dia', '50/dia', 'Ilimitadas'] },
             { label: 'SuperCurtidas', values: ['1/dia', '5/dia', '10/dia'] },
-            { label: 'Lupas',         values: ['1/dia', '1/dia', '2/dia'] },
+            { label: 'Lupas',         values: ['—', '1/dia', '2/dia'] },
             { label: 'Tickets',       values: ['1/dia', '2/dia', '3/dia'] },
             { label: 'Vídeo',         values: ['45min/dia', '2h/dia', '5h/dia'] },
             { label: 'Ver quem curtiu',   values: ['Não', 'Sim', 'Sim'] },

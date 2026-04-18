@@ -284,8 +284,8 @@ export async function sendPlanActivatedEmail(email: string, nome: string, plano:
   const features = isBlack
     ? ['10 SuperCurtidas/dia', '2 Lupas/dia', 'Acesso ao Backstage (Sugar e Fetiche)', 'Desfazer curtida (1/dia)', '3 Tickets diários para a Roleta', 'Suporte prioritário 24h']
     : isPlus
-    ? ['5 SuperCurtidas/dia', '2 Lupas/dia', 'Desfazer curtida (1/dia)', '2 Tickets diários', 'Ver quem curtiu você', 'Filtros avançados desbloqueados']
-    : ['5 curtidas/dia', '1 Ticket diário para a Roleta', 'Verificação de identidade incluída', 'Solicitar acesso Fetiche']
+    ? ['5 SuperCurtidas/dia', '1 Lupa/dia', 'Desfazer curtida (1/dia)', '2 Tickets diários', 'Ver quem curtiu você', 'Filtros avançados desbloqueados']
+    : ['20 curtidas/dia', '1 SuperCurtida/dia', '1 Ticket diário para a Roleta', 'Verificação de identidade incluída']
   const content = `
     ${badge(`🎉 Plano ${plano} ativado!`, cor)}
     ${heading(`Seu plano ${planoDisplay} está ativo, ${nome}!`)}

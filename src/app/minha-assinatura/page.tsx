@@ -22,7 +22,7 @@ const PLAN_LABELS: Record<string, string> = {
 }
 
 const PLAN_PRICES: Record<string, string> = {
-  essencial: 'R$ 9,90/mês',
+  essencial: 'R$ 14,90/mês',
   plus: 'R$ 39,90/mês',
   black: 'R$ 99,90/mês',
 }

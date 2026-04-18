@@ -11,7 +11,7 @@ export default function PlanosSection() {
       badge: 'Essencial', badgeCls: 'free', ctaCls: 'free',
       nome: 'Essencial',
       area: 'Pista',
-      preco: '9,97',
+      preco: '14,90',
       desc: 'O plano de entrada. Para começar a explorar com pessoas verificadas e intenções reais.',
       feats: [
         { ok: true,  txt: '20 curtidas por dia' },
@@ -28,7 +28,7 @@ export default function PlanosSection() {
       badge: 'Melhor custo-benefício', badgeCls: 'featured', ctaCls: 'featured', featured: true,
       nome: 'Plus',
       area: 'Área VIP',
-      preco: '39,97',
+      preco: '39,90',
       desc: 'A experiência completa de filtragem. Para quem quer controle total da conexão.',
       feats: [
         { ok: true,  txt: '50 curtidas por dia' },
@@ -46,7 +46,7 @@ export default function PlanosSection() {
       badge: 'Black', badgeCls: 'black', ctaCls: 'black',
       nome: 'Black',
       area: 'Backstage',
-      preco: '99,97',
+      preco: '99,90',
       desc: 'Você acessa tudo, sem restrições. Com área exclusiva Backstage e o máximo do algoritmo.',
       feats: [
         { ok: true, gold: true,  txt: 'Curtidas ilimitadas' },
