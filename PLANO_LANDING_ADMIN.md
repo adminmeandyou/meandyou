@@ -459,12 +459,15 @@ Adicionar link no sidebar admin (`src/app/admin/layout.tsx` ou equivalente): **"
 - **Próximo passo:** Fase 5 — refatorar `src/app/obrigado/page.tsx` para ler `site_config.obrigado_*` (título, mensagem geral + por plano via `?plano=`).
 
 ### Fase 5 — Página /obrigado dinâmica
-- **Início:**
-- **Conclusão:**
-- **Arquivos alterados:**
-- **Commit:**
-- **Pendências:**
-- **Próximo passo:**
+- **Início:** 2026-04-18
+- **Conclusão:** 2026-04-18
+- **Arquivos criados:**
+  - `src/app/obrigado/ObrigadoClient.tsx` — client component que absorve toda a UI + `useSearchParams`. Mantém Suspense boundary com fallback de spinner. Recebe `config: SiteConfigPublic` via props. Título sai de `config.obrigado_titulo`. Mensagem: usa `obrigado_msg_<plano>` se `?plano=essencial|plus|black` e a mensagem por plano estiver preenchida; senão cai em `obrigado_mensagem` geral. Subtítulo "Bem-vindo ao plano X!" aparece só quando há `?plano=`.
+- **Arquivos modificados:**
+  - `src/app/obrigado/page.tsx` — virou Server Component async. Carrega `getSiteConfig()` e renderiza `<ObrigadoClient config={config} />`. `revalidate = 60`.
+- **Commit:** `feat(obrigado): conecta mensagens ao admin`
+- **Pendências:** nenhuma. Type-check exit=0 após a mudança.
+- **Próximo passo:** Fase 6 — gate `/acesso` lendo `site_config.gate_titulo`/`gate_mensagem` + `POST /api/acesso` validando contra `gate_senha` com service role. Redireciona para `/` se `gate_ativo=false`.
 
 ### Fase 6 — Gate /acesso dinâmico
 - **Início:**
