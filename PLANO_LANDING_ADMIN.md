@@ -470,12 +470,17 @@ Adicionar link no sidebar admin (`src/app/admin/layout.tsx` ou equivalente): **"
 - **Próximo passo:** Fase 6 — gate `/acesso` lendo `site_config.gate_titulo`/`gate_mensagem` + `POST /api/acesso` validando contra `gate_senha` com service role. Redireciona para `/` se `gate_ativo=false`.
 
 ### Fase 6 — Gate /acesso dinâmico
-- **Início:**
-- **Conclusão:**
-- **Arquivos alterados:**
-- **Commit:**
-- **Pendências:**
-- **Próximo passo:**
+- **Início:** 2026-04-18
+- **Conclusão:** 2026-04-18
+- **Arquivos criados:**
+  - `src/app/acesso/AcessoClient.tsx` — client component com o form e submissão. Recebe `titulo` e `mensagem` via props. Mantém o especial "MeAnd<span>You</span>" apenas quando o título contém "MeAnd"; caso contrário mostra o título do admin como texto livre.
+- **Arquivos modificados:**
+  - `src/app/acesso/page.tsx` — virou Server Component async. Carrega `site_config_public` via `getSiteConfig()`. Se `gate_ativo=false` → `redirect('/')`. Renderiza `AcessoClient` com `gate_titulo`/`gate_mensagem`. Revalidate 60s.
+  - `src/app/api/acesso/route.ts` — lê `site_config` via `createAdminClient()` (service role). Valida `gate_ativo` (404 se desativado) e compara `senha` com `gate_senha` (401 se incorreta). Cookie `may_gate` continua com o valor da senha (compatível com o middleware).
+  - `src/middleware.ts` — removido `GATE_SENHA` hardcoded. Novo `loadGateConfig()` lê `site_config` via REST + service role com cache em memória por instância (TTL 60s, fallback seguro 10s). Gate só redireciona para `/acesso` quando `gate_ativo=true`. Isso evita loop infinito quando o admin desliga o gate (antes: middleware forçava /acesso, /acesso redirecionava para /, loop).
+- **Commit:** `feat(acesso): integra gate com admin (senha, copy, toggle)`
+- **Pendências:** nenhuma. Type-check exit=0. Requisito de env vars na Vercel: `NEXT_PUBLIC_SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` já configurados (usados em outras APIs).
+- **Próximo passo:** Fase 7 — roteamento dinâmico de `/` baseado em `site_config.modo_site` (normal/lançamento/gated). Se `modo_site='lancamento'`, redirecionar `/` para `/lancamento`. Se `modo_site='gated'`, tratar como gate ativo (reusar gate_ativo=true no middleware). Usar o mesmo cache em memória.
 
 ### Fase 7 — Roteamento dinâmico de /
 - **Início:**

@@ -2,9 +2,47 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
 // ── Portão de acesso ─────────────────────────────────────────────────────────
-const GATE_SENHA = 'inativo123'
 const GATE_COOKIE = 'may_gate'
 const GATE_PATH = '/acesso'
+const GATE_CACHE_TTL = 60_000
+
+// Cache em memoria do gate (por instancia). site_config e lido via REST direto
+// com service role para poder ler gate_senha, que nao esta na view publica.
+let gateCache: { ativo: boolean; senha: string; expires: number } | null = null
+
+async function loadGateConfig(): Promise<{ ativo: boolean; senha: string }> {
+  const now = Date.now()
+  if (gateCache && gateCache.expires > now) {
+    return { ativo: gateCache.ativo, senha: gateCache.senha }
+  }
+  try {
+    const url = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/site_config?id=eq.1&select=gate_ativo,gate_senha`
+    const res = await fetch(url, {
+      headers: {
+        apikey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        Authorization: `Bearer ${process.env.SUPABASE_SERVICE_ROLE_KEY}`,
+      },
+      cache: 'no-store',
+    })
+    if (res.ok) {
+      const rows = (await res.json()) as Array<{ gate_ativo?: boolean; gate_senha?: string }>
+      const row = rows[0]
+      if (row) {
+        gateCache = {
+          ativo: Boolean(row.gate_ativo),
+          senha: String(row.gate_senha ?? ''),
+          expires: now + GATE_CACHE_TTL,
+        }
+        return { ativo: gateCache.ativo, senha: gateCache.senha }
+      }
+    }
+  } catch {
+    // fallback abaixo
+  }
+  // Fallback seguro: gate desativado se nao conseguir ler DB
+  gateCache = { ativo: false, senha: '', expires: now + 10_000 }
+  return { ativo: false, senha: '' }
+}
 
 // Rotas protegidas (requer autenticação)
 const PROTECTED_ROUTES = [
@@ -42,9 +80,12 @@ export async function middleware(req: NextRequest) {
   // ── Portão: bloqueia páginas apenas para visitantes sem cookie ────────────
   // Usuários autenticados passam direto — o gate é só para visitantes externos
   if (pathname !== GATE_PATH && !pathname.startsWith('/api/') && !user) {
-    const gateCookie = req.cookies.get(GATE_COOKIE)?.value
-    if (gateCookie !== GATE_SENHA) {
-      return NextResponse.redirect(new URL(GATE_PATH, req.url))
+    const gate = await loadGateConfig()
+    if (gate.ativo) {
+      const gateCookie = req.cookies.get(GATE_COOKIE)?.value
+      if (gateCookie !== gate.senha) {
+        return NextResponse.redirect(new URL(GATE_PATH, req.url))
+      }
     }
   }
   // ─────────────────────────────────────────────────────────────────────────
