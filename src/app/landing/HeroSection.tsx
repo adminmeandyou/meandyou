@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react'
 import { swipeCards } from './data'
 import type { SiteConfigPublic, LandingContentMap } from './types'
-import { formatBRL, pick } from './types'
+import { pick } from './types'
 
 interface HeroProps {
   userCity: string
@@ -12,14 +12,14 @@ interface HeroProps {
 }
 
 export default function HeroSection({ userCity, config, content }: HeroProps) {
-  const badge = pick(content, 'hero', 'badge', 'Relacionamentos com intenção real')
-  const tituloParte1 = pick(content, 'hero', 'titulo_parte1', 'Você decide')
-  const tituloParte2 = pick(content, 'hero', 'titulo_parte2', 'quem entra')
-  const tituloParte3 = pick(content, 'hero', 'titulo_parte3', 'no seu mundo.')
-  const sub = pick(content, 'hero', 'sub', 'Relacionamentos, encontros, salas, videochamada e filtros avançados. Tudo no seu controle, do primeiro contato ao encontro.')
-  const complemento = pick(content, 'hero', 'complemento', 'Sem precisar fingir ou se adaptar para caber na expectativa do outro. Sem máscaras.')
+  void config
+  const badge = pick(content, 'hero', 'badge', 'Conexões sem máscaras')
+  const tituloParte1 = pick(content, 'hero', 'titulo_parte1', 'Sem máscaras.')
+  const tituloParte2 = pick(content, 'hero', 'titulo_parte2', 'Do seu jeito.')
+  const sub = pick(content, 'hero', 'sub', 'Você escolhe com quem fala, como fala e pra quê.')
+  const complemento = pick(content, 'hero', 'complemento', 'Relacionamento, casual, sexo, amizade ou networking. Cada um na sua intenção — sem bots, sem fakes, sem julgamento.')
   const ctaTexto = pick(content, 'hero', 'cta_texto', 'Começar agora')
-  const precoEssencial = formatBRL(config.preco_essencial)
+  const ctaSecundarioTexto = pick(content, 'hero', 'cta_secundario', 'Saber mais')
   const [currentCard, setCurrentCard] = useState(0)
   const [swipeDir, setSwipeDir] = useState<null | 'left' | 'right' | 'up'>(null)
   const swipeLock = useRef(false)
@@ -47,7 +47,7 @@ export default function HeroSection({ userCity, config, content }: HeroProps) {
             <span className="lp-badge-dot" />
             {badge}
           </div>
-          <h1><em style={{color:'var(--accent)',fontStyle:'italic'}}>{tituloParte1}</em> {tituloParte2}<br /><em style={{color:'var(--text)',fontStyle:'italic'}}>{tituloParte3}</em></h1>
+          <h1>{tituloParte1}<br /><em style={{color:'var(--accent)',fontStyle:'italic'}}>{tituloParte2}</em></h1>
           <p className="lp-hero-sub">{sub}</p>
           <p className="lp-hero-complement">{complemento}</p>
           <div className="lp-actions">
@@ -55,8 +55,8 @@ export default function HeroSection({ userCity, config, content }: HeroProps) {
               {ctaTexto}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
             </a>
+            <a href="#como-funciona" className="lp-btn-outline">{ctaSecundarioTexto}</a>
           </div>
-          <p className="lp-hero-microcopy">A partir de <strong>R${precoEssencial}/mês</strong> · Sem conta gratuita</p>
           <div className="lp-hero-social-proof">
             <span className="lp-hero-social-proof-dot" />
             <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas já estão usando {userCity ? <>em <strong className="lp-hero-proof-number">{userCity}</strong></> : 'na sua região mesmo'}</span>
