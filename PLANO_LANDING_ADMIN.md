@@ -399,10 +399,8 @@ Adicionar link no sidebar admin (`src/app/admin/layout.tsx` ou equivalente): **"
     - Triggers de `updated_at` em ambas as tabelas
     - Seeds: 1 linha em `site_config` com defaults 14.90/39.90/99.90 + 14 chaves iniciais em `landing_content` (10 oficial + 4 lançamento)
 - **Commit:** `feat(db): cria site_config e landing_content para gestao via admin`
-- **Pendências:**
-  - Rodar `migration_site_config.sql` no Supabase SQL Editor (Claude não tem acesso ao banco)
-  - Após rodar, validar: `SELECT * FROM site_config;` (1 linha) e `SELECT count(*) FROM landing_content;` (≥14 linhas)
-- **Próximo passo:** Fase 2 — criar painel `/admin/site` com 6 tabs (modo, gate, lançamento, obrigado, preços, textos)
+- **Pendências:** nenhuma. Migration rodada no Supabase em 2026-04-18. Validado: `landing_content` com 14 linhas.
+- **Próximo passo:** Fase 2 — criar painel `/admin/site` com 6 tabs (modo, gate, lançamento, obrigado, preços, textos). Começar por `src/app/admin/site/page.tsx` + link no `AdminLayoutClient.tsx`. Padrão do admin: ver `src/app/admin/recompensas/` ou `src/app/admin/marketing/` como referência.
 
 ### Fase 2 — Painel /admin/site
 - **Início:**
