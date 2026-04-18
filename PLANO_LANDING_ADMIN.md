@@ -421,12 +421,26 @@ Adicionar link no sidebar admin (`src/app/admin/layout.tsx` ou equivalente): **"
 - **Próximo passo:** Fase 3 — refatorar `src/app/page.tsx` (Server Component) + seções em `src/app/landing/*.tsx` para ler `site_config_public` e `landing_content`. Adicionar 5 seções novas (Amigos, Lupas, Modo Invisível, Emblemas, Recompensas) e corrigir info desatualizada (Plus desfazer 1/dia, Black 10 SuperCurtidas/dia, incluir Lupas e Tickets em todos os planos).
 
 ### Fase 3 — Landing oficial conectada
-- **Início:**
-- **Conclusão:**
-- **Arquivos alterados:**
-- **Commit:**
-- **Pendências:**
-- **Próximo passo:**
+- **Início:** 2026-04-18
+- **Conclusão:** 2026-04-18
+- **Arquivos criados:**
+  - `src/app/LandingClient.tsx` — client component que absorveu toda a lógica (auth check, IntersectionObserver, notifs, geo) antes do `page.tsx`
+  - `src/app/landing/types.ts` — types + `DEFAULT_CONFIG` + helpers puros (`formatBRL`, `pick`). Client-safe.
+  - `src/app/landing/server.ts` — `getSiteConfig()` + `getLandingContent()` (server-only, usa `@supabase/ssr` via `@/lib/supabase/server`)
+  - `src/app/landing/AmigosSection.tsx` — chat 30 dias, presente, chamar atenção, avaliar
+  - `src/app/landing/LupasSection.tsx` — Lupa, Desfazer, Ver quem curtiu, Boost
+  - `src/app/landing/ModoInvisivelSection.tsx` — Modo Invisível, Explorar cidade, pacotes avulsos
+  - `src/app/landing/EmblemasSection.tsx` — 8 emblemas com raridades coloridas
+  - `src/app/landing/RecompensasSection.tsx` — Roleta/Streak/Indicação/Presentes
+- **Arquivos modificados:**
+  - `src/app/page.tsx` — virou Server Component async: carrega config + content e renderiza LandingClient. Revalidate 60s.
+  - `src/app/landing/HeroSection.tsx` — recebe `config`/`content` via props; preço do Essencial sai de `site_config.preco_essencial`; badge/títulos/sub/complemento/CTA lidos de `landing_content.hero.*` com fallback.
+  - `src/app/landing/PlanosSection.tsx` — recebe `config`; preços dinâmicos; Plus "Desfazer (1x por dia)"; Essencial marca "sem Lupas"; incluído tempo de vídeo (45/120/300 min).
+  - `src/app/landing/FaqSection.tsx` — recebe `items?` via props com fallback para `data.ts`.
+  - `src/lib/push.ts` — hotfix: adiciona `friend_message`, `friend_nudge`, `friend_gift` em `NotificationType` (estava bloqueando o build — documentado como pré-existente da sessão 17/04).
+- **Commit:** `feat(landing): conecta landing oficial ao banco e adiciona 5 secoes novas` (cc49d75)
+- **Pendências:** nenhuma para a Fase 3. Arquivos não-relacionados (sql/ e src/app/api/amigos/{avaliar,chamar-atencao,chat,presente}/, src/app/amigos/chat/) seguem untracked porque pertencem à sessão 17/04.
+- **Próximo passo:** Fase 4 — refatorar `src/app/lancamento/*.tsx` para ler `site_config.lancamento_*` + `landing_content` com `pagina='lancamento'`. Se `lancamento_ativo=false`, `redirect('/')` no Server Component.
 
 ### Fase 4 — Landing de lançamento conectada
 - **Início:**
