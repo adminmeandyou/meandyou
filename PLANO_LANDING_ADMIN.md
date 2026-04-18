@@ -483,12 +483,16 @@ Adicionar link no sidebar admin (`src/app/admin/layout.tsx` ou equivalente): **"
 - **Próximo passo:** Fase 7 — roteamento dinâmico de `/` baseado em `site_config.modo_site` (normal/lançamento/gated). Se `modo_site='lancamento'`, redirecionar `/` para `/lancamento`. Se `modo_site='gated'`, tratar como gate ativo (reusar gate_ativo=true no middleware). Usar o mesmo cache em memória.
 
 ### Fase 7 — Roteamento dinâmico de /
-- **Início:**
-- **Conclusão:**
-- **Arquivos alterados:**
-- **Commit:**
-- **Pendências:**
-- **Próximo passo:**
+- **Início:** 2026-04-18
+- **Conclusão:** 2026-04-18
+- **Arquivos modificados:**
+  - `src/middleware.ts` — `loadGateConfig` renomeado para `loadSiteConfig` e retorna agora `{ ativo, senha, modo_site, lancamento_ativo }` (mesmo cache em memória de 60s, service role via REST). Hoisted a chamada pra rodar uma vez no início do middleware (usado pelo gate full-site e pelo roteamento de /). Bloco novo: para visitantes não logados em `/`, se `modo_site='lancamento'` E `lancamento_ativo=true` → redireciona para `/lancamento`; se `modo_site='gated'` sem cookie válido → redireciona para `/acesso`. `modo_site='normal'` mantém landing oficial.
+- **Commit:** `feat(site): roteamento dinamico de / baseado em modo_site`
+- **Pendências:** nenhuma. Type-check exit=0.
+- **Notas de design:**
+  - modo_site='lancamento' só redireciona se lancamento_ativo=true para evitar loop (Fase 4 redireciona /lancamento→/ quando inativo).
+  - gate_ativo (full-site) é independente de modo_site — coexistem. Gate full-site bloqueia TODAS as rotas; modo_site só afeta `/`.
+  - Usuários autenticados bypassam tudo (vão direto ao app).
 
 ---
 
