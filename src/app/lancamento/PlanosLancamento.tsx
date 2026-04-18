@@ -1,8 +1,36 @@
 'use client'
 
+import { formatBRL, pick, type SiteConfigPublic, type LandingContentMap } from '../landing/types'
+
 type Feat = { ok: boolean; gold?: boolean; txt: string }
 
-export default function PlanosLancamento() {
+interface PlanosProps {
+  config: SiteConfigPublic
+  content: LandingContentMap
+}
+
+function applyDiscount(valor: number, pct: number): number {
+  if (!pct || pct <= 0) return valor
+  return Math.round(valor * (1 - pct / 100) * 100) / 100
+}
+
+export default function PlanosLancamento({ config, content }: PlanosProps) {
+  const pct = config.lancamento_desconto_pct || 0
+  const plusOriginal = formatBRL(config.preco_plus)
+  const blackOriginal = formatBRL(config.preco_black)
+  const plusDesconto = formatBRL(applyDiscount(config.preco_plus, pct))
+  const blackDesconto = formatBRL(applyDiscount(config.preco_black, pct))
+  const essencialPreco = formatBRL(config.preco_essencial)
+
+  const tituloLinha1 = pick(content, 'planos', 'titulo_linha1', 'Comece grátis.')
+  const tituloLinha2 = pick(content, 'planos', 'titulo_linha2', 'Faça upgrade quando quiser.')
+  const subtitulo = pick(
+    content,
+    'planos',
+    'subtitulo',
+    'O Essencial é seu por 2 meses, sem pagar nada. Depois, você escolhe o que faz mais sentido.',
+  )
+
   const plans: Array<{
     badge: string; badgeCls: string; ctaCls: string; featured?: boolean; lancamento?: boolean
     nome: string; area: string; preco: string; precoRiscado?: string; desc: string; feats: Feat[]; ctaText: string; nota?: string
@@ -12,10 +40,10 @@ export default function PlanosLancamento() {
       nome: 'Essencial',
       area: 'Pista',
       preco: 'Grátis',
-      precoRiscado: '14,90',
+      precoRiscado: essencialPreco,
       desc: 'O plano de entrada. Use tudo por 2 meses sem pagar nada. Depois decide se quer continuar.',
       ctaText: 'Começar grátis agora',
-      nota: 'Após o período: R$14,90/mês · Cancele quando quiser',
+      nota: `Após o período: R$${essencialPreco}/mês · Cancele quando quiser`,
       feats: [
         { ok: true,  txt: '20 curtidas por dia' },
         { ok: true,  txt: '1 SuperCurtida por dia' },
@@ -28,10 +56,11 @@ export default function PlanosLancamento() {
       ],
     },
     {
-      badge: 'Mais escolhido', badgeCls: 'featured', ctaCls: 'featured', featured: true,
+      badge: pct > 0 ? `${pct}% OFF no lançamento` : 'Mais escolhido', badgeCls: 'featured', ctaCls: 'featured', featured: true,
       nome: 'Plus',
       area: 'Área VIP',
-      preco: '39,90',
+      preco: plusDesconto,
+      precoRiscado: pct > 0 ? plusOriginal : undefined,
       desc: 'A experiência completa de filtragem. Para quem quer controle total desde o início.',
       ctaText: 'Assinar o Plus',
       feats: [
@@ -42,15 +71,16 @@ export default function PlanosLancamento() {
         { ok: true,  txt: 'Todos os filtros avançados' },
         { ok: true,  txt: 'Filtro de exclusão' },
         { ok: true,  txt: 'Ver quem curtiu você' },
-        { ok: true,  txt: 'Desfazer curtida' },
+        { ok: true,  txt: 'Desfazer curtida (1x por dia)' },
         { ok: false, txt: 'Acesso ao Backstage' },
       ],
     },
     {
-      badge: 'Black', badgeCls: 'black', ctaCls: 'black',
+      badge: pct > 0 ? `${pct}% OFF no lançamento` : 'Black', badgeCls: 'black', ctaCls: 'black',
       nome: 'Black',
       area: 'Backstage',
-      preco: '99,90',
+      preco: blackDesconto,
+      precoRiscado: pct > 0 ? blackOriginal : undefined,
       desc: 'Você acessa tudo, sem restrições. Com área exclusiva Backstage e o máximo do algoritmo.',
       ctaText: 'Assinar o Black',
       feats: [
@@ -73,8 +103,8 @@ export default function PlanosLancamento() {
       <div className="lp-plans-v2-inner">
         <div className="lp-plans-v2-header lp-anim">
           <p className="lp-section-label">Planos</p>
-          <h2 className="lp-plans-v2-title">Comece grátis.<br />Faça upgrade quando quiser.</h2>
-          <p className="lp-plans-v2-sub">O Essencial é seu por 2 meses, sem pagar nada. Depois, você escolhe o que faz mais sentido.</p>
+          <h2 className="lp-plans-v2-title">{tituloLinha1}<br />{tituloLinha2}</h2>
+          <p className="lp-plans-v2-sub">{subtitulo}</p>
         </div>
         <div className="lp-plans-v2-grid">
           {plans.map((plan, i) => (
@@ -88,7 +118,7 @@ export default function PlanosLancamento() {
                 {plan.precoRiscado && (
                   <span style={{ fontSize:14, color:'rgba(248,249,250,0.25)', textDecoration:'line-through', fontWeight:500 }}>R${plan.precoRiscado}</span>
                 )}
-                <span style={{ fontSize: plan.lancamento ? 28 : 36, fontWeight:700, letterSpacing:'-1.5px', lineHeight:1, color: plan.lancamento ? '#10b981' : plan.badgeCls === 'black' ? '#F59E0B' : plan.featured ? 'var(--accent)' : 'var(--text)', fontFamily:'var(--font-fraunces),serif' }}>{plan.preco}</span>
+                <span style={{ fontSize: plan.lancamento ? 28 : 36, fontWeight:700, letterSpacing:'-1.5px', lineHeight:1, color: plan.lancamento ? '#10b981' : plan.badgeCls === 'black' ? '#F59E0B' : plan.featured ? 'var(--accent)' : 'var(--text)', fontFamily:'var(--font-fraunces),serif' }}>{plan.lancamento ? plan.preco : `R$${plan.preco}`}</span>
                 {!plan.lancamento && <span style={{ fontSize:12, color:'rgba(248,249,250,0.35)', fontWeight:400 }}>/mês</span>}
               </div>
               <p className="lp-plans-v2-desc">{plan.desc}</p>

@@ -2,7 +2,9 @@
 
 import { useState } from 'react'
 
-const faqLancamento = [
+type FaqItem = { q: string; a: string }
+
+const faqFallback: FaqItem[] = [
   { q: 'Os 2 meses grátis são realmente grátis? Sem pegadinha?', a: 'Sim. Você entra, usa o Plano Essencial completo por 2 meses sem pagar nada. Após o período, o plano custa R$14,90/mês. Você pode cancelar antes do fim do período gratuito e não paga nada. Sem fidelidade, sem multa, sem truque.' },
   { q: 'O que acontece depois dos 2 meses?', a: 'Você recebe um aviso antes do período encerrar. Se quiser continuar, o Plano Essencial é cobrado a R$14,90/mês. Se não quiser, cancela com dois cliques, direto no app, sem precisar falar com ninguém. Simples assim.' },
   { q: 'Por que a plataforma é paga se tem o período gratuito?', a: 'Porque o modelo pago atrai quem sabe o que quer. Aplicativos abertos viram bagunça: perfis falsos, pessoas inativas, perda de tempo. O lançamento gratuito é temporário, específico para este momento, e em troca do seu feedback real enquanto a plataforma ainda está sendo ajustada. Depois do lançamento, só planos pagos.' },
@@ -14,7 +16,7 @@ const faqLancamento = [
   { q: 'Posso cancelar a assinatura quando eu quiser?', a: 'Com dois cliques, direto no aplicativo. Sem burocracia, sem precisar mandar e-mail ou falar com atendente. Você cancela na hora e continua usando normalmente até o final do período já pago. Zero fidelidade, zero multa, zero dor de cabeça.' },
 ]
 
-function FaqItem({ pergunta, resposta }: { pergunta: string; resposta: string }) {
+function FaqItemComp({ pergunta, resposta }: { pergunta: string; resposta: string }) {
   const [aberto, setAberto] = useState(false)
   return (
     <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '22px 0' }}>
@@ -49,14 +51,15 @@ function FaqItem({ pergunta, resposta }: { pergunta: string; resposta: string })
   )
 }
 
-export default function FaqLancamento() {
+export default function FaqLancamento({ items }: { items?: FaqItem[] | null }) {
+  const list = items && items.length > 0 ? items : faqFallback
   return (
     <section className="lp-faq">
       <div className="lp-faq-inner">
         <p className="lp-section-label">FAQ</p>
         <h2 className="lp-section-title">Dúvidas sobre o lançamento</h2>
         <div className="lp-faq-list">
-          {faqLancamento.map((item, i) => <FaqItem key={i} pergunta={item.q} resposta={item.a} />)}
+          {list.map((item, i) => <FaqItemComp key={i} pergunta={item.q} resposta={item.a} />)}
         </div>
       </div>
     </section>

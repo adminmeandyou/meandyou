@@ -443,12 +443,20 @@ Adicionar link no sidebar admin (`src/app/admin/layout.tsx` ou equivalente): **"
 - **Próximo passo:** Fase 4 — refatorar `src/app/lancamento/*.tsx` para ler `site_config.lancamento_*` + `landing_content` com `pagina='lancamento'`. Se `lancamento_ativo=false`, `redirect('/')` no Server Component.
 
 ### Fase 4 — Landing de lançamento conectada
-- **Início:**
-- **Conclusão:**
-- **Arquivos alterados:**
+- **Início:** 2026-04-18
+- **Conclusão:** 2026-04-18
+- **Arquivos criados:**
+  - `src/app/lancamento/LancamentoClient.tsx` — client component que absorveu toda a lógica (auth check, IntersectionObserver, notifs, geo) antes do `page.tsx`
+- **Arquivos modificados:**
+  - `src/app/lancamento/page.tsx` — virou Server Component async. Carrega `site_config_public` + `landing_content(pagina='lancamento')`. Se `lancamento_ativo=false` → `redirect('/')`. Revalidate 60s.
+  - `src/app/lancamento/HeroLancamento.tsx` — recebe `config`/`content` via props. Countdown usa `config.lancamento_fim` (fallback `2026-05-15`). Badge/títulos/sub/complemento/CTA/microcopy editáveis via `landing_content.hero.*`. Preço Essencial sai de `site_config.preco_essencial`.
+  - `src/app/lancamento/OfertaLancamento.tsx` — recebe `config`/`content`. 3 cards + título + parágrafos + CTA editáveis via `landing_content.oferta.*`. Preço Essencial dinâmico em todos os pontos.
+  - `src/app/lancamento/PlanosLancamento.tsx` — recebe `config`/`content`. Essencial mostra grátis + riscado com preço real. Plus e Black aplicam `lancamento_desconto_pct` se > 0 (preço riscado + preço com desconto + badge `X% OFF no lançamento`). Plus: "Desfazer (1x por dia)".
+  - `src/app/lancamento/FaqLancamento.tsx` — aceita `items?` via props (fallback para a lista hardcoded — 9 perguntas). LancamentoClient monta items a partir de `landing_content.faq.q_N/a_N` se existirem.
+  - `src/app/lancamento/CtaLancamento.tsx` — recebe `config`/`content`. Countdown dinâmico. Título/subtítulo/CTA/microcopy/bônus editáveis via `landing_content.cta.*`.
 - **Commit:**
-- **Pendências:**
-- **Próximo passo:**
+- **Pendências:** nenhuma. Redirecionamento testa no próprio Next via `redirect()` server-side.
+- **Próximo passo:** Fase 5 — refatorar `src/app/obrigado/page.tsx` para ler `site_config.obrigado_*` (título, mensagem geral + por plano via `?plano=`).
 
 ### Fase 5 — Página /obrigado dinâmica
 - **Início:**

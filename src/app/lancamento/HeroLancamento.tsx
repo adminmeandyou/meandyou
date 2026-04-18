@@ -2,19 +2,22 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { swipeCards } from '../landing/data'
+import { formatBRL, pick, type SiteConfigPublic, type LandingContentMap } from '../landing/types'
 
 interface HeroProps {
   userCity: string
   notifList: Array<{id: number, text: string, exiting: boolean}>
+  config: SiteConfigPublic
+  content: LandingContentMap
 }
 
-const LAUNCH_END = new Date('2026-05-15T00:00:00')
+const LAUNCH_END_FALLBACK = new Date('2026-05-15T00:00:00')
 const VAGAS_TOTAL = 1000
 const VAGAS_BASE = 847
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 
-export default function HeroLancamento({ userCity, notifList }: HeroProps) {
+export default function HeroLancamento({ userCity, notifList, config, content }: HeroProps) {
   const [currentCard, setCurrentCard] = useState(0)
   const [swipeDir, setSwipeDir] = useState<null | 'left' | 'right' | 'up'>(null)
   const swipeLock = useRef(false)
@@ -22,9 +25,13 @@ export default function HeroLancamento({ userCity, notifList }: HeroProps) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
   const [vagasPreenchidas, setVagasPreenchidas] = useState(VAGAS_BASE)
 
+  const launchEnd = config.lancamento_fim
+    ? new Date(config.lancamento_fim)
+    : LAUNCH_END_FALLBACK
+
   useEffect(() => {
     const update = () => {
-      const diff = LAUNCH_END.getTime() - Date.now()
+      const diff = launchEnd.getTime() - Date.now()
       if (diff <= 0) { setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 }); return }
       setTimeLeft({
         days: Math.floor(diff / 86400000),
@@ -36,7 +43,7 @@ export default function HeroLancamento({ userCity, notifList }: HeroProps) {
     update()
     const id = setInterval(update, 1000)
     return () => clearInterval(id)
-  }, [])
+  }, [launchEnd])
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -63,26 +70,54 @@ export default function HeroLancamento({ userCity, notifList }: HeroProps) {
   const card = swipeCards[currentCard]
   const vagasPct = Math.round((vagasPreenchidas / VAGAS_TOTAL) * 100)
 
+  const precoEssencial = formatBRL(config.preco_essencial)
+  const badgeTxt = pick(content, 'hero', 'badge', 'Lançamento · Acesso antecipado disponível')
+  const titulo1 = pick(content, 'hero', 'titulo', 'Você decide')
+  const titulo2 = pick(content, 'hero', 'titulo2', 'quem entra')
+  const titulo3 = pick(content, 'hero', 'titulo3', 'no seu mundo.')
+  const subtitulo = pick(
+    content,
+    'hero',
+    'subtitulo',
+    'Filtros avançados, videochamada, salas e muito mais. Antes do lançamento oficial, você testa tudo de graça por 2 meses e ainda ganha um emblema de Fundador que ninguém mais vai ter.',
+  )
+  const complemento = pick(
+    content,
+    'hero',
+    'complemento',
+    'A plataforma é paga. Mas agora, antes de abrir para o mundo, precisamos de pessoas reais testando. A troca é justa.',
+  )
+  const ctaTexto = pick(content, 'hero', 'cta_primario', 'Garantir meu acesso grátis')
+  const microcopyPrefixo = pick(
+    content,
+    'hero',
+    'microcopy_prefixo',
+    'Plano Essencial · 2 meses grátis · Depois',
+  )
+  const microcopySufixo = pick(
+    content,
+    'hero',
+    'microcopy_sufixo',
+    '/mês · Cancele quando quiser',
+  )
+
   return (
     <section className="lp-bg-fade" style={{ backgroundImage: "linear-gradient(rgba(8,9,14,0.55), rgba(8,9,14,0.80)), url('/backgrounds/hero.png')", backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <div className="lp-hero">
         <div>
-          {/* Badge de lançamento */}
           <div className="lp-badge" style={{ background: 'rgba(245,158,11,0.12)', borderColor: 'rgba(245,158,11,0.30)', color: '#F59E0B' }}>
             <span className="lp-badge-dot" style={{ background: '#F59E0B' }} />
-            Lançamento · Acesso antecipado disponível
+            {badgeTxt}
           </div>
 
-          <h1><em style={{color:'var(--accent)',fontStyle:'italic'}}>Você decide</em> quem entra<br /><em style={{color:'var(--text)',fontStyle:'italic'}}>no seu mundo.</em></h1>
-          <p className="lp-hero-sub">
-            Filtros avançados, videochamada, salas e muito mais. Antes do lançamento oficial, você testa tudo de graça por 2 meses e ainda ganha um emblema de Fundador que ninguém mais vai ter.
-          </p>
-          <p className="lp-hero-complement">
-            A plataforma é paga. Mas agora, antes de abrir para o mundo, precisamos de pessoas reais testando. A troca é justa.
-          </p>
+          <h1>
+            <em style={{color:'var(--accent)',fontStyle:'italic'}}>{titulo1}</em> {titulo2}<br />
+            <em style={{color:'var(--text)',fontStyle:'italic'}}>{titulo3}</em>
+          </h1>
+          <p className="lp-hero-sub">{subtitulo}</p>
+          <p className="lp-hero-complement">{complemento}</p>
 
-          {/* Countdown */}
-          {timeLeft.days > 0 && (
+          {timeLeft.days + timeLeft.hours + timeLeft.minutes + timeLeft.seconds > 0 && (
             <div style={{
               display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap',
             }}>
@@ -109,7 +144,6 @@ export default function HeroLancamento({ userCity, notifList }: HeroProps) {
             </div>
           )}
 
-          {/* Progress bar de vagas */}
           <div style={{ marginBottom: 24, maxWidth: 380 }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
               <span style={{ fontSize: 12, color: 'rgba(248,249,250,0.55)', fontWeight: 500 }}>
@@ -132,12 +166,12 @@ export default function HeroLancamento({ userCity, notifList }: HeroProps) {
 
           <div className="lp-actions">
             <a href="/cadastro" className="lp-btn-main">
-              Garantir meu acesso grátis
+              {ctaTexto}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
             </a>
           </div>
           <p className="lp-hero-microcopy">
-            Plano Essencial · <strong>2 meses grátis</strong> · Depois R$14,90/mês · Cancele quando quiser
+            {microcopyPrefixo} <strong>R${precoEssencial}</strong>{microcopySufixo}
           </p>
           <div className="lp-hero-social-proof">
             <span className="lp-hero-social-proof-dot" />

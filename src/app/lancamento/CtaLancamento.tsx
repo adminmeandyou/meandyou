@@ -1,23 +1,56 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { formatBRL, pick, type SiteConfigPublic, type LandingContentMap } from '../landing/types'
 
-const LAUNCH_END = new Date('2026-05-15T00:00:00')
+const LAUNCH_END_FALLBACK = new Date('2026-05-15T00:00:00')
 const VAGAS_BASE = 847
 const VAGAS_TOTAL = 1000
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 
-export default function CtaLancamento() {
+interface CtaProps {
+  config: SiteConfigPublic
+  content: LandingContentMap
+}
+
+export default function CtaLancamento({ config, content }: CtaProps) {
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
   const [vagas, setVagas] = useState(VAGAS_BASE)
   const [viewers, setViewers] = useState(0)
+
+  const launchEnd = config.lancamento_fim
+    ? new Date(config.lancamento_fim)
+    : LAUNCH_END_FALLBACK
+
+  const preco = formatBRL(config.preco_essencial)
+
+  const titulo = pick(content, 'cta', 'titulo', 'Seus 2 meses\ncomeçam agora.')
+  const subtitulo = pick(
+    content,
+    'cta',
+    'subtitulo',
+    'Entre, explore tudo, e veja o que muda quando as conexões são intencionais. Seu emblema de Fundador já está esperando por você.',
+  )
+  const ctaTexto = pick(content, 'cta', 'botao', 'Começar meu período grátis')
+  const microcopy = pick(
+    content,
+    'cta',
+    'microcopy',
+    `Plano Essencial · 2 meses grátis · Depois R$${preco}/mês · Cancele quando quiser`,
+  )
+  const microBonus = pick(
+    content,
+    'cta',
+    'micro_bonus',
+    '+ Emblema de Fundador Lendário, grátis, vitalício',
+  )
 
   useEffect(() => {
     setViewers(Math.floor(Math.random() * 18) + 7)
 
     const update = () => {
-      const diff = LAUNCH_END.getTime() - Date.now()
+      const diff = launchEnd.getTime() - Date.now()
       if (diff <= 0) { setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 }); return }
       setTimeLeft({
         days: Math.floor(diff / 86400000),
@@ -29,7 +62,7 @@ export default function CtaLancamento() {
     update()
     const id = setInterval(update, 1000)
     return () => clearInterval(id)
-  }, [])
+  }, [launchEnd])
 
   useEffect(() => {
     const id = setInterval(() => {
@@ -43,12 +76,12 @@ export default function CtaLancamento() {
   }, [])
 
   const vagasRestantes = VAGAS_TOTAL - vagas
+  const tituloLinhas = titulo.split('\n')
 
   return (
     <section className="lp-cta-final">
       <div className="lp-cta-final-inner">
 
-        {/* Badge de urgência */}
         <div className="lp-anim" style={{
           display: 'inline-flex', alignItems: 'center', gap: 6,
           padding: '5px 14px', borderRadius: 100,
@@ -59,20 +92,21 @@ export default function CtaLancamento() {
           <span style={{ fontSize: 12, fontWeight: 700, color: '#F59E0B', letterSpacing: '0.06em' }}>LANÇAMENTO · SÓ {vagasRestantes} VAGAS RESTANTES</span>
         </div>
 
-        <h2 className="lp-cta-final-title lp-anim">Seus 2 meses<br />começam agora.</h2>
-        <p className="lp-cta-final-sub lp-anim">
-          Entre, explore tudo, e veja o que muda quando as conexões são intencionais. Seu emblema de Fundador já está esperando por você.
-        </p>
+        <h2 className="lp-cta-final-title lp-anim">
+          {tituloLinhas.map((linha, i) => (
+            <span key={i}>{linha}{i < tituloLinhas.length - 1 && <br />}</span>
+          ))}
+        </h2>
+        <p className="lp-cta-final-sub lp-anim">{subtitulo}</p>
 
-        {/* Countdown */}
-        {timeLeft.days > 0 && (
+        {timeLeft.days + timeLeft.hours + timeLeft.minutes + timeLeft.seconds > 0 && (
           <div className="lp-anim" style={{ display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 28, flexWrap: 'wrap' }}>
             {[
               { val: timeLeft.days, label: 'dias' },
               { val: timeLeft.hours, label: 'horas' },
               { val: timeLeft.minutes, label: 'min' },
               { val: timeLeft.seconds, label: 'seg' },
-            ].map(({ val, label }, i) => (
+            ].map(({ val, label }) => (
               <div key={label}>
                 <div style={{
                   display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -84,15 +118,11 @@ export default function CtaLancamento() {
                   <span style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: 28, fontWeight: 700, lineHeight: 1, color: '#E11D48', letterSpacing: '-1px' }}>{pad(val)}</span>
                   <span style={{ fontSize: 10, color: 'rgba(248,249,250,0.40)', letterSpacing: '0.06em', marginTop: 4 }}>{label}</span>
                 </div>
-                {i < 3 && (
-                  <span style={{ display: 'none' }}>:</span>
-                )}
               </div>
             ))}
           </div>
         )}
 
-        {/* Live viewers */}
         <div className="lp-anim" style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
           marginBottom: 24,
@@ -103,16 +133,13 @@ export default function CtaLancamento() {
           </span>
         </div>
 
-        <a href="/cadastro" className="lp-cta-final-btn lp-anim">Começar meu período grátis</a>
+        <a href="/cadastro" className="lp-cta-final-btn lp-anim">{ctaTexto}</a>
 
-        <p className="lp-cta-final-micro lp-anim">
-          Plano Essencial · 2 meses grátis · Depois R$14,90/mês · Cancele quando quiser
-        </p>
+        <p className="lp-cta-final-micro lp-anim">{microcopy}</p>
         <p className="lp-cta-final-micro lp-anim" style={{ marginTop: 6, color: 'rgba(245,158,11,0.55)', fontSize: 13 }}>
-          + Emblema de Fundador Lendário, grátis, vitalício
+          {microBonus}
         </p>
 
-        {/* Progress bar de vagas */}
         <div className="lp-anim" style={{ maxWidth: 360, margin: '24px auto 0' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
             <span style={{ fontSize: 11, color: 'rgba(248,249,250,0.40)' }}>{vagas.toLocaleString('pt-BR')} vagas preenchidas</span>
