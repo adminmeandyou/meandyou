@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { LayoutDashboard, Users, DollarSign, Flag, ShieldAlert, TrendingUp, LogOut, XCircle, UserCog, Award, BarChart2, Bug, Gift, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Users, DollarSign, Flag, ShieldAlert, TrendingUp, LogOut, XCircle, UserCog, Award, BarChart2, Bug, Gift, Menu, X, Globe } from 'lucide-react'
 
 type NavItem = { href: string; label: string; icon: React.ElementType }
 
@@ -19,6 +19,7 @@ const ALL_NAV: NavItem[] = [
   { href: '/admin/equipe',         label: 'Equipe',          icon: UserCog         },
   { href: '/admin/emblemas',       label: 'Emblemas',        icon: Award           },
   { href: '/admin/recompensas',    label: 'Recompensas',     icon: Gift            },
+  { href: '/admin/site',           label: 'Site e Landing',  icon: Globe           },
   { href: '/admin/bugs',           label: 'Bugs',            icon: Bug             },
 ]
 
