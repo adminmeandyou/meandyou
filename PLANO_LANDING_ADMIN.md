@@ -382,18 +382,27 @@ Adicionar link no sidebar admin (`src/app/admin/layout.tsx` ou equivalente): **"
   - `src/app/backstage/_components/CamaroteBlocked.tsx` (99,97 → 99,90)
   - `src/app/modos/_components/RoomsView.tsx` (9,97 no Plus → 14,90 no Essencial)
   - `src/app/lib/email.ts` (Essencial '5 curtidas/dia' → '20 curtidas/dia'; Plus '2 Lupas/dia' → '1 Lupa/dia')
-  - Removidos: `src/app/page-v1-backup.tsx`, `page-v1-plus.tsx`, `page-v2-backup.tsx`
+  - Arquivos `page-v1-backup.tsx`, `page-v1-plus.tsx`, `page-v2-backup.tsx` **mantidos** (backup é pra ficar guardado — não remover).
 - **Commit:** `fix(precos): unifica R$ 14,90 / 39,90 / 99,90 e limpa backups`
 - **Pendências:** nenhuma — grep de `9,97|9,90|39,97|99,97` agora só retorna preços de produtos da Loja (fichas/camarote/pacote_lendario), que são corretos.
 - **Próximo passo:** Fase 1 — Banco de dados (criar migration `20260419_site_config.sql`).
 
 ### Fase 1 — Banco de dados
-- **Início:**
-- **Conclusão:**
-- **Arquivos alterados:**
-- **Commit:**
+- **Início:** 2026-04-18
+- **Conclusão:** 2026-04-18
+- **Arquivos criados:**
+  - `migration_site_config.sql` (na raiz do projeto — o repo usa migrations soltas, não `supabase/migrations/`)
+    - Tabela `site_config` (singleton id=1) com modo, lançamento, gate, obrigado e preços
+    - Tabela `landing_content` (chave-valor por seção/página) com UNIQUE(secao, chave, pagina)
+    - View pública `site_config_public` sem `gate_senha` — para leitura anônima segura na landing
+    - RLS: `site_config` só admin lê/escreve (gate_senha protegida); `landing_content` leitura pública + escrita admin
+    - Triggers de `updated_at` em ambas as tabelas
+    - Seeds: 1 linha em `site_config` com defaults 14.90/39.90/99.90 + 14 chaves iniciais em `landing_content` (10 oficial + 4 lançamento)
+- **Commit:** `feat(db): cria site_config e landing_content para gestao via admin`
 - **Pendências:**
-- **Próximo passo:**
+  - Rodar `migration_site_config.sql` no Supabase SQL Editor (Claude não tem acesso ao banco)
+  - Após rodar, validar: `SELECT * FROM site_config;` (1 linha) e `SELECT count(*) FROM landing_content;` (≥14 linhas)
+- **Próximo passo:** Fase 2 — criar painel `/admin/site` com 6 tabs (modo, gate, lançamento, obrigado, preços, textos)
 
 ### Fase 2 — Painel /admin/site
 - **Início:**
