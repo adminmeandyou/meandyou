@@ -1,13 +1,25 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { swipeCards } from './data'
+import type { SiteConfigPublic, LandingContentMap } from './types'
+import { formatBRL, pick } from './types'
 
 interface HeroProps {
   userCity: string
+  config: SiteConfigPublic
+  content: LandingContentMap
 }
 
-export default function HeroSection({ userCity }: HeroProps) {
+export default function HeroSection({ userCity, config, content }: HeroProps) {
+  const badge = pick(content, 'hero', 'badge', 'Relacionamentos com intenção real')
+  const tituloParte1 = pick(content, 'hero', 'titulo_parte1', 'Você decide')
+  const tituloParte2 = pick(content, 'hero', 'titulo_parte2', 'quem entra')
+  const tituloParte3 = pick(content, 'hero', 'titulo_parte3', 'no seu mundo.')
+  const sub = pick(content, 'hero', 'sub', 'Relacionamentos, encontros, salas, videochamada e filtros avançados. Tudo no seu controle, do primeiro contato ao encontro.')
+  const complemento = pick(content, 'hero', 'complemento', 'Sem precisar fingir ou se adaptar para caber na expectativa do outro. Sem máscaras.')
+  const ctaTexto = pick(content, 'hero', 'cta_texto', 'Começar agora')
+  const precoEssencial = formatBRL(config.preco_essencial)
   const [currentCard, setCurrentCard] = useState(0)
   const [swipeDir, setSwipeDir] = useState<null | 'left' | 'right' | 'up'>(null)
   const swipeLock = useRef(false)
@@ -33,22 +45,18 @@ export default function HeroSection({ userCity }: HeroProps) {
         <div>
           <div className="lp-badge">
             <span className="lp-badge-dot" />
-            Relacionamentos com intenção real
+            {badge}
           </div>
-          <h1><em style={{color:'var(--accent)',fontStyle:'italic'}}>Você decide</em> quem entra<br /><em style={{color:'var(--text)',fontStyle:'italic'}}>no seu mundo.</em></h1>
-          <p className="lp-hero-sub">
-            Relacionamentos, encontros, salas, videochamada e filtros avançados. Tudo no seu controle, do primeiro contato ao encontro.
-          </p>
-          <p className="lp-hero-complement">
-            Sem precisar fingir ou se adaptar para caber na expectativa do outro. Sem máscaras.
-          </p>
+          <h1><em style={{color:'var(--accent)',fontStyle:'italic'}}>{tituloParte1}</em> {tituloParte2}<br /><em style={{color:'var(--text)',fontStyle:'italic'}}>{tituloParte3}</em></h1>
+          <p className="lp-hero-sub">{sub}</p>
+          <p className="lp-hero-complement">{complemento}</p>
           <div className="lp-actions">
             <a href="/cadastro" className="lp-btn-main">
-              Começar agora
+              {ctaTexto}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
             </a>
           </div>
-          <p className="lp-hero-microcopy">A partir de <strong>R$14,90/mês</strong> · Sem conta gratuita</p>
+          <p className="lp-hero-microcopy">A partir de <strong>R${precoEssencial}/mês</strong> · Sem conta gratuita</p>
           <div className="lp-hero-social-proof">
             <span className="lp-hero-social-proof-dot" />
             <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas já estão usando {userCity ? <>em <strong className="lp-hero-proof-number">{userCity}</strong></> : 'na sua região mesmo'}</span>

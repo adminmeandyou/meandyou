@@ -1,8 +1,15 @@
 'use client'
 
+import type { SiteConfigPublic } from './types'
+import { formatBRL } from './types'
+
 type Feat = { ok: boolean; gold?: boolean; txt: string }
 
-export default function PlanosSection() {
+interface PlanosProps {
+  config: SiteConfigPublic
+}
+
+export default function PlanosSection({ config }: PlanosProps) {
   const plans: Array<{
     badge: string; badgeCls: string; ctaCls: string; featured?: boolean
     nome: string; area: string; preco: string; desc: string; feats: Feat[]
@@ -11,14 +18,15 @@ export default function PlanosSection() {
       badge: 'Essencial', badgeCls: 'free', ctaCls: 'free',
       nome: 'Essencial',
       area: 'Pista',
-      preco: '14,90',
+      preco: formatBRL(config.preco_essencial),
       desc: 'O plano de entrada. Para começar a explorar com pessoas verificadas e intenções reais.',
       feats: [
         { ok: true,  txt: '20 curtidas por dia' },
         { ok: true,  txt: '1 SuperCurtida por dia' },
         { ok: true,  txt: '1 ticket de roleta por dia' },
-        { ok: true,  txt: 'Videochamada nativa' },
+        { ok: true,  txt: 'Videochamada nativa (45 min/dia)' },
         { ok: true,  txt: 'Verificação de identidade' },
+        { ok: false, txt: 'Lupas no Destaque' },
         { ok: false, txt: 'Filtros avançados' },
         { ok: false, txt: 'Ver quem curtiu você' },
         { ok: false, txt: 'Desfazer curtida' },
@@ -28,17 +36,18 @@ export default function PlanosSection() {
       badge: 'Melhor custo-benefício', badgeCls: 'featured', ctaCls: 'featured', featured: true,
       nome: 'Plus',
       area: 'Área VIP',
-      preco: '39,90',
+      preco: formatBRL(config.preco_plus),
       desc: 'A experiência completa de filtragem. Para quem quer controle total da conexão.',
       feats: [
         { ok: true,  txt: '50 curtidas por dia' },
         { ok: true,  txt: '5 SuperCurtidas por dia' },
         { ok: true,  txt: '2 tickets de roleta por dia' },
         { ok: true,  txt: '1 Lupa por dia no Destaque' },
+        { ok: true,  txt: 'Videochamada nativa (120 min/dia)' },
         { ok: true,  txt: 'Todos os filtros avançados' },
         { ok: true,  txt: 'Filtro de exclusão' },
         { ok: true,  txt: 'Ver quem curtiu você' },
-        { ok: true,  txt: 'Desfazer curtida' },
+        { ok: true,  txt: 'Desfazer curtida (1x por dia)' },
         { ok: false, txt: 'Acesso ao Backstage' },
       ],
     },
@@ -46,13 +55,14 @@ export default function PlanosSection() {
       badge: 'Black', badgeCls: 'black', ctaCls: 'black',
       nome: 'Black',
       area: 'Backstage',
-      preco: '99,90',
+      preco: formatBRL(config.preco_black),
       desc: 'Você acessa tudo, sem restrições. Com área exclusiva Backstage e o máximo do algoritmo.',
       feats: [
         { ok: true, gold: true,  txt: 'Curtidas ilimitadas' },
         { ok: true, gold: true,  txt: '10 SuperCurtidas por dia' },
         { ok: true, gold: true,  txt: '3 tickets de roleta por dia' },
         { ok: true, gold: true,  txt: '2 Lupas por dia no Destaque' },
+        { ok: true, gold: true,  txt: 'Videochamada nativa (300 min/dia)' },
         { ok: true, gold: true,  txt: 'Tudo do Plus' },
         { ok: true, gold: true,  txt: 'Acesso ao Backstage' },
         { ok: true, gold: true,  txt: 'Modo Casal (exclusivo Black)' },

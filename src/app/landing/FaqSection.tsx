@@ -1,7 +1,13 @@
 'use client'
 
 import { useState } from 'react'
-import { faqItems } from './data'
+import { faqItems as faqFallback } from './data'
+
+type FaqEntry = { q: string; a: string }
+
+interface FaqProps {
+  items?: FaqEntry[]
+}
 
 function FaqItem({ pergunta, resposta }: { pergunta: string; resposta: string }) {
   const [aberto, setAberto] = useState(false)
@@ -38,14 +44,15 @@ function FaqItem({ pergunta, resposta }: { pergunta: string; resposta: string })
   )
 }
 
-export default function FaqSection() {
+export default function FaqSection({ items }: FaqProps = {}) {
+  const list = items && items.length > 0 ? items : faqFallback
   return (
     <section className="lp-faq">
       <div className="lp-faq-inner">
         <p className="lp-section-label">FAQ</p>
         <h2 className="lp-section-title">Dúvidas frequentes</h2>
         <div className="lp-faq-list">
-          {faqItems.map((item, i) => <FaqItem key={i} pergunta={item.q} resposta={item.a} />)}
+          {list.map((item, i) => <FaqItem key={i} pergunta={item.q} resposta={item.a} />)}
         </div>
       </div>
     </section>
