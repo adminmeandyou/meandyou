@@ -42,7 +42,7 @@ export default function ModoInvisivelSection() {
             },
           ].map((item, i) => (
             <div key={i} className="lp-gamif-v2-card lp-anim" style={{ animationDelay: `${i * 100}ms` }}>
-              <div className={`lp-gamif-v2-icon ${item.anim}`} style={{ color: 'var(--text)', background: 'rgba(255,255,255,0.06)', borderColor: 'rgba(255,255,255,0.12)' }}>{item.icon}</div>
+              <div className={`lp-gamif-v2-icon ${item.anim}`} style={{ color: '#F59E0B', background: 'rgba(245,158,11,0.10)', borderColor: 'rgba(245,158,11,0.25)' }}>{item.icon}</div>
               <div>
                 <div className="lp-gamif-v2-card-title">{item.titulo}</div>
                 <p className="lp-gamif-v2-card-text">{item.texto}</p>

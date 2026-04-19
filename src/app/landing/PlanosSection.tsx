@@ -87,11 +87,11 @@ export default function PlanosSection({ config }: PlanosProps) {
               <span className={`lp-plans-v2-badge lp-plans-v2-badge--${plan.badgeCls}`}>{plan.badge}</span>
               <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between', marginBottom:4 }}>
                 <div className="lp-plans-v2-name">{plan.nome}</div>
-                <span style={{ fontSize:11, fontWeight:500, color: plan.badgeCls === 'black' ? 'rgba(248,249,250,0.55)' : 'rgba(248,249,250,0.30)', letterSpacing:'0.05em', textTransform:'uppercase' }}>{plan.area}</span>
+                <span style={{ fontSize:11, fontWeight:500, color: plan.badgeCls === 'black' ? 'rgba(245,158,11,0.55)' : 'rgba(248,249,250,0.30)', letterSpacing:'0.05em', textTransform:'uppercase' }}>{plan.area}</span>
               </div>
               <div style={{ display:'flex', alignItems:'baseline', gap:4, marginBottom:8 }}>
-                <span style={{ fontSize:13, fontWeight:600, color: plan.badgeCls === 'black' ? 'var(--text)' : plan.featured ? 'var(--accent)' : 'rgba(248,249,250,0.45)' }}>R$</span>
-                <span style={{ fontSize:36, fontWeight:700, letterSpacing:'-1.5px', lineHeight:1, color: plan.badgeCls === 'black' ? 'var(--text)' : plan.featured ? 'var(--accent)' : 'var(--text)', fontFamily:'var(--font-fraunces),serif' }}>{plan.preco}</span>
+                <span style={{ fontSize:13, fontWeight:600, color: plan.badgeCls === 'black' ? '#F59E0B' : plan.featured ? 'var(--accent)' : 'rgba(248,249,250,0.45)' }}>R$</span>
+                <span style={{ fontSize:36, fontWeight:700, letterSpacing:'-1.5px', lineHeight:1, color: plan.badgeCls === 'black' ? '#F59E0B' : plan.featured ? 'var(--accent)' : 'var(--text)', fontFamily:'var(--font-fraunces),serif' }}>{plan.preco}</span>
                 <span style={{ fontSize:12, color:'rgba(248,249,250,0.35)', fontWeight:400 }}>/mês</span>
               </div>
               <p className="lp-plans-v2-desc">{plan.desc}</p>
@@ -104,7 +104,7 @@ export default function PlanosSection({ config }: PlanosProps) {
                         !f.ok
                           ? { background:'rgba(255,255,255,0.04)', color:'rgba(248,249,250,0.18)' }
                           : f.gold
-                          ? { background:'rgba(255,255,255,0.10)', color:'var(--text)' }
+                          ? { background:'rgba(245,158,11,0.12)', color:'#F59E0B' }
                           : {}
                       }
                     >

@@ -42,7 +42,7 @@ export default function AmigosSection() {
             },
           ].map((item, i) => (
             <div key={i} className="lp-gamif-v2-card lp-anim" style={{ animationDelay: `${i * 100}ms` }}>
-              <div className={`lp-gamif-v2-icon ${item.anim}`} style={{ color: 'var(--accent)', background: 'var(--accent-soft)', borderColor: 'var(--accent-border)' }}>{item.icon}</div>
+              <div className={`lp-gamif-v2-icon ${item.anim}`} style={{ color: '#E11D48', background: 'rgba(225,29,72,0.10)', borderColor: 'rgba(225,29,72,0.25)' }}>{item.icon}</div>
               <div>
                 <div className="lp-gamif-v2-card-title">{item.titulo}</div>
                 <p className="lp-gamif-v2-card-text">{item.texto}</p>

@@ -8,25 +8,25 @@ const modos = [
     num: '01', icon: <IcZap />, title: 'Descobrir',
     text: 'Swipe rápido, decisão instantânea. Curta, passe ou mande uma SuperCurtida. Só perfis verificados no seu radar.',
     preview: 'Perfis verificados. Decisão em segundos.',
-    color: 'var(--accent)', colorSoft: 'var(--accent-soft)', colorBorder: 'var(--accent-border)', colorGlow: 'rgba(225,29,72,0.30)',
+    color: '#E11D48', colorSoft: 'rgba(225,29,72,0.12)', colorBorder: 'rgba(225,29,72,0.25)', colorGlow: 'rgba(225,29,72,0.30)',
   },
   {
     num: '02', icon: <IcFilter />, title: 'Busca avançada',
     text: 'Mais de 100 filtros. Você define tudo: corpo, estilo, hábitos, intenções. Quem não combina, não aparece.',
     preview: 'Você define o tipo. O app filtra tudo que não encaixa.',
-    color: 'var(--accent)', colorSoft: 'var(--accent-soft)', colorBorder: 'var(--accent-border)', colorGlow: 'rgba(225,29,72,0.30)',
+    color: '#A855F7', colorSoft: 'rgba(168,85,247,0.12)', colorBorder: 'rgba(168,85,247,0.25)', colorGlow: 'rgba(168,85,247,0.30)',
   },
   {
     num: '03', icon: <IcStar />, title: 'Match do dia',
     text: 'Todo dia, o app analisa seu perfil e te entrega uma seleção cirúrgica. Sem sorte. Com precisão.',
     preview: 'Uma seleção nova todo dia, feita só para você.',
-    color: 'var(--accent)', colorSoft: 'var(--accent-soft)', colorBorder: 'var(--accent-border)', colorGlow: 'rgba(225,29,72,0.30)',
+    color: '#F59E0B', colorSoft: 'rgba(245,158,11,0.10)', colorBorder: 'rgba(245,158,11,0.25)', colorGlow: 'rgba(245,158,11,0.28)',
   },
   {
     num: '04', icon: <IcUsers />, title: 'Salas',
     text: 'Entre em salas públicas com até 20 pessoas ou crie a sua, privada ou aberta para todos. Conexão em tempo real.',
     preview: 'Salas públicas ou personalizadas. Você decide quem entra.',
-    color: 'var(--accent)', colorSoft: 'var(--accent-soft)', colorBorder: 'var(--accent-border)', colorGlow: 'rgba(225,29,72,0.30)',
+    color: '#10B981', colorSoft: 'rgba(16,185,129,0.10)', colorBorder: 'rgba(16,185,129,0.22)', colorGlow: 'rgba(16,185,129,0.25)',
   },
 ]
 
