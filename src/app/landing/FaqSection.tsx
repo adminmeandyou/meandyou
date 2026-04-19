@@ -12,22 +12,22 @@ interface FaqProps {
 function FaqItem({ pergunta, resposta }: { pergunta: string; resposta: string }) {
   const [aberto, setAberto] = useState(false)
   return (
-    <div style={{ borderBottom: '1px solid rgba(255,255,255,0.07)', padding: '22px 0' }}>
+    <div style={{ borderBottom: '1px solid var(--border)', padding: '22px 0' }}>
       <button
         onClick={() => setAberto(!aberto)}
         style={{
           width: '100%', background: 'none', border: 'none', cursor: 'pointer',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          gap: '16px', fontWeight: 600, fontSize: '15px', color: '#F8F9FA',
+          gap: '16px', fontWeight: 600, fontSize: '15px', color: 'var(--text)',
           fontFamily: "var(--font-jakarta), sans-serif", textAlign: 'left', padding: 0,
         }}
       >
         {pergunta}
         <span style={{
           width: '28px', height: '28px', borderRadius: '50%',
-          background: aberto ? '#E11D48' : 'rgba(225,29,72,0.12)',
-          border: '1px solid rgba(225,29,72,0.3)',
-          color: aberto ? '#fff' : '#E11D48',
+          background: aberto ? 'var(--accent)' : 'var(--accent-soft)',
+          border: '1px solid var(--accent-border)',
+          color: aberto ? '#fff' : 'var(--accent)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: '18px', flexShrink: 0, fontWeight: 700,
           transform: aberto ? 'rotate(45deg)' : 'none',
@@ -36,7 +36,7 @@ function FaqItem({ pergunta, resposta }: { pergunta: string; resposta: string })
       </button>
       {aberto && (
         <p style={{
-          fontSize: '14px', color: 'rgba(248,249,250,0.55)',
+          fontSize: '14px', color: 'var(--muted)',
           lineHeight: 1.75, marginTop: '14px', paddingRight: '44px',
         }}>{resposta}</p>
       )}

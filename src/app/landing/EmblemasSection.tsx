@@ -8,10 +8,10 @@ type Emblema = {
 }
 
 const COLOR: Record<Emblema['raridade'], { c: string; bg: string; bd: string; label: string }> = {
-  comum:    { c: '#9CA3AF', bg: 'rgba(156,163,175,0.10)', bd: 'rgba(156,163,175,0.25)', label: 'Comum' },
-  incomum:  { c: '#10b981', bg: 'rgba(16,185,129,0.10)',  bd: 'rgba(16,185,129,0.25)',  label: 'Incomum' },
-  raro:     { c: '#3B82F6', bg: 'rgba(59,130,246,0.10)',  bd: 'rgba(59,130,246,0.25)',  label: 'Raro' },
-  lendario: { c: '#F59E0B', bg: 'rgba(245,158,11,0.10)',  bd: 'rgba(245,158,11,0.25)',  label: 'Lendário' },
+  comum:    { c: 'rgba(248,249,250,0.45)', bg: 'rgba(255,255,255,0.04)', bd: 'rgba(255,255,255,0.08)', label: 'Comum' },
+  incomum:  { c: 'rgba(248,249,250,0.70)', bg: 'rgba(255,255,255,0.06)', bd: 'rgba(255,255,255,0.12)', label: 'Incomum' },
+  raro:     { c: 'var(--text)',             bg: 'rgba(255,255,255,0.08)', bd: 'rgba(255,255,255,0.18)', label: 'Raro' },
+  lendario: { c: 'var(--accent)',           bg: 'var(--accent-soft)',     bd: 'var(--accent-border)',   label: 'Lendário' },
 }
 
 export default function EmblemasSection() {
