@@ -2,6 +2,19 @@
 
 export default function FooterSection() {
   return (
+    <>
+      {/* CTA Final */}
+      <div style={{ padding: '80px 56px', background: 'linear-gradient(180deg, var(--bg-card-grad) 0%, var(--bg) 100%)', borderTop: '1px solid var(--border-premium)', textAlign: 'center' }}>
+        <div style={{ maxWidth: 560, margin: '0 auto' }}>
+          <h2 className="lp-anim" style={{ fontFamily: 'var(--font-fraunces), serif', fontSize: 'clamp(32px, 5vw, 56px)', fontWeight: 700, letterSpacing: '-2px', lineHeight: 1.05, marginBottom: 16 }}>Comece agora.</h2>
+          <p className="lp-anim" style={{ fontSize: 16, color: 'rgba(248,249,250,0.55)', marginBottom: 32, lineHeight: 1.7 }}>Entre, defina o que você quer e veja como tudo muda quando você tem controle.</p>
+          <a href="/cadastro" className="lp-btn-main lp-anim" style={{ display: 'inline-flex', textDecoration: 'none', marginBottom: 14 }}>
+            Criar conta
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+          <p className="lp-anim" style={{ fontSize: 12, color: 'rgba(248,249,250,0.30)' }}>Leva menos de 1 minuto para começar</p>
+        </div>
+      </div>
     <footer className="lp-footer">
       <div className="lp-footer-top">
         <div>
@@ -43,5 +56,6 @@ export default function FooterSection() {
         </div>
       </div>
     </footer>
+    </>
   )
 }

@@ -9,30 +9,12 @@ import type { SiteConfigPublic, LandingContentMap } from './landing/types'
 
 import NavBar from './landing/NavBar'
 import HeroSection from './landing/HeroSection'
-import IdentSection from './landing/IdentSection'
-import PilaresSection from './landing/PilaresSection'
-import VerificacaoSection from './landing/VerificacaoSection'
-import ModosSection from './landing/ModosSection'
-import FiltrosSection from './landing/FiltrosSection'
-import IntencoesSection from './landing/IntencoesSection'
-import SegurancaSection from './landing/SegurancaSection'
-import GamificacaoSection from './landing/GamificacaoSection'
-import EncontroSection from './landing/EncontroSection'
-import PerfilSection from './landing/PerfilSection'
-import BackstageSection from './landing/BackstageSection'
-import AmigosSection from './landing/AmigosSection'
-import LupasSection from './landing/LupasSection'
-import ModoInvisivelSection from './landing/ModoInvisivelSection'
-import EmblemasSection from './landing/EmblemasSection'
-import RecompensasSection from './landing/RecompensasSection'
+import ProblemaSection from './landing/ProblemaSection'
+import JornadaSection from './landing/JornadaSection'
+import ConfiancaSection from './landing/ConfiancaSection'
+import RecursosSection from './landing/RecursosSection'
 import PlanosSection from './landing/PlanosSection'
-import ProvaSocialSection from './landing/ProvaSocialSection'
-import CtaFinalSection from './landing/CtaFinalSection'
-import EarlyAdopterSection from './landing/EarlyAdopterSection'
-import InstallSection from './landing/InstallSection'
-import QuemSomosSection from './landing/QuemSomosSection'
-import FaqSection from './landing/FaqSection'
-import SegurancaDicasSection from './landing/SegurancaDicasSection'
+import SocialFaqSection from './landing/SocialFaqSection'
 import FooterSection from './landing/FooterSection'
 
 type FaqItem = { q: string; a: string }
@@ -286,30 +268,12 @@ export default function LandingClient({ config, content }: LandingClientProps) {
       <div className="lp">
         <NavBar navVisible={navVisible} menuAberto={menuAberto} setMenuAberto={setMenuAberto} />
         <HeroSection userCity={userCity} config={config} content={content} />
-        <IdentSection />
-        <PilaresSection />
-        <VerificacaoSection />
-        <ModosSection />
-        <FiltrosSection />
-        <IntencoesSection />
-        <SegurancaSection />
-        <GamificacaoSection />
-        <EncontroSection />
-        <PerfilSection />
-        <BackstageSection />
-        <AmigosSection />
-        <LupasSection />
-        <ModoInvisivelSection />
-        <EmblemasSection />
-        <RecompensasSection />
+        <ProblemaSection />
+        <JornadaSection />
+        <ConfiancaSection />
+        <RecursosSection />
         <PlanosSection config={config} />
-        <ProvaSocialSection />
-        <CtaFinalSection />
-        <EarlyAdopterSection />
-        <InstallSection />
-        <QuemSomosSection />
-        <FaqSection items={faqItems} />
-        <SegurancaDicasSection />
+        <SocialFaqSection items={faqItems} />
         <FooterSection />
 
         <div className="lp-notif-wrap-v2">

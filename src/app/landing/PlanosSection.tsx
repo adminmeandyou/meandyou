@@ -126,6 +126,22 @@ export default function PlanosSection({ config }: PlanosProps) {
         </div>
         <p className="lp-plans-v2-highlight lp-anim">Mais usado por quem quer ter controle total da experiência</p>
         <p className="lp-plans-v2-micro lp-anim">Cancele quando quiser</p>
+
+        {/* Founder badge strip */}
+        <div className="lp-anim" style={{ marginTop: 48, padding: '28px 32px', borderRadius: 18, background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.20)', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
+          <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.30)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="1.8"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+          </div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#F59E0B', marginBottom: 4 }}>Emblema de Fundador — exclusivo e vitalício</div>
+            <p style={{ fontSize: 13, color: 'rgba(248,249,250,0.55)', margin: 0, lineHeight: 1.6 }}>
+              Todo usuário que entrar agora durante o lançamento recebe este emblema. Ele nunca mais será concedido. Fica no perfil para sempre.
+            </p>
+          </div>
+          <a href="/planos" style={{ padding: '10px 22px', borderRadius: 10, background: 'rgba(245,158,11,0.12)', border: '1px solid rgba(245,158,11,0.30)', color: '#F59E0B', fontSize: 13, fontWeight: 700, textDecoration: 'none', whiteSpace: 'nowrap', flexShrink: 0 }}>
+            Quero meu emblema
+          </a>
+        </div>
       </div>
     </section>
   )
