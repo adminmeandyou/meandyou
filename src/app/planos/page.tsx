@@ -93,7 +93,7 @@ export default function PlanosPage() {
       .select('plan, status, ends_at')
       .eq('user_id', user!.id)
       .eq('status', 'active')
-      .single()
+      .maybeSingle()
     setCurrentPlan(data?.plan ?? null)
     setLoading(false)
   }
