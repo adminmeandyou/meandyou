@@ -71,13 +71,20 @@ export async function POST(req: NextRequest) {
     }
 
     // Busca dados do usuario para AbacatePay
+    // name fica em profiles; cpf e phone ficam em users (nao existem em profiles)
     const { data: profile } = await supabase
       .from('profiles')
-      .select('display_name, cpf, phone')
+      .select('name')
       .eq('id', user.id)
       .single()
 
-    const customerName = profile?.display_name ?? 'Usuário'
+    const { data: userRow } = await supabase
+      .from('users')
+      .select('cpf, phone')
+      .eq('id', user.id)
+      .single()
+
+    const customerName = profile?.name ?? 'Usuário'
 
     let gatewayId: string
     let responseData: Record<string, unknown>
@@ -97,8 +104,8 @@ export async function POST(req: NextRequest) {
           customer: {
             name: customerName,
             email: user.email,
-            cellphone: profile?.phone ?? '00000000000',
-            taxId: profile?.cpf ?? '00000000000',
+            cellphone: userRow?.phone ?? '00000000000',
+            taxId: userRow?.cpf ?? '00000000000',
           },
           metadata: { user_id: user.id, type, plan, cycle },
         }),
@@ -140,8 +147,8 @@ export async function POST(req: NextRequest) {
           customer: {
             name: customerName,
             email: user.email!,
-            cellphone: profile?.phone ?? '00000000000',
-            taxId: profile?.cpf ?? '00000000000',
+            cellphone: userRow?.phone ?? '00000000000',
+            taxId: userRow?.cpf ?? '00000000000',
           },
           externalId: `${user.id}_${Date.now()}`,
           metadata: { user_id: user.id, type, plan, cycle },
