@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/app/lib/supabase'
-import { ArrowLeft, UserPlus, Check, X, UserCircle, Clock } from 'lucide-react'
+import { ArrowLeft, UserPlus, Check, X, UserCircle, Clock, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 
 type FriendProfile = {
@@ -324,6 +324,13 @@ function FriendRow({
         </p>
       </div>
       <div style={{ display: 'flex', gap: 6 }}>
+        <Link
+          href={`/amigos/chat/${friendship.id}`}
+          aria-label={`Conversar com ${p.name}`}
+          style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: 'var(--text)' }}
+        >
+          <MessageCircle size={15} />
+        </Link>
         <Link
           href={`/perfil/${p.id}`}
           style={{ width: 34, height: 34, borderRadius: 9, backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: 'var(--muted)' }}
