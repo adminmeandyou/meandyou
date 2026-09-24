@@ -11,7 +11,7 @@ const ABACATE_KEY = process.env.ABACATEPAY_API_KEY!
 
 // Valores em centavos por plano/ciclo
 const PRICES: Record<string, Record<string, number>> = {
-  essencial: { monthly: 990, quarterly: 2670, semiannual: 4750, annual: 8320 },
+  essencial: { monthly: 1490, quarterly: 4020, semiannual: 7150, annual: 12520 },
   plus:      { monthly: 3990, quarterly: 10770, semiannual: 19150, annual: 33520 },
   black:     { monthly: 9990, quarterly: 26970, semiannual: 47950, annual: 83920 },
 }
