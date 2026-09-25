@@ -41,6 +41,8 @@ Problemas encontrados:
 - D2 (L9) Dados do controlador: CNPJ/razão social ou pessoa física responsável, e endereço de contato.
 - D3 (L7) Exportação de dados: botão no app agora, ou só por e-mail no lançamento.
 - D4 Aplicar `migration_lgpd_aceite.sql` no Supabase de produção (aditiva, sem risco). Posso rodar eu mesmo se você autorizar.
+- D5 [BLOQUEADOR] Aplicar `migration_seguranca_colunas_protegidas.sql` no SQL Editor do Supabase (você cola e roda; eu testo depois).
+- D6 Confirmar se as 3 contas admin em profiles são suas (S2).
 
 ## Etapa 2 — Correções LGPD (em andamento)
 
@@ -59,3 +61,11 @@ Testado em produção com um usuário temporário (apagado logo depois): qualque
 - `profiles.banned` / `users.banned = false` → se desbane sozinho
 Causa: a policy de UPDATE de `profiles`/`users` deixa o dono editar qualquer coluna.
 Correção: migration com trigger que bloqueia essas colunas para quem não é service_role/admin (ver `migration_seguranca_colunas_protegidas.sql`). PRECISA SER APLICADA no Supabase antes de publicar (D5).
+- S1b: saldos também vulneráveis: user_fichas, user_superlikes, user_boosts, user_tickets, user_lupas, user_rewinds aceitaram `amount = 9999` direto do navegador. `staff_members` está protegida (RLS recusou).
+- S1c: `users.email_verified` também era editável → dava pra pular a confirmação de e-mail.
+- Correção pronta: `migration_seguranca_colunas_protegidas.sql` (triggers; libera service_role, RPCs SECURITY DEFINER e admin/equipe; tem ROLLBACK comentado no fim).
+  - Como aplicar: Supabase > SQL Editor > colar o arquivo inteiro > Run. (Não tenho acesso SQL direto; só REST.)
+  - Depois de aplicar, testar: curtir, superlike, usar boost, comprar na loja, editar perfil, onboarding, aprovar verificação no admin. Se algo der "Alteração não permitida", é alguma RPC SECURITY INVOKER mexendo em saldo; me avisar.
+  - Eu re-rodo o teste de invasão depois (usuário temporário, apagado na hora) pra confirmar.
+- S2 [VERIFICAR] 3 perfis com role=admin em produção. Confirmar no Supabase (Table Editor > profiles, filtro role=admin) se as 3 contas são suas. (Minha leitura de e-mails de produção foi bloqueada pela permissão.)
+- S3 [BAIXA] `profiles.incognito_until` pode ser editado pelo usuário (usado pelo "pausar conta"), mas também é o "Modo invisível" pago da loja. Dá pra ganhar Modo invisível de graça. Mudar o pausar-conta para uma API no servidor.
