@@ -109,3 +109,13 @@ Pendente (anotado):
 - S5 [MÉDIA] o cliente da sala (`salas/[id]` linha ~152) insere mensagens de "Sistema" em nome de outros usuários (sender_id alheio). Se a policy de INSERT de room_messages permitir isso, dá pra forjar mensagens. Mover para o servidor.
 - [x] F8 criada `migration_cancellation_requests.sql` (colunas que o admin usa; leitura só admin/equipe). Rota de cancelar agora loga o erro do insert (antes engolia).
 - [x] F9 criada `migration_push_subscriptions.sql` (colunas usadas por push/subscribe e lib/push). Só servidor acessa.
+
+### Tabelas/RPCs usadas no código que NÃO existem no banco (varredura completa)
+- [x] F11 [ALTA] view `public_profiles` inexistente → "Quem curtiu você" (/curtidas), pedido de perfil nas salas e modo casal quebrados. Trocado para `profiles` (mesmas colunas).
+- [x] F12 [ALTA] RPC `get_or_create_conversation` inexistente → botão de iniciar conversa em /matches não fazia nada. Agora navega para `/conversas/{matchId}` (padrão do resto do app).
+- [x] F13 [ALTA] RPC `use_lupa` inexistente → "Revelar com lupa" em /destaque sempre dava 500 (item pago). Reescrito na API com desconto atômico (compare-and-swap).
+- F14 [MÉDIA] RPC `get_user_distance` inexistente → distância no perfil (/perfil/[id]) vira `undefined`. Precisa de RPC no banco (cálculo no servidor, arredondado em km, usando auth.uid() — evita trilateração). PENDENTE.
+- F15 [BAIXA] `video_call_logs` inexistente (e `video_calls` não tem duração) → emblemas de videochamada nunca são concedidos.
+- F16 [BAIXA] `support_tickets` inexistente → card do /admin (dashboard) falha. `update_profile_score`, `get_users_with_referrals` inexistentes, mas com try/catch (sem efeito visível).
+- F17 [BAIXA] `analytics_events`/`profile_views` inexistentes → só logs (moderar-foto, validar-token, deletar-conta).
+- F18 [BAIXA] /admin (dashboard) lê `video_calls.duration_minutes`, coluna que não existe.

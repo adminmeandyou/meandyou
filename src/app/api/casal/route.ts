@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
   // Buscar dados dos parceiros
   const partnerId = data.user1_id === user.id ? data.user2_id : data.user1_id
   const { data: partner } = await supabaseAdmin
-    .from('public_profiles')
+    .from('profiles')
     .select('id, name, photo_best, plan')
     .eq('id', partnerId)
     .single()

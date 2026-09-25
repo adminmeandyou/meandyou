@@ -70,7 +70,7 @@ export default function CurtidasPage() {
     // Busca perfis via view pública
     const ids = rawLikes.map((l: any) => l.user_id)
     const { data: profiles } = await supabase
-      .from('public_profiles')
+      .from('profiles')
       .select('id, name, photo_best, city')
       .in('id', ids)
 

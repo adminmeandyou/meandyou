@@ -269,14 +269,10 @@ export default function MatchesPage() {
 
   const totalUnread = matches.reduce((sum, m) => sum + (m.unread_count || 0), 0)
 
-  async function iniciarConversa(matchId: string, otherUserId: string) {
-    if (!userId) return
-    const { data, error } = await supabase.rpc('get_or_create_conversation', {
-      p_user_a: userId,
-      p_user_b: otherUserId,
-      p_match_id: matchId,
-    })
-    if (!error && data) router.push(`/conversas/${data}`)
+  // A conversa é identificada pelo próprio match (mesmo padrão do resto do app).
+  // Antes chamava a RPC get_or_create_conversation, que não existe no banco — o botão não fazia nada.
+  function iniciarConversa(matchId: string) {
+    router.push(`/conversas/${matchId}`)
   }
 
   return (
@@ -488,7 +484,7 @@ export default function MatchesPage() {
                       key={match.match_id}
                       match={match}
                       userId={userId}
-                      onIniciarConversa={() => iniciarConversa(match.match_id, match.other_user_id)}
+                      onIniciarConversa={() => iniciarConversa(match.match_id)}
                       formatTempo={formatTempo}
                     />
                   ))}

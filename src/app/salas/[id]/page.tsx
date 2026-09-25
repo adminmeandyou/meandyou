@@ -490,7 +490,7 @@ export default function SalaChatPage() {
     if (accept) {
       // Revelar perfil real do solicitante
       const { data } = await supabase
-        .from('public_profiles')
+        .from('profiles')
         .select('id, name, photo_best, city, plan, bio')
         .eq('id', req.requester_id)
         .single()
