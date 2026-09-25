@@ -44,7 +44,7 @@ Problemas encontrados:
 - D5 [BLOQUEADOR] Aplicar `migration_seguranca_colunas_protegidas.sql` no SQL Editor do Supabase (você cola e roda; eu testo depois).
 - D6 Confirmar se as 3 contas admin em profiles são suas (S2).
 - D8 [BLOQUEADOR] Aplicar `migration_seguranca_leitura.sql` no SQL Editor (depois da D5).
-- D9 Aplicar `migration_cancellation_requests.sql` e `migration_push_subscriptions.sql` (criam tabelas que faltam; sem risco).
+- D9 Aplicar `migration_cancellation_requests.sql`, `migration_push_subscriptions.sql` e `migration_rpc_distancia.sql` (criam o que falta; sem risco).
 
 ## Etapa 2 — Correções LGPD (em andamento)
 
@@ -114,7 +114,7 @@ Pendente (anotado):
 - [x] F11 [ALTA] view `public_profiles` inexistente → "Quem curtiu você" (/curtidas), pedido de perfil nas salas e modo casal quebrados. Trocado para `profiles` (mesmas colunas).
 - [x] F12 [ALTA] RPC `get_or_create_conversation` inexistente → botão de iniciar conversa em /matches não fazia nada. Agora navega para `/conversas/{matchId}` (padrão do resto do app).
 - [x] F13 [ALTA] RPC `use_lupa` inexistente → "Revelar com lupa" em /destaque sempre dava 500 (item pago). Reescrito na API com desconto atômico (compare-and-swap).
-- F14 [MÉDIA] RPC `get_user_distance` inexistente → distância no perfil (/perfil/[id]) vira `undefined`. Precisa de RPC no banco (cálculo no servidor, arredondado em km, usando auth.uid() — evita trilateração). PENDENTE.
+- [x] F14 [MÉDIA] RPC `get_user_distance` inexistente → distância no perfil vazia. Tela protegida contra `undefined` + criada `migration_rpc_distancia.sql` (servidor, km inteiro, a partir do usuário logado).
 - F15 [BAIXA] `video_call_logs` inexistente (e `video_calls` não tem duração) → emblemas de videochamada nunca são concedidos.
 - F16 [BAIXA] `support_tickets` inexistente → card do /admin (dashboard) falha. `update_profile_score`, `get_users_with_referrals` inexistentes, mas com try/catch (sem efeito visível).
 - F17 [BAIXA] `analytics_events`/`profile_views` inexistentes → só logs (moderar-foto, validar-token, deletar-conta).

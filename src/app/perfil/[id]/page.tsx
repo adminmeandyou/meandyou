@@ -83,7 +83,7 @@ export default function VerPerfilPage() {
     if (profileData && userId) {
       const { data: targetGeo } = await supabase
         .rpc('get_user_distance', { p_from: userId, p_to: profileId })
-      if (targetGeo !== null) setDistance(targetGeo)
+      if (typeof targetGeo === 'number') setDistance(targetGeo)
     }
 
     setProfile(profileData)
