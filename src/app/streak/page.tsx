@@ -175,7 +175,7 @@ export default function StreakPage() {
               letterSpacing: '-0.02em',
               lineHeight: 1,
             }}>
-              {currentDay} Dias
+              {currentDay} {currentDay === 1 ? 'Dia' : 'Dias'}
             </h1>
             {/* Badge de fase */}
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, marginTop: 12, padding: '4px 12px', borderRadius: 100, backgroundColor: `${phase.color}15`, border: `1px solid ${phase.color}30` }}>

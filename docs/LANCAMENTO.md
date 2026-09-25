@@ -203,4 +203,4 @@ Páginas públicas (/, /login, /cadastro, /termos, /privacidade, /acesso) em 390
 - UI6 [BAIXA] /cadastro no desktop: botão "Continuar" fica muito abaixo do campo (vão grande).
 - [x] UI7 [ALTA] /destaque (Plus/Black) ficava com spinner infinito: o efeito dependia de [period, canAccess] mas saía cedo sem `user`; se o plano carregava antes do usuário, nunca recarregava. `user` adicionado às dependências. (Varri os outros 10 avisos do ESLint do mesmo tipo: todos usam `user?.id` e estão corretos.)
 - [x] UI8 [MÉDIA] /indicar: lista de indicados nunca carregava (embed `referred:referred_id(name)` dava 400, sem FK). Agora busca os nomes numa 2ª consulta.
-- UI9 [BAIXA] /streak mostra "1 Dias" (plural). /roleta usa roda de cores arco-íris (anti-padrão visual da sua lista).
+- [x] UI9a /streak "1 Dias" → "1 Dia". - UI9 [BAIXA] /roleta usa roda de cores arco-íris (anti-padrão visual da sua lista).
