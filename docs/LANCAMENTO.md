@@ -8,8 +8,8 @@ Uma etapa por vez. Cada etapa concluída = commit local. Push só com ok do Lean
 - [x] 2. LGPD — aplicar as correções levantadas na etapa 1
 - [x] 3. Auditoria de funcionalidades (fluxos principais: cadastro, verificação, perfil, discovery, match, chat, videochamada, planos/pagamento)
 - [x] 4. Correção dos erros encontrados na etapa 3 (feita junto com a 3; baixas prioridades anotadas)
-- [ ] 5. Auditoria visual / UI / UX (telas, responsividade, estados de loading/erro/vazio)
-- [ ] 6. Correção dos problemas da etapa 5
+- [x] 5. Auditoria visual / UI / UX (telas, responsividade, estados de loading/erro/vazio)
+- [x] 6. Correção dos problemas da etapa 5 (feita junto; baixas prioridades anotadas)
 - [ ] 7. Pré-publicação: build, variáveis de ambiente, segurança (checklist global), keep-alive Supabase, domínio
 - [ ] 8. Publicar
 
@@ -206,3 +206,4 @@ Páginas públicas (/, /login, /cadastro, /termos, /privacidade, /acesso) em 390
 - [x] UI9a /streak "1 Dias" → "1 Dia". - UI9 [BAIXA] /roleta usa roda de cores arco-íris (anti-padrão visual da sua lista).
 - [x] L14 rascunho do cadastro (CPF, nome, telefone) ficava no localStorage pra sempre se a pessoa desistisse. Agora sessionStorage + limpeza do legado.
 - [x] Cadastro: Turnstile em pt-br. Caixa de aceite conferida visualmente no passo 7.
+- Nota: sessão do Supabase fica em cookie legível por JS (padrão do @supabase/ssr, necessário pro cliente). Mitigado pelo CSP e pela correção dos pontos de XSS. Aceito como limitação.
