@@ -56,6 +56,7 @@ function CadastroInner() {
   const [temCodigo, setTemCodigo]       = useState<boolean | null>(draft?.temCodigo ?? null)
   const [refCode, setRefCode]           = useState<string>(draft?.refCode ?? searchParams.get('ref') ?? '')
 
+  const [aceite, setAceite]       = useState(false)
   const [loading, setLoading]     = useState(false)
   const [avancando, setAvancando] = useState(false)
   const [erro, setErro]           = useState('')
@@ -195,6 +196,10 @@ function CadastroInner() {
 
   const handleCadastro = async () => {
     setErro('')
+    if (!aceite) {
+      setErro('Para criar a conta, confirme que tem 18 anos ou mais e aceite os Termos e a Política de Privacidade.')
+      return
+    }
     if (TURNSTILE_SITE_KEY && !cfToken) {
       setErro('Complete a verificação de segurança.')
       return
@@ -213,6 +218,7 @@ function CadastroInner() {
           cpf:          cpf.replace(/\D/g, ''),
           refCode,
           cfToken,
+          aceiteTermos: aceite,
         }),
       })
       const data = await res.json()
@@ -438,6 +444,20 @@ function CadastroInner() {
                 )}
               </div>
             )}
+
+            <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '20px', cursor: 'pointer', fontSize: '13px', lineHeight: 1.5, color: 'var(--muted)' }}>
+              <input
+                type="checkbox" checked={aceite}
+                onChange={e => { setAceite(e.target.checked); setErro('') }}
+                style={{ marginTop: '3px', width: '16px', height: '16px', accentColor: 'var(--accent)', flexShrink: 0 }}
+              />
+              <span>
+                Tenho 18 anos ou mais e li e aceito os{' '}
+                <Link href="/termos" target="_blank" style={{ color: 'var(--text)', textDecoration: 'underline' }}>Termos de Uso</Link>
+                {' '}e a{' '}
+                <Link href="/privacidade" target="_blank" style={{ color: 'var(--text)', textDecoration: 'underline' }}>Política de Privacidade</Link>.
+              </span>
+            </label>
 
           </>
         )}

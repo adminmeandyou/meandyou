@@ -51,7 +51,7 @@ export default function Termos() {
           Termos de Uso
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '48px' }}>
-          Última atualização: {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+          Última atualização: 25 de setembro de 2026
         </p>
 
         <Section titulo="1. Aceitação dos termos">

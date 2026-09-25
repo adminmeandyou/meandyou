@@ -6,6 +6,8 @@ import { awardBadges } from '@/lib/badges'
 import { randomUUID } from 'crypto'
 
 const APP_URL = 'https://www.meandyou.com.br'
+// Versão dos Termos/Privacidade aceita no cadastro — atualizar junto com a data em /termos e /privacidade
+const TERMS_VERSION = '2026-09-25'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -34,10 +36,14 @@ function validarCPF(cpf: string): boolean {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, senha, nomeCompleto, nomeExibicao, telefone, cpf, refCode, cfToken } = await req.json()
+    const { email, senha, nomeCompleto, nomeExibicao, telefone, cpf, refCode, cfToken, aceiteTermos } = await req.json()
 
     if (!email || !senha || !nomeCompleto || !nomeExibicao || !telefone || !cpf) {
       return NextResponse.json({ error: 'Preencha todos os campos' }, { status: 400 })
+    }
+
+    if (aceiteTermos !== true) {
+      return NextResponse.json({ error: 'É preciso ter 18 anos ou mais e aceitar os Termos de Uso e a Política de Privacidade.' }, { status: 400 })
     }
 
     if (nomeExibicao.trim().length < 2) {
@@ -143,6 +149,18 @@ export async function POST(req: NextRequest) {
       }
       cpfSalvo = true
     }
+
+    // 3b. Registro do aceite (LGPD) — separado para não bloquear o cadastro se a migration
+    // migration_lgpd_aceite.sql ainda não tiver sido aplicada
+    const { error: aceiteErr } = await supabase
+      .from('users')
+      .update({
+        terms_accepted_at: new Date().toISOString(),
+        terms_version:     TERMS_VERSION,
+        age_confirmed:     true,
+      })
+      .eq('id', userId)
+    if (aceiteErr) console.error('[cadastro] falha ao registrar aceite dos termos:', aceiteErr.message)
 
     // 4. Inicializar saldos zerados + filtros padrão
     const saldoResults = await Promise.allSettled([

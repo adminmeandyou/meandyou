@@ -52,7 +52,7 @@ export default function Privacidade() {
           Política de Privacidade
         </h1>
         <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '48px' }}>
-          Última atualização: {new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' })}
+          Última atualização: 25 de setembro de 2026
         </p>
 
         {/* Resumo destacado */}

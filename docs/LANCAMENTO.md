@@ -5,7 +5,7 @@ Uma etapa por vez. Cada etapa concluída = commit local. Push só com ok do Lean
 ## Etapas
 
 - [x] 1. LGPD — levantar o que o app já tem e o que falta (termos, privacidade, cookies, consentimento, exclusão de conta, exportação de dados, dados sensíveis/biometria)
-- [ ] 2. LGPD — aplicar as correções levantadas na etapa 1
+- [~] 2. LGPD — aplicar as correções levantadas na etapa 1
 - [ ] 3. Auditoria de funcionalidades (fluxos principais: cadastro, verificação, perfil, discovery, match, chat, videochamada, planos/pagamento)
 - [ ] 4. Correção dos erros encontrados na etapa 3
 - [ ] 5. Auditoria visual / UI / UX (telas, responsividade, estados de loading/erro/vazio)
@@ -40,3 +40,10 @@ Problemas encontrados:
 - D1 (L3) Documentos/selfie de verificação: (a) apagar automaticamente após aprovar/reprovar [recomendado], ou (b) guardar por X dias pra revisão manual e dizer isso na política.
 - D2 (L9) Dados do controlador: CNPJ/razão social ou pessoa física responsável, e endereço de contato.
 - D3 (L7) Exportação de dados: botão no app agora, ou só por e-mail no lançamento.
+- D4 Aplicar `migration_lgpd_aceite.sql` no Supabase de produção (aditiva, sem risco). Posso rodar eu mesmo se você autorizar.
+
+## Etapa 2 — Correções LGPD (em andamento)
+
+- [x] L8 data fixa "25 de setembro de 2026" em /termos e /privacidade
+- [x] L1 checkbox obrigatório (18+ e aceite de Termos/Privacidade) no último passo do cadastro; API recusa sem aceite e grava `terms_accepted_at`, `terms_version`, `age_confirmed` em `users`. Enquanto a migration não for aplicada, o cadastro funciona normal e só loga erro.
+  - PENDENTE D4: aplicar `migration_lgpd_aceite.sql` no Supabase (só adiciona 3 colunas).
