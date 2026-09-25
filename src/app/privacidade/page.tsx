@@ -68,8 +68,8 @@ export default function Privacidade() {
           </p>
           <p style={{ fontSize: '14px', color: 'var(--text)', lineHeight: 1.7, margin: 0 }}>
             Coletamos apenas os dados necessários para o funcionamento da plataforma. Não vendemos seus dados.
-            Dados biométricos são usados exclusivamente para verificação e nunca compartilhados. Você pode excluir
-            sua conta e todos os seus dados a qualquer momento.
+            Dados biométricos são usados exclusivamente para verificação e nunca vendidos. Você pode excluir
+            sua conta e seus dados a qualquer momento (guardamos apenas registros de pagamento que a lei obriga).
           </p>
         </div>
 
