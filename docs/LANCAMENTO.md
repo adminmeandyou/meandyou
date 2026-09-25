@@ -46,6 +46,7 @@ Problemas encontrados:
 - D8 [BLOQUEADOR] Aplicar `migration_seguranca_leitura.sql` no SQL Editor (depois da D5).
 - D9 Aplicar `migration_cancellation_requests.sql`, `migration_push_subscriptions.sql` e `migration_rpc_distancia.sql` (criam o que falta; sem risco).
 - D10 [BLOQUEADOR] Aplicar `migration_seguranca_admin.sql` logo DEPOIS do deploy (fecha views e RPCs de admin pro navegador).
+- D11 [BLOQUEADOR] Aplicar `migration_seguranca_rpcs_usuario.sql` (ver "Ordem para aplicar").
 
 ## Etapa 2 — Correções LGPD (em andamento)
 
@@ -137,3 +138,21 @@ Pendente (anotado):
 Testado com usuário temporário (apagado): usuário comum lê a view `admin_users` (9 usuários com e-mail, nome completo, idade, cidade, denúncias) e `admin_metrics`, e EXECUTA `admin_ban_user`, `admin_unban_user`, `admin_resolve_report` (testei com ID inexistente, nada foi alterado).
 - [x] Código: novas rotas `api/admin/consulta` (lê as 4 views com filtros permitidos) e `api/admin/acao` (banir/desbanir/resolver; admin_id sempre da sessão; não deixa banir a si mesmo). Helper `src/lib/adminView.ts` com a mesma sintaxe encadeada. 7 páginas do /admin migradas.
 - [ ] D10 [BLOQUEADOR] aplicar `migration_seguranca_admin.sql` DEPOIS do deploy desse código (senão o painel fica sem dados até o deploy).
+
+### S7 — RPCs que confiam no ID enviado pelo cliente (BLOQUEADOR)
+Testado com usuário temporário (só contagem, apagado): `get_my_conversations(p_user_id)` e `get_my_matches(p_user_id)` devolvem conversas/matches de QUALQUER usuário. Mesmo padrão em process_like (curtir como outro), room_heartbeat, search_profiles, get_highlights, update_daily_streak, create/rescue_access_request, get_available/rescued_requests.
+- [x] `migration_seguranca_rpcs_usuario.sql`: renomeia cada função para `_impl` (sem acesso do cliente) e cria no lugar uma "porteira" com a mesma assinatura que exige ID = usuário logado (servidor, cron e admin passam). Não depende do código atual das funções.
+- [ ] D11 [BLOQUEADOR] aplicar no SQL Editor (depois da D5, usa `meandyou_is_staff`).
+
+### Validação das migrations em banco local (2026-09-25)
+Todas as migrations de segurança foram aplicadas 2x (idempotentes) num Postgres local que imita o Supabase, e passaram em 42/42 cenários (bloqueia o que deve, não quebra bio/localização/pausar/onboarding/superlike/busca/distância/salas/amizades/servidor/admin). Scripts em `docs/testes-seguranca/`.
+
+### Ordem para aplicar no Supabase (SQL Editor, um arquivo por vez)
+1. `migration_lgpd_aceite.sql`
+2. `migration_seguranca_colunas_protegidas.sql`
+3. `migration_seguranca_leitura.sql`
+4. `migration_seguranca_rpcs_usuario.sql`
+5. `migration_rpc_distancia.sql`
+6. `migration_cancellation_requests.sql`
+7. `migration_push_subscriptions.sql`
+8. (depois do deploy do código) `migration_seguranca_admin.sql`
