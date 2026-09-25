@@ -48,6 +48,7 @@ Problemas encontrados:
 - D10 [BLOQUEADOR] Aplicar `migration_seguranca_admin.sql` logo DEPOIS do deploy (fecha views e RPCs de admin pro navegador).
 - D11 [BLOQUEADOR] Aplicar `migration_seguranca_rpcs_usuario.sql` (ver "Ordem para aplicar").
 - D12 [BLOQUEADOR] Aplicar `migration_seguranca_escritas.sql`.
+- D13 [BLOQUEADOR] Aplicar `migration_seguranca_storage.sql`.
 
 ## Etapa 2 — Correções LGPD (em andamento)
 
@@ -157,6 +158,7 @@ Todas as migrations de segurança foram aplicadas 2x (idempotentes) num Postgres
 6. `migration_cancellation_requests.sql`
 7. `migration_push_subscriptions.sql`
 7b. `migration_seguranca_escritas.sql`
+7c. `migration_seguranca_storage.sql`
 8. (depois do deploy do código) `migration_seguranca_admin.sql`
 
 ### S8 — Gravações diretas indevidas (teste com IDs inexistentes; 2 linhas gravadas foram apagadas na hora)
@@ -165,3 +167,8 @@ Todas as migrations de segurança foram aplicadas 2x (idempotentes) num Postgres
 - [x] `migration_seguranca_escritas.sql` (só permite ao navegador `matches.status = 'blocked'`, que é o "desfazer match"). Testado local: 11/11 (`docs/testes-seguranca/test_escritas.sql`).
 - [ ] D12 aplicar (item 7b da ordem).
 - S9 [BAIXA] `video_calls`: navegador insere chamada; RLS não confere se o match é do usuário. Baixo impacto (só cria "tocando"). Mover para API depois.
+
+### S10 — Storage (arquivos de teste apagados)
+- `fotos` (público): qualquer usuário subia arquivo na pasta de outro e na raiz (contorna moderação, hospeda qualquer coisa em link do MeAndYou).
+- `documentos`: upload direto pelo navegador, sem passar pela API → dava pra burlar a verificação.
+- Todos os uploads do app já passam pelo servidor. [x] `migration_seguranca_storage.sql` bloqueia gravação do navegador em fotos/documentos/badge-images/bug-screenshots e leitura de documentos. Testado local 8/8.
