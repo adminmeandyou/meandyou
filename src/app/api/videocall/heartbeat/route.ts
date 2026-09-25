@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     const hoje = new Date().toISOString().split('T')[0]
     const { data: existing } = await supabaseAdmin
       .from('video_minutes')
-      .select('minutes')
+      .select('minutes_used')
       .eq('user_id', user.id)
       .eq('date', hoje)
       .maybeSingle()
@@ -45,20 +45,20 @@ export async function POST(req: NextRequest) {
     if (existing) {
       await supabaseAdmin
         .from('video_minutes')
-        .update({ minutes: existing.minutes + 1 })
+        .update({ minutes_used: existing.minutes_used + 1 })
         .eq('user_id', user.id)
         .eq('date', hoje)
     } else {
       await supabaseAdmin
         .from('video_minutes')
-        .insert({ user_id: user.id, date: hoje, minutes: 1 })
+        .insert({ user_id: user.id, date: hoje, minutes_used: 1 })
     }
 
     const [profileResult, minutesResult, extraResult] = await Promise.all([
       supabaseAdmin.from('profiles').select('plan').eq('id', user.id).single(),
       supabaseAdmin
         .from('video_minutes')
-        .select('minutes')
+        .select('minutes_used')
         .eq('user_id', user.id)
         .eq('date', hoje)
         .maybeSingle(),
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
     ])
 
     const plano = profileResult.data?.plan ?? 'essencial'
-    const minutosUsados = minutesResult.data?.minutes ?? 0
+    const minutosUsados = minutesResult.data?.minutes_used ?? 0
     const limiteMinutos = LIMITE_VIDEO[plano] ?? 45
     const extraMinutos = extraResult.data?.amount ?? 0
     const totalDisponivel = limiteMinutos + extraMinutos

@@ -119,3 +119,15 @@ Pendente (anotado):
 - F16 [BAIXA] `support_tickets` inexistente → card do /admin (dashboard) falha. `update_profile_score`, `get_users_with_referrals` inexistentes, mas com try/catch (sem efeito visível).
 - F17 [BAIXA] `analytics_events`/`profile_views` inexistentes → só logs (moderar-foto, validar-token, deletar-conta).
 - F18 [BAIXA] /admin (dashboard) lê `video_calls.duration_minutes`, coluna que não existe.
+
+### Colunas erradas (varredura completa select/insert/update × esquema)
+- [x] F19 [ALTA] videochamada usava `video_minutes.minutes`; a coluna é `minutes_used`. Limite de minutos por plano nunca era aplicado (vídeo ilimitado pra todos) e nada era contado.
+- [x] F20 [ALTA] login gravava `profiles.last_active_at` (não existe) junto com `last_seen`; o update inteiro falhava e o "online" não atualizava no login.
+- [x] F21 [ALTA] Vitrine do Camarote (Black) pedia `profiles.age` (não existe) → sempre vazia. Agora usa `birthdate` (filtro por faixa de data + idade calculada).
+- [x] F22 [MÉDIA] /admin/denuncias pedia `reports.description` → agora `details`.
+- [x] F23 [MÉDIA] exportação de usuários do admin pedia email/cpf/phone em `profiles` e `payments.amount_cents` → falhava. Agora busca em `users`, valor em reais, em lotes. + proteção contra CSV injection (nome começando com =,+,-,@).
+- [x] F24 [MÉDIA] campanha de marketing buscava e-mail em `profiles` → nunca enviava nada. Corrigido + agora respeita `notifications_email = false`.
+- L13 [MÉDIA/LGPD] e-mails de marketing sem link de descadastro. Adicionar no template antes de usar campanhas.
+- F6 (reforço) /admin/seguranca: `profiles.email` e `profiles.selfie_url` não existem.
+- F16b /admin (dashboard) `video_calls.duration_minutes` não existe.
+- `profiles.profile_completeness` (confirmar-verificacao) não existe (está em try, sem efeito).

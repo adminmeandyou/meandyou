@@ -21,6 +21,15 @@ interface Props {
   onBack: () => void
 }
 
+function idadeDe(birthdate: string | null): number | null {
+  if (!birthdate) return null
+  const n = new Date(birthdate)
+  const h = new Date()
+  let idade = h.getFullYear() - n.getFullYear()
+  if (h.getMonth() < n.getMonth() || (h.getMonth() === n.getMonth() && h.getDate() < n.getDate())) idade--
+  return idade
+}
+
 export default function CamaroteVitrine({ myCategories, onChangeCategories, onBack }: Props) {
   const { user } = useAuth()
   const [mainTab, setMainTab] = useState<MainTab>('vitrine')
@@ -47,17 +56,25 @@ export default function CamaroteVitrine({ myCategories, onChangeCategories, onBa
 
     let query = supabase
       .from('profiles')
-      .select('id, name, age, city, state, photo_body, photo_best, camarote_interests')
+      .select('id, name, birthdate, city, state, photo_body, photo_best, camarote_interests')
       .eq('plan', 'black')
       .neq('id', user.id)
       .overlaps('camarote_interests', myCategories)
 
     if (filters.city) query = query.ilike('city', `%${filters.city}%`)
     if (filters.state) query = query.eq('state', filters.state)
-    if (filters.ageMin > 18 || filters.ageMax < 60) query = query.gte('age', filters.ageMin).lte('age', filters.ageMax)
+    // profiles não tem coluna `age` — filtra por faixa de data de nascimento
+    if (filters.ageMin > 18 || filters.ageMax < 60) {
+      const hoje = new Date()
+      const nascidoAte = new Date(hoje.getFullYear() - filters.ageMin, hoje.getMonth(), hoje.getDate())
+      const nascidoDepois = new Date(hoje.getFullYear() - filters.ageMax - 1, hoje.getMonth(), hoje.getDate())
+      query = query
+        .lte('birthdate', nascidoAte.toISOString().slice(0, 10))
+        .gt('birthdate', nascidoDepois.toISOString().slice(0, 10))
+    }
 
     const { data } = await query.limit(50)
-    setProfiles(data ?? [])
+    setProfiles((data ?? []).map((p: any) => ({ ...p, age: idadeDe(p.birthdate) })))
     setLikedIds(new Set())
     setPassedIds(new Set())
     setLoading(false)

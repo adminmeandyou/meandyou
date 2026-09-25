@@ -17,7 +17,7 @@ export default function AdminDenuncias() {
     const { data } = await supabase
       .from('reports')
       .select(`
-        id, reason, description, status, created_at,
+        id, reason, description:details, status, created_at,
         reporter:reporter_id ( id, name ),
         reported:reported_id ( id, name )
       `)

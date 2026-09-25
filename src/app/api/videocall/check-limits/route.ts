@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       supabaseAdmin.from('profiles').select('plan').eq('id', user.id).single(),
       supabaseAdmin
         .from('video_minutes')
-        .select('minutes')
+        .select('minutes_used')
         .eq('user_id', user.id)
         .eq('date', new Date().toISOString().split('T')[0])
         .maybeSingle(),
@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
     ])
 
     const plano = profileResult.data?.plan ?? 'essencial'
-    const minutosUsados = minutesResult.data?.minutes ?? 0
+    const minutosUsados = minutesResult.data?.minutes_used ?? 0
     const limiteMinutos = LIMITE_VIDEO[plano] ?? 45
     const extraMinutos = extraResult.data?.amount ?? 0
     const totalDisponivel = limiteMinutos + extraMinutos

@@ -27,19 +27,29 @@ export async function POST(req: NextRequest) {
   }
 
   // Buscar e-mails dos destinatários
+  // e-mail fica em `users`, não em profiles (a consulta antiga falhava e nada era enviado)
   let query = supabaseAdmin
     .from('profiles')
-    .select('email, name')
+    .select('id, name')
     .eq('banned', false)
     .is('deleted_at', null)
-    .not('email', 'is', null)
+    // LGPD: respeita quem desligou e-mails em Configurações
+    .or('notifications_email.is.null,notifications_email.eq.true')
 
   if (segmento === 'essencial' || segmento === 'plus' || segmento === 'black') {
     query = query.eq('plan', segmento)
   }
 
-  const { data: destinatarios } = await query.limit(5000)
-  const lista = (destinatarios ?? []).filter((d: any) => d.email)
+  const { data: perfis } = await query.limit(5000)
+  const emailPorId: Record<string, string> = {}
+  const ids = (perfis ?? []).map((p: any) => p.id)
+  for (let i = 0; i < ids.length; i += 300) {
+    const { data: us } = await supabaseAdmin.from('users').select('id, email').in('id', ids.slice(i, i + 300))
+    for (const u of us ?? []) if (u.email) emailPorId[u.id] = u.email
+  }
+  const lista = (perfis ?? [])
+    .filter((p: any) => emailPorId[p.id])
+    .map((p: any) => ({ email: emailPorId[p.id], name: p.name }))
 
   let status = 'enviado'
   try {

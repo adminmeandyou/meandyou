@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   let query = supabaseAdmin
     .from('profiles')
-    .select('id, name, email, cpf, phone, plan, banned, verified, deleted_at, created_at')
+    .select('id, name, plan, banned, verified, deleted_at, created_at')
     .order('created_at', { ascending: false })
     .limit(10000)
 
@@ -40,16 +40,27 @@ export async function GET(req: NextRequest) {
   }
 
   const userIds = (users ?? []).map((u: any) => u.id)
+  // email/cpf/telefone ficam em `users` (não em profiles); payments.amount está em reais.
+  // Busca em lotes para não estourar o tamanho da URL do filtro `in`.
   const totalGastoPorUser: Record<string, number> = {}
-  if (userIds.length > 0) {
-    const { data: pagamentos } = await supabaseAdmin
-      .from('payments')
-      .select('user_id, amount_cents')
-      .in('user_id', userIds)
-      .eq('status', 'paid')
+  const contatoPorUser: Record<string, { email: string | null; cpf: string | null; phone: string | null }> = {}
+  for (let i = 0; i < userIds.length; i += 300) {
+    const lote = userIds.slice(i, i + 300)
+    const [{ data: contatos }, { data: pagamentos }] = await Promise.all([
+      supabaseAdmin.from('users').select('id, email, cpf, phone').in('id', lote),
+      supabaseAdmin.from('payments').select('user_id, amount').in('user_id', lote).eq('status', 'paid'),
+    ])
+    for (const c of contatos ?? []) contatoPorUser[c.id] = { email: c.email, cpf: c.cpf, phone: c.phone }
     for (const p of pagamentos ?? []) {
-      totalGastoPorUser[p.user_id] = (totalGastoPorUser[p.user_id] ?? 0) + (p.amount_cents ?? 0)
+      totalGastoPorUser[p.user_id] = (totalGastoPorUser[p.user_id] ?? 0) + Math.round(Number(p.amount ?? 0) * 100)
     }
+  }
+  for (const u of (users ?? []) as any[]) Object.assign(u, contatoPorUser[u.id] ?? {})
+
+  // Evita CSV/formula injection: valores que começam com = + - @ viram texto no Excel
+  const seguro = (v: unknown) => {
+    const t = String(v ?? '').replace(/[\t\r\n]+/g, ' ')
+    return /^[=+\-@]/.test(t) ? `'${t}` : t
   }
 
   function getStatus(u: any) {
@@ -79,13 +90,13 @@ export async function GET(req: NextRequest) {
 
   if (formato === 'txt') {
     const separator = '\t'
-    content = [headers.join(separator), ...rows.map(r => keys.map(k => r[k]).join(separator))].join('\n')
+    content = [headers.join(separator), ...rows.map(r => keys.map(k => seguro(r[k])).join(separator))].join('\n')
     contentType = 'text/plain; charset=utf-8'
     filename = `usuarios_${new Date().toISOString().slice(0,10)}.txt`
   } else {
     content = [
       headers.join(','),
-      ...rows.map(r => keys.map(k => `"${String(r[k]).replace(/"/g, '""')}"`).join(','))
+      ...rows.map(r => keys.map(k => `"${seguro(r[k]).replace(/"/g, '""')}"`).join(','))
     ].join('\n')
     contentType = 'text/csv; charset=utf-8'
     filename = `usuarios_${new Date().toISOString().slice(0,10)}.csv`
