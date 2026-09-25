@@ -34,6 +34,7 @@ function Verificacao() {
   const [selfieFile, setSelfieFile] = useState<File | null>(null)
   const [selfiePreview, setSelfiePreview] = useState('')
   const [erroForm, setErroForm] = useState('')
+  const [consenteBiometria, setConsenteBiometria] = useState(false)
 
   const [frenteFeita, setFrenteFeita] = useState<boolean>(draft?.frenteFeita ?? false)
   const [versoFeita, setVersoFeita] = useState<boolean>(draft?.versoFeita ?? false)
@@ -768,8 +769,16 @@ function Verificacao() {
               ))}
             </div>
           </div>
+          <label style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginTop: '20px', textAlign: 'left', cursor: 'pointer', fontSize: '12px', lineHeight: 1.5, color: 'var(--muted)' }}>
+            <input type="checkbox" checked={consenteBiometria} onChange={e => { setConsenteBiometria(e.target.checked); setErroForm('') }}
+              style={{ marginTop: '2px', width: '16px', height: '16px', accentColor: 'var(--accent)', flexShrink: 0 }} />
+            <span>
+              Autorizo o MeAndYou a tratar meu CPF, as fotos do meu documento e minha selfie (dado biométrico) exclusivamente para confirmar minha identidade, incluindo a leitura automática do documento, conforme a{' '}
+              <a href="/privacidade" target="_blank" rel="noopener" style={{ color: 'var(--text)', textDecoration: 'underline' }}>Política de Privacidade</a>. Posso revogar essa autorização a qualquer momento.
+            </span>
+          </label>
           {erroForm && <p style={{ color: 'var(--red)', fontSize: '13px', marginTop: '12px' }}>{erroForm}</p>}
-          <button onClick={() => { const c = cpf.replace(/\D/g,''); if (!validarCPF(c)) { setErroForm('CPF invalido. Verifique os digitos.'); return } setErroForm(''); setStatus('doc_frente') }}
+          <button onClick={() => { const c = cpf.replace(/\D/g,''); if (!validarCPF(c)) { setErroForm('CPF invalido. Verifique os digitos.'); return } if (!consenteBiometria) { setErroForm('Para continuar, marque a autorização acima.'); return } setErroForm(''); setStatus('doc_frente') }}
             style={{ width: '100%', background: 'linear-gradient(135deg, #E11D48 0%, #be123c 100%)', color: '#fff', border: 'none', borderRadius: '100px', padding: '14px', fontSize: '15px', fontWeight: '700', cursor: 'pointer', marginTop: '20px' }}>
             Proximo &#x2192;
           </button>

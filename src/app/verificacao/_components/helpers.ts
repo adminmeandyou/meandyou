@@ -35,20 +35,22 @@ export const FACE_API_CDNS = [
   },
 ]
 
-// ─── Draft (localStorage) ─────────────────────────────────────────────────────
+// ─── Draft (sessionStorage — contém selfie e CPF, não pode persistir após fechar a aba) ─────────────────────────────────────────────────────
 
 export const VERIF_DRAFT_KEY = 'meandyou_verif_draft'
 
 export function salvarVerifDraft(dados: Record<string, unknown>) {
-  try { localStorage.setItem(VERIF_DRAFT_KEY, JSON.stringify(dados)) } catch {}
+  try { sessionStorage.setItem(VERIF_DRAFT_KEY, JSON.stringify(dados)) } catch {}
 }
 
 export function carregarVerifDraft() {
-  try { const raw = localStorage.getItem(VERIF_DRAFT_KEY); return raw ? JSON.parse(raw) : null } catch { return null }
+  // Remove rascunho legado salvo em localStorage por versões anteriores
+  try { localStorage.removeItem(VERIF_DRAFT_KEY) } catch {}
+  try { const raw = sessionStorage.getItem(VERIF_DRAFT_KEY); return raw ? JSON.parse(raw) : null } catch { return null }
 }
 
 export function limparVerifDraft() {
-  try { localStorage.removeItem(VERIF_DRAFT_KEY) } catch {}
+  try { sessionStorage.removeItem(VERIF_DRAFT_KEY) } catch {}
 }
 
 // ─── Validação e formatação ───────────────────────────────────────────────────

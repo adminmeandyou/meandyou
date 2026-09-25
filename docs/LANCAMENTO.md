@@ -47,3 +47,5 @@ Problemas encontrados:
 - [x] L8 data fixa "25 de setembro de 2026" em /termos e /privacidade
 - [x] L1 checkbox obrigatório (18+ e aceite de Termos/Privacidade) no último passo do cadastro; API recusa sem aceite e grava `terms_accepted_at`, `terms_version`, `age_confirmed` em `users`. Enquanto a migration não for aplicada, o cadastro funciona normal e só loga erro.
   - PENDENTE D4: aplicar `migration_lgpd_aceite.sql` no Supabase (só adiciona 3 colunas).
+- [x] L2 checkbox obrigatório de consentimento (CPF, documento, selfie/biometria, leitura automática) na tela "Seus dados" da verificação.
+- [x] L12 (novo) rascunho da verificação (selfie base64 + CPF) saía no localStorage e ficava pra sempre; agora vai para o sessionStorage e o resto legado é apagado.
