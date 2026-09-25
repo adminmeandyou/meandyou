@@ -94,6 +94,8 @@ function CadastroInner() {
         setCfToken('')
         win.turnstile.render(turnstileRef.current, {
           sitekey: TURNSTILE_SITE_KEY,
+          theme: 'dark',
+          language: 'pt-br',
           callback: (token: string) => setCfToken(token),
           'expired-callback': () => setCfToken(''),
           theme: 'dark',
@@ -187,6 +189,8 @@ function CadastroInner() {
       setCfToken('')
       win.turnstile.render(turnstileRef.current, {
         sitekey: TURNSTILE_SITE_KEY,
+        theme: 'dark',
+        language: 'pt-br',
         callback: (token: string) => setCfToken(token),
         'expired-callback': () => setCfToken(''),
         theme: 'dark',
