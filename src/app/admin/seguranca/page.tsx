@@ -15,30 +15,24 @@ export default function AdminSeguranca() {
 
   async function loadData() {
     setLoading(true)
-    if (tab === 'verificacoes') {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, name, email, created_at, selfie_url')
-        .eq('verified', false)
-        .eq('banned', false)
-        .is('deleted_at', null)
-        .order('created_at', { ascending: false })
-        .limit(50)
-      setPending(data || [])
-    } else {
-      const { data } = await supabase
-        .from('profiles')
-        .select('id, name, email, banned_reason, created_at')
-        .eq('banned', true)
-        .order('created_at', { ascending: false })
-        .limit(100)
-      setBanned(data || [])
+    try {
+      const res = await fetch(`/api/admin/verificacoes?tab=${tab}`)
+      const json = await res.json()
+      if (tab === 'verificacoes') setPending(json.items ?? [])
+      else setBanned(json.items ?? [])
+    } catch {
+      if (tab === 'verificacoes') setPending([])
+      else setBanned([])
     }
     setLoading(false)
   }
 
   async function approveVerification(userId: string) {
-    await supabase.from('profiles').update({ verified: true }).eq('id', userId)
+    await fetch('/api/admin/verificacoes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId }),
+    })
     loadData()
   }
 
@@ -84,9 +78,19 @@ export default function AdminSeguranca() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
               {pending.map(u => (
                 <div key={u.id} style={{ backgroundColor: '#0F1117', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '14px', overflow: 'hidden' }}>
-                  {u.selfie_url && (
-                    <img src={u.selfie_url} alt="Selfie" style={{ width: '100%', height: '180px', objectFit: 'cover' }} />
-                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '2px' }}>
+                    {[['Selfie', u.selfie_url], ['Frente', u.doc_frente_url], ['Verso', u.doc_verso_url]].map(([rotulo, url]) => (
+                      url ? (
+                        <a key={rotulo} href={url} target="_blank" rel="noopener noreferrer" title={`Abrir ${rotulo}`}>
+                          <img src={url} alt={rotulo} style={{ width: '100%', height: '120px', objectFit: 'cover', display: 'block' }} />
+                        </a>
+                      ) : (
+                        <div key={rotulo} style={{ height: '120px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', color: 'rgba(248,249,250,0.30)', backgroundColor: '#13161F' }}>
+                          {rotulo}: sem arquivo
+                        </div>
+                      )
+                    ))}
+                  </div>
                   <div style={{ padding: '14px' }}>
                     <p style={{ fontWeight: '600', marginBottom: '2px' }}>{u.name ?? '-'}</p>
                     <p style={{ fontSize: '13px', color: 'rgba(248,249,250,0.40)', marginBottom: '12px' }}>{u.email}</p>

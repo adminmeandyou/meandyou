@@ -91,7 +91,7 @@ Corrigido:
 - [x] F5 [ALTA] foto da galeria subia sem compressão; acima de 4,5 MB a Vercel recusa e o usuário via só "Erro ao fazer upload". Agora comprime no navegador (1800px, JPEG 0.85); PDF limitado a 4 MB.
 
 Pendente (anotado):
-- F6 [ALTA] `/admin/seguranca` (aba verificações) consulta `profiles.email` e `profiles.selfie_url`, que não existem → a lista vem sempre vazia/erro. Precisa de uma API admin que leia `users` e gere URL assinada do bucket `documentos`. Junto com D1.
+- [x] F6 `/admin/seguranca` reescrita para usar a nova `api/admin/verificacoes` (lê `users`, URLs assinadas de 10 min para selfie/frente/verso, aprovar grava `users.verified` e `profiles.verified`). Pendentes = quem enviou arquivos e não está verificado.
 - [x] F7 [ALTA] `api/salas/sair` era pública e usava userId/nickname do body: dava pra expulsar qualquer um de qualquer sala e postar mensagem falsa de "Sistema". Agora usa sessão e o apelido do registro.
 - ok: `api/auth/reenviar-verificacao-email` confere a sessão.
 
