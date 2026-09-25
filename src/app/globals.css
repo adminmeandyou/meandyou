@@ -1,6 +1,9 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Tailwind v4: gera só tema + utilitários (sem preflight/reset global, o app usa estilos inline).
+   As diretivas @tailwind do v3 que estavam aqui não geram nada no v4 — md:flex, md:hidden
+   (sidebar/header do AppShell), /curtidas e PaywallCard ficavam sem estilo. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
 
 /* ✅ Tailwind v4 — declaração das classes utilitárias de fonte customizadas
    Sem isso, className="font-fraunces" e className="font-jakarta" não geram CSS */
