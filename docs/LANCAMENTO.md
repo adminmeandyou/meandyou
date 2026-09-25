@@ -90,3 +90,5 @@ Corrigido:
 
 Pendente (anotado):
 - F6 [ALTA] `/admin/seguranca` (aba verificações) consulta `profiles.email` e `profiles.selfie_url`, que não existem → a lista vem sempre vazia/erro. Precisa de uma API admin que leia `users` e gere URL assinada do bucket `documentos`. Junto com D1.
+- [x] F7 [ALTA] `api/salas/sair` era pública e usava userId/nickname do body: dava pra expulsar qualquer um de qualquer sala e postar mensagem falsa de "Sistema". Agora usa sessão e o apelido do registro.
+- ok: `api/auth/reenviar-verificacao-email` confere a sessão.
