@@ -69,3 +69,8 @@ Correção: migration com trigger que bloqueia essas colunas para quem não é s
   - Eu re-rodo o teste de invasão depois (usuário temporário, apagado na hora) pra confirmar.
 - S2 [VERIFICAR] 3 perfis com role=admin em produção. Confirmar no Supabase (Table Editor > profiles, filtro role=admin) se as 3 contas são suas. (Minha leitura de e-mails de produção foi bloqueada pela permissão.)
 - S3 [BAIXA] `profiles.incognito_until` pode ser editado pelo usuário (usado pelo "pausar conta"), mas também é o "Modo invisível" pago da loja. Dá pra ganhar Modo invisível de graça. Mudar o pausar-conta para uma API no servidor.
+- [x] L3 (texto) política agora descreve o que acontece de verdade: documento e selfie guardados em storage privado, apagados ao excluir a conta, com leitura automática do Google Vision. Se D1 = apagar após a análise, ajustar esse parágrafo.
+- [x] L5 lista completa de operadores (Supabase, Vercel, Resend, Cloudflare, AbacatePay, Google Vision, Sightengine, ipapi.co) e transferência internacional (art. 33).
+- [x] L6 texto das fotos corrigido (bucket `fotos` é público).
+- [x] L10 parágrafo sobre dados sensíveis opcionais (o app tem orientação sexual, swing, fetiche, poliamor, religião).
+- [ ] L4 URL de documento (depende de D1) · [ ] L7 exportação (D3) · [ ] L9 controlador (D2) · [ ] L11 exclusão cobre tabelas novas (etapa 3)

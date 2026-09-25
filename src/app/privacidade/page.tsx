@@ -84,8 +84,8 @@ export default function Privacidade() {
         <Section titulo="2. Dados que coletamos">
           <strong>Dados de cadastro:</strong> nome completo, e-mail, telefone, senha (armazenada com hash seguro).<br /><br />
           <strong>Dados de verificação de identidade:</strong> selfie ao vivo (prova de vivacidade), imagem do documento (RG ou CNH), CPF.
-          Esses dados são processados exclusivamente para verificar sua identidade e descartados após confirmação. Armazenamos apenas o resultado (verificado/não verificado).<br /><br />
-          <strong>Dados do perfil:</strong> nome de exibição, data de nascimento, bio, localização aproximada (cidade/estado), fotos de perfil, características físicas e preferências que você cadastrar voluntariamente.<br /><br />
+          Esses dados são usados exclusivamente para verificar sua identidade e prevenir fraudes. As imagens ficam em armazenamento privado, acessível apenas à equipe de verificação, e são apagadas quando você exclui sua conta.<br /><br />
+          <strong>Dados do perfil:</strong> nome de exibição, data de nascimento, bio, localização aproximada (cidade/estado), fotos de perfil, características físicas e preferências que você cadastrar voluntariamente. Alguns desses campos opcionais (como religião, orientação ou vida sexual) são dados pessoais sensíveis pela LGPD (art. 5º, II) e só são tratados porque você escolhe preenchê-los; você pode apagá-los a qualquer momento em Editar perfil.<br /><br />
           <strong>Dados de uso:</strong> curtidas, matches, mensagens, tempo de uso da plataforma, dispositivo e sistema operacional (para segurança e prevenção de fraudes).<br /><br />
           <strong>Dados de pagamento:</strong> processados diretamente pelo gateway de pagamentos. Não armazenamos dados de cartão de crédito.
         </Section>
@@ -99,15 +99,15 @@ export default function Privacidade() {
         </Section>
 
         <Section titulo="5. Dados biométricos">
-          A selfie coletada na verificação é processada pela tecnologia face-api.js diretamente no seu dispositivo. A análise ocorre localmente e nenhuma imagem biométrica é transmitida para nossos servidores de forma permanente. Nos termos da LGPD (art. 11), o tratamento de dados sensíveis biométricos é realizado com consentimento explícito obtido no momento da verificação.
+          A prova de vivacidade (detecção do rosto e dos movimentos) é feita pela tecnologia face-api.js diretamente no seu dispositivo. Depois disso, a selfie e as fotos do documento são enviadas aos nossos servidores e guardadas em armazenamento privado para confirmar sua identidade. A frente do documento passa por leitura automática de texto (Google Cloud Vision) apenas para conferir se nome e CPF batem com o cadastro. Nos termos da LGPD (art. 11), esse tratamento de dados biométricos é feito com o seu consentimento específico, pedido na tela de verificação, e você pode revogá-lo excluindo sua conta.
         </Section>
 
         <Section titulo="6. Compartilhamento de dados">
-          Não vendemos seus dados. Podemos compartilhar com: (a) <strong>Provedores de serviço</strong>: Supabase (banco de dados), Vercel (hospedagem), Resend (e-mail), Cloudflare (videochamada), gateway de pagamentos — todos sob acordos de confidencialidade; (b) <strong>Autoridades</strong>: quando exigido por ordem judicial ou obrigação legal. Todos os prestadores de serviço são obrigados a tratar seus dados com o mesmo nível de proteção aplicado por nós.
+          Não vendemos seus dados. Podemos compartilhar com: (a) <strong>Provedores de serviço (operadores)</strong>: Supabase (banco de dados e armazenamento), Vercel (hospedagem), Resend (envio de e-mails), Cloudflare (videochamada e proteção anti-robô no cadastro), AbacatePay (processamento de pagamentos, recebe nome, e-mail e CPF), Google Cloud Vision (leitura do documento na verificação), Sightengine (análise automática das fotos de perfil para bloquear conteúdo impróprio) e ipapi.co (cidade aproximada a partir do IP, usada nos alertas de segurança de login e para personalizar a página inicial); (b) <strong>Autoridades</strong>: quando exigido por ordem judicial ou obrigação legal. Todos os prestadores de serviço são obrigados a tratar seus dados com o mesmo nível de proteção aplicado por nós.
         </Section>
 
         <Section titulo="7. Armazenamento e segurança">
-          Seus dados são armazenados em servidores no Brasil e/ou nos EUA (Supabase/Vercel), com criptografia em trânsito (TLS) e em repouso. Senhas são armazenadas com hash bcrypt. Fotos de perfil utilizam URLs com expiração, nunca expostas permanentemente. Aplicamos Row Level Security (RLS) no banco de dados, garantindo que cada usuário acesse apenas seus próprios dados.
+          Seus dados são armazenados em servidores no Brasil e/ou no exterior (principalmente EUA), onde ficam os provedores listados acima. Essa transferência internacional ocorre nos termos do art. 33 da LGPD, para a execução do contrato com você e com provedores que adotam padrões de proteção compatíveis. Os dados são protegidos com criptografia em trânsito (TLS) e em repouso. Senhas são armazenadas com hash bcrypt. As fotos de perfil são exibidas para outros usuários e podem ser acessadas por quem tiver o endereço da imagem; por isso, não publique nas fotos nada que você não queira mostrar. Documentos e selfies de verificação ficam em armazenamento privado. Aplicamos Row Level Security (RLS) no banco de dados, garantindo que cada usuário acesse apenas seus próprios dados.
         </Section>
 
         <Section titulo="8. Seus direitos (LGPD — Art. 18)">
