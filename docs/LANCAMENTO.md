@@ -179,3 +179,9 @@ Todas as migrations de segurança foram aplicadas 2x (idempotentes) num Postgres
 - [x] `api/moderar-foto`: extensão/tipo vinham do navegador (sem Sightengine configurado, qualquer arquivo ia pro bucket público). Agora: tipo real por magic bytes (JPG/PNG/WEBP), máx. 10 MB, índice de slot 0-9.
 - [x] O rate limit de 10 uploads/hora (e o de validar-token por IP) dependia de `analytics_events`, que não existia → SEM LIMITE, e cada upload chama o Sightengine (pago). Criada `migration_analytics_events.sql`.
 - [x] O navegador grava a URL da foto em `profiles` → dava pra pôr link externo sem moderação. `migration_seguranca_fotos.sql`: foto nova só aceita URL da pasta do próprio usuário em `fotos`. Testado local 5/5.
+
+### Configuração e dependências
+- ok: `.env*` no .gitignore, nenhum .env versionado; `NEXT_PUBLIC_*` só com valores públicos (URL, anon key, Turnstile site key, VAPID público).
+- ok: cabeçalhos de segurança no next.config (X-Frame-Options, Referrer-Policy, Permissions-Policy, CSP).
+- ok: keep-alive do Supabase — crons diários da Vercel (`/api/cron/expire-*`) fazem consultas reais, protegidos por CRON_SECRET. CONFERIR na etapa 7 que CRON_SECRET está setado na Vercel.
+- [x] Next 16.1.6 tinha vulnerabilidade CRÍTICA → atualizado para 16.3.6 (mesma major) + `npm audit fix` (ws, nanoid, uuid, svix, resend...). `npm audit`: 0 vulnerabilidades. tsc e build ok.
