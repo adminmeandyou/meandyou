@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { Users, UserCheck, Ban, TrendingUp, Flag, Heart, Gift, X, Video, MessageSquare, DollarSign, XCircle, BarChart2 } from 'lucide-react'
 import Link from 'next/link'
+import { adminView } from '@/lib/adminView'
 
 interface Metrics {
   total_users: number
@@ -77,7 +78,7 @@ function UserDrawer({ filterKey, title, onClose }: { filterKey: FilterKey; title
       const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString()
       const fiveMinAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString()
 
-      let q = supabase.from('admin_users').select('*').limit(200)
+      let q = adminView('admin_users').select('*').limit(200)
 
       switch (filterKey) {
         case 'online_now':          q = q.gte('last_seen', fiveMinAgo); break
@@ -231,7 +232,7 @@ export default function AdminDashboard() {
   }, [])
 
   async function loadMetrics() {
-    const { data } = await supabase.from('admin_metrics').select('*').single()
+    const { data } = await adminView('admin_metrics').select('*').single()
     if (data) setMetrics(data)
     setLoading(false)
   }

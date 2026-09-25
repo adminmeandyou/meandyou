@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { CheckCircle, XCircle, Eye } from 'lucide-react'
+import { adminAcao } from '@/lib/adminView'
 
 export default function AdminDenuncias() {
   const [reports, setReports] = useState<any[]>([])
@@ -29,22 +30,12 @@ export default function AdminDenuncias() {
   }
 
   async function resolve(id: string, action: 'resolved' | 'ignored') {
-    const { data: { user } } = await supabase.auth.getUser()
-    await supabase.rpc('admin_resolve_report', {
-      p_report_id: id,
-      p_action: action,
-      p_admin_id: user?.id,
-    })
+    await adminAcao('resolver_denuncia', { reportId: id, resultado: action })
     loadReports()
   }
 
   async function banFromReport(reportedId: string, reportId: string) {
-    const { data: { user } } = await supabase.auth.getUser()
-    await supabase.rpc('admin_ban_user', {
-      p_user_id: reportedId,
-      p_reason: 'Banido via denúncia',
-      p_admin_id: user?.id,
-    })
+    await adminAcao('banir', { userId: reportedId, motivo: 'Banido via denúncia' })
     await resolve(reportId, 'resolved')
   }
 

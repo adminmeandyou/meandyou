@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { CheckCircle, XCircle } from 'lucide-react'
+import { adminAcao } from '@/lib/adminView'
 
 export default function AdminSeguranca() {
   const [pending, setPending] = useState<any[]>([])
@@ -37,17 +38,12 @@ export default function AdminSeguranca() {
   }
 
   async function rejectAndBan(userId: string) {
-    const { data: { user } } = await supabase.auth.getUser()
-    await supabase.rpc('admin_ban_user', {
-      p_user_id: userId,
-      p_reason: 'Verificação rejeitada',
-      p_admin_id: user?.id,
-    })
+    await adminAcao('banir', { userId: userId, motivo: 'Verificação rejeitada' })
     loadData()
   }
 
   async function unban(userId: string) {
-    await supabase.rpc('admin_unban_user', { p_user_id: userId })
+    await adminAcao('desbanir', { userId: userId })
     loadData()
   }
 

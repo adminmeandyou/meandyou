@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { Search, Ban, CheckCircle, Eye, Download, PlusCircle } from 'lucide-react'
+import { adminView, adminAcao } from '@/lib/adminView'
 
 const FILTERS = ['todos', 'ativos', 'banidos', 'nao_verificados', 'excluidos', 'essencial', 'plus', 'black']
 const FILTER_LABELS: Record<string, string> = {
@@ -31,7 +32,7 @@ export default function AdminUsuarios() {
 
   async function loadUsers() {
     setLoading(true)
-    let query = supabase.from('admin_users').select('*').order('created_at', { ascending: false }).limit(100)
+    let query = adminView('admin_users').select('*').order('created_at', { ascending: false }).limit(100)
 
     if (search) query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`)
     if (filter === 'banidos')         query = query.eq('banned', true)
@@ -47,11 +48,7 @@ export default function AdminUsuarios() {
 
   async function banUser() {
     if (!banModal) return
-    await supabase.rpc('admin_ban_user', {
-      p_user_id: banModal.id,
-      p_reason: banReason,
-      p_admin_id: (await supabase.auth.getUser()).data.user?.id,
-    })
+    await adminAcao('banir', { userId: banModal.id, motivo: banReason })
     setBanModal(null)
     setBanReason('')
     loadUsers()
@@ -80,7 +77,7 @@ export default function AdminUsuarios() {
   }
 
   async function unbanUser(id: string) {
-    await supabase.rpc('admin_unban_user', { p_user_id: id })
+    await adminAcao('desbanir', { userId: id })
     loadUsers()
   }
 

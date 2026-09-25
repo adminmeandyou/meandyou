@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { Send, Settings2, BarChart2 } from 'lucide-react'
+import { adminView } from '@/lib/adminView'
 
 const TABS = [
   { id: 'analytics', label: 'Analytics', icon: BarChart2 },
@@ -84,7 +85,7 @@ export default function AdminMarketing() {
       { data: referrals },
       { data: deleted },
     ] = await Promise.all([
-      supabase.from('admin_metrics').select('*').single(),
+      adminView('admin_metrics').select('*').single(),
       supabase.from('referrals').select('id, status, created_at, referred:referred_id(name), referrer:referrer_id(name)').order('created_at', { ascending: false }).limit(20),
       supabase.from('profiles').select('id, name, deleted_at').not('deleted_at', 'is', null).order('deleted_at', { ascending: false }).limit(20),
     ])

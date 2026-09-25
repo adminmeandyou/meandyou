@@ -45,6 +45,7 @@ Problemas encontrados:
 - D6 Confirmar se as 3 contas admin em profiles são suas (S2).
 - D8 [BLOQUEADOR] Aplicar `migration_seguranca_leitura.sql` no SQL Editor (depois da D5).
 - D9 Aplicar `migration_cancellation_requests.sql`, `migration_push_subscriptions.sql` e `migration_rpc_distancia.sql` (criam o que falta; sem risco).
+- D10 [BLOQUEADOR] Aplicar `migration_seguranca_admin.sql` logo DEPOIS do deploy (fecha views e RPCs de admin pro navegador).
 
 ## Etapa 2 — Correções LGPD (em andamento)
 
@@ -131,3 +132,8 @@ Pendente (anotado):
 - F6 (reforço) /admin/seguranca: `profiles.email` e `profiles.selfie_url` não existem.
 - F16b /admin (dashboard) `video_calls.duration_minutes` não existe.
 - `profiles.profile_completeness` (confirmar-verificacao) não existe (está em try, sem efeito).
+
+### S6 — Painel admin acessível a qualquer usuário (BLOQUEADOR)
+Testado com usuário temporário (apagado): usuário comum lê a view `admin_users` (9 usuários com e-mail, nome completo, idade, cidade, denúncias) e `admin_metrics`, e EXECUTA `admin_ban_user`, `admin_unban_user`, `admin_resolve_report` (testei com ID inexistente, nada foi alterado).
+- [x] Código: novas rotas `api/admin/consulta` (lê as 4 views com filtros permitidos) e `api/admin/acao` (banir/desbanir/resolver; admin_id sempre da sessão; não deixa banir a si mesmo). Helper `src/lib/adminView.ts` com a mesma sintaxe encadeada. 7 páginas do /admin migradas.
+- [ ] D10 [BLOQUEADOR] aplicar `migration_seguranca_admin.sql` DEPOIS do deploy desse código (senão o painel fica sem dados até o deploy).

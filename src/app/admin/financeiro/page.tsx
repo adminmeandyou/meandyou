@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
+import { adminView } from '@/lib/adminView'
 
 export default function AdminFinanceiro() {
   const [revenue, setRevenue] = useState<any[]>([])
@@ -13,8 +14,8 @@ export default function AdminFinanceiro() {
 
   async function loadData() {
     const [{ data: rev }, { data: sig }] = await Promise.all([
-      supabase.from('admin_revenue').select('*'),
-      supabase.from('admin_signups_daily').select('*').limit(30),
+      adminView('admin_revenue').select('*'),
+      adminView('admin_signups_daily').select('*').limit(30),
     ])
     setRevenue(rev || [])
     setSignups(sig || [])

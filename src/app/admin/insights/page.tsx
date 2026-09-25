@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/app/lib/supabase'
 import { X, BarChart2 } from 'lucide-react'
+import { adminView } from '@/lib/adminView'
 
 interface ClientProfile {
   id: string
@@ -178,8 +179,7 @@ export default function InsightsPage() {
 
   async function loadClients() {
     setLoading(true)
-    const { data } = await supabase
-      .from('admin_users')
+    const { data } = await adminView('admin_users')
       .select('*')
       .not('plan', 'in', '("free")')
       .order('plan', { ascending: false })
