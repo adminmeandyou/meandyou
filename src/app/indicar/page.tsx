@@ -41,12 +41,19 @@ export default function IndicarPage() {
       tickets: tk?.amount ?? 0,
     })
 
+    // Sem FK de referred_id para profiles o embed `referred:referred_id(name)` dava 400
+    // e a lista de indicados nunca carregava — busca os nomes numa segunda consulta
     const { data: refs } = await supabase
       .from('referrals')
-      .select(`id, status, created_at, referred:referred_id ( name )`)
+      .select('id, status, created_at, referred_id')
       .eq('referrer_id', user.id)
       .order('created_at', { ascending: false })
-    setReferrals(refs ?? [])
+    const idsIndicados = (refs ?? []).map(r => r.referred_id).filter(Boolean)
+    const { data: nomes } = idsIndicados.length
+      ? await supabase.from('profiles').select('id, name').in('id', idsIndicados)
+      : { data: [] as { id: string; name: string | null }[] }
+    const nomePorId = Object.fromEntries((nomes ?? []).map(n => [n.id, n.name]))
+    setReferrals((refs ?? []).map(r => ({ ...r, referred: { name: nomePorId[r.referred_id] ?? null } })))
 
     setLoading(false)
   }

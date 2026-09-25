@@ -38,7 +38,7 @@ export default function DestaquesPage() {
     if (!canAccess) return
     loadHighlights()
     loadLupas()
-  }, [period, canAccess])
+  }, [period, canAccess, user])
 
   async function loadHighlights() {
     if (!user) return
