@@ -42,14 +42,14 @@ export async function POST(req: NextRequest) {
 
   const { data: perfis } = await query.limit(5000)
   const emailPorId: Record<string, string> = {}
-  const ids = (perfis ?? []).map((p: any) => p.id)
+  const ids = (perfis ?? []).map(p => p.id)
   for (let i = 0; i < ids.length; i += 300) {
     const { data: us } = await supabaseAdmin.from('users').select('id, email').in('id', ids.slice(i, i + 300))
     for (const u of us ?? []) if (u.email) emailPorId[u.id] = u.email
   }
   const lista = (perfis ?? [])
-    .filter((p: any) => emailPorId[p.id])
-    .map((p: any) => ({ email: emailPorId[p.id], name: p.name }))
+    .filter(p => emailPorId[p.id])
+    .map(p => ({ email: emailPorId[p.id], name: p.name }))
 
   let status = 'enviado'
   try {

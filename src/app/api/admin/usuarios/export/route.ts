@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
       totalGastoPorUser[p.user_id] = (totalGastoPorUser[p.user_id] ?? 0) + Math.round(Number(p.amount ?? 0) * 100)
     }
   }
-  for (const u of (users ?? []) as any[]) Object.assign(u, contatoPorUser[u.id] ?? {})
+  for (const u of (users ?? []) as Record<string, unknown>[]) Object.assign(u, contatoPorUser[u.id as string] ?? {})
 
   // Evita CSV/formula injection: valores que começam com = + - @ viram texto no Excel
   const seguro = (v: unknown) => {

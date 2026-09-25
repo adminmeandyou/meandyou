@@ -74,7 +74,7 @@ export default function CamaroteVitrine({ myCategories, onChangeCategories, onBa
     }
 
     const { data } = await query.limit(50)
-    setProfiles((data ?? []).map((p: any) => ({ ...p, age: idadeDe(p.birthdate) })))
+    setProfiles((data ?? []).map(p => ({ ...p, age: idadeDe(p.birthdate) ?? 0 })))
     setLikedIds(new Set())
     setPassedIds(new Set())
     setLoading(false)
