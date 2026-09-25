@@ -44,6 +44,7 @@ Problemas encontrados:
 - D5 [BLOQUEADOR] Aplicar `migration_seguranca_colunas_protegidas.sql` no SQL Editor do Supabase (você cola e roda; eu testo depois).
 - D6 Confirmar se as 3 contas admin em profiles são suas (S2).
 - D8 [BLOQUEADOR] Aplicar `migration_seguranca_leitura.sql` no SQL Editor (depois da D5).
+- D9 Aplicar `migration_cancellation_requests.sql` e `migration_push_subscriptions.sql` (criam tabelas que faltam; sem risco).
 
 ## Etapa 2 — Correções LGPD (em andamento)
 
@@ -106,3 +107,5 @@ Pendente (anotado):
 - F9 `push_subscriptions` → notificações push não funcionam. VERIFICAR.
 - F10 `analytics_events`, `profile_views` → só a exclusão de conta referencia (loga erro, inofensivo). Conferir se "quem viu meu perfil" existe em outra tabela.
 - S5 [MÉDIA] o cliente da sala (`salas/[id]` linha ~152) insere mensagens de "Sistema" em nome de outros usuários (sender_id alheio). Se a policy de INSERT de room_messages permitir isso, dá pra forjar mensagens. Mover para o servidor.
+- [x] F8 criada `migration_cancellation_requests.sql` (colunas que o admin usa; leitura só admin/equipe). Rota de cancelar agora loga o erro do insert (antes engolia).
+- [x] F9 criada `migration_push_subscriptions.sql` (colunas usadas por push/subscribe e lib/push). Só servidor acessa.

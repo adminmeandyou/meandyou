@@ -72,12 +72,13 @@ export async function POST(req: NextRequest) {
         .eq('id', subscription_id)
         .single()
 
-      await supabase.from('cancellation_requests').insert({
+      const { error: reqErr } = await supabase.from('cancellation_requests').insert({
         user_id: user.id,
         subscription_id,
         plan: subData?.plan ?? 'desconhecido',
         status: 'pending',
       })
+      if (reqErr) console.error('Erro ao registrar cancelamento:', reqErr.message)
     } catch (e) {
       console.error('Erro ao registrar cancelamento:', e)
     }
