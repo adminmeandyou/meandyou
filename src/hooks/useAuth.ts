@@ -17,11 +17,20 @@ export function useAuth() {
       setUser(user)
       setLoading(false)
       if (user) {
-        // fire-and-forget: registra atividade + atualiza streak diário + salva localização
-        supabase.rpc('update_daily_streak', { p_user_id: user.id }).then(() => {
-          awardXp(user.id, 'login_streak')
-        })
-        saveUserLocation(user.id)
+        // fire-and-forget: streak diário + XP de login (1x por dia) e localização (a cada 30 min).
+        // Antes rodava a cada troca de página: XP/tickets infinitos e ipapi.co estourando o limite.
+        const hoje = new Date().toISOString().slice(0, 10)
+        if (lerSessao(`may_streak_${user.id}`) !== hoje) {
+          gravarSessao(`may_streak_${user.id}`, hoje)
+          supabase.rpc('update_daily_streak', { p_user_id: user.id }).then(() => {
+            awardXp(user.id, 'login_streak')
+          })
+        }
+        const ultimaLoc = Number(lerSessao(`may_loc_${user.id}`) ?? 0)
+        if (Date.now() - ultimaLoc > 30 * 60 * 1000) {
+          gravarSessao(`may_loc_${user.id}`, String(Date.now()))
+          saveUserLocation(user.id)
+        }
       }
     })
 
@@ -34,4 +43,12 @@ export function useAuth() {
   }, [])
 
   return { user, loading, supabase }
+}
+
+function lerSessao(chave: string): string | null {
+  try { return sessionStorage.getItem(chave) } catch { return null }
+}
+
+function gravarSessao(chave: string, valor: string) {
+  try { sessionStorage.setItem(chave, valor) } catch { /* modo privado etc. — segue sem cache */ }
 }

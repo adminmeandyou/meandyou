@@ -139,32 +139,11 @@ export default function LandingClient({ config, content }: LandingClientProps) {
   }, [])
 
   useEffect(() => {
-    const viaCoordenadas = (lat: number, lon: number) => {
-      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&accept-language=pt-BR`, {
-        headers: { 'User-Agent': 'MeAndYou/1.0 (meandyou.com.br)' }
-      })
-        .then(r => r.json())
-        .then(d => {
-          const cidade = d.address?.city || d.address?.town || d.address?.village || d.address?.municipality
-          if (cidade) setUserCity(cidade)
-        })
-        .catch(() => {})
-    }
-    const viaIP = () => {
-      fetch('https://ipapi.co/json/')
-        .then(r => r.json())
-        .then(d => { if (d.city) setUserCity(d.city) })
-        .catch(() => {})
-    }
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        pos => viaCoordenadas(pos.coords.latitude, pos.coords.longitude),
-        () => viaIP(),
-        { timeout: 5000 }
-      )
-    } else {
-      viaIP()
-    }
+    // Cidade aproximada pelo IP via cabeçalho da Vercel (sem pedir GPS ao visitante e sem ipapi.co)
+    fetch('/api/geo')
+      .then(r => r.json())
+      .then(d => { if (d?.city) setUserCity(d.city) })
+      .catch(() => {})
   }, [])
 
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 
 // Mapa de XP base por tipo de evento
 const XP_TABLE: Record<string, number> = {
@@ -35,6 +35,20 @@ const XP_TABLE: Record<string, number> = {
   badge_lendario:        500,
 }
 
+// Eventos que o NAVEGADOR pode pedir, com limite. Antes a rota aceitava qualquer evento da
+// tabela, sem limite (dava pra pedir badge_lendario = 500 XP em loop; nível sobe e dá tickets).
+// `diario` = máx. por dia (UTC); `total` = máx. na vida. Demais eventos só pelo servidor.
+const LIMITES_CLIENTE: Record<string, { diario?: number; total?: number }> = {
+  login_streak:        { diario: 1 },
+  dislike:             { diario: 100 },
+  message_sent:        { diario: 50 },
+  match:               { diario: 20 },
+  meeting_registered:  { diario: 3 },
+  first_match:         { total: 1 },
+  profile_complete:    { total: 1 },
+  onboarding_complete: { total: 1 },
+}
+
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get('Authorization')
@@ -52,6 +66,25 @@ export async function POST(req: NextRequest) {
     const { event_type } = await req.json()
     if (!event_type || !XP_TABLE[event_type]) {
       return NextResponse.json({ error: 'event_type inválido' }, { status: 400 })
+    }
+    const limite = LIMITES_CLIENTE[event_type]
+    if (!limite) {
+      return NextResponse.json({ error: 'Evento não permitido' }, { status: 403 })
+    }
+
+    // Conta concessões anteriores (registradas abaixo em xp_events — award_xp não registra)
+    const admin = createAdminClient()
+    let contagem = admin
+      .from('xp_events')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user.id)
+      .eq('event_type', event_type)
+    if (limite.diario) contagem = contagem.gte('created_at', new Date().toISOString().slice(0, 10) + 'T00:00:00Z')
+    const { count: jaConcedidos, error: contErr } = await contagem
+    const teto = limite.diario ?? limite.total ?? 0
+    if (contErr || (jaConcedidos ?? 0) >= teto) {
+      // limite atingido (ou não deu pra conferir): não concede, sem erro para o app
+      return NextResponse.json({ ok: true, xp_awarded: 0, level_up: false, limitado: true })
     }
 
     const baseXp = XP_TABLE[event_type]
@@ -74,6 +107,9 @@ export async function POST(req: NextRequest) {
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    const { error: logErr } = await admin.from('xp_events').insert({ user_id: user.id, event_type, xp_amount: finalXp })
+    if (logErr) console.error('[xp/award] falha ao registrar xp_events:', logErr.message)
 
     // award_xp retorna objeto com xp_awarded, level_up, tickets_ganhos
     const result = Array.isArray(rpcResult) ? rpcResult[0] : rpcResult
