@@ -4,6 +4,7 @@ import { createServerClient } from '@supabase/ssr'
 // ── Portão de acesso ─────────────────────────────────────────────────────────
 const GATE_COOKIE = 'may_gate'
 const GATE_PATH = '/acesso'
+const GATE_EXEMPT = ['/termos', '/privacidade']
 const GATE_CACHE_TTL = 60_000
 
 type ModoSite = 'normal' | 'lancamento' | 'gated'
@@ -118,7 +119,8 @@ export async function middleware(req: NextRequest) {
 
   // ── Portão full-site: bloqueia TODAS as rotas se gate_ativo = true ────────
   // Usuários autenticados passam direto — o gate é só para visitantes externos
-  if (!user && pathname !== GATE_PATH && !pathname.startsWith('/api/') && site.ativo) {
+  // Termos e Privacidade ficam sempre públicos (gateway de pagamento, Meta/Google e LGPD exigem acesso)
+  if (!user && pathname !== GATE_PATH && !pathname.startsWith('/api/') && !GATE_EXEMPT.includes(pathname) && site.ativo) {
     const gateCookie = req.cookies.get(GATE_COOKIE)?.value
     if (gateCookie !== site.senha) {
       return NextResponse.redirect(new URL(GATE_PATH, req.url))
