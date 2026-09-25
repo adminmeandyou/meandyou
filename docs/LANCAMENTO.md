@@ -43,6 +43,7 @@ Problemas encontrados:
 - D4 Aplicar `migration_lgpd_aceite.sql` no Supabase de produção (aditiva, sem risco). Posso rodar eu mesmo se você autorizar.
 - D5 [BLOQUEADOR] Aplicar `migration_seguranca_colunas_protegidas.sql` no SQL Editor do Supabase (você cola e roda; eu testo depois).
 - D6 Confirmar se as 3 contas admin em profiles são suas (S2).
+- D8 [BLOQUEADOR] Aplicar `migration_seguranca_leitura.sql` no SQL Editor (depois da D5).
 
 ## Etapa 2 — Correções LGPD (em andamento)
 
@@ -92,3 +93,16 @@ Pendente (anotado):
 - F6 [ALTA] `/admin/seguranca` (aba verificações) consulta `profiles.email` e `profiles.selfie_url`, que não existem → a lista vem sempre vazia/erro. Precisa de uma API admin que leia `users` e gere URL assinada do bucket `documentos`. Junto com D1.
 - [x] F7 [ALTA] `api/salas/sair` era pública e usava userId/nickname do body: dava pra expulsar qualquer um de qualquer sala e postar mensagem falsa de "Sistema". Agora usa sessão e o apelido do registro.
 - ok: `api/auth/reenviar-verificacao-email` confere a sessão.
+
+### S4 — Vazamento de leitura (teste com usuário temporário, só contagens, apagado depois)
+- S4a [ALTA/LGPD] qualquer usuário logado lê todas as colunas de todos os perfis, inclusive `rua`, `bairro`, `cep`, `lat`, `lng` (endereço e coordenada exata).
+- S4b [ALTA] `room_messages` (11 msgs) e `friendships` legíveis SEM login.
+- S4c [BAIXA] `user_badges` legível sem login (inofensivo).
+- Correção: `migration_seguranca_leitura.sql` (esconde as 5 colunas de endereço do cliente; restringe friendships às partes e room_messages aos membros; se o RLS estiver desligado, liga preservando as gravações). → D8 aplicar junto com a D5.
+- Verificado ok: users (só o próprio), messages, matches, likes, payments, subscriptions, tokens, sessões, denúncias, staff_members etc. retornam 0 para usuário alheio.
+
+### Tabelas que o código usa mas NÃO existem no banco (404)
+- F8 `cancellation_requests` → `/admin/cancelamentos` quebrado (e o pedido de cancelamento do usuário provavelmente também). VERIFICAR na etapa 3.
+- F9 `push_subscriptions` → notificações push não funcionam. VERIFICAR.
+- F10 `analytics_events`, `profile_views` → só a exclusão de conta referencia (loga erro, inofensivo). Conferir se "quem viu meu perfil" existe em outra tabela.
+- S5 [MÉDIA] o cliente da sala (`salas/[id]` linha ~152) insere mensagens de "Sistema" em nome de outros usuários (sender_id alheio). Se a policy de INSERT de room_messages permitir isso, dá pra forjar mensagens. Mover para o servidor.
