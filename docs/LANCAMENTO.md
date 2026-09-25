@@ -48,7 +48,7 @@ Problemas encontrados:
 - D10 [BLOQUEADOR] Aplicar `migration_seguranca_admin.sql` logo DEPOIS do deploy (fecha views e RPCs de admin pro navegador).
 - D11 [BLOQUEADOR] Aplicar `migration_seguranca_rpcs_usuario.sql` (ver "Ordem para aplicar").
 - D12 [BLOQUEADOR] Aplicar `migration_seguranca_escritas.sql`.
-- D13 [BLOQUEADOR] Aplicar `migration_seguranca_storage.sql`.
+- D13 [BLOQUEADOR] Aplicar `migration_seguranca_storage.sql`, `migration_seguranca_fotos.sql` e `migration_analytics_events.sql`.
 
 ## Etapa 2 — Correções LGPD (em andamento)
 
@@ -159,6 +159,8 @@ Todas as migrations de segurança foram aplicadas 2x (idempotentes) num Postgres
 7. `migration_push_subscriptions.sql`
 7b. `migration_seguranca_escritas.sql`
 7c. `migration_seguranca_storage.sql`
+7d. `migration_seguranca_fotos.sql`
+7e. `migration_analytics_events.sql`
 8. (depois do deploy do código) `migration_seguranca_admin.sql`
 
 ### S8 — Gravações diretas indevidas (teste com IDs inexistentes; 2 linhas gravadas foram apagadas na hora)
@@ -172,3 +174,8 @@ Todas as migrations de segurança foram aplicadas 2x (idempotentes) num Postgres
 - `fotos` (público): qualquer usuário subia arquivo na pasta de outro e na raiz (contorna moderação, hospeda qualquer coisa em link do MeAndYou).
 - `documentos`: upload direto pelo navegador, sem passar pela API → dava pra burlar a verificação.
 - Todos os uploads do app já passam pelo servidor. [x] `migration_seguranca_storage.sql` bloqueia gravação do navegador em fotos/documentos/badge-images/bug-screenshots e leitura de documentos. Testado local 8/8.
+
+### S11 — Upload e URL de foto de perfil
+- [x] `api/moderar-foto`: extensão/tipo vinham do navegador (sem Sightengine configurado, qualquer arquivo ia pro bucket público). Agora: tipo real por magic bytes (JPG/PNG/WEBP), máx. 10 MB, índice de slot 0-9.
+- [x] O rate limit de 10 uploads/hora (e o de validar-token por IP) dependia de `analytics_events`, que não existia → SEM LIMITE, e cada upload chama o Sightengine (pago). Criada `migration_analytics_events.sql`.
+- [x] O navegador grava a URL da foto em `profiles` → dava pra pôr link externo sem moderação. `migration_seguranca_fotos.sql`: foto nova só aceita URL da pasta do próprio usuário em `fotos`. Testado local 5/5.

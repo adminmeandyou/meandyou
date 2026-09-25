@@ -10,13 +10,22 @@ const supabaseAdmin = createClient(
 
 const MAX_UPLOADS_POR_HORA = 10
 
+// Tipo real pelo conteúdo (magic bytes) — nunca confiar em nome/mime enviados pelo cliente
+function tipoImagem(b: Uint8Array): { ext: string; mime: string } | null {
+  if (b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return { ext: 'jpg', mime: 'image/jpeg' }
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return { ext: 'png', mime: 'image/png' }
+  if (b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return { ext: 'webp', mime: 'image/webp' }
+  return null
+}
+
 async function uploadFoto(userId: string, index: number, foto: File): Promise<string | null> {
-  const ext = foto.name.split('.').pop() || 'jpg'
-  const path = `${userId}/foto_${index}.${ext}`
   const bytes = await foto.arrayBuffer()
+  const tipo = tipoImagem(new Uint8Array(bytes.slice(0, 12)))
+  if (!tipo) return null
+  const path = `${userId}/foto_${index}.${tipo.ext}`
   const { error } = await supabaseAdmin.storage
     .from('fotos')
-    .upload(path, Buffer.from(bytes), { upsert: true, contentType: foto.type || 'image/jpeg' })
+    .upload(path, Buffer.from(bytes), { upsert: true, contentType: tipo.mime })
   if (error) {
     console.error('[moderar-foto] Erro no upload:', error)
     return null
@@ -69,7 +78,17 @@ export async function POST(req: NextRequest) {
     if (!foto) {
       return NextResponse.json({ error: 'Nenhuma foto enviada' }, { status: 400 })
     }
-    const index = parseInt((formData.get('index') as string) ?? '0')
+    const index = parseInt((formData.get('index') as string) ?? '0', 10)
+    if (!Number.isInteger(index) || index < 0 || index > 9) {
+      return NextResponse.json({ error: 'Posição de foto inválida' }, { status: 400 })
+    }
+    if (foto.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ aprovado: false, motivo: 'Foto muito grande (máx. 10 MB).' })
+    }
+    const cabecalho = new Uint8Array((await foto.slice(0, 12).arrayBuffer()))
+    if (!tipoImagem(cabecalho)) {
+      return NextResponse.json({ aprovado: false, motivo: 'Formato não suportado. Use JPG, PNG ou WEBP.' })
+    }
 
     // 4. Moderação via Sightengine (se credenciais disponíveis)
     const sightengineUser = process.env.SIGHTENGINE_API_USER
