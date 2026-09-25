@@ -10,7 +10,7 @@ Uma etapa por vez. Cada etapa concluída = commit local. Push só com ok do Lean
 - [x] 4. Correção dos erros encontrados na etapa 3 (feita junto com a 3; baixas prioridades anotadas)
 - [x] 5. Auditoria visual / UI / UX (telas, responsividade, estados de loading/erro/vazio)
 - [x] 6. Correção dos problemas da etapa 5 (feita junto; baixas prioridades anotadas)
-- [ ] 7. Pré-publicação: build, variáveis de ambiente, segurança (checklist global), keep-alive Supabase, domínio
+- [~] 7. Pré-publicação: build, variáveis de ambiente, segurança (checklist global), keep-alive Supabase, domínio
 - [ ] 8. Publicar
 
 ## Registro
@@ -207,3 +207,33 @@ Páginas públicas (/, /login, /cadastro, /termos, /privacidade, /acesso) em 390
 - [x] L14 rascunho do cadastro (CPF, nome, telefone) ficava no localStorage pra sempre se a pessoa desistisse. Agora sessionStorage + limpeza do legado.
 - [x] Cadastro: Turnstile em pt-br. Caixa de aceite conferida visualmente no passo 7.
 - Nota: sessão do Supabase fica em cookie legível por JS (padrão do @supabase/ssr, necessário pro cliente). Mitigado pelo CSP e pela correção dos pontos de XSS. Aceito como limitação.
+
+
+## Etapa 7 — Pré-publicação (estado em 2026-09-25)
+- [x] `tsc` ok, `npm run build` ok, `npm audit` 0 vulnerabilidades, ESLint 301 erros (eram 302 no início; todos antigos, a maioria `any`).
+- [x] Keep-alive do Supabase: crons diários da Vercel fazem consultas reais.
+- [x] Termos/Privacidade publicados, linkados no rodapé e no cadastro, liberados do portão.
+- [ ] Variáveis na Vercel (conta adminmeandyou — não troquei de conta): conferir que existem em Production:
+  NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY, NEXT_PUBLIC_APP_URL, RESEND_API_KEY, RESEND_FROM_EMAIL, CRON_SECRET, ABACATEPAY_API_KEY, ABACATEPAY_WEBHOOK_SECRET, TURNSTILE_SECRET_KEY, NEXT_PUBLIC_TURNSTILE_SITE_KEY, SIGHTENGINE_API_USER, SIGHTENGINE_API_SECRET, GOOGLE_CLOUD_VISION_API_KEY, NEXT_PUBLIC_VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, CLOUDFLARE_TURN_KEY_ID, CLOUDFLARE_TURN_TOKEN, OPENROUTER_API_KEY, HUGGINGFACE_API_TOKEN, DEEPAI_API_KEY.
+  (Sem CRON_SECRET os crons e o keep-alive não rodam; sem TURNSTILE_SECRET_KEY o cadastro fica sem anti-robô; sem SIGHTENGINE a moderação de foto não roda.)
+- [ ] Push para o GitHub (adminmeandyou) = deploy automático. Aguardando ok.
+
+## RESUMO PARA O LEANDRO — o que falta decidir/fazer (em ordem)
+
+BLOQUEADORES (sem isso não publicar):
+1. Aplicar as migrations no Supabase > SQL Editor, um arquivo por vez, nesta ordem (todas testadas num banco local e idempotentes):
+   1) migration_lgpd_aceite.sql  2) migration_seguranca_colunas_protegidas.sql  3) migration_seguranca_leitura.sql
+   4) migration_seguranca_rpcs_usuario.sql  5) migration_rpc_distancia.sql  6) migration_cancellation_requests.sql
+   7) migration_push_subscriptions.sql  8) migration_seguranca_escritas.sql  9) migration_seguranca_storage.sql
+   10) migration_seguranca_fotos.sql  11) migration_analytics_events.sql
+   → depois disso eu re-rodo os testes de invasão em produção (usuário temporário, apagado na hora).
+2. Autorizar o push (deploy). Logo DEPOIS do deploy: 12) migration_seguranca_admin.sql.
+3. Conferir as variáveis da Vercel listadas acima.
+
+DECISÕES:
+- D1 Documentos/selfie da verificação: apagar automaticamente após aprovar (recomendado) ou guardar X dias?
+- D2 Dados do controlador para Termos/Privacidade: CNPJ/razão social (ou nome/CPF do responsável) e endereço.
+- D3 Exportação de dados (LGPD art. 18): botão no app agora ou só por e-mail no lançamento?
+- D6 Confirmar se as 3 contas com role=admin são suas (Supabase > profiles, filtro role = admin).
+- D14 Prova social inventada na landing ("+1.000 pessoas", notificações falsas de cadastro): manter, trocar por número real ou remover?
+- L13 Link de descadastro nos e-mails de marketing antes de usar campanhas.
