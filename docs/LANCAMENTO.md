@@ -5,7 +5,7 @@ Uma etapa por vez. Cada etapa concluída = commit local. Push só com ok do Lean
 ## Etapas
 
 - [x] 1. LGPD — levantar o que o app já tem e o que falta (termos, privacidade, cookies, consentimento, exclusão de conta, exportação de dados, dados sensíveis/biometria)
-- [~] 2. LGPD — aplicar as correções levantadas na etapa 1
+- [x] 2. LGPD — aplicar as correções levantadas na etapa 1
 - [ ] 3. Auditoria de funcionalidades (fluxos principais: cadastro, verificação, perfil, discovery, match, chat, videochamada, planos/pagamento)
 - [ ] 4. Correção dos erros encontrados na etapa 3
 - [ ] 5. Auditoria visual / UI / UX (telas, responsividade, estados de loading/erro/vazio)
@@ -73,4 +73,6 @@ Correção: migration com trigger que bloqueia essas colunas para quem não é s
 - [x] L5 lista completa de operadores (Supabase, Vercel, Resend, Cloudflare, AbacatePay, Google Vision, Sightengine, ipapi.co) e transferência internacional (art. 33).
 - [x] L6 texto das fotos corrigido (bucket `fotos` é público).
 - [x] L10 parágrafo sobre dados sensíveis opcionais (o app tem orientação sexual, swing, fetiche, poliamor, religião).
-- [ ] L4 URL de documento (depende de D1) · [ ] L7 exportação (D3) · [ ] L9 controlador (D2) · [ ] L11 exclusão cobre tabelas novas (etapa 3)
+- [x] L11 exclusão de conta agora apaga 30 tabelas a mais (amigos, salas, camarote, sessões, tokens, dislikes, saldos, emblemas, xp...). Registros financeiros ficam guardados de propósito (obrigação fiscal).
+- [ ] L4 URL de documento (depende de D1) · [ ] L7 exportação (D3) · [ ] L9 controlador (D2)
+- D7: registros financeiros (payments, subscriptions, store_purchases, fichas_transactions) ficam após a exclusão. Confirmar isso na política (hoje ela fala em "prazo legal", ok) ou anonimizar.

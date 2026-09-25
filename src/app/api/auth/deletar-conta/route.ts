@@ -78,10 +78,48 @@ export async function DELETE(req: NextRequest) {
       supabase.from('daily_streaks').delete().eq('user_id', userId),
       supabase.from('push_subscriptions').delete().eq('user_id', userId),
       supabase.from('analytics_events').delete().eq('user_id', userId),
+      // LGPD: demais tabelas com dado pessoal (várias sem FK/cascade para profiles).
+      // Mantidos de propósito: payments, subscriptions, store_purchases, fichas_transactions
+      // (registros financeiros com obrigação legal de guarda).
+      supabase.from('dislikes').delete().or(`from_user.eq.${userId},to_user.eq.${userId}`),
+      supabase.from('mode_likes').delete().eq('user_id', userId),
+      supabase.from('match_ratings').delete().or(`rater_id.eq.${userId},rated_id.eq.${userId}`),
+      supabase.from('bolo_reports').delete().or(`reporter_id.eq.${userId},reported_id.eq.${userId}`),
+      supabase.from('friend_messages').delete().eq('sender_id', userId),
+      supabase.from('friend_gifts').delete().or(`sender_id.eq.${userId},receiver_id.eq.${userId}`),
+      supabase.from('friend_ratings').delete().or(`rater_id.eq.${userId},rated_id.eq.${userId}`),
+      supabase.from('room_messages').delete().eq('sender_id', userId),
+      supabase.from('room_members').delete().eq('user_id', userId),
+      supabase.from('room_chat_requests').delete().eq('requester_id', userId),
+      supabase.from('room_profile_requests').delete().eq('requester_id', userId),
+      supabase.from('camarote_messages').delete().eq('sender_id', userId),
+      supabase.from('safety_records').delete().eq('user_id', userId),
+      supabase.from('user_sessions').delete().eq('user_id', userId),
+      supabase.from('auth_2fa_pending').delete().eq('user_id', userId),
+      supabase.from('email_change_tokens').delete().eq('user_id', userId),
+      supabase.from('password_reset_tokens').delete().eq('user_id', userId),
+      supabase.from('verification_tokens').delete().eq('user_id', userId),
+      supabase.from('access_requests').delete().eq('requester_id', userId),
+      supabase.from('user_badges').delete().eq('user_id', userId),
+      supabase.from('xp_events').delete().eq('user_id', userId),
+      supabase.from('video_minutes').delete().eq('user_id', userId),
+      supabase.from('user_video_extra').delete().eq('user_id', userId),
+      supabase.from('filters').delete().eq('user_id', userId),
+      supabase.from('user_fichas').delete().eq('user_id', userId),
+      supabase.from('user_superlikes').delete().eq('user_id', userId),
+      supabase.from('user_boosts').delete().eq('user_id', userId),
+      supabase.from('user_tickets').delete().eq('user_id', userId),
+      supabase.from('user_lupas').delete().eq('user_id', userId),
+      supabase.from('user_rewinds').delete().eq('user_id', userId),
     ])
     relationalDeletes.forEach((r, i) => {
       if (r.status === 'rejected') console.error(`Deletar relacional[${i}] error:`, r.reason)
+      else if (r.value.error) console.error(`Deletar relacional[${i}] error:`, r.value.error.message)
     })
+
+    // friendships por último entre os relacionais (friend_messages/gifts podem referenciá-la)
+    const { error: friendErr } = await supabase.from('friendships').delete().or(`requester_id.eq.${userId},receiver_id.eq.${userId}`)
+    if (friendErr) console.error('Deletar friendships error:', friendErr.message)
 
     // video_calls pode não existir em todos os ambientes — ignorar erro silenciosamente
     try {
