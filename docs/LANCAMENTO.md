@@ -199,7 +199,7 @@ Páginas públicas (/, /login, /cadastro, /termos, /privacidade, /acesso) em 390
 - [x] UI3 [MÉDIA] ipapi.co era chamado do navegador em toda página (plano grátis = 1.000/dia; já dava 429 no teste) e a landing pedia permissão de GPS ao visitante só para escrever a cidade. Landing/lançamento agora usam `/api/geo` (cabeçalho `x-vercel-ip-city`, grátis, sem GPS).
 - [x] Política: incluído OpenStreetMap/Nominatim (busca do local do encontro) e ajustado o uso do ipapi.
 - UI4 [BAIXA] /matches: erro "Lock broken by another request with the 'steal' option" (vários clientes Supabase disputando a sessão). Não quebra a tela; revisar depois.
-- UI5 [BAIXA] /loja em 390px: subtítulo quebra em 3 linhas e botões apertam o título.
+- [x] UI5 /loja em 390px: subtítulo não quebra mais em 3 linhas (reticências), ícone não encolhe.
 - UI6 [BAIXA] /cadastro no desktop: botão "Continuar" fica muito abaixo do campo (vão grande).
 - [x] UI7 [ALTA] /destaque (Plus/Black) ficava com spinner infinito: o efeito dependia de [period, canAccess] mas saía cedo sem `user`; se o plano carregava antes do usuário, nunca recarregava. `user` adicionado às dependências. (Varri os outros 10 avisos do ESLint do mesmo tipo: todos usam `user?.id` e estão corretos.)
 - [x] UI8 [MÉDIA] /indicar: lista de indicados nunca carregava (embed `referred:referred_id(name)` dava 400, sem FK). Agora busca os nomes numa 2ª consulta.
