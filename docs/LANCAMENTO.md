@@ -49,3 +49,13 @@ Problemas encontrados:
   - PENDENTE D4: aplicar `migration_lgpd_aceite.sql` no Supabase (só adiciona 3 colunas).
 - [x] L2 checkbox obrigatório de consentimento (CPF, documento, selfie/biometria, leitura automática) na tela "Seus dados" da verificação.
 - [x] L12 (novo) rascunho da verificação (selfie base64 + CPF) saía no localStorage e ficava pra sempre; agora vai para o sessionStorage e o resto legado é apagado.
+
+## !!! BLOQUEADOR DE LANÇAMENTO — S1 (achado em 2026-09-25)
+
+Testado em produção com um usuário temporário (apagado logo depois): qualquer usuário logado, usando só a chave pública (anon) pelo navegador, consegue fazer UPDATE no próprio registro e mudar:
+- `profiles.role = 'admin'` → vira admin completo (painel /admin, exportar usuários com CPF, injetar saldo)
+- `profiles.plan` / `users.plan = 'black'` → plano pago de graça
+- `profiles.verified` / `users.verified = true` → selo de verificado sem documento
+- `profiles.banned` / `users.banned = false` → se desbane sozinho
+Causa: a policy de UPDATE de `profiles`/`users` deixa o dono editar qualquer coluna.
+Correção: migration com trigger que bloqueia essas colunas para quem não é service_role/admin (ver `migration_seguranca_colunas_protegidas.sql`). PRECISA SER APLICADA no Supabase antes de publicar (D5).
