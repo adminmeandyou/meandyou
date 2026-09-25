@@ -29,13 +29,15 @@ function ProgressBar({ atual, total }: { atual: number; total: number }) {
 const DRAFT_KEY = 'meandyou_cadastro_draft'
 
 function salvarRascunho(dados: Record<string, unknown>) {
-  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(dados)) } catch {}
+  try { sessionStorage.setItem(DRAFT_KEY, JSON.stringify(dados)) } catch {}
 }
 function limparRascunho() {
-  try { localStorage.removeItem(DRAFT_KEY) } catch {}
+  try { sessionStorage.removeItem(DRAFT_KEY) } catch {}
 }
 function carregarRascunho() {
-  try { const raw = localStorage.getItem(DRAFT_KEY); return raw ? JSON.parse(raw) : null } catch { return null }
+  // Rascunho tem CPF/telefone: fica só na aba (sessionStorage). Remove o legado do localStorage.
+  try { localStorage.removeItem(DRAFT_KEY) } catch {}
+  try { const raw = sessionStorage.getItem(DRAFT_KEY); return raw ? JSON.parse(raw) : null } catch { return null }
 }
 
 function CadastroInner() {

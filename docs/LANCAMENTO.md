@@ -204,3 +204,5 @@ Páginas públicas (/, /login, /cadastro, /termos, /privacidade, /acesso) em 390
 - [x] UI7 [ALTA] /destaque (Plus/Black) ficava com spinner infinito: o efeito dependia de [period, canAccess] mas saía cedo sem `user`; se o plano carregava antes do usuário, nunca recarregava. `user` adicionado às dependências. (Varri os outros 10 avisos do ESLint do mesmo tipo: todos usam `user?.id` e estão corretos.)
 - [x] UI8 [MÉDIA] /indicar: lista de indicados nunca carregava (embed `referred:referred_id(name)` dava 400, sem FK). Agora busca os nomes numa 2ª consulta.
 - [x] UI9a /streak "1 Dias" → "1 Dia". - UI9 [BAIXA] /roleta usa roda de cores arco-íris (anti-padrão visual da sua lista).
+- [x] L14 rascunho do cadastro (CPF, nome, telefone) ficava no localStorage pra sempre se a pessoa desistisse. Agora sessionStorage + limpeza do legado.
+- [x] Cadastro: Turnstile em pt-br. Caixa de aceite conferida visualmente no passo 7.
