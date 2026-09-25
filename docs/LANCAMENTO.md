@@ -49,6 +49,7 @@ Problemas encontrados:
 - D11 [BLOQUEADOR] Aplicar `migration_seguranca_rpcs_usuario.sql` (ver "Ordem para aplicar").
 - D12 [BLOQUEADOR] Aplicar `migration_seguranca_escritas.sql`.
 - D13 [BLOQUEADOR] Aplicar `migration_seguranca_storage.sql`, `migration_seguranca_fotos.sql` e `migration_analytics_events.sql`.
+- D14 Prova social inventada na landing ("+1.000 pessoas", notificações falsas de cadastro): manter, trocar por número real, ou remover?
 
 ## Etapa 2 — Correções LGPD (em andamento)
 
@@ -185,3 +186,10 @@ Todas as migrations de segurança foram aplicadas 2x (idempotentes) num Postgres
 - ok: cabeçalhos de segurança no next.config (X-Frame-Options, Referrer-Policy, Permissions-Policy, CSP).
 - ok: keep-alive do Supabase — crons diários da Vercel (`/api/cron/expire-*`) fazem consultas reais, protegidos por CRON_SECRET. CONFERIR na etapa 7 que CRON_SECRET está setado na Vercel.
 - [x] Next 16.1.6 tinha vulnerabilidade CRÍTICA → atualizado para 16.3.6 (mesma major) + `npm audit fix` (ws, nanoid, uuid, svix, resend...). `npm audit`: 0 vulnerabilidades. tsc e build ok.
+
+## Etapa 5 — Auditoria visual / UI / UX (em andamento)
+
+Páginas públicas (/, /login, /cadastro, /termos, /privacidade, /acesso) em 390px e 1440px: sem erro de console, sem rolagem horizontal, visual coerente (escuro, Fraunces + Plus Jakarta, vermelho #E11D48).
+- [x] Termos e Privacidade estavam atrás do portão `/acesso` (ninguém de fora conseguia ler). Liberadas no middleware.
+- [x] Resumo da Privacidade dizia "excluir todos os seus dados"; agora menciona a retenção legal de pagamentos.
+- D14 [DECISÃO — risco legal] Prova social inventada na landing: "+1.000 pessoas já estão usando em {cidade do visitante}" é fixo no código (hoje há 9 perfis), e há notificações aleatórias "Fulana, 28 · acabou de se cadastrar em X" (LandingClient.tsx:184) e "+1.000 pessoas já garantiram" no /lancamento. Isso pode ser propaganda enganosa (CDC art. 37) e é o anti-padrão 12 da sua lista. Sugestão: trocar por número real vindo do banco ou tirar. Não mexi porque é texto seu.
