@@ -6,7 +6,7 @@ Uma etapa por vez. Cada etapa concluída = commit local. Push só com ok do Lean
 
 - [x] 1. LGPD — levantar o que o app já tem e o que falta (termos, privacidade, cookies, consentimento, exclusão de conta, exportação de dados, dados sensíveis/biometria)
 - [x] 2. LGPD — aplicar as correções levantadas na etapa 1
-- [ ] 3. Auditoria de funcionalidades (fluxos principais: cadastro, verificação, perfil, discovery, match, chat, videochamada, planos/pagamento)
+- [~] 3. Auditoria de funcionalidades (fluxos principais: cadastro, verificação, perfil, discovery, match, chat, videochamada, planos/pagamento)
 - [ ] 4. Correção dos erros encontrados na etapa 3
 - [ ] 5. Auditoria visual / UI / UX (telas, responsividade, estados de loading/erro/vazio)
 - [ ] 6. Correção dos problemas da etapa 5
@@ -76,3 +76,17 @@ Correção: migration com trigger que bloqueia essas colunas para quem não é s
 - [x] L11 exclusão de conta agora apaga 30 tabelas a mais (amigos, salas, camarote, sessões, tokens, dislikes, saldos, emblemas, xp...). Registros financeiros ficam guardados de propósito (obrigação fiscal).
 - [ ] L4 URL de documento (depende de D1) · [ ] L7 exportação (D3) · [ ] L9 controlador (D2)
 - D7: registros financeiros (payments, subscriptions, store_purchases, fichas_transactions) ficam após a exclusão. Confirmar isso na política (hoje ela fala em "prazo legal", ok) ou anonimizar.
+
+## Etapa 3 — Auditoria de funcionalidades (em andamento)
+
+Base: `tsc` ok, `npm run build` ok (sem erros).
+
+Corrigido:
+- [x] F1 [ALTA] `api/confirmar-verificacao` dava o selo de verificado sem conferir se documento/selfie foram enviados (dava pra chamar direto). Agora exige `frente.jpg` e `selfie.jpg` no storage.
+- [x] F2 [ALTA] `api/enviar-verificacao` era pública e usava userId/e-mail do body: qualquer um disparava e-mail do MeAndYou para qualquer endereço e invalidava o link de outros usuários. Agora usa a sessão.
+- [x] F3 [MÉDIA] `api/upload-verificacao` gravava URL "pública" em colunas inexistentes de `profiles` (falhava calada). Agora grava o caminho em `users.documento_url / documento_verso_url / selfie_url` (resolve L4).
+- [x] F4 [MÉDIA] upload sem validação de tamanho/tipo real. Agora: máx. 10 MB + checagem por magic bytes (JPEG/PNG/WebP/PDF).
+- [x] F5 [ALTA] foto da galeria subia sem compressão; acima de 4,5 MB a Vercel recusa e o usuário via só "Erro ao fazer upload". Agora comprime no navegador (1800px, JPEG 0.85); PDF limitado a 4 MB.
+
+Pendente (anotado):
+- F6 [ALTA] `/admin/seguranca` (aba verificações) consulta `profiles.email` e `profiles.selfie_url`, que não existem → a lista vem sempre vazia/erro. Precisa de uma API admin que leia `users` e gere URL assinada do bucket `documentos`. Junto com D1.

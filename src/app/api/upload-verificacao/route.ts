@@ -54,7 +54,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Caminho inválido' }, { status: 403 })
     }
 
+    if (file.size > 10 * 1024 * 1024) {
+      return NextResponse.json({ error: 'Imagem muito grande (máx. 10 MB).' }, { status: 413 })
+    }
+
     const buffer = await file.arrayBuffer()
+
+    // Tipo real pelo conteúdo (magic bytes), não pelo nome/mime enviados pelo cliente
+    const b = new Uint8Array(buffer.slice(0, 12))
+    const isJpeg = b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff
+    const isPng  = b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47
+    const isWebp = b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50
+    const isPdf  = b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46
+    if (!isJpeg && !isPng && !isWebp && !isPdf) {
+      return NextResponse.json({ error: 'Formato de imagem não suportado.' }, { status: 415 })
+    }
+    const contentType = isJpeg ? 'image/jpeg' : isPng ? 'image/png' : isWebp ? 'image/webp' : 'application/pdf'
 
     // Validação com Google Vision — apenas para frente do documento
     const isDocFrente = caminho.includes('/frente')
@@ -123,7 +138,7 @@ export async function POST(req: NextRequest) {
     const { error } = await supabase.storage
       .from('documentos')
       .upload(caminho, buffer, {
-        contentType: file.type || 'image/jpeg',
+        contentType,
         upsert: true,
       })
 
@@ -132,15 +147,17 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    // Salva a URL pública do arquivo na coluna correta do perfil
-    const publicUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/documentos/${caminho}`
-    const profileUpdate: Record<string, string> = {}
-    if (caminho.includes('/frente')) profileUpdate.doc_frente_url = publicUrl
-    else if (caminho.includes('/verso')) profileUpdate.doc_verso_url = publicUrl
-    else if (caminho.includes('/selfie')) profileUpdate.selfie_url = publicUrl
+    // Guarda o caminho interno (bucket privado `documentos`) em `users` — as colunas
+    // doc_*_url não existem em profiles e a URL /object/public/ não abre num bucket privado.
+    // Para exibir no admin, gerar URL assinada a partir deste caminho.
+    const userUpdate: Record<string, string> = {}
+    if (caminho.includes('/frente')) userUpdate.documento_url = caminho
+    else if (caminho.includes('/verso')) userUpdate.documento_verso_url = caminho
+    else if (caminho.includes('/selfie')) userUpdate.selfie_url = caminho
 
-    if (Object.keys(profileUpdate).length > 0) {
-      await supabase.from('profiles').update(profileUpdate).eq('id', userId)
+    if (Object.keys(userUpdate).length > 0) {
+      const { error: updErr } = await supabase.from('users').update(userUpdate).eq('id', userId)
+      if (updErr) console.error('[upload-verificacao] falha ao salvar caminho:', updErr.message)
     }
 
     return NextResponse.json({ ok: true })

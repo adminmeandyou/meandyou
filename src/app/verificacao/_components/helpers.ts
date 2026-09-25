@@ -127,3 +127,26 @@ export function isMobile() {
   const hasTouchApi = 'ontouchstart' in window || navigator.maxTouchPoints > 0
   return hasTouchApi
 }
+
+// ─── Compressão antes do upload ───────────────────────────────────────────────
+// Funções serverless da Vercel recusam corpo acima de ~4,5 MB. Fotos de celular
+// passam disso fácil, então redimensiona (lado maior 1800px) e regrava em JPEG.
+export async function comprimirImagem(file: File, maxLado = 1800, qualidade = 0.85): Promise<File> {
+  if (!file.type.startsWith('image/')) return file
+  try {
+    const bitmap = await createImageBitmap(file)
+    const escala = Math.min(1, maxLado / Math.max(bitmap.width, bitmap.height))
+    const w = Math.round(bitmap.width * escala)
+    const h = Math.round(bitmap.height * escala)
+    const canvas = document.createElement('canvas')
+    canvas.width = w
+    canvas.height = h
+    canvas.getContext('2d')!.drawImage(bitmap, 0, 0, w, h)
+    bitmap.close()
+    const blob = await new Promise<Blob | null>(r => canvas.toBlob(r, 'image/jpeg', qualidade))
+    if (!blob || blob.size >= file.size) return file
+    return new File([blob], file.name.replace(/\.\w+$/, '') + '.jpg', { type: 'image/jpeg' })
+  } catch {
+    return file
+  }
+}

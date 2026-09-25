@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { sendVerificationEmail } from '@/app/lib/email'
+import { createClient as createServerClient } from '@/lib/supabase/server'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,10 +12,14 @@ const supabase = createClient(
 
 export async function POST(req: NextRequest) {
   try {
-    const { userId, email, nome } = await req.json()
-    if (!userId || !email) {
-      return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
-    }
+    // userId e e-mail vêm SEMPRE da sessão — antes vinham do body e a rota era pública
+    // (permitia disparar e-mail para qualquer endereço e invalidar tokens de outro usuário)
+    const sessionClient = await createServerClient()
+    const { data: { user } } = await sessionClient.auth.getUser()
+    if (!user?.email) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
+    const userId = user.id
+    const email  = user.email
+    const { nome } = await req.json().catch(() => ({ nome: '' }))
 
     // 1. Rate limit: máximo 3 reenvios por hora por usuário
     const umaHoraAtras = new Date(Date.now() - 60 * 60 * 1000).toISOString()

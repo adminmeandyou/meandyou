@@ -42,6 +42,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Token expirado. Solicite um novo link.' }, { status: 400 })
     }
 
+    // 1b. Exige que frente do documento e selfie tenham sido enviados de fato
+    // (antes dava para ganhar o selo chamando esta rota direto, sem enviar nada)
+    const { data: arquivos } = await supabase.storage.from('documentos').list(userId)
+    const nomes = new Set((arquivos ?? []).map(a => a.name))
+    if (!nomes.has('frente.jpg') || !nomes.has('selfie.jpg')) {
+      return NextResponse.json({ error: 'Envie o documento e a selfie antes de concluir.' }, { status: 400 })
+    }
+
     // ✅ CORREÇÃO ATOMICIDADE: verificar usuário PRIMEIRO, depois marcar token como usado.
     // Antes: token era marcado 'used' e em seguida users.verified era setado. Se o segundo
     // falhasse, o usuário ficava preso (token usado + não verificado, sem saída).

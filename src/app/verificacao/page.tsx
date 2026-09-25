@@ -7,7 +7,7 @@ import { Check, AlertCircle, Lightbulb, Camera, FolderOpen, RefreshCw, ScanFace 
 import {
   Status, ModoCaptura,
   PASSOS_LIVENESS, LIVENESS_ICON, FACE_API_CDNS, VERIF_DRAFT_KEY,
-  salvarVerifDraft, carregarVerifDraft, limparVerifDraft,
+  salvarVerifDraft, carregarVerifDraft, limparVerifDraft, comprimirImagem,
   validarCPF, formatarCPF, dist, calcularEAR, verificarNitidez, isMobile,
 } from './_components/helpers'
 
@@ -243,6 +243,7 @@ function Verificacao() {
     const permitidos = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf']
     if (!permitidos.includes(file.type)) { setErroForm('Formato inválido. Use JPG, PNG, WEBP ou PDF.'); return }
     if (file.size > 10 * 1024 * 1024) { setErroForm('Arquivo muito grande. Máximo 10MB.'); return }
+    if (file.type === 'application/pdf' && file.size > 4 * 1024 * 1024) { setErroForm('PDF muito grande. Máximo 4MB, ou envie uma foto do documento.'); return }
     setErroForm('')
     if (tipo === 'frente') setFrenteUploadFalhou(false)
     else setVersoUploadFalhou(false)
@@ -503,7 +504,7 @@ function Verificacao() {
 
   const uploadArquivo = async (file: File, caminho: string) => {
     const form = new FormData()
-    form.append('file', file)
+    form.append('file', await comprimirImagem(file))
     form.append('caminho', caminho)
     form.append('userId', userId)
     form.append('token', tokenAtual)
