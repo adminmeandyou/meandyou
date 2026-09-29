@@ -241,7 +241,7 @@ DECISÕES (29/09: Leandro pediu pra decidir pela lei):
 - [FEITO] D6 Leandro confirmou: as 3 contas admin são dele.
 - [FEITO] D14 CDC art. 37: removidas notificações falsas, "+1.000", barras de vagas e "X pessoas agora" (landing e /lancamento). Cronômetro mantido (usa data real do admin).
 - [FEITO] L13 LGPD art. 8 §5: link "Descadastrar" + List-Unsubscribe (one-click) nas campanhas; /api/descadastro com HMAC, GET só confirma, POST desliga. Testado local.
-- [PENDENTE] D2: LGPD art. 9 IV + Decreto 7.962/2013 art. 2 (venda online): nome empresarial e CNPJ (ou nome e CPF), endereço físico e e-mail na política/termos. Só o Leandro tem esses dados.
+- [FEITO] D2: LGPD art. 9 IV + Decreto 7.962/2013 art. 2: Termos e Privacidade identificam "MeAndYou, marca operada por V.I.B COMERCIAL LTDA", CNPJ 53.094.492/0001-98, Rua Magnólia, 479, Box 22, Caiçaras, BH/MG, CEP 31230-060 (conferido na base pública do CNPJ). No ar desde 29/09.
 (histórico abaixo)
 - D1 Documentos/selfie da verificação: apagar automaticamente após aprovar (recomendado) ou guardar X dias?
 - D2 Dados do controlador para Termos/Privacidade: CNPJ/razão social (ou nome/CPF do responsável) e endereço.
