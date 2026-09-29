@@ -593,6 +593,7 @@ function IncomingCallScreen({ callerName, callerPhoto, onAccept, onReject }: {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
           <button
             onClick={onReject}
+            aria-label="Recusar chamada"
             style={{ width: 76, height: 76, borderRadius: '50%', background: 'linear-gradient(135deg, #E11D48, #be123c)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 12px 32px rgba(225,29,72,0.45)' }}
           >
             <PhoneOff size={28} color="#fff" strokeWidth={1.8} />
@@ -602,6 +603,7 @@ function IncomingCallScreen({ callerName, callerPhoto, onAccept, onReject }: {
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
           <button
             onClick={onAccept}
+            aria-label="Atender chamada"
             style={{ width: 76, height: 76, borderRadius: '50%', background: '#10b981', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', boxShadow: '0 12px 32px rgba(16,185,129,0.45), 0 0 0 8px rgba(16,185,129,0.08)' }}
           >
             <Phone size={28} color="#fff" strokeWidth={1.8} />
