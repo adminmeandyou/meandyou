@@ -65,7 +65,7 @@ export function SecuritySheet({
             <div style={{ width:44,height:44,borderRadius:12,background:'rgba(255,255,255,0.06)',border:'1px solid var(--border)',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0 }}><HeartCrack size={20} color="rgba(248,249,250,0.50)" strokeWidth={1.5} /></div>
             <div style={{ textAlign:'left',flex:1 }}>
               <p style={{ fontSize:15,fontWeight:600,color:'var(--text)',margin:0 }}>Desfazer match</p>
-              <p style={{ fontSize:12,color:'var(--muted-2)',margin:'3px 0 0' }}>Encerrar conversa imediatamente</p>
+              <p style={{ fontSize:12,color:'var(--muted-2)',margin:'3px 0 0' }}>Encerra a conversa e a pessoa não aparece mais para você</p>
             </div>
           </button>
         )}

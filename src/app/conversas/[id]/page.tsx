@@ -992,7 +992,7 @@ export default function ChatPage() {
               { icon: friendSent ? <Check size={16} strokeWidth={1.5} /> : <UserPlus size={16} strokeWidth={1.5} />, label: friendSent ? 'Cancelar pedido' : 'Adicionar como amigo', sub: friendSent ? 'Toque para cancelar' : 'Conectem-se fora do app', onClick: () => { setShowMenu(false); handleAddFriend() }, success: friendSent },
               ...(messages.length >= 5 ? [{ icon: <Star size={16} strokeWidth={1.5} />, label: ratingDone ? 'Alterar avaliação' : 'Avaliar conversa', sub: 'Avaliação anônima', onClick: () => { setShowMenu(false); setShowRatingModal(true) } }] : []),
               ...(boloOportunidade && !boloDone ? [{ icon: <Coffee size={16} strokeWidth={1.5} />, label: 'O encontro aconteceu?', sub: 'Conte como foi', onClick: () => { setShowMenu(false); setShowBoloModal(true) } }] : []),
-              { icon: <Shield size={16} strokeWidth={1.5} />, label: 'Central de segurança', sub: 'Denunciar, bloquear, modo invisível', onClick: () => { setShowMenu(false); setShowSecuritySheet(true) } },
+              { icon: <Shield size={16} strokeWidth={1.5} />, label: 'Central de segurança', sub: 'Denunciar ou desfazer match e bloquear', onClick: () => { setShowMenu(false); setShowSecuritySheet(true) } },
             ].map((item, i, arr) => (
               <button key={i} onClick={item.onClick} style={{
                 width: '100%', display: 'flex', alignItems: 'center', gap: 12,
