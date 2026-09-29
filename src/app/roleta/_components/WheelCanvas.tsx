@@ -181,12 +181,12 @@ export default function WheelCanvas({ wheelSize, spinning, canSpin, tickets, spi
       >
         {spinning ? (
           <><Loader2 size={18} strokeWidth={1.5} style={{ animation: 'spin-anim 0.8s linear infinite' }} />Girando...</>
-        ) : tickets === 0 ? (
-          <><Ticket size={16} strokeWidth={1.5} />Próximo giro em {countdown}</>
-        ) : spinsLeft === 0 ? (
-          <><Ticket size={16} strokeWidth={1.5} />Limite diário, renova em {countdown}</>
-        ) : (
+        ) : spinsLeft > 0 ? (
+          <><Zap size={16} strokeWidth={2} />Girar grátis</>
+        ) : tickets > 0 ? (
           <><Zap size={16} strokeWidth={2} />Girar (1 ticket)</>
+        ) : (
+          <><Ticket size={16} strokeWidth={1.5} />Próximo giro grátis em {countdown}</>
         )}
       </button>
 
@@ -199,7 +199,7 @@ export default function WheelCanvas({ wheelSize, spinning, canSpin, tickets, spi
           ))}
         </div>
         <span style={{ fontSize: '12px', color: spinsLeft > 0 ? '#eab308' : 'var(--muted)' }}>
-          {spinsLeft > 0 ? `${spinsLeft} ${spinsLeft > 1 ? 'disponíveis' : 'disponível'}` : 'Esgotados'}
+          {spinsLeft > 0 ? `${spinsLeft} grátis hoje` : 'Grátis de hoje usados'}
         </span>
       </div>
     </div>

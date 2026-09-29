@@ -79,9 +79,10 @@ export default function RoletaPage() {
     return () => clearInterval(id)
   }, [])
 
+  // Giros grátis do dia pelo plano; depois deles, cada giro gasta 1 ticket (regra em spin_roleta)
   const dailyTickets = limits.ticketsPerDay
   const spinsLeft    = Math.max(0, dailyTickets - spinsToday)
-  const canSpin      = tickets > 0 && spinsLeft > 0 && !spinning
+  const canSpin      = (spinsLeft > 0 || tickets > 0) && !spinning
 
   useEffect(() => {
     function updateSize() {
@@ -103,14 +104,15 @@ export default function RoletaPage() {
 
   async function loadData() {
     setLoading(true)
-    const today = new Date().toISOString().split('T')[0]
+    const inicioDoDia = new Date()
+    inicioDoDia.setHours(0, 0, 0, 0)
     const [{ data: tk }, { data: hist }, { data: profile }, { data: streakData }] = await Promise.all([
       supabase.from('user_tickets').select('amount').eq('user_id', user!.id).single(),
       supabase.from('roleta_history').select('reward_type, reward_amount, created_at').eq('user_id', user!.id).order('created_at', { ascending: false }).limit(10),
       supabase.from('profiles').select('xp, xp_level, xp_bonus_until').eq('id', user!.id).single(),
       supabase.from('daily_streaks').select('current_streak').eq('user_id', user!.id).single(),
     ])
-    const { count } = await supabase.from('roleta_history').select('*', { count: 'exact', head: true }).eq('user_id', user!.id).gte('created_at', `${today}T00:00:00`)
+    const { count } = await supabase.from('roleta_history').select('*', { count: 'exact', head: true }).eq('user_id', user!.id).gte('created_at', inicioDoDia.toISOString())
     setTickets(tk?.amount ?? 0)
     setSpinsToday(count ?? 0)
     setHistory(hist ?? [])
@@ -219,7 +221,7 @@ export default function RoletaPage() {
       playWinSound(prize.was_jackpot)
       play(prize.reward_type === 'fichas' ? 'coin' : 'success')
       setResult(prize)
-      setTickets(t => t - 1)
+      if (spinsLeft === 0) setTickets(t => t - 1)
       setSpinsToday(s => s + 1)
       setHistory(prev => [
         { reward_type: prize.reward_type, reward_amount: prize.reward_amount, created_at: new Date().toISOString() },
