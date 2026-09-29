@@ -209,6 +209,15 @@ export default function SalaChatPage() {
     }
   }, [myUserId, loading, roomId, myNickname])
 
+  // ─── Sair ao desmontar (seta de voltar, menu inferior) ─────────────────────
+  // Navegação interna não dispara beforeunload: sem isto a pessoa ficava como membro
+  // até a limpeza por inatividade. A rota ignora se já saiu pelo botão de sair.
+  useEffect(() => {
+    return () => {
+      navigator.sendBeacon('/api/salas/sair', new Blob([JSON.stringify({ roomId })], { type: 'application/json' }))
+    }
+  }, [roomId])
+
   // ─── Realtime: novas mensagens (com reconexao) ─────────────────────────────
   useEffect(() => {
     if (!myUserId || loading) return
@@ -222,6 +231,9 @@ export default function SalaChatPage() {
         filter: `room_id=eq.${roomId}`,
       }, (payload) => {
         const msg = payload.new as RoomMessage
+        // Entrada/saída gera mensagem de sistema. O evento DELETE de room_members não chega
+        // com filtro no Realtime, então o contador de pessoas só atualizava ao recarregar.
+        if (msg.is_system) loadMembers()
         setMessages(prev => {
           if (prev.find(m => m.id === msg.id)) return prev
           return [...prev, msg]
