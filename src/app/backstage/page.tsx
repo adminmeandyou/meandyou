@@ -64,7 +64,8 @@ function CamaroteApp({ onBack }: { onBack: () => void }) {
 
   function handleTermsAccepted() {
     localStorage.setItem(TERMS_KEY, 'accepted')
-    setStep('categories')
+    // Quem já escolheu interesses (outro aparelho, navegador limpo) vai direto para a vitrine
+    init()
   }
 
   async function handleCategoriesSaved(cats: string[]) {
