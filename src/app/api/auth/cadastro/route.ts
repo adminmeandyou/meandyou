@@ -36,10 +36,19 @@ function validarCPF(cpf: string): boolean {
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, senha, nomeCompleto, nomeExibicao, telefone, cpf, refCode, cfToken, aceiteTermos } = await req.json()
+    const { email, senha, nomeCompleto, nomeExibicao, telefone, cpf: cpfBruto, refCode, cfToken, aceiteTermos } = await req.json()
+    // CPF sempre só com dígitos: com máscara ("123.456.789-09") passava pela regra de 1 conta por CPF
+    const cpf = typeof cpfBruto === 'string' ? cpfBruto.replace(/\D/g, '') : ''
 
     if (!email || !senha || !nomeCompleto || !nomeExibicao || !telefone || !cpf) {
       return NextResponse.json({ error: 'Preencha todos os campos' }, { status: 400 })
+    }
+    const campos = [email, senha, nomeCompleto, nomeExibicao, telefone]
+    if (campos.some(v => typeof v !== 'string') || email.length > 254 || nomeCompleto.length > 120 || nomeExibicao.length > 40 || telefone.length > 20 || senha.length > 72) {
+      return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
+    }
+    if (senha.length < 8) {
+      return NextResponse.json({ error: 'A senha deve ter pelo menos 8 caracteres.' }, { status: 400 })
     }
 
     if (aceiteTermos !== true) {

@@ -144,8 +144,8 @@ function CadastroInner() {
       }
     }
     if (step === 1) {
-      if (senha.length < 6) {
-        setErro('A senha deve ter pelo menos 6 caracteres.')
+      if (senha.length < 8) {
+        setErro('A senha deve ter pelo menos 8 caracteres.')
         return
       }
     }

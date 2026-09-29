@@ -30,8 +30,8 @@ function NovaSenhaInner() {
       return
     }
 
-    if (senha.length < 6) {
-      setErro('A senha deve ter pelo menos 6 caracteres')
+    if (senha.length < 8) {
+      setErro('A senha deve ter pelo menos 8 caracteres')
       setLoading(false)
       return
     }

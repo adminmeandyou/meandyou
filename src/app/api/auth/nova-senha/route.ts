@@ -11,6 +11,9 @@ export async function POST(req: NextRequest) {
   try {
     const { token, senha } = await req.json()
     if (!token || !senha) return NextResponse.json({ error: 'Dados inválidos' }, { status: 400 })
+    if (typeof senha !== 'string' || senha.length < 8 || senha.length > 72) {
+      return NextResponse.json({ error: 'A senha deve ter pelo menos 8 caracteres.' }, { status: 400 })
+    }
 
     // Busca o token
     const { data: tokenData, error: tokenError } = await supabase
