@@ -74,10 +74,10 @@ export function DailyMatchView({ userId, localFilters, userPlan }: { userId: str
               const scoreBtoA = calcCompatibility(row as Record<string, boolean>, myFilters)
               scoreMap[row.user_id] = Math.round((scoreAtoB + scoreBtoA) / 2)
             }
-            daily = candidates
-              .filter(p => (scoreMap[p.id] ?? 0) >= 59)
-              .sort((a, b) => (scoreMap[b.id] ?? 0) - (scoreMap[a.id] ?? 0))
-              .slice(0, getDailyMatchLimit(userPlan))
+            const ordenados = [...candidates].sort((a, b) => (scoreMap[b.id] ?? 0) - (scoreMap[a.id] ?? 0))
+            const compativeis = ordenados.filter(p => (scoreMap[p.id] ?? 0) >= 59)
+            // Sem ninguém acima de 59% (base pequena ou filtros vazios): mostra os mais compatíveis mesmo assim
+            daily = (compativeis.length ? compativeis : ordenados).slice(0, getDailyMatchLimit(userPlan))
             setScores(scoreMap)
           } else {
             daily = candidates.slice(0, getDailyMatchLimit(userPlan))
@@ -87,7 +87,8 @@ export function DailyMatchView({ userId, localFilters, userPlan }: { userId: str
         }
 
         setProfiles(daily)
-        localStorage.setItem(cacheKey, JSON.stringify(daily))
+        // Só guarda o dia quando há sugestões; vazio tenta de novo na próxima abertura
+        if (daily.length) localStorage.setItem(cacheKey, JSON.stringify(daily))
       } catch {}
     }
 
