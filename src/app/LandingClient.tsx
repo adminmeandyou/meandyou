@@ -57,8 +57,6 @@ export default function LandingClient({ config, content }: LandingClientProps) {
   const [menuAberto, setMenuAberto] = useState(false)
   const lastScrollY = useRef(0)
 
-  const [notifList, setNotifList] = useState<Array<{id: number, text: string, exiting: boolean}>>([])
-  const notifIdRef = useRef(0)
 
   const [userCity, setUserCity] = useState('')
 
@@ -146,59 +144,6 @@ export default function LandingClient({ config, content }: LandingClientProps) {
       .catch(() => {})
   }, [])
 
-  useEffect(() => {
-    if (checking) return
-
-    const nm = ['Ana','Carlos','Juliana','Marcos','Beatriz','Rafael','Leticia','Diego','Priscila','Bruno','Fernanda','Gustavo','Isabela','Thiago','Camila','Leonardo','Vanessa','Eduardo','Patricia','Rodrigo','Mariana','Felipe','Natalia','Vinicius','Larissa','Amanda','Ricardo','Bianca','Fabricio','Simone','Caio','Rebeca','Henrique','Luciana','Andre','Sabrina','Alex','Carolina','Marcelo','Giovana','Renata','Daniel','Pedro','Tatiana','Luiz','Monica','Gabriel','Aline','Sergio','Claudia','Paulo','Silvia','Eliane','Tiago','Bruna','Joao','Adriana','Flavia','Matheus']
-    const ct = userCity
-      ? [userCity,'São Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiânia','Campinas','Florianópolis','Belém','São Luís','Maceió','Natal','Teresina','Campo Grande','João Pessoa','Aracaju','Porto Velho','Macapá','Boa Vista','Palmas','Vitória','Macaé','Ribeirão Preto','Uberlândia','Contagem']
-      : ['São Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiânia','Campinas','Florianópolis','Belém','São Luís','Maceió','Natal','Teresina','Campo Grande','João Pessoa','Aracaju','Porto Velho','Macapá','Boa Vista','Palmas','Vitória','Macaé','Ribeirão Preto','Uberlândia','Contagem','Feira de Santana']
-    const filtros = ['que não queira ter filhos','que tenha pets','que seja evangélico(a)','que seja espiritualista','que seja vegano(a)','que seja vegetariano(a)','que não fume','que não beba','que faça academia','que goste de viajar','que seja introvertido(a)','que seja extrovertido(a)','que goste de leitura','que seja gamer','que goste de anime','que goste de sertanejo','que goste de funk','que goste de rock','que goste de MPB','que tenha cabelo crespo','que tenha olhos verdes','que seja loiro(a)','que goste de churrasco','que goste de trilha e natureza','que seja ateu(a)','que seja agnóstico(a)','que seja católico(a)','que curta K-pop','que seja divorciado(a)','que tenha tatuagem','que use óculos','que goste de dança','que goste de fotografia','que goste de séries','que goste de meditação','que seja empreendedor(a)','que trabalhe remoto','que tenha barba','que seja bissexual','que curta pagode','que seja solteiro(a) sem filhos','que goste de teatro','que pratique yoga','que goste de jazz','que goste de filmes']
-    const premios = ['3 SuperCurtidas','1 Boost','5 Lupas','2 Desfazer Curtidas','3 tickets de roleta','1 dia de Modo Invisível','5 SuperCurtidas','10 Lupas']
-
-    const rnd = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)]
-    const idade = () => Math.floor(Math.random() * 37) + 18
-
-    const gens = [
-      () => `${rnd(nm)}, ${idade()} · acabou de se cadastrar em ${rnd(ct)}`,
-      () => `${rnd(nm)}, ${idade()} · verificou identidade agora`,
-      () => `${rnd(nm)} de ${rnd(ct)} · assinou o Plus`,
-      () => `${rnd(nm)} de ${rnd(ct)} · assinou o Camarote Black`,
-      () => `${rnd(nm)} de ${rnd(ct)} · assinou o Essencial`,
-      () => `${rnd(nm)}, ${idade()} · fez upgrade para Plus`,
-      () => `${rnd(nm)}, ${idade()} · fez upgrade para Black`,
-      () => `${rnd(nm)} de ${rnd(ct)} · deu match agora`,
-      () => `${rnd(nm)}, ${idade()} · enviou uma SuperCurtida`,
-      () => `${rnd(nm)}, ${idade()} · ganhou ${rnd(premios)} na roleta`,
-      () => `${rnd(nm)} de ${rnd(ct)} · ganhou ${rnd(premios)} na roleta`,
-      () => `${rnd(nm)}, ${idade()} · atingiu streak de 7 dias`,
-      () => `${rnd(nm)}, ${idade()} · atingiu streak de 14 dias`,
-      () => `${rnd(nm)}, ${idade()} · atingiu streak de 30 dias`,
-      () => `${rnd(nm)} de ${rnd(ct)} · configurou ${Math.floor(Math.random()*30)+20} filtros`,
-      () => `${rnd(nm)}, ${idade()} · curtiu ${Math.floor(Math.random()*8)+3} perfis hoje`,
-      () => `${rnd(nm)} de ${rnd(ct)} · está procurando alguém ${rnd(filtros)}`,
-      () => `${rnd(nm)}, ${idade()} · está procurando alguém ${rnd(filtros)}`,
-      () => `${rnd(nm)} de ${rnd(ct)} · perdeu um match hoje`,
-      () => `${rnd(nm)}, ${idade()} · encontrou uma conexão em ${rnd(ct)}`,
-      () => `Novo perfil em ${rnd(ct)} · ${rnd(nm)}, ${idade()} verificado`,
-      () => `${rnd(nm)} de ${rnd(ct)} · usou uma Lupa no Destaque`,
-      () => `${rnd(nm)}, ${idade()} · resgatou prêmio do calendário`,
-    ]
-
-    let timer: ReturnType<typeof setTimeout>
-    const addNotif = () => {
-      const text = rnd(gens)()
-      const id = ++notifIdRef.current
-      setNotifList(prev => [...prev.slice(-2), { id, text, exiting: false }])
-      setTimeout(() => setNotifList(prev => prev.map(x => x.id === id ? { ...x, exiting: true } : x)), 4200)
-      setTimeout(() => setNotifList(prev => prev.filter(x => x.id !== id)), 4800)
-      timer = setTimeout(addNotif, 4000 + Math.random() * 4000)
-    }
-
-    timer = setTimeout(addNotif, 1500 + Math.random() * 2000)
-    return () => clearTimeout(timer)
-  }, [checking, userCity]) // eslint-disable-line
-
   const jsonLd = {
     '@context': 'https://schema.org',
     '@graph': [
@@ -254,15 +199,6 @@ export default function LandingClient({ config, content }: LandingClientProps) {
         <PlanosSection config={config} />
         <SocialFaqSection items={faqItems} />
         <FooterSection />
-
-        <div className="lp-notif-wrap-v2">
-          {notifList.map(n => (
-            <div key={n.id} className={`lp-notif-v2 ${n.exiting ? 'lp-notif-v2--out' : ''}`}>
-              <span className="lp-notif-dot-v2" />
-              {n.text}
-            </div>
-          ))}
-        </div>
       </div>
     </>
   )

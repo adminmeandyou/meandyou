@@ -11,7 +11,7 @@ interface HeroProps {
   content: LandingContentMap
 }
 
-export default function HeroSection({ userCity, config, content }: HeroProps) {
+export default function HeroSection({ config, content }: HeroProps) {
   const badge = pick(content, 'hero', 'badge', 'Relacionamentos com intenção real')
   const tituloParte1 = pick(content, 'hero', 'titulo_parte1', 'Você decide')
   const tituloParte2 = pick(content, 'hero', 'titulo_parte2', 'quem entra')
@@ -57,10 +57,6 @@ export default function HeroSection({ userCity, config, content }: HeroProps) {
             </a>
           </div>
           <p className="lp-hero-microcopy">A partir de <strong>R${precoEssencial}/mês</strong> · Sem conta gratuita</p>
-          <div className="lp-hero-social-proof">
-            <span className="lp-hero-social-proof-dot" />
-            <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas já estão usando {userCity ? <>em <strong className="lp-hero-proof-number">{userCity}</strong></> : 'na sua região mesmo'}</span>
-          </div>
         </div>
 
         <div className="lp-hero-right">

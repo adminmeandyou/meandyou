@@ -70,8 +70,6 @@ export default function LancamentoClient({ config, content }: LancamentoClientPr
   const [menuAberto, setMenuAberto] = useState(false)
   const lastScrollY = useRef(0)
 
-  const [notifList, setNotifList] = useState<Array<{id: number, text: string, exiting: boolean}>>([])
-  const notifIdRef = useRef(0)
 
   const [userCity, setUserCity] = useState('')
 
@@ -159,45 +157,6 @@ export default function LancamentoClient({ config, content }: LancamentoClientPr
       .catch(() => {})
   }, [])
 
-  useEffect(() => {
-    if (checking) return
-
-    const nm = ['Ana','Carlos','Juliana','Marcos','Beatriz','Rafael','Leticia','Diego','Priscila','Bruno','Fernanda','Gustavo','Isabela','Thiago','Camila','Leonardo','Vanessa','Eduardo','Patricia','Rodrigo','Mariana','Felipe','Natalia','Vinicius','Larissa','Amanda','Ricardo','Bianca','Fabricio','Simone','Caio','Rebeca','Henrique','Luciana','Andre','Sabrina','Alex','Carolina','Marcelo','Giovana']
-    const ct = userCity
-      ? [userCity,'São Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiânia','Campinas','Florianópolis','Belém']
-      : ['São Paulo','Rio de Janeiro','Belo Horizonte','Curitiba','Porto Alegre','Salvador','Fortaleza','Recife','Manaus','Goiânia','Campinas','Florianópolis','Belém','Natal']
-    const filtros = ['que não queira ter filhos','que tenha pets','que seja evangélico(a)','que não fume','que não beba','que faça academia','que goste de viajar','que goste de leitura','que seja gamer','que goste de cinema','que seja solteiro(a) sem filhos']
-
-    const rnd = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)]
-    const idade = () => Math.floor(Math.random() * 37) + 18
-
-    const gens = [
-      () => `${rnd(nm)}, ${idade()} · garantiu acesso antecipado em ${rnd(ct)}`,
-      () => `${rnd(nm)}, ${idade()} · recebeu o Emblema de Fundador agora`,
-      () => `${rnd(nm)} de ${rnd(ct)} · entrou no lançamento`,
-      () => `${rnd(nm)}, ${idade()} · verificou identidade e já está ativo`,
-      () => `${rnd(nm)} de ${rnd(ct)} · começou os 2 meses grátis`,
-      () => `${rnd(nm)}, ${idade()} · deu match logo no primeiro dia`,
-      () => `${rnd(nm)}, ${idade()} · está procurando alguém ${rnd(filtros)}`,
-      () => `${rnd(nm)} de ${rnd(ct)} · configurou mais de 30 filtros`,
-      () => `${rnd(nm)}, ${idade()} · ganhou tickets de roleta na boas-vindas`,
-      () => `${rnd(nm)} de ${rnd(ct)} · fez upgrade para Plus durante o lançamento`,
-    ]
-
-    let timer: ReturnType<typeof setTimeout>
-    const addNotif = () => {
-      const text = rnd(gens)()
-      const id = ++notifIdRef.current
-      setNotifList(prev => [...prev.slice(-2), { id, text, exiting: false }])
-      setTimeout(() => setNotifList(prev => prev.map(x => x.id === id ? { ...x, exiting: true } : x)), 4200)
-      setTimeout(() => setNotifList(prev => prev.filter(x => x.id !== id)), 4800)
-      timer = setTimeout(addNotif, 4000 + Math.random() * 4000)
-    }
-
-    timer = setTimeout(addNotif, 1500 + Math.random() * 2000)
-    return () => clearTimeout(timer)
-  }, [checking, userCity]) // eslint-disable-line
-
   if (checking) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#08090E' }}>
@@ -212,7 +171,7 @@ export default function LancamentoClient({ config, content }: LancamentoClientPr
     <div className="lp">
       <NavBar navVisible={navVisible} menuAberto={menuAberto} setMenuAberto={setMenuAberto} />
 
-      <HeroLancamento userCity={userCity} notifList={notifList} config={config} content={content} />
+      <HeroLancamento userCity={userCity} config={config} content={content} />
 
       <IdentLancamento />
       <PilaresLancamento />
@@ -237,15 +196,6 @@ export default function LancamentoClient({ config, content }: LancamentoClientPr
 
       <SegurancaDicasSection />
       <FooterSection />
-
-      <div className="lp-notif-wrap-v2">
-        {notifList.map(n => (
-          <div key={n.id} className={`lp-notif-v2 ${n.exiting ? 'lp-notif-v2--out' : ''}`}>
-            <span className="lp-notif-dot-v2" />
-            {n.text}
-          </div>
-        ))}
-      </div>
     </div>
   )
 }

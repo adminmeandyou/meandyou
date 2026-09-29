@@ -6,24 +6,20 @@ import { formatBRL, pick, type SiteConfigPublic, type LandingContentMap } from '
 
 interface HeroProps {
   userCity: string
-  notifList: Array<{id: number, text: string, exiting: boolean}>
   config: SiteConfigPublic
   content: LandingContentMap
 }
 
 const LAUNCH_END_FALLBACK = new Date('2026-05-15T00:00:00')
-const VAGAS_TOTAL = 1000
-const VAGAS_BASE = 847
 
 function pad(n: number) { return String(n).padStart(2, '0') }
 
-export default function HeroLancamento({ userCity, notifList, config, content }: HeroProps) {
+export default function HeroLancamento({ config, content }: HeroProps) {
   const [currentCard, setCurrentCard] = useState(0)
   const [swipeDir, setSwipeDir] = useState<null | 'left' | 'right' | 'up'>(null)
   const swipeLock = useRef(false)
 
   const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 })
-  const [vagasPreenchidas, setVagasPreenchidas] = useState(VAGAS_BASE)
 
   const launchEnd = config.lancamento_fim
     ? new Date(config.lancamento_fim)
@@ -45,15 +41,6 @@ export default function HeroLancamento({ userCity, notifList, config, content }:
     return () => clearInterval(id)
   }, [launchEnd])
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      if (Math.random() > 0.65) {
-        setVagasPreenchidas(v => Math.min(v + 1, VAGAS_TOTAL - 10))
-      }
-    }, 12000)
-    return () => clearInterval(id)
-  }, [])
-
   const handleSwipe = (dir: 'left' | 'right' | 'up') => {
     if (swipeLock.current) return
     swipeLock.current = true
@@ -68,7 +55,6 @@ export default function HeroLancamento({ userCity, notifList, config, content }:
   const prev = swipeCards[(currentCard + swipeCards.length - 1) % swipeCards.length]
   const next = swipeCards[(currentCard + 1) % swipeCards.length]
   const card = swipeCards[currentCard]
-  const vagasPct = Math.round((vagasPreenchidas / VAGAS_TOTAL) * 100)
 
   const precoEssencial = formatBRL(config.preco_essencial)
   const badgeTxt = pick(content, 'hero', 'badge', 'Lançamento · Acesso antecipado disponível')
@@ -144,26 +130,6 @@ export default function HeroLancamento({ userCity, notifList, config, content }:
             </div>
           )}
 
-          <div style={{ marginBottom: 24, maxWidth: 380 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-              <span style={{ fontSize: 12, color: 'rgba(248,249,250,0.55)', fontWeight: 500 }}>
-                <strong style={{ color: 'var(--text)' }}>{vagasPreenchidas.toLocaleString('pt-BR')}</strong> vagas preenchidas de {VAGAS_TOTAL.toLocaleString('pt-BR')}
-              </span>
-              <span style={{ fontSize: 12, color: '#E11D48', fontWeight: 700 }}>{vagasPct}%</span>
-            </div>
-            <div style={{ height: 6, background: 'rgba(255,255,255,0.08)', borderRadius: 100, overflow: 'hidden' }}>
-              <div style={{
-                height: '100%', borderRadius: 100,
-                width: `${vagasPct}%`,
-                background: 'linear-gradient(90deg, #E11D48, #F43F5E)',
-                transition: 'width 1s ease',
-              }} />
-            </div>
-            <p style={{ fontSize: 11, color: 'rgba(248,249,250,0.35)', marginTop: 5 }}>
-              Quando chegar em 1.000, o lançamento encerra
-            </p>
-          </div>
-
           <div className="lp-actions">
             <a href="/cadastro" className="lp-btn-main">
               {ctaTexto}
@@ -173,10 +139,6 @@ export default function HeroLancamento({ userCity, notifList, config, content }:
           <p className="lp-hero-microcopy">
             {microcopyPrefixo} <strong>R${precoEssencial}</strong>{microcopySufixo}
           </p>
-          <div className="lp-hero-social-proof">
-            <span className="lp-hero-social-proof-dot" />
-            <span><strong className="lp-hero-proof-number">+1.000</strong> pessoas já garantiram seu acesso {userCity ? <>em <strong className="lp-hero-proof-number">{userCity}</strong></> : 'na sua região'}</span>
-          </div>
         </div>
 
         <div className="lp-hero-right">
@@ -238,14 +200,6 @@ export default function HeroLancamento({ userCity, notifList, config, content }:
                   onError={(e) => { (e.target as HTMLImageElement).style.display='none' }} />
               </div>
             </div>
-          </div>
-
-          <div className="lp-notif-area">
-            {notifList.map(n => (
-              <div key={n.id} className={`lp-notif-item ${n.exiting ? 'lp-notif-exit' : 'lp-notif-enter'}`}>
-                <span className="lp-fc-dot" />{n.text}
-              </div>
-            ))}
           </div>
         </div>
       </div>
