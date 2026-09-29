@@ -8,7 +8,7 @@ import Image from 'next/image'
 import {
   ArrowLeft, ChevronRight, User, HelpCircle, FileText, Shield, Trash2,
   LogOut, CreditCard, Headphones, ShieldCheck, Monitor, Mail, Bell,
-  Eye, EyeOff, Lock, Smartphone, Bug, Paperclip, X, Heart, Users, Crown, Compass, Volume2,
+  Eye, EyeOff, Lock, Smartphone, Bug, Paperclip, X, Heart, Users, Crown, Compass, Volume2, Download,
 } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
@@ -42,15 +42,16 @@ function ToggleSwitch({ ativo, onChange, loading }: { ativo: boolean; onChange: 
 
 // ─── Row de link (ícone + label + chevron) ─────────────────────────────────────
 function LinkRow({
-  href, icon, label, sub, badge, perigo = false, last = false,
+  href, icon, label, sub, badge, perigo = false, last = false, download = false,
 }: {
   href: string; icon: React.ReactNode; label: string;
-  sub?: string; badge?: React.ReactNode; perigo?: boolean; last?: boolean;
+  sub?: string; badge?: React.ReactNode; perigo?: boolean; last?: boolean; download?: boolean;
 }) {
   const accent = perigo ? '#f87171' : '#fff'
   const bgIcon = perigo ? 'rgba(239,68,68,0.10)' : 'rgba(255,255,255,0.07)'
-  return (
-    <Link href={href} style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', textDecoration: 'none', borderBottom: last ? 'none' : '1px solid rgba(255,255,255,0.04)' }}>
+  const estilo: React.CSSProperties = { display: 'flex', alignItems: 'center', gap: '14px', padding: '14px 16px', textDecoration: 'none', borderBottom: last ? 'none' : '1px solid rgba(255,255,255,0.04)' }
+  const conteudo = (
+    <>
       <div style={{ width: '36px', height: '36px', borderRadius: '10px', backgroundColor: bgIcon, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: perigo ? '#f87171' : 'rgba(255,255,255,0.55)' }}>
         {icon}
       </div>
@@ -60,8 +61,11 @@ function LinkRow({
       </div>
       {badge && <span style={{ marginRight: '4px' }}>{badge}</span>}
       <ChevronRight size={16} color="rgba(255,255,255,0.18)" />
-    </Link>
+    </>
   )
+  // Arquivo gerado por rota de API: <a download> em vez de navegação do Next
+  if (download) return <a href={href} download style={estilo}>{conteudo}</a>
+  return <Link href={href} style={estilo}>{conteudo}</Link>
 }
 
 // ─── Row de toggle (ícone + label + switch) ────────────────────────────────────
@@ -447,7 +451,8 @@ export default function ConfiguracoesPage() {
         {/* ── LEGAL ── */}
         <CardSection titulo="Legal">
           <LinkRow href="/termos" icon={<FileText size={17} />} label="Termos de uso" />
-          <LinkRow href="/privacidade" icon={<Shield size={17} />} label="Política de privacidade" last />
+          <LinkRow href="/privacidade" icon={<Shield size={17} />} label="Política de privacidade" />
+          <LinkRow href="/api/meus-dados" icon={<Download size={17} />} label="Baixar meus dados" sub="Cópia dos seus dados em arquivo (LGPD)" download last />
         </CardSection>
 
         {/* ── ZONA DE RISCO ── */}
