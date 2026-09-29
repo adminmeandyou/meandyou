@@ -53,9 +53,13 @@ export default function CamaroteTerms({ onAccept, onBack }: Props) {
         </div>
 
         {/* Checkbox */}
-        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 24, cursor: 'pointer' }}>
+        <label
+          role="checkbox"
+          aria-checked={accepted}
+          onClick={() => setAccepted(a => !a)}
+          style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 24, cursor: 'pointer' }}
+        >
           <div
-            onClick={() => setAccepted(a => !a)}
             style={{
               width: 22, height: 22, borderRadius: 6, flexShrink: 0, marginTop: 1,
               background: accepted ? G : 'rgba(255,255,255,0.05)',
