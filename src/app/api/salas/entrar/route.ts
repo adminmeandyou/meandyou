@@ -35,7 +35,10 @@ export async function POST(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Não autorizado' }, { status: 401 })
 
-  const { roomId, nickname: customNickname } = await req.json()
+  const { roomId, nickname: apelidoBruto } = await req.json()
+  // Apelido: texto de 2 a 20 caracteres; fora disso gera um automático
+  const apelidoLimpo = typeof apelidoBruto === 'string' ? apelidoBruto.trim().replace(/\s+/g, ' ') : ''
+  const customNickname = apelidoLimpo.length >= 2 && apelidoLimpo.length <= 20 ? apelidoLimpo : ''
   if (!roomId) return NextResponse.json({ error: 'roomId obrigatório' }, { status: 400 })
 
   // Verificar acesso por tipo de sala
@@ -63,7 +66,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Salas disponíveis a partir do plano Plus' }, { status: 403 })
   }
 
-  const nickname = customNickname?.trim() || generateNickname()
+  const nickname = customNickname || generateNickname()
 
   // Entrada atomica: lock de capacidade, limpeza de fantasmas e INSERT em uma unica transacao SQL.
   // Resolve race condition onde multiplos usuarios entram simultaneamente e ultrapassam max_members.
@@ -87,6 +90,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Sala cheia' }, { status: 409 })
   }
   if (res.status === 'ja_membro') {
+    // Ainda constava na sala (saída não registrada): vale o apelido que a pessoa acabou de escolher
+    const novo = customNickname
+    if (novo && novo !== res.nickname) {
+      const { error: updErr } = await supabaseAdmin
+        .from('room_members')
+        .update({ nickname: novo, last_heartbeat: new Date().toISOString() })
+        .eq('room_id', roomId)
+        .eq('user_id', user.id)
+      if (!updErr) return NextResponse.json({ ok: true, nickname: novo, alreadyIn: true })
+    }
     return NextResponse.json({ ok: true, nickname: res.nickname, alreadyIn: true })
   }
 

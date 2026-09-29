@@ -30,6 +30,8 @@ const nextConfig: NextConfig = {
               "connect-src 'self' https://akignnxgjyryqcgxesqn.supabase.co wss://akignnxgjyryqcgxesqn.supabase.co https://api.abacatepay.com https://api.resend.com https://me-and-you-195o0nxw.livekit.cloud wss://me-and-you-195o0nxw.livekit.cloud https://ipapi.co https://nominatim.openstreetmap.org",
               "frame-src 'self' https://challenges.cloudflare.com",
               "media-src 'self' blob:",
+              // canvas-confetti cria um Worker a partir de blob: (sem isto a animação era bloqueada)
+              "worker-src 'self' blob:",
             ].join('; '),
           },
         ],
