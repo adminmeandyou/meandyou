@@ -98,7 +98,8 @@ export async function POST(req: NextRequest) {
     const bonusAtivo = profileBonus?.xp_bonus_until && new Date(profileBonus.xp_bonus_until) > new Date()
     const finalXp = bonusAtivo ? baseXp * 2 : baseXp
 
-    const { data: rpcResult, error } = await supabase.rpc('award_xp', {
+    // award_xp só é executável pelo service_role (migration_seguranca_rpcs_servidor.sql)
+    const { data: rpcResult, error } = await admin.rpc('award_xp', {
       p_user_id:    user.id,
       p_event_type: event_type,
       p_base_xp:    finalXp,
