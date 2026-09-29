@@ -16,6 +16,7 @@ import { DesktopActions, MobileActionBar } from './ActionButtons'
 import { StatusChips, BioSection, InterestsGrid, InfoGrid, TrustScore, RatingsCard, FilterTags } from './ContentSections'
 import { BadgesSection, HiddenBadgesToggle } from './BadgesSection'
 import { BadgeModal, EmergencyModal, DenunciaModal } from './Modals'
+import { avisarMatch } from '@/app/lib/match'
 
 export default function VerPerfilPage() {
   const params = useParams()
@@ -184,13 +185,17 @@ export default function VerPerfilPage() {
         { onConflict: 'from_user,to_user' }
       )
     } else {
-      const { error: swipeErr } = await supabase.rpc('process_like', {
+      const { data: likeRes, error: swipeErr } = await supabase.rpc('process_like', {
         p_user_id: userId, p_target_id: profileId, p_is_superlike: action === 'superlike',
       })
       if (swipeErr) {
         toast.show('Não foi possível enviar a curtida. Tente novamente.', 'error')
         setSwipeAction(null)
         return
+      }
+      if (likeRes?.is_match) {
+        avisarMatch(userId, profileId)
+        toast.show('É um match! A conversa está em Matches.', 'success')
       }
     }
     setTimeout(() => router.back(), 800)

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { avisarMatch } from '@/app/lib/match'
 import Image from 'next/image'
 import { Heart, Loader2, X, Sparkles } from 'lucide-react'
 import { supabase } from '@/app/lib/supabase'
@@ -118,10 +119,15 @@ export function DailyMatchView({ userId, localFilters, userPlan }: { userId: str
     setLiked(prev => new Set(prev).add(profile.id))
     haptics.medium()
     try {
-      await supabase.rpc('process_like', {
+      const { data } = await supabase.rpc('process_like', {
         p_user_id: userId, p_target_id: profile.id, p_is_superlike: false,
       })
-      toast.success('Curtida enviada!')
+      if (data?.is_match) {
+        avisarMatch(userId, profile.id)
+        toast.success('É um match! A conversa está em Matches.')
+      } else {
+        toast.success('Curtida enviada!')
+      }
     } catch {
       toast.error('Erro ao curtir. Tente novamente.')
     }

@@ -123,6 +123,15 @@ export default function CurtidasPage() {
         const { data: eu } = await supabase.from('profiles').select('photo_best').eq('id', user!.id).single()
         if (liker) setNovoMatch({ matchId: data.match_id, liker, myPhoto: eu?.photo_best ?? null })
         setLikers((prev) => prev.filter((l) => l.from_user !== profileId))
+        // Avisa a outra pessoa do match (mesmo fluxo do Descobrir)
+        const { data: s } = await supabase.auth.getSession()
+        if (s.session?.access_token) {
+          fetch('/api/matches/notify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${s.session.access_token}` },
+            body: JSON.stringify({ fromUserId: user!.id, toUserId: profileId }),
+          }).catch(() => {})
+        }
       } else {
         toast.success('Curtida enviada!')
       }

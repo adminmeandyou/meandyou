@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useCallback, useRef, useEffect } from 'react'
+import { avisarMatch } from '@/app/lib/match'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import Image from 'next/image'
@@ -88,11 +89,12 @@ export default function CamaroteVitrine({ myCategories, onChangeCategories, onBa
   async function handleLike() {
     if (!user || !currentProfile) return
     setLikedIds(prev => new Set(prev).add(currentProfile.id))
-    await supabase.rpc('process_like', {
+    const { data } = await supabase.rpc('process_like', {
       p_user_id: user.id,
       p_target_id: currentProfile.id,
       p_is_superlike: false,
     })
+    if (data?.is_match) avisarMatch(user.id, currentProfile.id)
   }
 
   function handlePass() {

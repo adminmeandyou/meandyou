@@ -9,6 +9,7 @@ import Image from 'next/image'
 import { Flame, MapPin, Zap, Lock, ArrowLeft, Loader2, Search } from 'lucide-react'
 import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
+import { avisarMatch } from '@/app/lib/match'
 
 type Period = 'day' | 'week' | 'month'
 
@@ -85,13 +86,18 @@ export default function DestaquesPage() {
 
   async function handleLike(profileId: string) {
     haptics.medium()
-    await supabase.rpc('process_like', {
+    const { data } = await supabase.rpc('process_like', {
       p_user_id: user?.id,
       p_target_id: profileId,
       p_is_superlike: false,
     })
     setProfiles((prev) => prev.filter((p) => p.profile_id !== profileId))
-    toast.success('Curtida enviada!')
+    if (data?.is_match && user) {
+      avisarMatch(user.id, profileId)
+      toast.success('É um match! A conversa está em Matches.')
+    } else {
+      toast.success('Curtida enviada!')
+    }
   }
 
   return (
