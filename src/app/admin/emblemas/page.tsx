@@ -1,16 +1,14 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '@/app/lib/supabase'
 import {
   Plus, Search, Edit2, Trash2, Award, Users, CheckCircle, XCircle,
   Zap, Upload, X, RefreshCw, Sparkles
 } from 'lucide-react'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+// Cliente único do navegador: um segundo cliente disputava a trava da sessão
+// ("Lock broken by another request with the 'steal' option") e travava páginas
 
 const RARIDADES = ['comum', 'raro', 'super_raro', 'epico', 'lendario', 'super_lendario']
 const RARIDADE_LABELS: Record<string, string> = {

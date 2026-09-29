@@ -1,14 +1,12 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '@/app/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { BadgeUnlockedToast, BadgeData } from './BadgeUnlockedToast'
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+// Cliente único do navegador: um segundo cliente disputava a trava da sessão
+// ("Lock broken by another request with the 'steal' option") e travava páginas
 
 const CHECK_INTERVAL_MS = 5 * 60 * 1000 // 5 minutos entre checagens automáticas
 const LS_KEY = 'may_badge_last_check'
