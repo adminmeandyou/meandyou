@@ -8,12 +8,22 @@ const supabaseAdmin = createClient(
 
 type NotificationType = 'match' | 'message' | 'superlike' | 'boost_expired' | 'plan_expired' | 'friend_request' | 'friend_accepted' | 'friend_message' | 'friend_nudge' | 'friend_gift' | 'meeting_invite' | 'meeting_accepted' | 'meeting_declined' | 'meeting_rescheduled' | 'meeting_cancelled'
 
-function initWebPush() {
-  webpush.setVapidDetails(
-    `mailto:${process.env.RESEND_FROM_EMAIL || 'noreply@meandyou.com.br'}`,
-    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-    process.env.VAPID_PRIVATE_KEY!
-  )
+// Devolve false se as chaves VAPID não estiverem configuradas (antes lançava erro e
+// derrubava a rota inteira, inclusive a notificação salva no app)
+function initWebPush(): boolean {
+  const publica = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+  const privada = process.env.VAPID_PRIVATE_KEY
+  if (!publica || !privada) {
+    console.error('[push] VAPID não configurado: notificação salva no app, push no celular não enviado')
+    return false
+  }
+  try {
+    webpush.setVapidDetails('mailto:noreply@meandyou.com.br', publica, privada)
+    return true
+  } catch (err) {
+    console.error('[push] VAPID inválido:', err)
+    return false
+  }
 }
 
 interface SendPushParams {
@@ -33,19 +43,17 @@ export async function enviarPushParaUsuario({
   data = {},
   fromUserId,
 }: SendPushParams) {
-  initWebPush()
   // 1. Salvar notificação no banco
-  try {
-    await supabaseAdmin.from('notifications').insert({
-      user_id:      targetUserId,
-      type,
-      from_user_id: fromUserId ?? null,
-      read:         false,
-      data,
-    })
-  } catch (err) {
-    console.error('Erro ao inserir notificação:', err)
-  }
+  const { error: insertError } = await supabaseAdmin.from('notifications').insert({
+    user_id:      targetUserId,
+    type,
+    from_user_id: fromUserId ?? null,
+    read:         false,
+    data,
+  })
+  if (insertError) console.error('Erro ao inserir notificação:', insertError)
+
+  if (!initWebPush()) return
 
   // 2. Buscar subscriptions do usuário
   const { data: subs } = await supabaseAdmin
