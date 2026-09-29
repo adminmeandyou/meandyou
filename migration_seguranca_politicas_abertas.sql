@@ -36,3 +36,10 @@ drop policy if exists "members_select_all" on public.room_members;
 drop policy if exists "members_select_authenticated" on public.room_members;
 create policy "members_select_authenticated" on public.room_members
   for select to authenticated using (true);
+
+-- meandyou_room_messages_only_members é RESTRICTIVE: sozinha ninguém lê. A permissiva
+-- que existia era a messages_select_all (aberta), então cria uma permissiva só para membros.
+drop policy if exists "messages_select_members" on public.room_messages;
+create policy "messages_select_members" on public.room_messages
+  for select to authenticated
+  using (exists (select 1 from public.room_members m where m.room_id = room_messages.room_id and m.user_id = auth.uid()));
