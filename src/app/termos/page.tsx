@@ -57,7 +57,7 @@ export default function Termos() {
         <Section titulo="1. Aceitação dos termos">
           Ao criar uma conta no MeAndYou, você declara que leu, entendeu e concorda integralmente com estes Termos de Uso.
           Caso não concorde com qualquer disposição, não utilize a plataforma.
-          Estes termos constituem um acordo legal entre você ("Usuário") e MeAndYou ("Plataforma", "nós").
+          Estes termos constituem um acordo legal entre você ("Usuário") e MeAndYou, marca operada por V.I.B COMERCIAL LTDA, inscrita no CNPJ sob o nº 53.094.492/0001-98, com sede na Rua Magnólia, 479, Box 22, Caiçaras, Belo Horizonte/MG, CEP 31230-060 ("Plataforma", "nós"). Contato: adminmeandyou@proton.me.
         </Section>
 
         <Section titulo="2. Elegibilidade">

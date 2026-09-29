@@ -74,7 +74,7 @@ export default function Privacidade() {
         </div>
 
         <Section titulo="1. Quem somos (Controlador dos dados)">
-          O MeAndYou é o controlador dos seus dados pessoais. Para questões relacionadas à privacidade e proteção de dados,
+          O MeAndYou é uma marca operada por V.I.B COMERCIAL LTDA, inscrita no CNPJ sob o nº 53.094.492/0001-98, com sede na Rua Magnólia, 479, Box 22, Caiçaras, Belo Horizonte/MG, CEP 31230-060, que é a controladora dos seus dados pessoais. Para questões relacionadas à privacidade e proteção de dados,
           entre em contato com nosso Encarregado de Dados (DPO) pelo e-mail:{' '}
           <a href="mailto:adminmeandyou@proton.me" style={{ color: 'var(--accent)' }}>
             adminmeandyou@proton.me
