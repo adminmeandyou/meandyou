@@ -269,3 +269,12 @@ MENORES (decidir): roleta chamada de "Grátis" mas exige ticket e mostra "Próxi
 - Vercel em gru1.
 - Obs.: o Supabase free (instância pequena) deu 503 por alguns minutos logo após as migrations (recarga do schema + testes). Voltou sozinho.
 PENDENTE LEANDRO: NEXT_PUBLIC_VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY na Vercel (push no celular).
+
+### Rodada 3 do E2E (29/09, noite) — o que faltava
+FUNCIONA: busca avançada, Camarote (regras, interesses, vitrine), casal (convite + aceitar), videochamada (chamar, atender, vídeo dos dois lados, encerrar), ativação de plano e fichas pelo webhook (idempotente), login com bloqueio após 3 senhas erradas, recuperar senha sem revelar e-mail, cadastro até o captcha, verificação até o upload, proteções do upload.
+CORRIGIDO (falta push): match do dia vazio sem filtros; aceite do Camarote pelo texto e interesses pedidos de novo; processLock (travamento); CPF com máscara burlava 1 conta por CPF; senha mínima 8; rótulos de acessibilidade na chamada.
+BLOQUEADORES DO LEANDRO:
+1. Pagamento nunca rodou de verdade: nenhuma cobrança real no banco; ABACATEPAY_API_KEY do .env.local responde "Invalid or inactive API key". Conferir a chave na Vercel/painel AbacatePay, o webhook cadastrado lá (URL com ?secret=) e fazer 1 compra real de R$ 5,97.
+2. Portão "Em breve" (site_config.gate_ativo=true) bloqueia cadastro de visitantes: desligar no admin antes dos anúncios.
+3. Fazer 1 cadastro + verificação reais no celular (captcha e selfie ao vivo não dá para automatizar).
+4. VAPID na Vercel. 5. Supabase Pro antes dos anúncios (Realtime free = 200 conexões simultâneas).
