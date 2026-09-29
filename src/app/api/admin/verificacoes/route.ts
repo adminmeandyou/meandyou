@@ -3,6 +3,7 @@
 // Documentos ficam no bucket privado `documentos` → devolve URLs assinadas de curta duração.
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
+import { apagarDocumentosVerificacao } from '@/lib/documentos-verificacao'
 
 const URL_TTL_SEGUNDOS = 600
 
@@ -102,6 +103,13 @@ export async function POST(req: NextRequest) {
       supabaseAdmin!.from('profiles').update({ verified: true, reg_facial_verified: true }).eq('id', userId),
     ])
     if (e1 || e2) throw e1 ?? e2
+
+    // Aprovado: documento e selfie não são mais necessários (LGPD)
+    try {
+      await apagarDocumentosVerificacao(supabaseAdmin!, userId)
+    } catch (err) {
+      console.error('[admin/verificacoes] Falha ao apagar documentos:', err)
+    }
 
     return NextResponse.json({ ok: true })
   } catch (err) {

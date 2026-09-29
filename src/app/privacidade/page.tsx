@@ -84,7 +84,7 @@ export default function Privacidade() {
         <Section titulo="2. Dados que coletamos">
           <strong>Dados de cadastro:</strong> nome completo, e-mail, telefone, senha (armazenada com hash seguro).<br /><br />
           <strong>Dados de verificação de identidade:</strong> selfie ao vivo (prova de vivacidade), imagem do documento (RG ou CNH), CPF.
-          Esses dados são usados exclusivamente para verificar sua identidade e prevenir fraudes. As imagens ficam em armazenamento privado, acessível apenas à equipe de verificação, e são apagadas quando você exclui sua conta.<br /><br />
+          Esses dados são usados exclusivamente para verificar sua identidade e prevenir fraudes. As imagens ficam em armazenamento privado, acessível apenas à equipe de verificação, e são apagadas assim que sua verificação é aprovada. Se a verificação não for concluída, elas são apagadas automaticamente em até 30 dias ou quando você exclui sua conta, o que vier primeiro. Guardamos apenas o resultado (verificado ou não).<br /><br />
           <strong>Dados do perfil:</strong> nome de exibição, data de nascimento, bio, localização aproximada (cidade/estado), fotos de perfil, características físicas e preferências que você cadastrar voluntariamente. Alguns desses campos opcionais (como religião, orientação ou vida sexual) são dados pessoais sensíveis pela LGPD (art. 5º, II) e só são tratados porque você escolhe preenchê-los; você pode apagá-los a qualquer momento em Editar perfil.<br /><br />
           <strong>Dados de uso:</strong> curtidas, matches, mensagens, tempo de uso da plataforma, dispositivo e sistema operacional (para segurança e prevenção de fraudes).<br /><br />
           <strong>Dados de pagamento:</strong> processados diretamente pelo gateway de pagamentos. Não armazenamos dados de cartão de crédito.
@@ -117,7 +117,7 @@ export default function Privacidade() {
         </Section>
 
         <Section titulo="9. Retenção de dados">
-          Mantemos seus dados enquanto sua conta estiver ativa. Após a exclusão da conta: dados de perfil são removidos em até 30 dias; dados de log e segurança são retidos por até 6 meses; dados necessários por obrigação legal podem ser retidos pelo prazo legal aplicável.
+          Mantemos seus dados enquanto sua conta estiver ativa, exceto a selfie e as imagens do documento de verificação, que são apagadas assim que a verificação é aprovada (ou em até 30 dias, se ela não for concluída). Após a exclusão da conta: dados de perfil são removidos em até 30 dias; dados de log e segurança são retidos por até 6 meses; dados necessários por obrigação legal podem ser retidos pelo prazo legal aplicável.
         </Section>
 
         <Section titulo="10. Cookies e rastreamento">

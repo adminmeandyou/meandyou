@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { sendVerificationApprovedEmail } from '@/app/lib/email'
 import { awardBadges } from '@/lib/badges'
 import { createClient as createServerClient } from '@/lib/supabase/server'
+import { apagarDocumentosVerificacao } from '@/lib/documentos-verificacao'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -84,6 +85,13 @@ export async function POST(req: NextRequest) {
       await supabase.from('users').update({ verified: false }).eq('id', userId)
       console.error('Erro ao marcar token como usado:', tokenMarkError)
       return NextResponse.json({ error: 'Erro ao confirmar verificação. Tente novamente.' }, { status: 500 })
+    }
+
+    // 4b. Verificação concluída: documento e selfie não são mais necessários (LGPD)
+    try {
+      await apagarDocumentosVerificacao(supabase, userId)
+    } catch (err) {
+      console.error('[confirmar-verificacao] Falha ao apagar documentos:', err)
     }
 
     // 5. Atualizar completude do perfil — verificação vale 15 pontos
