@@ -249,3 +249,12 @@ DECISÕES (29/09: Leandro pediu pra decidir pela lei):
 - D6 Confirmar se as 3 contas com role=admin são suas (Supabase > profiles, filtro role = admin).
 - D14 Prova social inventada na landing ("+1.000 pessoas", notificações falsas de cadastro): manter, trocar por número real ou remover?
 - L13 Link de descadastro nos e-mails de marketing antes de usar campanhas.
+
+## Teste E2E como usuário real (29/09/2026)
+Simulado em produção com 4 usuários temporários (apagados no fim, teardown em scratchpad).
+FUNCIONA: curtir/match, chat em tempo real nos 2 sentidos, quebra-gelo, chamar atenção, pedido de amizade + aceitar + chat de amigos, salas (entrar, mensagens, "entrou/saiu", membros), loja (4 compras, saldo certo), roleta, prêmio diário do streak, desfazer, SuperCurtida, boost, curtir de volta em /curtidas, denúncia, desfazer match, editar bio, excluir conta.
+CORRIGIDO (commits locais, falta push): notificações nunca eram salvas (VAPID ausente derrubava a rota); travamento "Lock broken" (2º cliente Supabase no BadgeWatcher); salas (sair pela seta/menu, contador); região gru1.
+AGUARDANDO AUTORIZAÇÃO PRA APLICAR NO BANCO: migration_seguranca_politicas_abertas.sql (7 tabelas abertas até sem login + usuário podia editar o próprio calendário e inflar prêmio); migration_busca_sem_banidos.sql.
+LEANDRO: pôr NEXT_PUBLIC_VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY na Vercel (push no celular).
+NÃO TESTADO: videochamada, pagamento real, cadastro/verificação com câmera, Camarote/Backstage (Black), casal, busca avançada, match do dia.
+MENORES (decidir): roleta chamada de "Grátis" mas exige ticket e mostra "Próximo giro" pra quem tem 0; /curtidas lista quem já é match e não mostra "É um Match"; desfazer match não sai da conversa; Central de segurança promete bloquear/modo invisível e não tem; CSP bloqueia worker do confete; reentrar na sala mantinha apelido antigo.
