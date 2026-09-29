@@ -235,7 +235,14 @@ endereço de outro perfil escondido, e editar a própria bio continua funcionand
 2. Autorizar o push (deploy). Logo DEPOIS do deploy: 12) migration_seguranca_admin.sql.
 3. Conferir as variáveis da Vercel listadas acima.
 
-DECISÕES:
+DECISÕES (29/09: Leandro pediu pra decidir pela lei):
+- [FEITO] D1 LGPD arts. 15/16: documento e selfie apagados na aprovação (automática e manual) + cron diário /api/cron/limpar-documentos apaga pendentes com 30+ dias. Política atualizada. Testado em produção com usuário temporário.
+- [FEITO] D3 LGPD arts. 18/19: botão "Baixar meus dados" em Configurações > Legal (/api/meus-dados, JSON só do próprio usuário, sem segredos). Testado local.
+- [FEITO] D6 Leandro confirmou: as 3 contas admin são dele.
+- [FEITO] D14 CDC art. 37: removidas notificações falsas, "+1.000", barras de vagas e "X pessoas agora" (landing e /lancamento). Cronômetro mantido (usa data real do admin).
+- [FEITO] L13 LGPD art. 8 §5: link "Descadastrar" + List-Unsubscribe (one-click) nas campanhas; /api/descadastro com HMAC, GET só confirma, POST desliga. Testado local.
+- [PENDENTE] D2: LGPD art. 9 IV + Decreto 7.962/2013 art. 2 (venda online): nome empresarial e CNPJ (ou nome e CPF), endereço físico e e-mail na política/termos. Só o Leandro tem esses dados.
+(histórico abaixo)
 - D1 Documentos/selfie da verificação: apagar automaticamente após aprovar (recomendado) ou guardar X dias?
 - D2 Dados do controlador para Termos/Privacidade: CNPJ/razão social (ou nome/CPF do responsável) e endereço.
 - D3 Exportação de dados (LGPD art. 18): botão no app agora ou só por e-mail no lançamento?
