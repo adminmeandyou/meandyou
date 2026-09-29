@@ -95,6 +95,10 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next()
   const pathname = req.nextUrl.pathname
 
+  // Rotas de API conferem o próprio login; rodar getUser aqui era uma ida extra ao
+  // Supabase Auth em cada chamada (o portão e os redirecionamentos já ignoravam /api)
+  if (pathname.startsWith('/api/')) return res
+
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

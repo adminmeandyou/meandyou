@@ -65,6 +65,7 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
         </button>
       ) : (
         <Link
+            prefetch={false}
           href="/modos"
           style={{
             fontFamily: 'var(--font-fraunces)',
@@ -93,6 +94,7 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
         {rightActions}
         <Link
+            prefetch={false}
           href="/amigos"
           onMouseEnter={() => setFriendsHovered(true)}
           onMouseLeave={() => setFriendsHovered(false)}
@@ -123,6 +125,7 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
           )}
         </Link>
         <Link
+            prefetch={false}
           href="/notificacoes"
           onMouseEnter={() => setNotifHovered(true)}
           onMouseLeave={() => setNotifHovered(false)}
@@ -154,6 +157,7 @@ export function AppHeader({ modeSelector, rightActions, leftAction, backHref, pa
         </Link>
 
         <Link
+            prefetch={false}
           href="/configuracoes"
           onMouseEnter={() => setShieldHovered(true)}
           onMouseLeave={() => setShieldHovered(false)}

@@ -51,6 +51,7 @@ export function AppBottomNav() {
         if (center) {
           return (
             <Link
+            prefetch={false}
               key={href}
               href={href}
               onClick={() => { haptics.tap(); play('tap') }}
@@ -92,6 +93,7 @@ export function AppBottomNav() {
 
         return (
           <Link
+            prefetch={false}
             key={href}
             href={href}
             onClick={() => { haptics.tap(); play('tap') }}

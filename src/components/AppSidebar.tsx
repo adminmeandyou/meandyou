@@ -41,6 +41,7 @@ function SidebarLink({ item, pathname }: { item: SidebarItem; pathname: string }
 
   return (
     <Link
+            prefetch={false}
       href={item.href}
       title={item.label}
       aria-label={item.label}
@@ -98,6 +99,7 @@ export function AppSidebar() {
     >
       {/* Logo */}
       <Link
+            prefetch={false}
         href="/modos"
         title="MeAndYou"
         className="sidebar-logo"
