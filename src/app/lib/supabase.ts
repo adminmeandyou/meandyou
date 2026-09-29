@@ -1,8 +1,13 @@
 import { createBrowserClient } from '@supabase/ssr'
+import { processLock } from '@supabase/supabase-js'
 
+// processLock: trava da sessão dentro da própria aba. A padrão (navigator.locks) "rouba"
+// a trava quando a espera passa do limite e a operação roubada falha com
+// "Lock broken by another request with the 'steal' option", deixando telas presas.
 export const supabase = createBrowserClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  { auth: { lock: processLock } }
 )
 
 // getUser() faz uma chamada de rede segurando a trava da sessão. Ao abrir uma tela,
