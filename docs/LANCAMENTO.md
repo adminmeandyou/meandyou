@@ -221,6 +221,10 @@ Páginas públicas (/, /login, /cadastro, /termos, /privacidade, /acesso) em 390
 ## RESUMO PARA O LEANDRO — o que falta decidir/fazer (em ordem)
 
 BLOQUEADORES (sem isso não publicar):
+[FEITO 29/09] Item 1: as 11 migrations foram aplicadas em produção via psql (DATABASE_URL no .env.local), cada uma numa transação só.
+Teste de invasão em produção com usuário temporário (já apagado): 17/17 ok. Não vira admin/Black, não altera fichas nem email_verified,
+get_my_conversations/get_my_matches de outro usuário dão 403, não lê messages/matches/friendships/room_messages/payments alheios,
+endereço de outro perfil escondido, e editar a própria bio continua funcionando.
 1. Aplicar as migrations no Supabase > SQL Editor, um arquivo por vez, nesta ordem (todas testadas num banco local e idempotentes):
    1) migration_lgpd_aceite.sql  2) migration_seguranca_colunas_protegidas.sql  3) migration_seguranca_leitura.sql
    4) migration_seguranca_rpcs_usuario.sql  5) migration_rpc_distancia.sql  6) migration_cancellation_requests.sql
