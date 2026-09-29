@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createAdminClient, createClient } from '@/lib/supabase/server'
 import { Resend } from 'resend'
+import { linkDescadastro } from '@/lib/descadastro'
 
 export const dynamic = 'force-dynamic'
 
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
   }
   const lista = (perfis ?? [])
     .filter(p => emailPorId[p.id])
-    .map(p => ({ email: emailPorId[p.id], name: p.name }))
+    .map(p => ({ email: emailPorId[p.id], name: p.name, sair: linkDescadastro(p.id) }))
 
   let status = 'enviado'
   try {
@@ -62,11 +63,16 @@ export async function POST(req: NextRequest) {
           from: 'MeAndYou <noreply@meandyou.com.br>',
           to: d.email,
           subject: titulo,
+          headers: {
+            'List-Unsubscribe': `<${d.sair}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+          },
           html: `<div style="font-family:sans-serif;max-width:600px;margin:0 auto;padding:24px">
             <h2 style="color:#e11d48">${titulo}</h2>
             <div style="color:#333;line-height:1.6">${corpo}</div>
             <hr style="margin:24px 0;border-color:#eee"/>
             <p style="color:#999;font-size:12px">MeAndYou · <a href="https://www.meandyou.com.br">meandyou.com.br</a></p>
+            <p style="color:#999;font-size:12px">Não quer mais receber estes e-mails? <a href="${d.sair}" style="color:#999">Descadastrar</a></p>
           </div>`,
         }))
       )
