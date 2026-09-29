@@ -11,6 +11,7 @@ import { useToast } from '@/components/Toast'
 import { useHaptics } from '@/hooks/useHaptics'
 import { useSounds } from '@/hooks/useSounds'
 import { ArrowLeft, Heart, Star, Lock } from 'lucide-react'
+import { MatchModal } from '@/components/MatchModal'
 
 type LikerProfile = {
   from_user: string
@@ -41,6 +42,7 @@ export default function CurtidasPage() {
   const [likers, setLikers] = useState<LikerProfile[]>([])
   const [loading, setLoading] = useState(true)
   const [likedBack, setLikedBack] = useState<Set<string>>(new Set())
+  const [novoMatch, setNovoMatch] = useState<{ matchId: string; liker: LikerProfile; myPhoto: string | null } | null>(null)
 
   const canSee = limits.canSeeWhoLiked
 
@@ -67,8 +69,22 @@ export default function CurtidasPage() {
       return
     }
 
+    // Quem já virou match (ou foi desfeito/bloqueado) sai da lista, como no Tinder
+    const idsCurtiram = rawLikes.map((l: any) => l.user_id)
+    const { data: meusMatches } = await supabase
+      .from('matches')
+      .select('user1, user2')
+      .or(`user1.eq.${user!.id},user2.eq.${user!.id}`)
+    const jaMatch = new Set((meusMatches ?? []).map((m: any) => (m.user1 === user!.id ? m.user2 : m.user1)))
+    const pendentes = rawLikes.filter((l: any) => !jaMatch.has(l.user_id))
+    if (pendentes.length === 0) {
+      setLikers([])
+      setLoading(false)
+      return
+    }
+
     // Busca perfis via view pública
-    const ids = rawLikes.map((l: any) => l.user_id)
+    const ids = pendentes.map((l: any) => l.user_id)
     const { data: profiles } = await supabase
       .from('profiles')
       .select('id, name, photo_best, city')
@@ -76,7 +92,7 @@ export default function CurtidasPage() {
 
     const profileMap = new Map((profiles ?? []).map((p: any) => [p.id, p]))
 
-    const result: LikerProfile[] = rawLikes.map((l: any) => {
+    const result: LikerProfile[] = pendentes.map((l: any) => {
       const p = profileMap.get(l.user_id)
       return {
         from_user: l.user_id,
@@ -95,12 +111,21 @@ export default function CurtidasPage() {
     haptics.medium()
     play('like')
     try {
-      await supabase.rpc('process_like', {
+      const { data, error } = await supabase.rpc('process_like', {
         p_user_id: user!.id,
         p_target_id: profileId,
         p_is_superlike: false,
       })
-      toast.success('Curtida enviada!')
+      if (error) throw error
+      // Curtir de volta quem já curtiu é sempre match: mostra a tela de match e tira da lista
+      if (data?.is_match && data.match_id) {
+        const liker = likers.find((l) => l.from_user === profileId)
+        const { data: eu } = await supabase.from('profiles').select('photo_best').eq('id', user!.id).single()
+        if (liker) setNovoMatch({ matchId: data.match_id, liker, myPhoto: eu?.photo_best ?? null })
+        setLikers((prev) => prev.filter((l) => l.from_user !== profileId))
+      } else {
+        toast.success('Curtida enviada!')
+      }
     } catch {
       toast.error('Erro ao enviar curtida.')
     }
@@ -111,6 +136,16 @@ export default function CurtidasPage() {
 
   return (
     <div className="min-h-screen font-jakarta pb-24" style={{ background: 'radial-gradient(ellipse 80% 50% at 50% 0%, rgba(225,29,72,0.06) 0%, transparent 60%), #08090E' }}>
+      {novoMatch && (
+        <MatchModal
+          matchId={novoMatch.matchId}
+          myPhoto={novoMatch.myPhoto}
+          otherPhoto={novoMatch.liker.photo_best}
+          otherName={novoMatch.liker.name}
+          onClose={() => setNovoMatch(null)}
+          onStartChat={() => router.push(`/conversas/${novoMatch.matchId}`)}
+        />
+      )}
 
       {/* Header */}
       <header className="sticky top-0 z-30 bg-[#08090E]/90 backdrop-blur border-b border-white/5 px-5 py-4 flex items-center gap-3">
