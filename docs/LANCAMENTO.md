@@ -258,3 +258,14 @@ AGUARDANDO AUTORIZAÇÃO PRA APLICAR NO BANCO: migration_seguranca_politicas_abe
 LEANDRO: pôr NEXT_PUBLIC_VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY na Vercel (push no celular).
 NÃO TESTADO: videochamada, pagamento real, cadastro/verificação com câmera, Camarote/Backstage (Black), casal, busca avançada, match do dia.
 MENORES (decidir): roleta chamada de "Grátis" mas exige ticket e mostra "Próximo giro" pra quem tem 0; /curtidas lista quem já é match e não mostra "É um Match"; desfazer match não sai da conversa; Central de segurança promete bloquear/modo invisível e não tem; CSP bloqueia worker do confete; reentrar na sala mantinha apelido antigo.
+
+### Rodada 2 do E2E (29/09, tarde) — tudo corrigido e no ar
+- Segurança: 30 funções SECURITY DEFINER só do servidor fechadas para o navegador (plano grátis, saldo infinito, banir qualquer um, XP); 7 tabelas com política aberta; edição do próprio calendário/streak; search_profiles antiga que vazava lat/lng removida.
+- Roleta: giro grátis diário (Essencial 1, Plus 2, Black 3), depois ticket.
+- Busca/Destaques sem banidos/excluídos; ex-match nunca volta ao Descobrir.
+- Match avisa a outra pessoa em todas as telas de curtir; /curtidas esconde quem já é match e mostra tela de match.
+- Travamento "Lock broken": getUser simultâneo compartilhado + cliente único. Reteste: 0 travamentos em 14 telas.
+- Salas: saída pela seta aparece em 2s e contador atualiza; mensagens só para membros.
+- Vercel em gru1.
+- Obs.: o Supabase free (instância pequena) deu 503 por alguns minutos logo após as migrations (recarga do schema + testes). Voltou sozinho.
+PENDENTE LEANDRO: NEXT_PUBLIC_VAPID_PUBLIC_KEY e VAPID_PRIVATE_KEY na Vercel (push no celular).
